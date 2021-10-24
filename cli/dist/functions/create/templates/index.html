@@ -1,0 +1,22 @@
+<!doctype html>
+<html class="no-js" lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Joystick</title>
+    <meta name="description" content="An awesome JavaScript app that's under development.">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#FFCC00">
+    <link rel="apple-touch-icon" href="/apple-touch-icon-152x152.png">
+    <link rel="manifest" href="/manifest.json">
+    ${css}
+  </head>
+  <body>
+    <div id="app"></div>
+    ${scripts}
+    <script>
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.register("/service-worker.js");
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,1 @@
+"use strict";module.exports=(t="")=>{const s={name:t,version:"1.0.0",description:"",main:"index.js",scripts:{start:"joystick start",test:'echo "Error: no test specified" && exit 1'},keywords:[],author:"",license:"ISC"};return JSON.stringify(s,null,2)};

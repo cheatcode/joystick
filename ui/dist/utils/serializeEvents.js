@@ -1,0 +1,1 @@
+!function(e,t){"object"==typeof exports&&"undefined"!=typeof module?module.exports=t():"function"==typeof define&&define.amd?define(t):(e="undefined"!=typeof globalThis?globalThis:e||self)["joystick-ui"]=t()}(this,(function(){"use strict";return(e={})=>Object.entries(e).map((([e,t])=>{const[o,n]=e.split(" ");return{type:o.toLowerCase(),selector:n,handler:t}}))}));

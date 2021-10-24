@@ -1,0 +1,1 @@
+"use strict";module.exports=function(){return{name:"joystick-build-resolve",buildEnd(){return Array.from(this.getModuleIds()).map((e=>this.getModuleInfo(e))).filter((({id:e})=>!(["node_modules","dist"].some((i=>e.includes(i)))||!["/ui","/api"].some((i=>e.includes(i)))))),null}}};

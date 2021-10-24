@@ -1,0 +1,1 @@
+!function(e,t){"object"==typeof exports&&"undefined"!=typeof module?module.exports=t():"function"==typeof define&&define.amd?define(t):(e="undefined"!=typeof globalThis?globalThis:e||self)["joystick-node"]=t()}(this,(function(){"use strict";const e=(t,n)=>{if(!n)return t;if(!t)return;const o=n.split(".");return e(t[o.shift()],o.join("."))};return e}));

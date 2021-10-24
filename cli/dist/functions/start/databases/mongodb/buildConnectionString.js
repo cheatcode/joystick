@@ -1,0 +1,1 @@
+"use strict";module.exports=(s={})=>{let a="mongodb://";return s&&(s.username||s.password)&&(a=`${a}${s.username||""}:${s.password||""}@`),s&&s.hosts&&Array.isArray(s.hosts)&&(a=`${a}${s.hosts.map((s=>`${s.hostname}:${s.port}`)).join(",")}`),s&&s.database&&(a=`${a}/${s.database}`),a};

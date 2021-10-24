@@ -1,0 +1,1 @@
+!function(e,o){"object"==typeof exports&&"undefined"!=typeof module?o(exports):"function"==typeof define&&define.amd?define(["exports"],o):o((e="undefined"!=typeof globalThis?globalThis:e||self)["joystick-ui"]={})}(this,(function(e){"use strict";const o=new RegExp(/\<\!\-\-(?:.|\n|\r)*?-->/g);e.JOYSTICK_COMMENT_REGEX=o,Object.defineProperty(e,"__esModule",{value:!0})}));

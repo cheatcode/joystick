@@ -1,0 +1,1 @@
+"use strict";function e(e){return e&&"object"==typeof e&&"default"in e?e:{default:e}}var n=e(require("net"));module.exports=e=>new Promise(((t,o)=>{const c=n.default.createServer();c.once("error",(function(e){if("EADDRINUSE"!=e.code)return callback(e);t(!1)})).once("listening",(function(){c.once("close",(function(){t(!0)})).close()})).listen(e)}));
