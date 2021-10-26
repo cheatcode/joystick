@@ -1738,6 +1738,604 @@ node.app({
 });
 ```
 
+### API
+
+To simplify the process of defining an API, Joystick includes a thin abstraction layer over Express.js for creating endpoints. It's based on the idea that all data in your application is either you "getting" something or "setting" something in a database.
+
+Following this logic, Joystick introduce a concept called "getters" and "setters." The former helps you define HTTP GET endpoints for _reading_ data from your database while the latter helps you define HTTP POST endpoints for _creating, updating, and removing_ data from your database.
+
+#### Getters
+
+A getter is nothing more than a JavaScript object set to a property with the name of the getter you'd like to make accessible on the server.
+
+```javascript
+export default {
+  posts: {
+    input: {
+      category: {
+        type: "string",
+      },
+    },
+    get: async (input, context) => {
+      const query = {};
+
+      if (input.category) {
+        query.category = input.category;
+      }
+
+      const posts = await context.mongodb.collection("posts").find().toArray();
+
+      return posts;
+    },
+  },
+};
+```
+
+Here, we define a getter called `posts` with two properties: `input`, set to an object that defines validation for any input values passed from the browser when calling the getter and `get`, a function which receives the validated `input` as its first argument and a `context` object as the second argument.
+
+A getter is intended to retrieve and return data. Once inside the body of the `get()` function, you can retrieve your data from any data source you wish (typically a database, but could also be from a third-party API or a static data file on the server).
+
+Once your data is retrieved, you return it from the `get()` function and Joystick sends it back to the originating request as a JSON body.
+
+#### Setters
+
+A setter is nothing more than a JavaScript object set to a property with the name of the setter you'd like to make accessible on the server.
+
+```javascript
+export default {
+  createPost: {
+    input: {
+      title: {
+        type: "string",
+        required: true,
+      },
+    },
+    set: async (input, context) => {
+      const postId = joystick.id();
+
+      await context.mongodb.collection("posts").insertOne({
+        _id: joystick.id(),
+        ...input,
+      });
+
+      return {
+        _id: postId,
+      };
+    },
+  },
+};
+```
+
+Here, we define a setter called `createPost` with two properties: `input`, set to an object that defines validation for any input values passed from the browser when calling the setter and `set`, a function which receives the validated `input` as its first argument and a `context` object as the second argument.
+
+A setter is intended to create, update, and delete data, and optionally return data. Once inside the body of the `set()` function, you can call to any data source you wish (typically a database, but could also be from a third-party API or a static data file on the server).
+
+Once your data is set, you can optionally return a value from the `set()` function and Joystick will send it back to the originating request as a JSON body.
+
+#### Validating inputs
+
+Joystick uses a built-in validation library for validating inputs passed from the browser to the server as part of a call to a getter or setter.
+
+Validation rules are defined using a nested object structure (written to mimic the structure of the data you're passing from the browser) along with a few different properties to set the rules for your inputs.
+
+A validation object looks like this:
+
+```javascript
+{
+  title: {
+    type: "string",
+    required: true,
+  }
+}
+```
+
+Here, `title` is the name of the field we want to validate. We expect it to have a data type of `string` and require it to be passed in the input.
+
+The object assigned to the field name is known as the validator, while the properties on that object are known as the rules _for_ that validator.
+
+Currently, a validator can define the following rules:
+
+<table>
+  <thead>
+    <tr>
+      <th>Rule name</th>
+      <th>Values</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>allowedValues</td>
+      <td>An array of values as: strings, integers, floats, or booleans.</td>
+      <td>An enumerable (enum) list of values that are allowed to be passed for the field.</td>
+    </tr>
+    <tr>
+      <td>element</td>
+      <td>A validator object that describes the contents of each item in an array.</td>
+      <td>Only required when `type` is equal to `array`. Defines the shape of an element expected in the array.</td>
+    </tr>
+    <tr>
+      <td>fields</td>
+      <td>A validator object that describes the contents of an object.</td>
+      <td>Only required when `type` is equal to `object`. Defines the shape of an object passed as the value for an input field.</td>
+    </tr>
+    <tr>
+      <td>max</td>
+      <td>A maximum value expressed as an integer or float.</td>
+      <td>Set a maximum value for the field as a number (integer or float).</td>
+    </tr>
+    <tr>
+      <td>min</td>
+      <td>A minimum value expressed as an integer or float.</td>
+      <td>Set a minimum value for the field as a number (integer or float).</td>
+    </tr>
+    <tr>
+      <td>optional</td>
+      <td>A boolean `true` or `false`.</td>
+      <td>Specifies whether or not a field is optional. If set to `false`, a value is required.</td>
+    </tr>
+    <tr>
+      <td>regex</td>
+      <td>A regular expression expressed as a `/thing/g` regular expression, or, a JavaScript RegExp object.</td>
+      <td>Validates whether the field value conforms to the regular expression.</td>
+    </tr>
+    <tr>
+      <td>required</td>
+      <td>A boolean `true` or `false`.</td>
+      <td>Specifies whether or not a field is required. If set to `false`, a value is optional.</td>
+    </tr>
+    <tr>
+      <td>type</td>
+      <td>As a JavaScript string, one of: <code>any</code>,<code>array</code>, <code>boolean</code>, <code>float</code>, <code>integer</code>, <code>number</code>, <code>object</code>, or <code>string</code>.</td>
+      <td>The expected type of data for the field to contain.</td>
+    </tr>
+  </tbody>
+</table>
+
+Validator objects can be composed together to create complex validation. For example, consider the following input:
+
+```javascript
+input: {
+  name: "Trent Rezor",
+  instruments: ["piano", "guitar", "vocals", "kazoo"],
+  albums: [
+    { title: 'The Downward Spiral', year: '1994' },
+    { title: 'The Fragile', year: '1999' },
+    { title: 'Broken EP', year: '1995' },
+  ],
+},
+```
+
+The validation for this could take shape as:
+
+```javascript
+input: {
+  name: {
+    type: "string",
+    required: true,
+  },
+  instruments: {
+    type: "array",
+    allowedValues: ["piano", "guitar", "vocals", "bass"],
+  },
+  albums: {
+    type: "array",
+    element: {
+      type: "object",
+      fields: {
+        title: {
+          type: "string",
+          required: true,
+        },
+        year: {
+          type: "string",
+          optional: true,
+        },
+      },
+    },
+  },
+},
+```
+
+While your data should be kept shallow for the sake of clarity and simplicity, Joystick's validation can technically be nested infinitely as it runs recursively to an arbitrary depth.
+
+#### Schema
+
+The schema is the name for the object where you load all of your app's getters and setters. This should be exported from the `/api/index.js` file. A schema object has two properties: `getters` and `setters`.
+
+```javascript
+export default {
+  getters: {
+    posts: {
+      input: {
+        category: {
+          type: "string",
+        },
+      },
+      get: async (input, context) => {
+        const query = {};
+
+        if (input.category) {
+          query.category = input.category;
+        }
+
+        const posts = await context.mongodb
+          .collection("posts")
+          .find()
+          .toArray();
+
+        return posts;
+      },
+    },
+  },
+  setters: {
+    createPost: {
+      input: {
+        title: {
+          type: "string",
+          required: true,
+        },
+      },
+      set: async (input, context) => {
+        const postId = joystick.id();
+
+        await context.mongodb.collection("posts").insertOne({
+          _id: joystick.id(),
+          ...input,
+        });
+
+        return {
+          _id: postId,
+        };
+      },
+    },
+  },
+};
+```
+
+While you can certainly define all of your getters and setters in the schema file, it's recommended to separate them off into their own files, organized by folders named after the resource they relate to:
+
+```javascript
+import postGetters from "./posts/getters.js";
+import postSetters from "./posts/setters.js";
+
+export default {
+  getters: {
+    ...postGetters,
+  },
+  setters: {
+    ...postSetters,
+  },
+};
+```
+
+Above, we assume that `postGetters` and `postSetters` are objects and use the JavaScript spread operator `...` to "unpack" those objects on to the `getters` and `setters` objects on the schema.
+
+#### Loading your schema
+
+Your schema is loaded into your app by adding it as a property on the options passed to your `node.app()` instance:
+
+```javascript
+import node from '@joystick.js/node';
+import api from './api/index.js';
+
+node.app({
+  api,
+  routes: {
+    '/': (req, res) => { ... }
+  },
+});
+```
+
+If you do _not_ pass `api` as a property to `node.app()` your schema will _not_ be loaded in the app.
+
+#### get()
+
+Although getters are defined as Express.js routes that you can call via `fetch()` or another HTTP library, it's easier and recommended to use `@joystick.js/ui`'s built-in `get()` method to perform your get request.
+
+```javascript
+import ui, { get } from "@joystick.js/ui";
+
+const Profile = ui.component({
+  state: {
+    name: "",
+    age: "",
+    location: "",
+  },
+  lifecycle: {
+    onMount: (component) => {
+      get("profile", {
+        output: ["name", "age", "location"],
+      }).then((data) => {
+        component.setState({
+          name: data.name,
+          age: data.age,
+          location: data.location,
+        });
+      });
+    },
+  },
+  render: ({ state }) => {
+    return `
+      <div>
+        <p>Name: ${state.name}</p>
+        <p>Age: ${state.age}</p>
+        <p>Location: ${state.location}</p>
+      </div>
+    `;
+  },
+});
+
+export default Profile;
+```
+
+When using the `get()` method, you pass the name of the getter as defined on the server as string for the first argument, followed by an options object as the second argument.
+
+The options object accepts two properties: `input` and `output`. `input` collects the values from the UI as an object that you want to send the server and includes them as query params on the resulting HTTP GET request. `output` takes an array of strings using JavaScript dot notation `like.this` that specify the data and the shape of that data you expect in return.
+
+For example, assuming our `profile` getter returned a value like this:
+
+```javascript
+{
+  name: 'Trent Reznor',
+  age: '52',
+  location: 'Los Angeles, California',
+  band: 'Nine Inch Nails',
+  favoriteMusician: 'David Bowie',
+}
+```
+
+Using the `output` array in the example `get()` request above, we'd only get back:
+
+```javascript
+{
+  name: 'Trent Reznor',
+  age: '52',
+  location: 'Los Angeles, California',
+}
+```
+
+This means that you can write multi-purpose getters and tailor the output of those getters based on the current UI _without_ having to wire up an additional endpoint.
+
+#### set()
+
+Although setters are defined as Express.js routes that you can call via `fetch()` or another HTTP library, it's easier and recommended to use `@joystick.js/ui`'s built-in `set()` method to perform your set request.
+
+```javascript
+import ui, { set } from "@joystick.js/ui";
+
+const Profile = ui.component({
+  state: {
+    name: "",
+    age: "",
+    location: "",
+  },
+  events: {
+    "submit form": (event) => {
+      set("updateProfile", {
+        input: {
+          name: {
+            first: event.target.firstName.value,
+            last: event.target.lastName.value,
+          },
+        },
+        output: ["name.first"],
+      }).then((data) => {
+        // Expect only data.name.first to be defined based on the output array above.
+        component.setState({
+          name: data.name,
+        });
+      });
+    },
+  },
+  render: ({ state }) => {
+    return `
+      <form>
+        <label for="firstName">First Name</label>
+        <input type="text" name="firstName" />
+        <label for="lastName">Last Name</label>
+        <input type="text" name="lastName" />
+      </form>
+    `;
+  },
+});
+
+export default Profile;
+```
+
+When using the `set()` method, you pass the name of the setter as defined on the server as string for the first argument, followed by an options object as the second argument.
+
+The options object accepts two properties: `input` and `output`. `input` collects the values from the UI as an object that you want to send the server and includes them as body params on the resulting HTTP POST request. `output` takes an array of strings using JavaScript dot notation `like.this` that specify the data and the shape of that data you expect in return.
+
+#### Customizing outputs
+
+As part of the `get()` and `set()` methods included in `@joystick.js/ui`, an option exists to control the `output` of calls to those functions using a technology we refer to as SelectiveFetch.
+
+SelectiveFetch allows us to tailor the output from a getter or setter to meet the needs of our UI. This means that we can define endpoints that return large sets of data, however, can be scaled down to fit the needs of each unique UI _without_ having to wire up additional endpoints.
+
+To utilize SelectiveFetch, as part of the options object passed to a `get()` or `set()` call, include the `output` property, set to an array of strings describing the data you want to get back in return.
+
+For example, iimage one of our getters returned data like this:
+
+```javascript
+{
+  profile: {
+    get: () => {
+     return {
+        name: {
+          first: 'Max',
+          last: 'Keiser',
+        },
+        emailAddress: 'max.keiser@rt.com',
+        bitcoinAddress: 'mqW5mA5gghdTa9QcEn8aW4FcLAJWctWVVZ',
+        address: {
+          street: '1234 Fake St.',
+          city: 'Wherever',
+          state: 'NY',
+          zipCode: '10001',
+        },
+      };
+    },
+  }
+}
+```
+
+If our UI only called for the `bitcoinAddress` field and the `zipCode` under `address`, returning the entire response would be wasteful. Using SelectiveFetch, we can tailor this output to only the fields we need:
+
+```javascript
+get("profile", {
+  output: ["bitcoinAddress", "address.zipCode"],
+});
+```
+
+That's it. Now, when Joystick runs the `get()` request, it will take the response it receives and filter it down to only these two fields, giving us something like this:
+
+```javascript
+{
+  bitcoinAddress: 'mqW5mA5gghdTa9QcEn8aW4FcLAJWctWVVZ',
+  address: {
+    zipCode: '10001',
+  },
+}
+```
+
+All of the other data is omitted.
+
+### Internationalization
+
+If you're building an app for a multi-lingual audience, Joystick helps you by connecting translations you author on the server with the Joystick components in your UI.
+
+#### Adding a language file
+
+Translations should be placed in the `/i18n` folder at the root of your project. In this folder, `.js` files should be added with names matching the [ISO code for the language you'd like to support](https://gist.github.com/rglover/23d9d10d788c87e7fc5f5d7d8629633f), for example: `en-US.js`.
+
+Inside of that file, Joystick expects a JavaScript object to be exported with properties set to paths matching one of the components in your `/ui` folder:
+
+```javascript
+export default {
+  "ui/pages/index/index.js": {
+    quote: `There is no excuse to not endlessly continue to try and make everything that you want to do as wonderful as your vision.`,
+    attribute: "Jeremiah Tower",
+  },
+};
+```
+
+Here, we have a page component at `ui/pages/index/index.js` that we want to define translations for. **Note**: this is important. When using the `res.render()` function, Joystick will automatically try to match the path you pass to that function with one of the properties (e.g., `ui/pages/index/index.js`) in the active translation file. If there's a match, it will load the translation object for that specific page. If it _cannot_ find a match, it will load the entire translation file.
+
+Keep in mind: paths are **absolute** and must specify the full path in order to work.
+
+#### Accessing translations
+
+Translations loaded when using the `res.render()` function to render a page can be accessed by utilizing the `i18n()` render function in a Joystick component.
+
+```javascript
+import ui from "@joystick.js/ui";
+
+const Index = ui.component({
+  render: ({ i18n }) => {
+    return `
+      <blockquote>
+        <p>${i18n("quote")}</p>
+        <p>&mdash; ${i18n("attribute")}</p>
+      </blockquote>
+    `;
+  },
+});
+
+export default Index;
+```
+
+If there was a matching path for the page rendered in your language file, Joystick will load it as the "root" or starting point for the `i18n()` function. Above, passing `quote` or `attribute` to the `i18n()` function as a string is equivalent to saying `ui/pages/index/index.js.quote` or `ui/pages/index/index.js.attribute`.
+
+Again, keep in mind: **if there was not a matching path in your language file, this short-hand will _not_ work. Instead you will have to specify the full path to the translation you want to render**.
+
+If for whatever reason you _prefer_ this functionality, you can author your language file like this:
+
+```javascript
+export default {
+  Index: {
+    quote: `There is no excuse to not endlessly continue to try and make everything that you want to do as wonderful as your vision.`,
+    attribute: "Jeremiah Tower",
+  },
+};
+```
+
+And then load the translations into your UI like this:
+
+```javascript
+import ui from "@joystick.js/ui";
+
+const Index = ui.component({
+  render: ({ i18n }) => {
+    return `
+      <blockquote>
+        <p>${i18n("Index.quote")}</p>
+        <p>&mdash; ${i18n("Index.attribute")}</p>
+      </blockquote>
+    `;
+  },
+});
+
+export default Index;
+```
+
+#### Handling process events
+
+While Joystick does its best to handle Node.js process events on the server, it can be helpful to be able to "plug in" to these events and implement custom logic. As part of the `node.app()` function in `@joystick.js/node`, an `events` object can be passed with functions/methods for handling specific Node.js process events:
+
+```javascript
+import node from "@joystick.js/node";
+import api from "./api";
+
+node
+  .app({
+    api,
+    events: {
+      error: (error) => {
+        console.log(error);
+      },
+      beforeExit: (error) => {
+        console.log("beforeExit", error);
+      },
+      disconnect: (error) => {
+        console.log("disconnect", error);
+      },
+      exit: (error) => {
+        console.log("exit", error);
+      },
+      message: (error) => {
+        console.log("message", error);
+      },
+      rejectionHandled: (error) => {
+        console.log("rejectionHandled", error);
+      },
+      uncaughtException: (error) => {
+        console.log("uncaughtException", error);
+      },
+      uncaughtExceptionMonitor: (error) => {
+        console.log("uncaughtExceptionMonitor", error);
+      },
+      unhandledRejection: (error) => {
+        console.log("unhandledRejection", error);
+      },
+      warning: (error) => {
+        console.log("warning", error);
+      },
+      worker: (error) => {
+        console.log("worker", error);
+      },
+    },
+    routes: {
+      ...
+    },
+  })
+  .then((express) => {
+    // console.log(express);
+  });
+```
+
+The list of events in this example (and their names) represent the full list of events that you can listen for through Joystick. Of course, you can still manually tap into the Node.js `process` directly if you need access to other events, or, prefer a DIY approach to handling.
+
 ## Deployment
 
 An official strategy for deployment is in the works and will be available in time for the 1.0 release.
