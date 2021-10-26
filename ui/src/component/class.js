@@ -12,15 +12,6 @@ import joystick from "../index";
 import { JOYSTICK_COMMENT_REGEX } from "./constants";
 import generateId from "./generateId";
 
-/*
-  TODO:
-
-  The problem is that the queue being added to is not the queue being processed.
-  This seems to be because the joystick instance imported up above is different
-  for both the layout component and the page. Get them to be the same instance
-  and this should work fine.
-*/
-
 class Component {
   constructor(options = {}, url = {}, translations = null) {
     validateOptions(options);
