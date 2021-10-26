@@ -1,7 +1,7 @@
 {
   "name": "@joystick.js/cli",
-  "version": "0.626.0",
-  "description": "",
+  "version": "1.0.0-beta.0",
+  "description": "CLI for the Joystick JavaScript framework.",
   "main": "development.js",
   "bin": {
     "joystick": "./dist/index.js"
@@ -9,9 +9,8 @@
   "scripts": {
     "dev": "export NODE_ENV=development && rollup -c rollup.config.js -w",
     "build": "rm -rf ./dist && export NODE_ENV=production && rollup -c",
-    "development:release": "export NODE_ENV=development && node release.js",
-    "production:release": "export NODE_ENV=production && node release.js",
-    "build:release": "npm run build && npm run development:release",
+    "development:release": "export NODE_ENV=development && npm run build && node release.js",
+    "production:release": "export NODE_ENV=production && npm run build && node release.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
