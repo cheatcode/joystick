@@ -1,6 +1,8 @@
+<img src="https://cheatcode-assets.s3.amazonaws.com/cheatcode-logo-sm.svg" alt="CheatCode">
+
 ## Joystick
 
-The full-stack framework for JavaScript
+The full-stack JavaScript framework.
 
 #### Table of Contents
 
