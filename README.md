@@ -6,9 +6,9 @@ The full-stack JavaScript framework.
 
 #### Table of Contents
 
-1. What is Joystick?
-2. Getting Started
-3. Installation
+1. [What is Joystick?](#what-is-joystick)
+2. [Installation](#installation)
+3. [Getting Started](#getting-started)
 4. Folder and file structure
    - /api
    - /email
