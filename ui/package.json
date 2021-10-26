@@ -1,15 +1,13 @@
 {
   "name": "@joystick.js/ui",
-  "version": "0.227.0",
-  "description": "A zero-dependency JavaScript framework for building user interfaces.",
+  "version": "1.0.0-beta.0",
+  "description": "A JavaScript framework for building user interfaces.",
   "main": "./dist/index.js",
   "scripts": {
     "dev": "export NODE_ENV=development && rollup -c rollup.config.js -w",
     "build": "rm -rf ./dist && export NODE_ENV=production && rollup -c",
-    "esbuild": "rm -rf ./dist && ./node_modules/.bin/esbuild src/index.js --bundle --outfile=dist/index.js --format=esm --minify",
-    "development:release": "export NODE_ENV=development && node release.js",
-    "production:release": "export NODE_ENV=production && node release.js",
-    "build:release": "npm run build && npm run development:release",
+    "development:release": "export NODE_ENV=development && npm run build && node release.js",
+    "production:release": "export NODE_ENV=production && npm run build && node release.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
