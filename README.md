@@ -1,6 +1,6 @@
 <img src="https://cheatcode-assets.s3.amazonaws.com/cheatcode-logo-sm.svg" alt="CheatCode">
 
-## Joystick
+## Joystick (Beta)
 
 The full-stack JavaScript framework.
 
@@ -9,77 +9,83 @@ The full-stack JavaScript framework.
 1. [What is Joystick?](#what-is-joystick)
 2. [Installation](#installation)
 3. [Getting Started](#getting-started)
-4. Folder and file structure
-   - /api
-   - /email
-   - /i18n
-   - /lib
-   - /public
-   - /ui
-   - index.client.js
-   - index.css
-   - index.html
-   - index.server.js
-5. Settings
-   - Defining settings per environment
-   - Defining Joystick configuration
-   - Defining global settings
-   - Defining client settings
-   - Defining server settings
-6. Databases
-   - Adding a database
-   - MongoDB
-   - Adding a remote database
-7. @joystick.js/cli
-   - joystick create
-   - joystick start
-   - joystick build
-8. @joystick.js/ui
-   - Writing a component
-   - Props
-   - State
-   - Lifecycle methods
-   - Methods
-   - DOM Events
-   - CSS
-   - Render functions
-     - component() and c()
-     - each() and e()
-     - i18n() and i()
-     - when() and w()
-   - Accessing URL and query params
-   - Writing comments
-9. @joystick.js/node
-   - Startup
-     - Defining an app
-     - Accessing the Express instance
-   - Middleware
-     - Configuring built-in middleware
-     - Adding custom middleware
-   - Routes
-     - Defining routes
-     - Defining routes for specific HTTP methods
-     - req.context.ifLoggedIn()
-     - req.context.ifNotLoggedIn()
-     - res.render()
-       - Rendering a page
-       - Rendering in a layout
-       - Passing props for SSR
-       - Setting metadata for SEO
-   - API
-     - Getters
-     - Setters
-     - Validating inputs
-     - get()
-     - set()
-     - Customizing outputs
-   - Internationalization
-     - Adding a language file
-     - Accessing translations
-   - Handling process events
-10. Deployment
-    - Using Docker
-    - joystick deploy
+4. [Folder and file structure](#folder-and-file-structure)
+   - [/api](#api)
+   - [/email](#email)
+   - [/i18n](#i18n)
+   - [/lib](#lib)
+   - [/node_modules](#node_modules)
+   - [/public](#public)
+   - [/ui](#ui)
+   - [index.client.js](#indexclientjs)
+   - [index.css](#indexcss)
+   - [index.html](#indexhtml)
+   - [index.server.js](#indexserverjs)
+   - [package.json](#packagejson)
+   - [settings.env.json](#settingsenvjson)
+5. [Settings](#settings)
+   - [Defining settings per environment](#defining-settings-per-environment)
+   - [Defining Joystick configuration](#defining-joystick-configuration)
+   - [Defining global settings](#defining-global-settings)
+   - [Defining public settings](#defining-public-settings)
+   - [Defining server settings](#defining-private-settings)
+6. [@joystick.js/cli](#joystickjscli)
+   - [joystick create](#joystick-create)
+   - [joystick start](#joystick-start)
+   - [joystick build](#joystick-build)
+7. [Databases](#databases)
+   - [Adding a database](#adding-a-database)
+   - [Users database](#users-database)
+   - [MongoDB](#mongodb)
+   - [Adding a remote database](#adding-a-remote-database)
+8. [Accounts](#accounts)
+   - [accounts.signup](#accountssignup)
+   - [accounts.login](#accountslogin)
+   - [accounts.logout](#accountslogout)
+   - [accounts.recoverPassword](#accountsrecoverpassword)
+   - [accounts.resetPassword](#accountsresetpassword)
+10. [@joystick.js/ui](#joystickjsui)
+   - [Writing a component](#writing-a-component)
+   - [Render functions](#render-functions)
+     - [component() and c()](#component-and-c)
+     - [each() and e()](#each-and-e)
+     - [when() and w()](#when-and-w)
+     - [i18n() and i()](#i18n-and-i)
+   - [Props](#props)
+   - [State](#state)
+   - [Lifecycle methods](#lifecycle-methods)
+   - [Methods](#methods)
+   - [DOM Events](#dom-events)
+   - [CSS](#css)
+   - [Accessing URL and query params](#accessing-url-and-query-params)
+   - [Writing comments](#writing-comments)
+11. [@joystick.js/node](#joystickjsnode)
+   - [Defining an app](#defining-an-app)
+   - [Middleware](#middleware)
+     - [Configuring built-in middleware](#configuring-built-in-middleware)
+     - [Adding custom middleware](#adding-custom-middleware)
+   - [Routes](#routes)
+     - [Defining routes](#defining-routes)
+     - [Defining routes for specific HTTP methods](#defining-routes-for-specific-http-methods)
+     - [req.context.ifLoggedIn()](#reqcontextifloggedin)
+     - [req.context.ifNotLoggedIn()](#reqcontextifnotloggedin)
+     - [res.render()](#resrender)
+       - [Rendering a page](#rendering-a-page)
+       - [Rendering in a layout](#rendering-in-a-layout)
+       - [Passing props to res.render()](#passing-props-to-resrender)
+   - [API](#api-1)
+     - [Getters](#getters)
+     - [Setters](#setters)
+     - [Validating inputs](#validating-inputs)
+     - [Schema](#schema)
+     - [get()](#get)
+     - [set()](#set)
+     - [Customizing outputs](#customizing-outputs)
+   - [Internationalization](#internationalization)
+     - [Adding a language file](#adding-a-language-file)
+     - [Accessing translations](#accessing-translations)
+   - [Handling process events](#handling-process-events)
+12. [Deployment](#deployment)
 
 ---
 
@@ -2279,7 +2285,7 @@ const Index = ui.component({
 export default Index;
 ```
 
-#### Handling process events
+### Handling process events
 
 While Joystick does its best to handle Node.js process events on the server, it can be helpful to be able to "plug in" to these events and implement custom logic. As part of the `node.app()` function in `@joystick.js/node`, an `events` object can be passed with functions/methods for handling specific Node.js process events:
 
