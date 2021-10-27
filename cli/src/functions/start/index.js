@@ -193,8 +193,8 @@ const initialBuild = async (path, format) => {
   }
 
   process.loader.text("Building app...");
-  const filesToBuild = getFilesToBuild();
 
+  const filesToBuild = getFilesToBuild();
   const fileResults = await buildFiles(filesToBuild);
 
   const hasErrors = [...fileResults]

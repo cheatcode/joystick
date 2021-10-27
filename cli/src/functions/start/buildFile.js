@@ -20,9 +20,9 @@ const configs = {
     format: "esm",
     minify: process.env.NODE_ENV !== "development",
     plugins: [
+      plugins.generateFileDependencyMap,
       plugins.bootstrapLayoutComponent,
       plugins.bootstrapPageComponent,
-      plugins.generateFileDependencyMap,
     ],
   }),
 };
