@@ -233,11 +233,25 @@ class Component {
 
   handlePrefixCSS(css = "", id = "") {
     const rawRules = this.handleGetCSSRules(css);
-    const parsedRules = Object.entries(rawRules).map(
-      ([_key, value]) => value.cssText
-    );
+    const parsedRules = Object.entries(rawRules).map(([_key, value]) => value);
 
-    return parsedRules.map((rule) => `[js-c="${id}"] ${rule}`).join("\n");
+    const prefixedRules = parsedRules.map((rule) => {
+      if (rule.type === 1) {
+        return `[js-c="${id}"] ${rule.cssText}`;
+      }
+
+      if (rule.type === 4) {
+        return `
+          @media ${rule.conditionText} {
+            ${Object.entries(rule.cssRules)
+              .map(([_key, mediaRule]) => `[js-c="${id}"] ${mediaRule.cssText}`)
+              .join("\n")}
+          }
+        `;
+      }
+    });
+
+    return prefixedRules.join("\n");
   }
 
   handleGetCSSRules(css = "") {

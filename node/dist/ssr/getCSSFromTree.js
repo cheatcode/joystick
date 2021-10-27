@@ -7,12 +7,27 @@ const buildPrefixedAST = (componentId = "", cssString = "") => {
       stylesheet: {
         ...ast.stylesheet,
         rules: ast.stylesheet.rules.map((rule) => {
-          return {
-            ...rule,
-            selectors: rule.selectors.map((selector) => {
-              return `[js-c="${componentId}"] ${selector}`;
-            })
-          };
+          if (rule.type === "rule") {
+            return {
+              ...rule,
+              selectors: rule.selectors.map((selector) => {
+                return `[js-c="${componentId}"] ${selector}`;
+              })
+            };
+          }
+          if (rule.type === "media") {
+            return {
+              ...rule,
+              rules: rule.rules.map((mediaRule) => {
+                return {
+                  ...mediaRule,
+                  selectors: mediaRule.selectors.map((selector) => {
+                    return `[js-c="${componentId}"] ${selector}`;
+                  })
+                };
+              })
+            };
+          }
         })
       }
     };
