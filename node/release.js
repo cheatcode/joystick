@@ -13,5 +13,5 @@ const registry =
     : "";
 
 execSync(
-  `npm version ${version} --allow-same-version ${registry} && npm publish ${force} ${registry}`
+  `npm version ${version} --allow-same-version ${registry} && npm publish --access public ${force} ${registry}`
 );
