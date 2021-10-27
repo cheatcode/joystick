@@ -3,9 +3,12 @@ import nodemailer from "nodemailer";
 import fs from "fs";
 import { htmlToText } from "html-to-text";
 import juice from "juice";
+import { createRequire } from "module";
 import settings from "../settings";
 import validateSMTPSettings from "./validateSMTPSettings";
 import render from "./render";
+
+const require = createRequire(import.meta.url);
 
 // TODO: Fallback to default reset-password.js in /templates/reset-password.js here.
 

@@ -1,4 +1,3 @@
-import node from "@joystick.js/node";
 import fs from "fs";
 import getCSSFromTree from "./getCSSFromTree";
 import formatCSS from "./formatCSS";
@@ -39,8 +38,8 @@ export default ({
           window.__joystick_ssr_props__ = ${JSON.stringify(props)};
           window.__joystick_i18n__ = ${JSON.stringify(translations)};
           window.__joystick_settings__ = ${JSON.stringify({
-            global: node?.default?.settings?.global,
-            public: node?.default?.settings?.public,
+            global: joystick?.settings?.global,
+            public: joystick?.settings?.public,
           })};
           
           window.__joystick_url__ = ${JSON.stringify(url)};
@@ -57,11 +56,17 @@ export default ({
             layout ? `"${path.split(".")[0]}"` : null
           };
         </script>
-        <script src="/_joystick/utils/process.js"></script>
-        <script src="/_joystick/index.client.js"></script>
-        ${path ? `<script src="/_joystick/${path}"></script>` : ""}
-        ${layout ? `<script src="/_joystick/${layout}"></script>` : ""}
-        <script src="/_joystick/hmr/client.js"></script>
+        <script type="module" src="/_joystick/utils/process.js"></script>
+        <script type="module" src="/_joystick/index.client.js"></script>
+        ${
+          path ? `<script type="module" src="/_joystick/${path}"></script>` : ""
+        }
+        ${
+          layout
+            ? `<script type="module" src="/_joystick/${layout}"></script>`
+            : ""
+        }
+        <script type="module" src="/_joystick/hmr/client.js"></script>
         `
       );
   } catch (exception) {

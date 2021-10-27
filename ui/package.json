@@ -1,11 +1,11 @@
 {
   "name": "@joystick.js/ui",
-  "version": "1.0.0-beta.0",
+  "type": "module",
+  "version": "1.0.0-beta.5",
   "description": "A JavaScript framework for building user interfaces.",
   "main": "./dist/index.js",
   "scripts": {
-    "dev": "export NODE_ENV=development && rollup -c rollup.config.js -w",
-    "build": "rm -rf ./dist && export NODE_ENV=production && rollup -c",
+    "build": "node .build/index.js",
     "development:release": "export NODE_ENV=development && npm run build && node release.js",
     "production:release": "export NODE_ENV=production && npm run build && node release.js",
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -13,17 +13,10 @@
   "keywords": [],
   "author": "",
   "license": "MIT",
-  "devDependencies": {
-    "@rollup/plugin-commonjs": "^20.0.0",
-    "@rollup/plugin-node-resolve": "^13.0.4",
-    "glob": "^7.1.7",
-    "rollup-plugin-copy": "^3.4.0",
-    "rollup-plugin-terser": "^7.0.2",
-    "semver": "^7.3.5"
-  },
   "dependencies": {
-    "child_process": "^1.0.2",
-    "esbuild": "^0.13.3",
     "url-pattern": "^1.0.3"
+  },
+  "devDependencies": {
+    "esbuild": "^0.13.9"
   }
 }

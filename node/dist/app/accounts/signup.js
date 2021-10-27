@@ -1,1 +1,84 @@
-!function(e,s){"object"==typeof exports&&"undefined"!=typeof module?module.exports=s(require("bcrypt"),require("dayjs"),require("crypto-extra")):"function"==typeof define&&define.amd?define(["bcrypt","dayjs","crypto-extra"],s):(e="undefined"!=typeof globalThis?globalThis:e||self)["joystick-node"]=s(e.bcrypt,e.dayjs,e.crypto)}(this,(function(e,s,r){"use strict";function t(e){return e&&"object"==typeof e&&"default"in e?e:{default:e}}var a=t(e),n=t(s),o=t(r),d=(e=16)=>o.default.randomString(e);const i=(e="",s)=>{const r="object"==typeof s&&(s.reason||s.message)||s;return`${"development"===process.env.NODE_ENV?`[${e}] `:""}${r}`};const c={config:{},keys:{global:{},public:{},private:{}}};var u=()=>{try{const e=!!process.env.JOYSTICK_SETTINGS,s=e&&((e="")=>{try{JSON.parse(e)}catch(e){return!1}return!0})(process.env.JOYSTICK_SETTINGS);if(!e)return c;if(!s)return console.warn(`Could not parse settings. Please verify that your settings-${process.env.NODE_ENV} exports a valid JavaScript object.`),c;return JSON.parse(process.env.JOYSTICK_SETTINGS)||c}catch(e){console.warn(e)}},l={mongodb:{existingUser:async(e={})=>{let s,r;return e?.emailAddress&&(s=await process.databases.mongodb.collection("users").findOne({emailAddress:e.emailAddress})),e?.username&&(r=await process.databases.mongodb.collection("users").findOne({username:e.username})),s||r?{existingEmailAddress:s?.emailAddress,existingUsername:r?.username}:null},createUser:async(e={})=>{const s=d();return await process.databases.mongodb.collection("users").insertOne({_id:s,...e}),s},user:async e=>{if(e?.emailAddress){return await process.databases.mongodb.collection("users").findOne({emailAddress:e.emailAddress})}if(e?.username){return await process.databases.mongodb.collection("users").findOne({username:e.username})}return null},addSession:async(e={})=>{await process.databases.mongodb.collection("users").updateOne({_id:e.userId},{$addToSet:{sessions:e.session}})},userWithLoginToken:async e=>await process.databases.mongodb.collection("users").findOne({"sessions.token":e?.token}),addPasswordResetToken:(e={})=>process.databases.mongodb.collection("users").updateOne({emailAddress:e.emailAddress},{$addToSet:{passwordResetTokens:{token:e.token,requestedAt:(new Date).toISOString()}}}),userWithResetToken:async e=>await process.databases.mongodb.collection("users").findOne({"passwordResetTokens.token":e["passwordResetTokens.token"]}),setNewPassword:async(e={})=>process.databases.mongodb.collection("users").updateOne({_id:e?.userId},{$set:{password:e?.hashedPassword}}),removeResetToken:async(e={})=>{const s=await process.databases.mongodb.collection("users").findOne({_id:e?.userId});return process.databases.mongodb.collection("users").updateOne({_id:e?.userId},{$set:{passwordResetTokens:s?.passwordResetTokens?.filter((({token:s})=>s!==e?.token))}})}}},p=async(e="",s={})=>{const r=(()=>{const e=(u()?.config?.databases||[]).find((e=>!!e.users));return e&&e.provider})(),t=r&&l[r];if(t&&t[e]){return await t[e](s)}return null};const m=async(e={})=>{try{let t={password:await(r=e.password,a.default.compareSync(r,hash))};return e?.emailAddress&&(t.emailAddress=e?.emailAddress),e?.metadata&&((s=e.metadata)&&"object"==typeof s&&!Array.isArray(s))&&(t={...e.metadata,...t}),t}catch(e){throw new Error(i("signup.getUserToCreate",e))}var s,r},w=async(e,{resolve:s,reject:r})=>{try{if(!e.emailAddress)return r("Email address is required.");if(!e.password)return r("Password is required.");const t=await((e="",s="")=>{try{return p("existingUser",{emailAddress:e,username:s})}catch(e){throw new Error(i("signup.getExistingUser",e))}})(e.emailAddress,e.metadata?.username);if(t)throw new Error(`A user with the ${t.existingUsername?"username":"email address"} ${t.existingUsername||t.existingEmailAddress} already exists.`);const a=await m(e),o=await(async(e={})=>{try{return p("createUser",e)}catch(e){throw new Error(i("signup.insertUserInDatabase",e))}})(a),c=await((e="")=>{try{return p("user",{_id:e})}catch(e){throw new Error(i("signup.getUserByUserId",e))}})(o),u={token:d(64),tokenExpiresAt:n.default().add(30,"days").format()};return await((e=null,s=null)=>{try{return p("addSession",{userId:e,session:s})}catch(e){throw new Error(i("signup.addSessionToUser",e))}})(c._id,u),s({...u,userId:o,user:c})}catch(e){r(i("signup",e))}};return e=>new Promise(((s,r)=>{w(e,{resolve:s,reject:r})}))}));
+import hashString from "./hashString";
+import generateSession from "./generateSession";
+import formatErrorString from "../../lib/formatErrorString";
+import runUserQuery from "./runUserQuery";
+import { isObject } from "../../validation/lib/typeValidators";
+const addSessionToUser = (userId = null, session = null) => {
+  try {
+    return runUserQuery("addSession", { userId, session });
+  } catch (error) {
+    throw new Error(formatErrorString("signup.addSessionToUser", error));
+  }
+};
+const getUserByUserId = (userId = "") => {
+  try {
+    return runUserQuery("user", { _id: userId });
+  } catch (exception) {
+    throw new Error(formatErrorString("signup.getUserByUserId", exception));
+  }
+};
+const insertUserInDatabase = async (user = {}) => {
+  try {
+    return runUserQuery("createUser", user);
+  } catch (exception) {
+    throw new Error(formatErrorString("signup.insertUserInDatabase", exception));
+  }
+};
+const getUserToCreate = async (options = {}) => {
+  try {
+    let user = {
+      password: await hashString(options.password)
+    };
+    if (options?.emailAddress) {
+      user.emailAddress = options?.emailAddress;
+    }
+    if (options?.metadata && isObject(options.metadata)) {
+      user = {
+        ...options.metadata,
+        ...user
+      };
+    }
+    return user;
+  } catch (exception) {
+    throw new Error(formatErrorString("signup.getUserToCreate", exception));
+  }
+};
+const getExistingUser = (emailAddress = "", username = "") => {
+  try {
+    return runUserQuery("existingUser", { emailAddress, username });
+  } catch (exception) {
+    throw new Error(formatErrorString("signup.getExistingUser", exception));
+  }
+};
+const signup = async (options, { resolve, reject }) => {
+  try {
+    if (!options.emailAddress) {
+      return reject("Email address is required.");
+    }
+    if (!options.password) {
+      return reject("Password is required.");
+    }
+    const existingUser = await getExistingUser(options.emailAddress, options.metadata?.username);
+    if (existingUser) {
+      throw new Error(`A user with the ${existingUser.existingUsername ? "username" : "email address"} ${existingUser.existingUsername || existingUser.existingEmailAddress} already exists.`);
+    }
+    const userToCreate = await getUserToCreate(options);
+    const userId = await insertUserInDatabase(userToCreate);
+    const user = await getUserByUserId(userId);
+    const session = generateSession();
+    await addSessionToUser(user._id, session);
+    return resolve({
+      ...session,
+      userId,
+      user
+    });
+  } catch (exception) {
+    reject(formatErrorString("signup", exception));
+  }
+};
+var signup_default = (options) => new Promise((resolve, reject) => {
+  signup(options, { resolve, reject });
+});
+export {
+  signup_default as default
+};

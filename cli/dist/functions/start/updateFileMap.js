@@ -1,1 +1,58 @@
-"use strict";var e=require("fs"),t=require("acorn");function r(e){return e&&"object"==typeof e&&"default"in e?e:{default:e}}function n(e){if(e&&e.__esModule)return e;var t=Object.create(null);return e&&Object.keys(e).forEach((function(r){if("default"!==r){var n=Object.getOwnPropertyDescriptor(e,r);Object.defineProperty(t,r,n.get?n:{enumerable:!0,get:function(){return e[r]}})}})),t.default=e,Object.freeze(t)}var i=r(e),a=n(t);module.exports=(e="",t="")=>{const r=(()=>{const e=".joystick/build/fileMap.json";if(i.default.existsSync(e)){const t=i.default.readFileSync(e,"utf-8");return t?JSON.parse(t):{}}return{}})(),n=((e={})=>{const{body:t}=e,r=t&&t.filter((({type:e})=>"ImportDeclaration"===e)),n=t&&t.filter((e=>{const t="VariableDeclaration"===(e&&e.type),r=(e&&e.declarations||[]).some((e=>{const t="VariableDeclarator"===e.type,r=e&&e.init&&e.init.callee&&e.init.callee.name;return t&&"require"===r}));return t&&r}));return{imports:r.map((e=>({path:e&&e.source&&e.source.value}))),requires:n.map((e=>{const t=e.declarations,r=t&&t[0];return{path:r&&r.init&&r.init.arguments&&r.init.arguments[0]&&r.init.arguments[0].value}}))}})(((e="")=>a.parse(e,{ecmaVersion:"latest",sourceType:"module"}))(t));r[e]=n,i.default.writeFileSync(".joystick/build/fileMap.json",JSON.stringify(r,null,2))};
+import fs from "fs";
+import * as acorn from "acorn";
+const getImportsAndRequires = (map = {}) => {
+  const { body } = map;
+  const imports = body && body.filter(({ type }) => {
+    return type === "ImportDeclaration";
+  });
+  const requires = body && body.filter((statement) => {
+    const type = statement && statement.type;
+    const declarations = statement && statement.declarations || [];
+    const isVariableDeclaration = type === "VariableDeclaration";
+    const hasRequireStatement = declarations.some((declaration) => {
+      const isVariableDeclarator = declaration.type === "VariableDeclarator";
+      const calleeName = declaration && declaration.init && declaration.init.callee && declaration.init.callee.name;
+      return isVariableDeclarator && calleeName === "require";
+    });
+    return isVariableDeclaration && hasRequireStatement;
+  });
+  return {
+    imports: imports.map((importDeclaration) => {
+      return {
+        path: importDeclaration && importDeclaration.source && importDeclaration.source.value
+      };
+    }),
+    requires: requires.map((requireDeclaration) => {
+      const declarations = requireDeclaration.declarations;
+      const declaration = declarations && declarations[0];
+      return {
+        path: declaration && declaration.init && declaration.init.arguments && declaration.init.arguments[0] && declaration.init.arguments[0].value
+      };
+    })
+  };
+};
+const parseFileToAST = (source = "") => {
+  return acorn.parse(source, {
+    ecmaVersion: "latest",
+    sourceType: "module"
+  });
+};
+const readFileDependencyMap = () => {
+  const fileDependencyMapPath = `.joystick/build/fileMap.json`;
+  if (fs.existsSync(fileDependencyMapPath)) {
+    const fileDependencyMapAsJSON = fs.readFileSync(fileDependencyMapPath, "utf-8");
+    const fileMap = fileDependencyMapAsJSON ? JSON.parse(fileDependencyMapAsJSON) : {};
+    return fileMap;
+  }
+  return {};
+};
+var updateFileMap_default = (path = "", source = "") => {
+  const fileDependencyMap = readFileDependencyMap();
+  const fileAST = parseFileToAST(source);
+  const imports = getImportsAndRequires(fileAST);
+  fileDependencyMap[path] = imports;
+  fs.writeFileSync(`.joystick/build/fileMap.json`, JSON.stringify(fileDependencyMap, null, 2));
+};
+export {
+  updateFileMap_default as default
+};

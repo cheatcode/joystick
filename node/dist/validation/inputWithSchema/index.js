@@ -1,1 +1,90 @@
-!function(e,r){"object"==typeof exports&&"undefined"!=typeof module?module.exports=r():"function"==typeof define&&define.amd?define(r):(e="undefined"!=typeof globalThis?globalThis:e||self)["joystick-node"]=r()}(this,(function(){"use strict";var e=e=>{throw new Error(`[joystick.validation] ${e}`)};const r=e=>!(!e||"object"!=typeof e||Array.isArray(e)),t=e=>!!Array.isArray(e),s=e=>"string"==typeof e;var n=(e,n)=>{switch(e){case"any":return(e=>!!e)(n);case"array":return t(n);case"boolean":return(e=>(!0===e||!1===e)&&"boolean"==typeof e)(n);case"float":return(e=>Number(e)===e&&e%1!=0)(n);case"integer":return(e=>Number(e)===e&&e%1==0)(n);case"number":return(e=>Number(e)===e)(n);case"object":return r(n);case"string":return s(n);default:return!1}},o=(e="")=>new RegExp(/\.[0-9]+\.?/g).test(e);var i={types:["any","array","boolean","float","integer","number","object","string"],rules:{allowedValues:(e,r,t)=>e.includes(r)?{valid:!0,errors:[]}:{valid:!1,errors:[`Field ${t} only allows the following values: ${e.join(", ")}.`]},element:(e,n,o)=>{if(n&&(r(e)||s(e))&&t(n)){const t="test"===process.env.NODE_ENV?"../inputWithSchema":`${__dirname.replace(".joystick/build","node_modules/@joystick.js/node/dist/validation")}/inputWithSchema/index.js`,i=require(t),a=r(i)?i.default:i,l=[];return n.forEach(((r,t)=>{a(r,s(e)?{type:e}:e,`${o}.${t}`).forEach((e=>{l.push(e)}))})),{valid:0===l.length,errors:[...l]}}return{valid:!0,errors:[]}},fields:(e,t,s)=>{if(r(e)&&r(t)){const n="test"===process.env.NODE_ENV?"../inputWithSchema":`${__dirname.replace(".joystick/build","node_modules/@joystick.js/node/dist/validation")}/inputWithSchema/index.js`,i=require(n),a=(r(i)?i.default:i)(o(s)?t:{[s]:t},e,s);return{valid:0===a.length,errors:[...a]}}return{valid:!1,errors:[`${s} schema rule and input value for element must be of type object.`]}},max:(e,r,t)=>r<=e?{valid:!0,errors:[]}:{valid:!1,errors:[`${t} must be less than or equal to ${e}`]},min:(e,r,t)=>r>=e?{valid:!0,errors:[]}:{valid:!1,errors:[`${t} must be greater than or equal to ${e}`]},optional:(e,r,t)=>!1!==e||!!r?{valid:!0,errors:[]}:{valid:!1,errors:[`${t} is required`]},regex:(e,r,t)=>new RegExp(e).test(r)?{valid:!0,errors:[]}:{valid:!1,errors:[`${t} must conform to regex: ${e}`]},required:(e,r,t)=>!1===e||!!r?{valid:!0,errors:[]}:{valid:!1,errors:[`${t} is required`]},type:(e,r,t)=>{const s=n(e,r);return r&&!s?{valid:!1,errors:[`${t} must be of type ${e}`]}:{valid:!0,errors:[]}}}};const a=e=>{(e=>{Object.entries(e).forEach((([e,t])=>{if(!r(t))throw new Error(`Must pass an object containing rules to validate by for ${e} field.`)}))})(e),(e=>{Object.entries(e).forEach((([e,r])=>{Object.keys(r).forEach((r=>{if(!Object.keys(i.rules).includes(r))throw new Error(`Invalid rule name ${r} in rule for ${e} field.`)}))}))})(e),(e=>{Object.entries(e).forEach((([e,r])=>{if(r&&r.type&&!i.types.includes(r.type))throw new Error(`Invalid value for schema field "${e}" type rule. ${r.type} is not supported. Use one of the following: ${i.types.slice(0,i.types.length-1).join(", ")}, or ${i.types[i.types.length-1]}.`)}))})(e)};const l=(e,r)=>{if(!r)return e;if(!e)return;const t=r.split(".");return l(e[t.shift()],t.join("."))},u=(e={},t="",s=!1)=>{if(s||!s&&!r(e))return e;if(t.includes(".$.")){const[r]=t.split(".$.");return l(e,r)}return l(e,t)},c=({queue:e,rules:t,input:s,path:n,rulesOnlySchema:i})=>{t&&"object"===t.type&&(e=d(e,t.properties,s,n)),t&&"array"===t.type&&r(t.element)&&(e=d(e,t.element,s,`${n}.$`));const a=o(n)?((e="")=>e.split(".").pop())(n):n;return{path:n,rules:t,inputValue:u(s,a,i)}},d=(e=[],r={},t={},s="")=>{const n=!!r.type;if(n||Object.entries(r).forEach((([r,o])=>{const i=c({queue:e,rules:o,input:t,path:`${s?`${s}.${r}`:r}`,rulesOnlySchema:n});e=[...e,i]})),n){const o=s||field,i=c({queue:e,rules:r,input:t,path:o,rulesOnlySchema:n});e=[...e,i]}return e};return(t=null,s=null,n="")=>{const o=[];t||e("Must pass input."),s&&Object.keys(s)&&!s.type&&((t=null)=>{t||e("Must pass schema object."),t&&!r(t)&&e("Must pass schema as an object."),a(t)})(s);return d([],s,t,n).forEach((e=>{Object.entries(e.rules).forEach((async([r,t])=>{const s=i.rules[r];if(s&&!e.path.includes(".$.")){const r=s(t,e.inputValue,e.path);r&&!r.valid&&r.errors.forEach((e=>{o.push(e.includes("Field ")?e:`Field ${e}.`)}))}}))})),o}}));
+import throwError from "../lib/throwError";
+import validateSchema from "../schema/index";
+import { isObject } from "../lib/typeValidators";
+import isArrayPath from "../lib/isArrayPath";
+import getValueFromObject from "../lib/getValueFromObject";
+import constants from "../lib/constants";
+const handleGetInputValue = (input = {}, path = "", rulesOnlySchema = false) => {
+  if (rulesOnlySchema || !rulesOnlySchema && !isObject(input)) {
+    return input;
+  }
+  if (path.includes(".$.")) {
+    const [arrayPath] = path.split(".$.");
+    return getValueFromObject(input, arrayPath);
+  }
+  return getValueFromObject(input, path);
+};
+const getArrayPathKey = (arrayPath = "") => {
+  const arrayPathParts = arrayPath.split(".");
+  return arrayPathParts.pop();
+};
+const addValidationTask = ({ queue, rules, input, path, rulesOnlySchema }) => {
+  if (rules && rules.type === "object") {
+    queue = addToValidationQueue(queue, rules.properties, input, path);
+  }
+  if (rules && rules.type === "array" && isObject(rules.element)) {
+    queue = addToValidationQueue(queue, rules.element, input, `${path}.$`);
+  }
+  const pathToValue = isArrayPath(path) ? getArrayPathKey(path) : path;
+  return {
+    path,
+    rules,
+    inputValue: handleGetInputValue(input, pathToValue, rulesOnlySchema)
+  };
+};
+const addToValidationQueue = (queue = [], schema = {}, input = {}, parentPath = "") => {
+  const rulesOnlySchema = !!schema.type;
+  if (!rulesOnlySchema) {
+    Object.entries(schema).forEach(([field2, rules]) => {
+      const path = `${parentPath ? `${parentPath}.${field2}` : field2}`;
+      const validationTask = addValidationTask({
+        queue,
+        rules,
+        input,
+        path,
+        rulesOnlySchema
+      });
+      queue = [...queue, validationTask];
+    });
+  }
+  if (rulesOnlySchema) {
+    const path = parentPath || field;
+    const validationTask = addValidationTask({
+      queue,
+      rules: schema,
+      input,
+      path,
+      rulesOnlySchema
+    });
+    queue = [...queue, validationTask];
+  }
+  return queue;
+};
+const validateInputWithSchema = (input = null, schema = null, parentPath = "") => {
+  const errors = [];
+  if (!input) {
+    throwError("Must pass input.");
+  }
+  if (schema && Object.keys(schema) && !schema.type) {
+    validateSchema(schema);
+  }
+  const queue = addToValidationQueue([], schema, input, parentPath);
+  queue.forEach((validationTask) => {
+    Object.entries(validationTask.rules).forEach(async ([ruleName, ruleValue]) => {
+      const validator = constants.rules[ruleName];
+      if (validator && !validationTask.path.includes(".$.")) {
+        const result = await validator(ruleValue, validationTask.inputValue, validationTask.path);
+        if (result && !result.valid) {
+          result.errors.forEach((error) => {
+            errors.push(error.includes("Field ") ? error : `Field ${error}.`);
+          });
+        }
+      }
+    });
+  });
+  return errors;
+};
+var inputWithSchema_default = validateInputWithSchema;
+export {
+  inputWithSchema_default as default
+};

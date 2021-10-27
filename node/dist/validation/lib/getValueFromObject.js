@@ -1,1 +1,12 @@
-!function(e,t){"object"==typeof exports&&"undefined"!=typeof module?module.exports=t():"function"==typeof define&&define.amd?define(t):(e="undefined"!=typeof globalThis?globalThis:e||self)["joystick-node"]=t()}(this,(function(){"use strict";const e=(t,n)=>{if(!n)return t;if(!t)return;const o=n.split(".");return e(t[o.shift()],o.join("."))};return e}));
+const getValueFromObject = (object, path) => {
+  if (!path)
+    return object;
+  if (!object)
+    return void 0;
+  const properties = path.split(".");
+  return getValueFromObject(object[properties.shift()], properties.join("."));
+};
+var getValueFromObject_default = getValueFromObject;
+export {
+  getValueFromObject_default as default
+};

@@ -1,14 +1,5 @@
 const cacheName = "app-cache";
-const cacheAssets = [
-  "/",
-  "/_joystick/index.css",
-  "/_joystick/index.client.js",
-  "/_joystick/utils/process.js",
-  "/_joystick/hmr/client.js",
-  "/favicon.ico",
-  "/apple-touch-icon-152x152.png",
-  "/manifest.json",
-];
+const cacheAssets = [];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(

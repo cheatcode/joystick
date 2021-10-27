@@ -1,1 +1,22 @@
-"use strict";var e=require("fs"),t=require("acorn");function r(e){return e&&"object"==typeof e&&"default"in e?e:{default:e}}function n(e){if(e&&e.__esModule)return e;var t=Object.create(null);return e&&Object.keys(e).forEach((function(r){if("default"!==r){var n=Object.getOwnPropertyDescriptor(e,r);Object.defineProperty(t,r,n.get?n:{enumerable:!0,get:function(){return e[r]}})}})),t.default=e,Object.freeze(t)}var i=r(e),a=n(t);var o=(e="",t="")=>{const r=(()=>{const e=".joystick/build/fileMap.json";if(i.default.existsSync(e)){const t=i.default.readFileSync(e,"utf-8");return t?JSON.parse(t):{}}return{}})(),n=((e={})=>{const{body:t}=e,r=t&&t.filter((({type:e})=>"ImportDeclaration"===e)),n=t&&t.filter((e=>{const t="VariableDeclaration"===(e&&e.type),r=(e&&e.declarations||[]).some((e=>{const t="VariableDeclarator"===e.type,r=e&&e.init&&e.init.callee&&e.init.callee.name;return t&&"require"===r}));return t&&r}));return{imports:r.map((e=>({path:e&&e.source&&e.source.value}))),requires:n.map((e=>{const t=e.declarations,r=t&&t[0];return{path:r&&r.init&&r.init.arguments&&r.init.arguments[0]&&r.init.arguments[0].value}}))}})(((e="")=>a.parse(e,{ecmaVersion:"latest",sourceType:"module"}))(t));r[e]=n,i.default.writeFileSync(".joystick/build/fileMap.json",JSON.stringify(r,null,2))};module.exports=()=>({transform:(e,t)=>(!["node_modules",".joystick","?","commonjsHelpers.js"].some((e=>t.includes(e)))&&o(t,e),null)});
+import updateFileMap from "./updateFileMap.js";
+var fileDependencyMapper_default = () => {
+  return {
+    transform(code, id) {
+      const canAddToMap = ![
+        "node_modules",
+        ".joystick",
+        "?",
+        "commonjsHelpers.js"
+      ].some((excludedPath) => {
+        return id.includes(excludedPath);
+      });
+      if (canAddToMap) {
+        updateFileMap(id, code);
+      }
+      return null;
+    }
+  };
+};
+export {
+  fileDependencyMapper_default as default
+};

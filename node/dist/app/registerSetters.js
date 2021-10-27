@@ -1,1 +1,46 @@
-!function(e,r){"object"==typeof exports&&"undefined"!=typeof module?module.exports=r():"function"==typeof define&&define.amd?define(r):(e="undefined"!=typeof globalThis?globalThis:e||self)["joystick-node"]=r()}(this,(function(){"use strict";var e=(e="")=>e.toLowerCase().replace(/\ /g,"-"),r=(e={},r=null)=>new Promise((async(t,s)=>{if("function"==typeof r){return t({...await r(e.req,e.res),req:e.req,res:e.res,...process.databases||{}})}return t({...r,req:e.req,res:e.res,...process.databases||{}})})),t=(e={})=>Object.getOwnPropertyNames(e).reduce(((r,t)=>(r[t]=e[t],r)),{}),s=(e={},r="")=>({error:t(e),message:e?.message||e?.reason||e,location:r}),n=e=>{throw new Error(`[joystick.validation] ${e}`)};const o=e=>!(!e||"object"!=typeof e||Array.isArray(e)),i=e=>!!Array.isArray(e),a=e=>"string"==typeof e;var l=(e,r)=>{switch(e){case"any":return(e=>!!e)(r);case"array":return i(r);case"boolean":return(e=>(!0===e||!1===e)&&"boolean"==typeof e)(r);case"float":return(e=>Number(e)===e&&e%1!=0)(r);case"integer":return(e=>Number(e)===e&&e%1==0)(r);case"number":return(e=>Number(e)===e)(r);case"object":return o(r);case"string":return a(r);default:return!1}},u=(e="")=>new RegExp(/\.[0-9]+\.?/g).test(e);var c={types:["any","array","boolean","float","integer","number","object","string"],rules:{allowedValues:(e,r,t)=>e.includes(r)?{valid:!0,errors:[]}:{valid:!1,errors:[`Field ${t} only allows the following values: ${e.join(", ")}.`]},element:(e,r,t)=>{if(r&&(o(e)||a(e))&&i(r)){const s="test"===process.env.NODE_ENV?"../inputWithSchema":`${__dirname.replace(".joystick/build","node_modules/@joystick.js/node/dist/validation")}/inputWithSchema/index.js`,n=require(s),i=o(n)?n.default:n,l=[];return r.forEach(((r,s)=>{i(r,a(e)?{type:e}:e,`${t}.${s}`).forEach((e=>{l.push(e)}))})),{valid:0===l.length,errors:[...l]}}return{valid:!0,errors:[]}},fields:(e,r,t)=>{if(o(e)&&o(r)){const s="test"===process.env.NODE_ENV?"../inputWithSchema":`${__dirname.replace(".joystick/build","node_modules/@joystick.js/node/dist/validation")}/inputWithSchema/index.js`,n=require(s),i=(o(n)?n.default:n)(u(t)?r:{[t]:r},e,t);return{valid:0===i.length,errors:[...i]}}return{valid:!1,errors:[`${t} schema rule and input value for element must be of type object.`]}},max:(e,r,t)=>r<=e?{valid:!0,errors:[]}:{valid:!1,errors:[`${t} must be less than or equal to ${e}`]},min:(e,r,t)=>r>=e?{valid:!0,errors:[]}:{valid:!1,errors:[`${t} must be greater than or equal to ${e}`]},optional:(e,r,t)=>!1!==e||!!r?{valid:!0,errors:[]}:{valid:!1,errors:[`${t} is required`]},regex:(e,r,t)=>new RegExp(e).test(r)?{valid:!0,errors:[]}:{valid:!1,errors:[`${t} must conform to regex: ${e}`]},required:(e,r,t)=>!1===e||!!r?{valid:!0,errors:[]}:{valid:!1,errors:[`${t} is required`]},type:(e,r,t)=>{const s=l(e,r);return r&&!s?{valid:!1,errors:[`${t} must be of type ${e}`]}:{valid:!0,errors:[]}}}};const d=e=>{(e=>{Object.entries(e).forEach((([e,r])=>{if(!o(r))throw new Error(`Must pass an object containing rules to validate by for ${e} field.`)}))})(e),(e=>{Object.entries(e).forEach((([e,r])=>{Object.keys(r).forEach((r=>{if(!Object.keys(c.rules).includes(r))throw new Error(`Invalid rule name ${r} in rule for ${e} field.`)}))}))})(e),(e=>{Object.entries(e).forEach((([e,r])=>{if(r&&r.type&&!c.types.includes(r.type))throw new Error(`Invalid value for schema field "${e}" type rule. ${r.type} is not supported. Use one of the following: ${c.types.slice(0,c.types.length-1).join(", ")}, or ${c.types[c.types.length-1]}.`)}))})(e)};var p=(e=null)=>{e||n("Must pass schema object."),e&&!o(e)&&n("Must pass schema as an object."),d(e)};const f=(e,r)=>{if(!r)return e;if(!e)return;const t=r.split(".");return f(e[t.shift()],t.join("."))},h=(e={},r="",t=!1)=>{if(t||!t&&!o(e))return e;if(r.includes(".$.")){const[t]=r.split(".$.");return f(e,t)}return f(e,r)},y=({queue:e,rules:r,input:t,path:s,rulesOnlySchema:n})=>{r&&"object"===r.type&&(e=m(e,r.properties,t,s)),r&&"array"===r.type&&o(r.element)&&(e=m(e,r.element,t,`${s}.$`));const i=u(s)?((e="")=>e.split(".").pop())(s):s;return{path:s,rules:r,inputValue:h(t,i,n)}},m=(e=[],r={},t={},s="")=>{const n=!!r.type;if(n||Object.entries(r).forEach((([r,o])=>{const i=y({queue:e,rules:o,input:t,path:`${s?`${s}.${r}`:r}`,rulesOnlySchema:n});e=[...e,i]})),n){const o=s||field,i=y({queue:e,rules:r,input:t,path:o,rulesOnlySchema:n});e=[...e,i]}return e},b=(e=null,r=null,t="")=>{const s=[];e||n("Must pass input."),r&&Object.keys(r)&&!r.type&&p(r);return m([],r,e,t).forEach((e=>{Object.entries(e.rules).forEach((async([r,t])=>{const n=c.rules[r];if(n&&!e.path.includes(".$.")){const r=n(t,e.inputValue,e.path);r&&!r.valid&&r.errors.forEach((e=>{s.push(e.includes("Field ")?e:`Field ${e}.`)}))}}))})),s},v=(e={},r=[])=>(Object.entries(e).forEach((([t,s])=>{const n=r.find((e=>e.key===t));return n||delete e[t],n&&o(s)&&0===n.children.length?s:n&&o(s)&&n.children.length>0?v(s,n.children):void(n&&Array.isArray(s)&&n.children&&n.children.length>0&&s.forEach((e=>{if(e&&o(e))return v(e,n.children)})))})),e),g=(e=[])=>{const[r,...t]=e;return{head:r,tail:t}},$=(e=[],r=[])=>(r.forEach((r=>{const t=e.find((e=>e.key===r.head));if(!t){const t=r.tail&&r.tail.length>0?g(r.tail):null;e.push({key:r.head,children:t?$([],[t]):[]})}if(t){const e=r.tail&&r.tail.length>0?g(r.tail):null;t.children=[...e?$(t.children,[e]):[]]}})),e);var j=(e={},r=[])=>{const t=[],s=((e=[])=>e.map((e=>g(e))))(((e=[])=>e.map((e=>e.split("."))))(r));return $(t,s),v(e,t)};return(t,n=[],o={})=>{const{app:i}=t;if(i)for(const[t,a]of n)i.post(`/api/_setters/${e(t)}`,(async(e,t)=>{const n=await r({req:e,res:t},o),i=e?.body?.input,l=e?.body?.output,u=a?.set;let c=[];if(a?.input&&(c=b(i,a.input)),u&&"function"==typeof u)try{const e=await u(i,n)||{},r=l?j(e,l):e;return t.send(JSON.stringify(r||{}))}catch(e){return console.log(e),t.status(500).send(JSON.stringify({errors:[s(e,"server")]}))}if(c.length>0)return console.log(c),t.status(400).send(JSON.stringify({errors:c.map((e=>s(new Error(e,"validation"))))}));t.status(200).send(JSON.stringify({errors:[]}))}))}}));
+import getAPIURLComponent from "./getAPIURLComponent.js";
+import getAPIContext from "./getAPIContext.js";
+import formatAPIError from "../lib/formatAPIError.js";
+import validate from "../validation/index.js";
+import getOutput from "./getOutput.js";
+var registerSetters_default = (express, setters = [], context = {}) => {
+  const { app } = express;
+  if (app) {
+    for (const [setter_name, setter_options] of setters) {
+      app.post(`/api/_setters/${getAPIURLComponent(setter_name)}`, async (req, res) => {
+        const setter_context = await getAPIContext({ req, res }, context);
+        const input = req?.body?.input;
+        const output = req?.body?.output;
+        const set = setter_options?.set;
+        let errors = [];
+        if (setter_options?.input) {
+          errors = validate.inputWithSchema(input, setter_options.input);
+        }
+        if (set && typeof set === "function") {
+          try {
+            const data = await set(input, setter_context) || {};
+            const response = output ? getOutput(data, output) : data;
+            return res.send(JSON.stringify(response || {}));
+          } catch (exception) {
+            console.log(exception);
+            return res.status(500).send(JSON.stringify({
+              errors: [formatAPIError(exception, "server")]
+            }));
+          }
+        }
+        if (errors.length > 0) {
+          console.log(errors);
+          return res.status(400).send(JSON.stringify({
+            errors: errors.map((error) => {
+              return formatAPIError(new Error(error, "validation"));
+            })
+          }));
+        }
+        res.status(200).send(JSON.stringify({ errors: [] }));
+      });
+    }
+  }
+};
+export {
+  registerSetters_default as default
+};

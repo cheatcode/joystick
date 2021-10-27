@@ -1,1 +1,35 @@
-!function(e,r){"object"==typeof exports&&"undefined"!=typeof module?module.exports=r():"function"==typeof define&&define.amd?define(r):(e="undefined"!=typeof globalThis?globalThis:e||self)["joystick-node"]=r()}(this,(function(){"use strict";return(e,r)=>{switch(e){case"any":return(e=>!!e)(r);case"array":return(e=>!!Array.isArray(e))(r);case"boolean":return(e=>(!0===e||!1===e)&&"boolean"==typeof e)(r);case"float":return(e=>Number(e)===e&&e%1!=0)(r);case"integer":return(e=>Number(e)===e&&e%1==0)(r);case"number":return(e=>Number(e)===e)(r);case"object":return(e=>!(!e||"object"!=typeof e||Array.isArray(e)))(r);case"string":return(e=>"string"==typeof e)(r);default:return!1}}}));
+import {
+  isArray,
+  isBoolean,
+  isFloat,
+  isInteger,
+  isNumber,
+  isObject,
+  isString,
+  isAny
+} from "./typeValidators";
+var validateType_default = (type, value) => {
+  switch (type) {
+    case "any":
+      return isAny(value);
+    case "array":
+      return isArray(value);
+    case "boolean":
+      return isBoolean(value);
+    case "float":
+      return isFloat(value);
+    case "integer":
+      return isInteger(value);
+    case "number":
+      return isNumber(value);
+    case "object":
+      return isObject(value);
+    case "string":
+      return isString(value);
+    default:
+      return false;
+  }
+};
+export {
+  validateType_default as default
+};

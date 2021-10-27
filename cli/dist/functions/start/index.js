@@ -1,1 +1,302 @@
-"use strict";var e=require("chalk"),t=require("child_process"),s=require("path"),r=require("ps-node"),o=require("node-watch"),n=require("fs"),a=require("fs-extra"),i=require("url"),c=require("@babel/code-frame"),l=require("acorn"),u=require("net"),d=require("util"),p=require("command-exists"),f=require("mongodb");function m(e){return e&&"object"==typeof e&&"default"in e?e:{default:e}}function y(e){if(e&&e.__esModule)return e;var t=Object.create(null);return e&&Object.keys(e).forEach((function(s){if("default"!==s){var r=Object.getOwnPropertyDescriptor(e,s);Object.defineProperty(t,s,r.get?r:{enumerable:!0,get:function(){return e[s]}})}})),t.default=e,Object.freeze(t)}var h=m(e),g=m(t),w=m(s),v=m(r),j=m(o),S=m(n),_=m(a),b=y(l),k=m(u),$=m(d),x=m(p);class P{constructor(e={}){this.message=e.defaultMessage,this.frame=0,this.frames=[h.default.yellowBright(">>-----"),h.default.yellowBright("->>----"),h.default.yellowBright("--\x3e>---"),h.default.yellowBright("---\x3e>--"),h.default.yellowBright("----\x3e>-"),h.default.yellowBright("-----\x3e>"),h.default.yellowBright("----<<-"),h.default.yellowBright("---<<--"),h.default.yellowBright("--<<---"),h.default.yellowBright("-<<----"),h.default.yellowBright("<<-----")],this.freezeFrames={stable:h.default.yellowBright("---\x3e---"),error:h.default.redBright("!!!")}}getFrame(){return this.frame===this.frames.length-1?(this.frame=0,this.frame):(this.frame+=1,this.frame)}start(e=""){e&&(this.message=e),this.interval=setInterval((()=>{const e=this.getFrame();process.stdout.cursorTo(0),process.stdout.write(`${this.frames[e]} ${this.message}`)}),80)}stop(){clearInterval(this.interval),process.stdout.cursorTo(0),process.stdout.clearLine(),this.message="",this.interval=null}text(e=""){process.stdout.clearLine(),e&&(this.message=e),this.interval||this.start()}pause(e="",t="stable"){process.stdout.clearLine(),e&&(this.message=e),clearInterval(this.interval),this.interval=null;const s=this.freezeFrames[t];process.stdout.cursorTo(0),process.stdout.write(`${s?`${s} `:""}${this.message}`)}stable(e=""){this.pause(e)}error(e=""){this.pause(e,"error")}}function E(e,t=[]){const r=S.default.readdirSync(e).map((t=>s.join(e,t)));return t.push(...r),r.forEach((e=>{S.default.statSync(e).isDirectory()&&E(e,t)})),t}var O=()=>E("./").filter((e=>!["node_modules",".joystick"].some((t=>e.includes(t))))).filter((e=>!S.default.lstatSync(e).isDirectory())),R=[{path:"public"},{path:"index.html"},{path:"index.css"},{path:"package.json"},{path:"package-lock.json"},{path:"settings.development.json"},{path:"settings.staging.json"},{path:"settings.test.json"},{path:"settings.production.json"},{path:".html"}];const T=new RegExp(/{([^;]*)}/g),I=new RegExp(/export default [a-zA-Z0-9]+/g),B=(e="",t={})=>{const s=S.default.readFileSync(e,"utf-8");return c.codeFrameColumns(s,{start:t})},N=(e={})=>{const t=e?.snippet?.split("\n");e.file&&(console.log("\n"),console.log(h.default.yellowBright(`Build Error in ${e?.file}:\n`))),t&&t.length>0&&t.forEach((t=>t.includes(`> ${e.line} |`)?console.log(`   ${h.default.red(t)}`):console.log(`   ${h.default.gray(t)}`))),e?.stack&&(console.log(h.default.magentaBright("\nStack Trace:\n")),console.log(`   ${((e="")=>e.replace(T,""))(e?.stack)}\n`)),process.loader.error("Build error. Fix the error above to continue building your app."),console.log("\n")},D=(e={},t="")=>{if(t&&"UNRESOLVED_IMPORT"===t){const t=e?.stack;return{file:null,snippet:null,stack:t,line:null,character:null}}if(t&&"PLUGIN_ERROR"===t){const t=e?.stack,s=Object.entries(e).reduce(((e,[t,s])=>(e[t]=s,e)),{}),r=B(e.id,{line:s?.loc?.line,column:s?.loc?.column});return{file:e.id,snippet:r,stack:t,line:s?.loc?.line,character:s?.loc?.column}}if(t&&"PARSE_ERROR"===t){const t=B(e.id,{line:e?.loc?.line,column:e?.loc?.column});return{file:e.id,snippet:t,stack:e?.parserError?.stack,line:e?.loc?.line,character:e?.loc?.column}}};var q=e=>{if("UNRESOLVED_IMPORT"===e.code&&e?.stack){const t=D(e,"UNRESOLVED_IMPORT");return N(t),t}if("PLUGIN_ERROR"===e.code&&e?.stack){const t=D(e,"PLUGIN_ERROR");return N(t),t}if("PARSE_ERROR"===e.code&&e?.stack){const t=D(e,"PARSE_ERROR");return N(t),t}};var M=(e="",t="")=>{const s=(()=>{const e=".joystick/build/fileMap.json";if(S.default.existsSync(e)){const t=S.default.readFileSync(e,"utf-8");return t?JSON.parse(t):{}}return{}})(),r=((e={})=>{const{body:t}=e,s=t&&t.filter((({type:e})=>"ImportDeclaration"===e)),r=t&&t.filter((e=>{const t="VariableDeclaration"===(e&&e.type),s=(e&&e.declarations||[]).some((e=>{const t="VariableDeclarator"===e.type,s=e&&e.init&&e.init.callee&&e.init.callee.name;return t&&"require"===s}));return t&&s}));return{imports:s.map((e=>({path:e&&e.source&&e.source.value}))),requires:r.map((e=>{const t=e.declarations,s=t&&t[0];return{path:s&&s.init&&s.init.arguments&&s.init.arguments[0]&&s.init.arguments[0].value}}))}})(((e="")=>b.parse(e,{ecmaVersion:"latest",sourceType:"module"}))(t));s[e]=r,S.default.writeFileSync(".joystick/build/fileMap.json",JSON.stringify(s,null,2))},F=()=>({transform:(e,t)=>(!["node_modules",".joystick","?","commonjsHelpers.js"].some((e=>t.includes(e)))&&M(t,e),null)});const A=i.fileURLToPath("undefined"==typeof document?new(require("url").URL)("file:"+__filename).href:document.currentScript&&document.currentScript.src||new URL("index.js",document.baseURI).href),J=s.dirname(A),L=(()=>{const e=`${J.replace("/dist","/node_modules/rollup/dist/rollup.js")}`;return require(e)})(),U=((e="umd")=>{const t=`${J.replace("/dist","/node_modules")}`;return{resolve:require(`${t}/@rollup/plugin-node-resolve`).default,commonjs:require(`${t}/@rollup/plugin-commonjs`),json:require(`${t}/@rollup/plugin-json`),terser:require(`${t}/rollup-plugin-terser`).terser}})();var V=async(e=[])=>Promise.all(e.map((async e=>{if(R.some((t=>e.includes(t.path))))return new Promise((t=>{_.default.outputFileSync(`./.joystick/build/${e}`,_.default.readFileSync(e)),t()}));const t=((e="")=>{let t="umd";return["api/","index.server.js"].some((t=>e.includes(t)))&&(t="cjs"),t})(e);return((e="",t="umd")=>{const s={cjs:[U.json(),F(),U.commonjs({ignoreDynamicRequires:!0}),U.resolve({preferBuiltins:!0}),..."development"!==process.env.NODE_ENV?[U.terser()]:[]],umd:[U.json(),{transform(e,t){if(["pages"].some((e=>t.includes(e)))){const s=e.match(I)||[],r=s&&s[0];if(!r)return console.log(" "),console.warn(h.default.yellowBright(`All components in the ui/pages directory must have an export default statement (e.g., export default MyPage). Please check the file at ${t}.`)),console.log(" "),null;const o=(r&&r.split(" ")||[]).pop();if(o)return{code:e.replace(`${r};`,`            \n            if (\n              typeof window !== 'undefined' &&\n              window.__joystick_ssr__ === true &&\n              !window.__joystick_layout_page__ &&\n              ui &&\n              ui.mount\n            ) {\n              ui.mount(${o}, window.__joystick_ssr_props__ || {}, document.getElementById('app'));\n            }\n            \n            export default ${o};\n              `)}}return null}},{transform(e,t){if(["layouts"].some((e=>t.includes(e)))){const s=e.match(I)||[],r=s&&s[0];if(!r)return console.log(" "),console.warn(h.default.yellowBright(`All components in the ui/layouts directory must have an export default statement (e.g., export default MyLayout). Please check the file at ${t}.`)),console.log(" "),null;const o=(r&&r.split(" ")||[]).pop();if(o)return{code:e.replace(`${r};`,`if (\n                typeof window !== 'undefined' &&\n                window.__joystick_ssr__ === true &&\n                window.__joystick_layout_page__ &&\n                ui &&\n                ui.mount\n              ) {\n                fetch(window.__joystick_layout_page_url__).then(async (response) => {\n                  const file = await response.text();\n                  const component = eval(file);\n                  ui.mount(${o}, Object.assign({ ...window.__joystick_ssr_props__ }, { page: window[window.__joystick_layout_page__].js }), document.getElementById('app'));\n                });\n              }\n            \n            export default ${o};\n              `)}}return null}},F(),U.resolve(),U.commonjs({ignoreDynamicRequires:!0}),..."development"!==process.env.NODE_ENV?[U.terser()]:[]]};return L.rollup({external:["mongodb","crypto-extra","dayjs","bcrypt","chalk","nodemailer","html-to-text","juice"],input:e,onwarn:q,plugins:s[t]}).then((async s=>{if(s){const r=`.joystick/build/${e.replace("./","")}`;return S.default.existsSync(r)&&S.default.unlinkSync(r),await s.write({exports:"auto",file:`.joystick/build/${e.replace("./","")}`,name:e,format:t}),await s.close(),{success:!0,path:e}}return{success:!1,path:e}})).catch((t=>{const s=q(t);return{success:!1,path:e,error:s}}))})(e,t)})));var G=(e="")=>((e=[],t={})=>Object.entries(t).filter((([t,s])=>{const r=s&&s.imports&&s.imports.some((t=>e.some((e=>t.path.includes(e))))),o=s&&s.requires&&s.requires.some((t=>e.some((e=>t.path.includes(e)))));return r||o})).map((([e])=>e.replace(`${process.cwd()}/`,""))))(((e="")=>{const t=e.split("/"),s=[];return t.forEach(((e,r)=>{let o=`${e}`;t.slice(r+1,t.length).forEach((e=>{o=o+=`/${e}`,s.push(o),e.includes(".")&&s.push(o.split(".")[0])}))})),s.push(`./${t[0]}`),s.push(`./${t[0]}/index`),s.push(`./${t[0]}/index.js`),s})(e),(()=>{const e=".joystick/build/fileMap.json";if(S.default.existsSync(e)){const t=S.default.readFileSync(e,"utf-8");return t?JSON.parse(t):{}}return{}})());const C=$.default.promisify(g.default.exec),K=async()=>{x.default.sync("mongod")||(process.loader.stop(),console.warn(`\n  ${h.default.red("MongoDB is not installed on this computer.")}\n\n  ${h.default.green("Download MongoDB at https://www.mongodb.com/try/download/community")}\n    After you've installed MongoDB, run joystick start again, or, remove MongoDB from your databases list in your settings.development.json file to skip startup.\n  `),process.exit(1));S.default.existsSync(".joystick/data/mongodb")||S.default.mkdirSync(".joystick/data/mongodb",{recursive:!0});try{const{stdout:e}=await C(`mongod --port ${parseInt(process.env.PORT,10)+1} --dbpath ./.joystick/data/mongodb --quiet --fork --logpath ./.joystick/data/mongodb/log`);return((e=null)=>{const t=e&&e.match(/forked process:+\s[0-9]+/gi),s=t&&t[0]&&t[0].replace("forked process: ","");return s&&parseInt(s,10)})(e)}catch(e){console.warn(e),process.exit(1)}};var Y=async e=>{const t=((e={})=>{let t="mongodb://";return e&&(e.username||e.password)&&(t=`${t}${e.username||""}:${e.password||""}@`),e&&e.hosts&&Array.isArray(e.hosts)&&(t=`${t}${e.hosts.map((e=>`${e.hostname}:${e.port}`)).join(",")}`),e&&e.database&&(t=`${t}/${e.database}`),t})(e);try{return(await f.MongoClient.connect(t,{connectTimeoutMS:3e3,socketTimeoutMS:3e3,useNewUrlParser:!0,useUnifiedTopology:!0,ssl:!1})).close(),!0}catch(e){console.warn(h.default.yellowBright("\nFailed to connect to MongoDB. Please double-check connection settings and try again.")),process.exit(1)}},z=async(e="",t={})=>{if("mongodb"===e){process.loader.text("Starting MongoDB...");const e=t.connection&&Object.keys(t.connection).length>0;let s=null;e&&await Y(t.connection),e||(s=await(async(e={})=>await K())(t));const r={hosts:[{hostname:"127.0.0.1",port:parseInt(process.env.PORT,10)+1}],database:"app",username:"",password:""},o={pid:s,connection:e?t.connection:r,settings:t};process.databases=process.databases?{...process.databases,mongodb:o}:{mongodb:o}}return Promise.resolve()};const H=[{path:"./ui"},{path:"./lib"},{path:"./i18n"},{path:"./index.client.js"},{path:"./api"},{path:"./email"},{path:"./index.server.js"},...R],Z=(e=[])=>{process.loader.stop(),Object.entries(process.databases||{}).forEach((([e,t])=>{t?.pid&&v.default.kill(t.pid)})),e.forEach((e=>{v.default.kill(e)})),process.exit()},Q=()=>{const e=g.default.fork(w.default.resolve(`${__dirname}/functions/start/hmrServer.js`),[],{silent:!0});process.hmrProcess=e,(()=>{try{process.hmrProcess&&(process.hmrProcess.on("error",(e=>{console.log(e)})),process.hmrProcess.stdout.on("data",(e=>{console.log(e.toString())})),process.hmrProcess.stderr.on("data",(e=>{process.loader.stop(),console.log(h.default.redBright(e.toString()))})))}catch(e){throw new Error(`[dev.handleHMRProcessSTDIO] ${e.message}`)}})(),process.hmrProcess.on("message",(e=>{["server_closed"].includes(e)||process.loader.stable(e)}))},W=()=>{const e=g.default.fork(w.default.resolve(".joystick/build/index.server.js"),["--no-warnings"],{silent:!0,env:{NODE_ENV:process.env.NODE_ENV,PORT:process.env.PORT,JOYSTICK_SETTINGS:process.env.JOYSTICK_SETTINGS,databases:JSON.stringify(process.databases)}});process.serverProcess=e,(()=>{try{process.serverProcess&&(process.serverProcess.on("error",(e=>{console.log(e)})),process.serverProcess.stdout.on("data",(e=>{const t=e.toString();t&&t.includes("App running at:")?process.loader.stable(t):console.log(t)})),process.serverProcess.stderr.on("data",(e=>{process.loader.stop(),console.log(h.default.redBright(e.toString()))})))}catch(e){throw new Error(`[dev.handleServerProcessSTDIO] ${e.message}`)}})(),process.serverProcess.on("message",(e=>{["server_closed"].includes(e)||process.loader.stable(e)}))},X=()=>{if(process.serverProcess&&process.serverProcess.pid)return process.loader.text("Restarting app..."),v.default.kill(process.serverProcess.pid),W();process.loader.text("Starting app..."),W(),Q()},ee=async()=>{await(async(e,t)=>{const s=".joystick/build/fileMap.json";S.default.existsSync(".joystick/build")||S.default.mkdirSync(".joystick/build"),S.default.existsSync(s)&&S.default.unlinkSync(s),process.loader.text("Building app...");const r=O();[...await V(r)].filter((e=>!!e)).map((({success:e})=>e)).includes(!1)||(W(),Q())})(),H.forEach((({path:e})=>{S.default.existsSync(`./${e}`)&&j.default(e,{recursive:!0},(async function(e,t){if(process.loader.text("Rebuilding app..."),"update"===e&&S.default.existsSync(`./${t}`)&&S.default.lstatSync(`./${t}`).isDirectory()&&(S.default.mkdirSync(`./.joystick/build/${t}`),X()),R.find((e=>e.path===t))){S.default.writeFileSync(`./.joystick/build/${t}`,S.default.readFileSync(t));const e=G(t),s=await V([t]),r=await V(e),o=[...s,...r].filter((e=>!!e)).map((({success:e})=>e)).includes(!1);if(process.serverProcess&&o&&process.serverProcess.send(JSON.stringify({error:"BUILD_ERROR",paths:[...s,...r].filter((({success:e})=>!e)).map((({path:e,error:t})=>({path:e,error:t})))})),!o)return await re(),X()}if("update"===e){const e=G(t),s=await V([t]),r=await V(e),o=[...s,...r].filter((e=>!!e)).map((({success:e})=>e)).includes(!1);process.serverProcess&&o&&process.serverProcess.send(JSON.stringify({error:"BUILD_ERROR",paths:[...s,...r].filter((({success:e})=>!e)).map((({path:e,error:t})=>({path:e,error:t})))})),o||X()}if("remove"!==e||S.default.existsSync(`./.joystick/build/${t}`)||X(),"remove"===e&&S.default.existsSync(`./.joystick/build/${t}`)){const e=`./.joystick/build/${t}`,s=S.default.lstatSync(e);s.isDirectory()&&S.default.rmdirSync(e,{recursive:!0}),s.isFile()&&S.default.unlinkSync(e),X()}}))}))},te=(e=[])=>{const t=e.filter((e=>{return!((t=e)&&"object"==typeof t&&!Array.isArray(t));var t})),s=e.filter((e=>!!e.users)),r=e.flatMap(((t,s)=>e.map(((e,r)=>s===r?null:e.provider===t.provider?t:void 0)))).filter((e=>!!e));return t&&t.length>0&&(console.log(h.default.red("Please ensure that each database in the config.databases array is an object. Correct the array and restart your app.")),process.exit(1)),s&&s.length>1&&(console.log(h.default.red("Please select a single database for your user accounts and restart your app.")),process.exit(1)),r&&r.length>1&&(console.log(h.default.red("Please only specify a database provider once. Remove any duplicates from your config.databases array and restart your app.")),process.exit(1)),!0},se=async()=>{try{const e=!!process.env.JOYSTICK_SETTINGS,t=(e&&JSON.parse(process.env.JOYSTICK_SETTINGS))?.config?.databases||[];return t&&Array.isArray(t)&&t.length>0?(te(t),await Promise.all(t.map((e=>(async(e={})=>(e.provider&&"mongodb"===e.provider&&await z("mongodb",e),Promise.resolve()))(e)))),Promise.resolve()):Promise.resolve()}catch(e){console.warn(e)}},re=async()=>{const e=process.env.NODE_ENV,t=`${process.cwd()}/settings.${e}.json`;if(!S.default.existsSync(t))return console.warn(`A settings file could not be found for this environment. If you have settings for this environment (${e}), creating a settings.${e}.js at the root of your project and restart Joystick.`),void(process.env.JOYSTICK_SETTINGS={});const s=S.default.readFileSync(t,"utf-8"),r=((e="")=>{try{JSON.parse(e)}catch(e){return!1}return!0})(s)?s:"{}";return process.env.JOYSTICK_SETTINGS=r,r};module.exports=async(e={})=>{process.loader=new P({defaultMessage:"Starting app..."});const t=e?.port?parseInt(e?.port):2600,s=S.default.existsSync(`${process.cwd()}/.joystick`),r=await(e=>new Promise(((t,s)=>{const r=k.default.createServer();r.once("error",(function(e){if("EADDRINUSE"!=e.code)return callback(e);t(!1)})).once("listening",(function(){r.once("close",(function(){t(!0)})).close()})).listen(e)})))(t);s?r?(process.env.NODE_ENV=e?.environment||"development",process.env.PORT=e?.port?parseInt(e?.port):2600,await re(),await se(),ee(),((e=[])=>{process.on("SIGINT",(()=>Z(e))),process.on("SIGTERM",(()=>Z(e)))})([])):console.log(`Port ${t} is already in use. Free up that port or pass another port with joystick start --port <PORT>.`):console.log(h.default.yellowBright("This is not a Joystick project. A .joystick folder could not be found. Double-check you're in the right folder or create a new project with joystick create <project>"))};
+import chalk from "chalk";
+import child_process from "child_process";
+import path, { dirname } from "path";
+import { fileURLToPath } from "url";
+import ps from "ps-node";
+import watch from "node-watch";
+import fs from "fs";
+import Loader from "../../lib/loader.js";
+import getFilesToBuild from "./getFilesToBuild.js";
+import buildFiles from "./buildFiles.js";
+import filesToCopy from "./filesToCopy.js";
+import checkIfPortAvailable from "./checkIfPortAvailable.js";
+import getCodependenciesForFile from "./getCodependenciesForFile.js";
+import isValidJSONString from "../../lib/isValidJSONString.js";
+import startDatabaseProvider from "./databases/startProvider.js";
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const isObject = (value) => {
+  return !!(value && typeof value === "object" && !Array.isArray(value));
+};
+const watchlist = [
+  { path: "./ui" },
+  { path: "./lib" },
+  { path: "./i18n" },
+  { path: "./index.client.js" },
+  { path: "./api" },
+  { path: "./email" },
+  { path: "./index.server.js" },
+  ...filesToCopy
+];
+const handleCleanup = (processIds = []) => {
+  process.loader.stop();
+  Object.entries(process.databases || {}).forEach(([_databaseName, databaseInstance]) => {
+    if (databaseInstance?.pid) {
+      ps.kill(databaseInstance.pid);
+    }
+  });
+  processIds.forEach((processId) => {
+    ps.kill(processId);
+  });
+  process.exit();
+};
+const handleSignalEvents = (processIds = []) => {
+  process.on("SIGINT", () => handleCleanup(processIds));
+  process.on("SIGTERM", () => handleCleanup(processIds));
+};
+const handleHMRProcessMessages = () => {
+  process.hmrProcess.on("message", (message) => {
+    const processMessages = ["server_closed"];
+    if (!processMessages.includes(message)) {
+      process.loader.stable(message);
+    }
+  });
+};
+const handleHMRProcessSTDIO = () => {
+  try {
+    if (process.hmrProcess) {
+      process.hmrProcess.on("error", (error) => {
+        console.log(error);
+      });
+      process.hmrProcess.stdout.on("data", (data) => {
+        console.log(data.toString());
+      });
+      process.hmrProcess.stderr.on("data", (data) => {
+        process.loader.stop();
+        console.log(chalk.redBright(data.toString()));
+      });
+    }
+  } catch (exception) {
+    throw new Error(`[dev.handleHMRProcessSTDIO] ${exception.message}`);
+  }
+};
+const startHMRProcess = () => {
+  const hmrProcess = child_process.fork(path.resolve(`${__dirname}/hmrServer.js`), [], {
+    execArgv: ["--no-warnings", "--experimental-specifier-resolution=node"],
+    silent: true
+  });
+  process.hmrProcess = hmrProcess;
+  handleHMRProcessSTDIO();
+  handleHMRProcessMessages();
+};
+const handleServerProcessMessages = () => {
+  process.serverProcess.on("message", (message) => {
+    const processMessages = ["server_closed"];
+    if (!processMessages.includes(message)) {
+      process.loader.stable(message);
+    }
+  });
+};
+const handleServerProcessSTDIO = () => {
+  try {
+    if (process.serverProcess) {
+      process.serverProcess.on("error", (error) => {
+        console.log(error);
+      });
+      process.serverProcess.stdout.on("data", (data) => {
+        const message = data.toString();
+        if (message && message.includes("App running at:")) {
+          process.loader.stable(message);
+        } else {
+          console.log(message);
+        }
+      });
+      process.serverProcess.stderr.on("data", (data) => {
+        process.loader.stop();
+        console.log(chalk.redBright(data.toString()));
+      });
+    }
+  } catch (exception) {
+    throw new Error(`[dev.handleServerProcessSTDIO] ${exception.message}`);
+  }
+};
+const startApplicationProcess = () => {
+  const serverProcess = child_process.fork(path.resolve(".joystick/build/index.server.js"), [], {
+    execArgv: ["--no-warnings", "--experimental-specifier-resolution=node"],
+    silent: true,
+    env: {
+      NODE_ENV: process.env.NODE_ENV,
+      PORT: process.env.PORT,
+      JOYSTICK_SETTINGS: process.env.JOYSTICK_SETTINGS,
+      databases: JSON.stringify(process.databases)
+    }
+  });
+  process.serverProcess = serverProcess;
+  handleServerProcessSTDIO();
+  handleServerProcessMessages();
+};
+const restartApplicationProcess = () => {
+  if (process.serverProcess && process.serverProcess.pid) {
+    process.loader.text("Restarting app...");
+    ps.kill(process.serverProcess.pid);
+    return startApplicationProcess();
+  }
+  process.loader.text("Starting app...");
+  startApplicationProcess();
+  startHMRProcess();
+};
+const initialBuild = async (path2, format) => {
+  const buildPath = `.joystick/build`;
+  const fileMapPath = `.joystick/build/fileMap.json`;
+  if (!fs.existsSync(buildPath)) {
+    fs.mkdirSync(".joystick/build");
+  }
+  if (fs.existsSync(fileMapPath)) {
+    fs.unlinkSync(fileMapPath);
+  }
+  process.loader.text("Building app...");
+  const filesToBuild = getFilesToBuild();
+  const fileResults = await buildFiles(filesToBuild);
+  const hasErrors = [...fileResults].filter((result) => !!result).map(({ success }) => success).includes(false);
+  if (!hasErrors) {
+    startApplicationProcess();
+    startHMRProcess();
+  }
+};
+const startWatcher = async () => {
+  await initialBuild();
+  watchlist.forEach(({ path: path2 }) => {
+    if (fs.existsSync(`./${path2}`)) {
+      watch(path2, { recursive: true }, async function(event, name) {
+        process.loader.text("Rebuilding app...");
+        if (event === "update" && fs.existsSync(`./${name}`) && fs.lstatSync(`./${name}`).isDirectory()) {
+          fs.mkdirSync(`./.joystick/build/${name}`);
+          restartApplicationProcess();
+        }
+        if (!!filesToCopy.find((fileToCopy) => fileToCopy.path === name)) {
+          fs.writeFileSync(`./.joystick/build/${name}`, fs.readFileSync(name));
+          const codependencies = getCodependenciesForFile(name);
+          const fileResults = await buildFiles([name]);
+          const codependencyResult = await buildFiles(codependencies);
+          const hasErrors = [...fileResults, ...codependencyResult].filter((result) => !!result).map(({ success }) => success).includes(false);
+          if (process.serverProcess && hasErrors) {
+            process.serverProcess.send(JSON.stringify({
+              error: "BUILD_ERROR",
+              paths: [...fileResults, ...codependencyResult].filter(({ success }) => !success).map(({ path: path3, error }) => ({ path: path3, error }))
+            }));
+          }
+          if (!hasErrors) {
+            await loadSettings();
+            return restartApplicationProcess();
+          }
+        }
+        if (event === "update") {
+          const codependencies = getCodependenciesForFile(name);
+          const fileResults = await buildFiles([name]);
+          const codependencyResult = await buildFiles(codependencies);
+          const hasErrors = [...fileResults, ...codependencyResult].filter((result) => !!result).map(({ success }) => success).includes(false);
+          if (process.serverProcess && hasErrors) {
+            process.serverProcess.send(JSON.stringify({
+              error: "BUILD_ERROR",
+              paths: [...fileResults, ...codependencyResult].filter(({ success }) => !success).map(({ path: path3, error }) => ({ path: path3, error }))
+            }));
+          }
+          if (!hasErrors) {
+            restartApplicationProcess();
+          }
+        }
+        if (event === "remove" && !fs.existsSync(`./.joystick/build/${name}`)) {
+          restartApplicationProcess();
+        }
+        if (event === "remove" && fs.existsSync(`./.joystick/build/${name}`)) {
+          const path3 = `./.joystick/build/${name}`;
+          const stats = fs.lstatSync(path3);
+          if (stats.isDirectory()) {
+            fs.rmdirSync(path3, { recursive: true });
+          }
+          if (stats.isFile()) {
+            fs.unlinkSync(path3);
+          }
+          restartApplicationProcess();
+        }
+      });
+    }
+  });
+};
+const startDatabase = async (database = {}) => {
+  if (database.provider && database.provider === "mongodb") {
+    await startDatabaseProvider("mongodb", database);
+  }
+  return Promise.resolve();
+};
+const validateDatabases = (databases = []) => {
+  const databasesNotAsObjects = databases.filter((database) => !isObject(database));
+  const userDatabases = databases.filter((database) => !!database.users);
+  const databasesWithDuplicateNames = databases.flatMap((database, index) => {
+    return databases.map((currentDatabase, currentIndex) => {
+      if (index === currentIndex)
+        return null;
+      if (currentDatabase.provider === database.provider) {
+        return database;
+      }
+    });
+  }).filter((database) => !!database);
+  if (databasesNotAsObjects && databasesNotAsObjects.length > 0) {
+    console.log(chalk.red("Please ensure that each database in the config.databases array is an object. Correct the array and restart your app."));
+    process.exit(1);
+  }
+  if (userDatabases && userDatabases.length > 1) {
+    console.log(chalk.red("Please select a single database for your user accounts and restart your app."));
+    process.exit(1);
+  }
+  if (databasesWithDuplicateNames && databasesWithDuplicateNames.length > 1) {
+    console.log(chalk.red("Please only specify a database provider once. Remove any duplicates from your config.databases array and restart your app."));
+    process.exit(1);
+  }
+  return true;
+};
+const startDatabases = async () => {
+  try {
+    const hasSettings = !!process.env.JOYSTICK_SETTINGS;
+    const settings = hasSettings && JSON.parse(process.env.JOYSTICK_SETTINGS);
+    const databases = settings?.config?.databases || [];
+    if (databases && Array.isArray(databases) && databases.length > 0) {
+      validateDatabases(databases);
+      await Promise.all(databases.map((database) => startDatabase(database)));
+      return Promise.resolve();
+    }
+    return Promise.resolve();
+  } catch (exception) {
+    console.warn(exception);
+  }
+};
+const loadSettings = async () => {
+  const environment = process.env.NODE_ENV;
+  const settingsFilePath = `${process.cwd()}/settings.${environment}.json`;
+  const hasSettingsFile = fs.existsSync(settingsFilePath);
+  if (!hasSettingsFile) {
+    console.warn(`A settings file could not be found for this environment. If you have settings for this environment (${environment}), creating a settings.${environment}.js at the root of your project and restart Joystick.`);
+    process.env.JOYSTICK_SETTINGS = {};
+    return;
+  }
+  const rawSettingsFile = fs.readFileSync(settingsFilePath, "utf-8");
+  const settingsFile = isValidJSONString(rawSettingsFile) ? rawSettingsFile : "{}";
+  process.env.JOYSTICK_SETTINGS = settingsFile;
+  return settingsFile;
+};
+const checkIfJoystickProject = () => {
+  return fs.existsSync(`${process.cwd()}/.joystick`);
+};
+var start_default = async (options = {}) => {
+  process.loader = new Loader({ defaultMessage: "Starting app..." });
+  const port = options?.port ? parseInt(options?.port) : 2600;
+  const isJoystickProject = checkIfJoystickProject();
+  const portIsAvailable = await checkIfPortAvailable(port);
+  if (!isJoystickProject) {
+    console.log(chalk.yellowBright(`This is not a Joystick project. A .joystick folder could not be found. Double-check you're in the right folder or create a new project with joystick create <project>`));
+    return;
+  }
+  if (portIsAvailable) {
+    process.env.NODE_ENV = options?.environment || "development";
+    process.env.PORT = options?.port ? parseInt(options?.port) : 2600;
+    await loadSettings();
+    await startDatabases();
+    startWatcher();
+    handleSignalEvents([]);
+  } else {
+    console.log(`Port ${port} is already in use. Free up that port or pass another port with joystick start --port <PORT>.`);
+  }
+};
+export {
+  start_default as default
+};

@@ -1,5 +1,8 @@
-const { execSync } = require("child_process");
-const semver = require("semver");
+import { execSync } from "child_process";
+import semver from "semver";
+import { createRequire } from "module";
+
+const require = createRequire(import.meta.url);
 const packageJSON = require("./package.json");
 
 const version = semver.inc(packageJSON.version, "prerelease", "beta");

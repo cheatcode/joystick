@@ -1,6 +1,6 @@
 import { MongoClient } from "mongodb";
 import chalk from "chalk";
-import buildConnectionString from "./buildConnectionString";
+import buildConnectionString from "./buildConnectionString.js";
 
 export default async (connection) => {
   const connectionString = buildConnectionString(connection);

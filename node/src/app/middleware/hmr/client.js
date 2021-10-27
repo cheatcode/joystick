@@ -3,7 +3,7 @@ const serverAvailable = (callback = null) => {
     .then(async (response) => {
       const data = await response.text();
       if (data && data === "<3" && callback) {
-        console.clear();
+        // console.clear();
         console.log("[hmr] Listening for changes...");
         callback();
       }
@@ -131,11 +131,13 @@ export default (() =>
           }
 
           if (stylesheet) {
-            const newStylesheet = document.createElement("link");
-            newStylesheet.rel = "stylesheet";
-            newStylesheet.href = scriptPath;
-            stylesheet.parentNode.removeChild(stylesheet);
-            document.body.appendChild(newStylesheet);
+            serverAvailable(() => {
+              const newStylesheet = document.createElement("link");
+              newStylesheet.rel = "stylesheet";
+              newStylesheet.href = scriptPath;
+              stylesheet.parentNode.removeChild(stylesheet);
+              document.body.appendChild(newStylesheet);
+            });
           }
 
           if (script && scriptPath.includes("ui/pages")) {
@@ -144,22 +146,30 @@ export default (() =>
 
           if (script) {
             serverAvailable(() => {
-              const newScript = document.createElement("script");
-              newScript.src = scriptPath;
-              script.parentNode.removeChild(script);
-              document.body.appendChild(newScript);
+              location.reload();
+              // TODO: Figure out why type="module" is caching this even with max-age
+              // header set on the server.
+              // script.parentNode.removeChild(script);
+              // const newScript = document.createElement("script");
+              // newScript.type = "module";
+              // newScript.src = scriptPath;
+              // document.body.appendChild(newScript);
             });
           }
 
           if (window.__joystick_layout__ && path && path.includes("pages")) {
             serverAvailable(() => {
-              const layoutScript = document.querySelector(
-                `script[src="${window.__joystick_layout__}"]`
-              );
-              const newScript = document.createElement("script");
-              newScript.src = window.__joystick_layout__;
-              layoutScript.parentNode.removeChild(layoutScript);
-              document.body.appendChild(newScript);
+              location.reload();
+              // TODO: Figure out why type="module" is caching this even with max-age
+              // header set on the server.
+              // const layoutScript = document.querySelector(
+              //   `script[src="${window.__joystick_layout__}"]`
+              // );
+              // layoutScript.parentNode.removeChild(layoutScript);
+              // const newScript = document.createElement("script");
+              // newScript.type = "module";
+              // newScript.src = window.__joystick_layout__;
+              // document.body.appendChild(newScript);
             });
           }
         }

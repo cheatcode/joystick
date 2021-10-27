@@ -1,4 +1,4 @@
-import updateFileMap from "./updateFileMap";
+import updateFileMap from "./updateFileMap.js";
 
 export default () => {
   return {

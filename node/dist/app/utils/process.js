@@ -1,1 +1,193 @@
-!function(e){"function"==typeof define&&define.amd?define(e):e()}((function(){"use strict";var e,t,n={exports:{}},r=n.exports={};function o(){throw new Error("setTimeout has not been defined")}function i(){throw new Error("clearTimeout has not been defined")}function u(t){if(e===setTimeout)return setTimeout(t,0);if((e===o||!e)&&setTimeout)return e=setTimeout,setTimeout(t,0);try{return e(t,0)}catch(n){try{return e.call(null,t,0)}catch(n){return e.call(this,t,0)}}}!function(){try{e="function"==typeof setTimeout?setTimeout:o}catch(t){e=o}try{t="function"==typeof clearTimeout?clearTimeout:i}catch(e){t=i}}();var c,s=[],f=!1,a=-1;function l(){f&&c&&(f=!1,c.length?s=c.concat(s):a=-1,s.length&&h())}function h(){if(!f){var e=u(l);f=!0;for(var n=s.length;n;){for(c=s,s=[];++a<n;)c&&c[a].run();a=-1,n=s.length}c=null,f=!1,function(e){if(t===clearTimeout)return clearTimeout(e);if((t===i||!t)&&clearTimeout)return t=clearTimeout,clearTimeout(e);try{t(e)}catch(n){try{return t.call(null,e)}catch(n){return t.call(this,e)}}}(e)}}function p(e,t){this.fun=e,this.array=t}function d(){}r.nextTick=function(e){var t=new Array(arguments.length-1);if(arguments.length>1)for(var n=1;n<arguments.length;n++)t[n-1]=arguments[n];s.push(new p(e,t)),1!==s.length||f||u(h)},p.prototype.run=function(){this.fun.apply(null,this.array)},r.title="browser",r.browser=!0,r.env={},r.argv=[],r.version="",r.versions={},r.on=d,r.addListener=d,r.once=d,r.off=d,r.removeListener=d,r.removeAllListeners=d,r.emit=d,r.prependListener=d,r.prependOnceListener=d,r.listeners=function(e){return[]},r.binding=function(e){throw new Error("process.binding is not supported")},r.cwd=function(){return"/"},r.chdir=function(e){throw new Error("process.chdir is not supported")},r.umask=function(){return 0};var m=n.exports;window.process=m;const w={NODE_ENV:"${NODE_ENV}"};window.process&&(window.process.env=w)}));
+var __create = Object.create;
+var __defProp = Object.defineProperty;
+var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+var __getOwnPropNames = Object.getOwnPropertyNames;
+var __getProtoOf = Object.getPrototypeOf;
+var __hasOwnProp = Object.prototype.hasOwnProperty;
+var __markAsModule = (target) => __defProp(target, "__esModule", { value: true });
+var __commonJS = (cb, mod) => function __require() {
+  return mod || (0, cb[Object.keys(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports;
+};
+var __reExport = (target, module, desc) => {
+  if (module && typeof module === "object" || typeof module === "function") {
+    for (let key of __getOwnPropNames(module))
+      if (!__hasOwnProp.call(target, key) && key !== "default")
+        __defProp(target, key, { get: () => module[key], enumerable: !(desc = __getOwnPropDesc(module, key)) || desc.enumerable });
+  }
+  return target;
+};
+var __toModule = (module) => {
+  return __reExport(__markAsModule(__defProp(module != null ? __create(__getProtoOf(module)) : {}, "default", module && module.__esModule && "default" in module ? { get: () => module.default, enumerable: true } : { value: module, enumerable: true })), module);
+};
+
+// ../../../../node_modules/process/browser.js
+var require_browser = __commonJS({
+  "../../../../node_modules/process/browser.js"(exports, module) {
+    var process2 = module.exports = {};
+    var cachedSetTimeout;
+    var cachedClearTimeout;
+    function defaultSetTimout() {
+      throw new Error("setTimeout has not been defined");
+    }
+    function defaultClearTimeout() {
+      throw new Error("clearTimeout has not been defined");
+    }
+    (function() {
+      try {
+        if (typeof setTimeout === "function") {
+          cachedSetTimeout = setTimeout;
+        } else {
+          cachedSetTimeout = defaultSetTimout;
+        }
+      } catch (e) {
+        cachedSetTimeout = defaultSetTimout;
+      }
+      try {
+        if (typeof clearTimeout === "function") {
+          cachedClearTimeout = clearTimeout;
+        } else {
+          cachedClearTimeout = defaultClearTimeout;
+        }
+      } catch (e) {
+        cachedClearTimeout = defaultClearTimeout;
+      }
+    })();
+    function runTimeout(fun) {
+      if (cachedSetTimeout === setTimeout) {
+        return setTimeout(fun, 0);
+      }
+      if ((cachedSetTimeout === defaultSetTimout || !cachedSetTimeout) && setTimeout) {
+        cachedSetTimeout = setTimeout;
+        return setTimeout(fun, 0);
+      }
+      try {
+        return cachedSetTimeout(fun, 0);
+      } catch (e) {
+        try {
+          return cachedSetTimeout.call(null, fun, 0);
+        } catch (e2) {
+          return cachedSetTimeout.call(this, fun, 0);
+        }
+      }
+    }
+    function runClearTimeout(marker) {
+      if (cachedClearTimeout === clearTimeout) {
+        return clearTimeout(marker);
+      }
+      if ((cachedClearTimeout === defaultClearTimeout || !cachedClearTimeout) && clearTimeout) {
+        cachedClearTimeout = clearTimeout;
+        return clearTimeout(marker);
+      }
+      try {
+        return cachedClearTimeout(marker);
+      } catch (e) {
+        try {
+          return cachedClearTimeout.call(null, marker);
+        } catch (e2) {
+          return cachedClearTimeout.call(this, marker);
+        }
+      }
+    }
+    var queue = [];
+    var draining = false;
+    var currentQueue;
+    var queueIndex = -1;
+    function cleanUpNextTick() {
+      if (!draining || !currentQueue) {
+        return;
+      }
+      draining = false;
+      if (currentQueue.length) {
+        queue = currentQueue.concat(queue);
+      } else {
+        queueIndex = -1;
+      }
+      if (queue.length) {
+        drainQueue();
+      }
+    }
+    function drainQueue() {
+      if (draining) {
+        return;
+      }
+      var timeout = runTimeout(cleanUpNextTick);
+      draining = true;
+      var len = queue.length;
+      while (len) {
+        currentQueue = queue;
+        queue = [];
+        while (++queueIndex < len) {
+          if (currentQueue) {
+            currentQueue[queueIndex].run();
+          }
+        }
+        queueIndex = -1;
+        len = queue.length;
+      }
+      currentQueue = null;
+      draining = false;
+      runClearTimeout(timeout);
+    }
+    process2.nextTick = function(fun) {
+      var args = new Array(arguments.length - 1);
+      if (arguments.length > 1) {
+        for (var i = 1; i < arguments.length; i++) {
+          args[i - 1] = arguments[i];
+        }
+      }
+      queue.push(new Item(fun, args));
+      if (queue.length === 1 && !draining) {
+        runTimeout(drainQueue);
+      }
+    };
+    function Item(fun, array) {
+      this.fun = fun;
+      this.array = array;
+    }
+    Item.prototype.run = function() {
+      this.fun.apply(null, this.array);
+    };
+    process2.title = "browser";
+    process2.browser = true;
+    process2.env = {};
+    process2.argv = [];
+    process2.version = "";
+    process2.versions = {};
+    function noop() {
+    }
+    process2.on = noop;
+    process2.addListener = noop;
+    process2.once = noop;
+    process2.off = noop;
+    process2.removeListener = noop;
+    process2.removeAllListeners = noop;
+    process2.emit = noop;
+    process2.prependListener = noop;
+    process2.prependOnceListener = noop;
+    process2.listeners = function(name) {
+      return [];
+    };
+    process2.binding = function(name) {
+      throw new Error("process.binding is not supported");
+    };
+    process2.cwd = function() {
+      return "/";
+    };
+    process2.chdir = function(dir) {
+      throw new Error("process.chdir is not supported");
+    };
+    process2.umask = function() {
+      return 0;
+    };
+  }
+});
+
+// src/app/utils/process.js
+var import_browser = __toModule(require_browser());
+window.process = import_browser.default;
+var env = {
+  NODE_ENV: "${NODE_ENV}"
+};
+if (window.process) {
+  window.process.env = env;
+}

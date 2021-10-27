@@ -1,1 +1,5 @@
-!function(e,t){"object"==typeof exports&&"undefined"!=typeof module?module.exports=t():"function"==typeof define&&define.amd?define(t):(e="undefined"!=typeof globalThis?globalThis:e||self)["joystick-node"]=t()}(this,(function(){"use strict";const e={config:{},keys:{global:{},public:{},private:{}}};return(()=>{try{const t=!!process.env.JOYSTICK_SETTINGS,n=t&&((e="")=>{try{JSON.parse(e)}catch(e){return!1}return!0})(process.env.JOYSTICK_SETTINGS);if(!t)return e;if(!n)return console.warn(`Could not parse settings. Please verify that your settings-${process.env.NODE_ENV} exports a valid JavaScript object.`),e;return JSON.parse(process.env.JOYSTICK_SETTINGS)||e}catch(e){console.warn(e)}})()}));
+import load from "./load";
+var settings_default = (() => load())();
+export {
+  settings_default as default
+};

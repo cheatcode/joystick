@@ -1,1 +1,18 @@
-"use strict";function e(e){return e&&"object"==typeof e&&"default"in e?e:{default:e}}var n=e(require("net"));module.exports=e=>new Promise(((t,o)=>{const c=n.default.createServer();c.once("error",(function(e){if("EADDRINUSE"!=e.code)return callback(e);t(!1)})).once("listening",(function(){c.once("close",(function(){t(!0)})).close()})).listen(e)}));
+import net from "net";
+var checkIfPortAvailable_default = (port) => {
+  return new Promise((resolve, reject) => {
+    const testServer = net.createServer();
+    testServer.once("error", function(err) {
+      if (err.code != "EADDRINUSE")
+        return callback(err);
+      resolve(false);
+    }).once("listening", function() {
+      testServer.once("close", function() {
+        resolve(true);
+      }).close();
+    }).listen(port);
+  });
+};
+export {
+  checkIfPortAvailable_default as default
+};

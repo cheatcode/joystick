@@ -1,1 +1,165 @@
-!function(e,r){"object"==typeof exports&&"undefined"!=typeof module?module.exports=r():"function"==typeof define&&define.amd?define(r):(e="undefined"!=typeof globalThis?globalThis:e||self)["joystick-node"]=r()}(this,(function(){"use strict";const e=e=>!(!e||"object"!=typeof e||Array.isArray(e)),r=e=>!!Array.isArray(e),t=e=>"string"==typeof e;var o=(o,s)=>{switch(o){case"any":return(e=>!!e)(s);case"array":return r(s);case"boolean":return(e=>(!0===e||!1===e)&&"boolean"==typeof e)(s);case"float":return(e=>Number(e)===e&&e%1!=0)(s);case"integer":return(e=>Number(e)===e&&e%1==0)(s);case"number":return(e=>Number(e)===e)(s);case"object":return e(s);case"string":return t(s);default:return!1}};return{types:["any","array","boolean","float","integer","number","object","string"],rules:{allowedValues:(e,r,t)=>e.includes(r)?{valid:!0,errors:[]}:{valid:!1,errors:[`Field ${t} only allows the following values: ${e.join(", ")}.`]},element:(o,s,i)=>{if(s&&(e(o)||t(o))&&r(s)){const r="test"===process.env.NODE_ENV?"../inputWithSchema":`${__dirname.replace(".joystick/build","node_modules/@joystick.js/node/dist/validation")}/inputWithSchema/index.js`,n=require(r),a=e(n)?n.default:n,l=[];return s.forEach(((e,r)=>{a(e,t(o)?{type:o}:o,`${i}.${r}`).forEach((e=>{l.push(e)}))})),{valid:0===l.length,errors:[...l]}}return{valid:!0,errors:[]}},fields:(r,t,o)=>{if(e(r)&&e(t)){const s="test"===process.env.NODE_ENV?"../inputWithSchema":`${__dirname.replace(".joystick/build","node_modules/@joystick.js/node/dist/validation")}/inputWithSchema/index.js`,i=require(s),n=(e(i)?i.default:i)(((e="")=>new RegExp(/\.[0-9]+\.?/g).test(e))(o)?t:{[o]:t},r,o);return{valid:0===n.length,errors:[...n]}}return{valid:!1,errors:[`${o} schema rule and input value for element must be of type object.`]}},max:(e,r,t)=>r<=e?{valid:!0,errors:[]}:{valid:!1,errors:[`${t} must be less than or equal to ${e}`]},min:(e,r,t)=>r>=e?{valid:!0,errors:[]}:{valid:!1,errors:[`${t} must be greater than or equal to ${e}`]},optional:(e,r,t)=>!1!==e||!!r?{valid:!0,errors:[]}:{valid:!1,errors:[`${t} is required`]},regex:(e,r,t)=>new RegExp(e).test(r)?{valid:!0,errors:[]}:{valid:!1,errors:[`${t} must conform to regex: ${e}`]},required:(e,r,t)=>!1===e||!!r?{valid:!0,errors:[]}:{valid:!1,errors:[`${t} is required`]},type:(e,r,t)=>{const s=o(e,r);return r&&!s?{valid:!1,errors:[`${t} must be of type ${e}`]}:{valid:!0,errors:[]}}}}}));
+import { createRequire } from "module";
+import { fileURLToPath } from "url";
+import { dirname } from "path";
+import { isObject, isArray, isString } from "./typeValidators";
+import validateType from "./validateType";
+import isArrayPath from "./isArrayPath";
+const require2 = createRequire(import.meta.url);
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const types = [
+  "any",
+  "array",
+  "boolean",
+  "float",
+  "integer",
+  "number",
+  "object",
+  "string"
+];
+var constants_default = {
+  types,
+  rules: {
+    allowedValues: (ruleValue, inputValue, parentPath) => {
+      const isValid = ruleValue.includes(inputValue);
+      if (!isValid) {
+        return {
+          valid: false,
+          errors: [
+            `Field ${parentPath} only allows the following values: ${ruleValue.join(", ")}.`
+          ]
+        };
+      }
+      return {
+        valid: true,
+        errors: []
+      };
+    },
+    element: async (ruleValue, inputValue, parentPath) => {
+      if (inputValue && (isObject(ruleValue) || isString(ruleValue)) && isArray(inputValue)) {
+        const inputWithSchemaPath = process.env.NODE_ENV === "test" ? `../inputWithSchema` : `${__dirname.replace("/dist/validation/lib", "/dist/validation")}/inputWithSchema/index.js`;
+        const inputWithSchemaFile = await import(inputWithSchemaPath);
+        const inputWithSchema = inputWithSchemaFile.default;
+        const validateInputWithSchema = isObject(inputWithSchema) ? inputWithSchema.default : inputWithSchema;
+        const elementErrors = [];
+        inputValue.forEach((element, elementIndex) => {
+          const errors = validateInputWithSchema(element, isString(ruleValue) ? { type: ruleValue } : ruleValue, `${parentPath}.${elementIndex}`);
+          errors.forEach((error) => {
+            elementErrors.push(error);
+          });
+        });
+        return Promise.resolve({
+          valid: elementErrors.length === 0,
+          errors: [...elementErrors]
+        });
+      }
+      return Promise.resolve({
+        valid: true,
+        errors: []
+      });
+    },
+    fields: async (ruleValue, inputValue, parentPath) => {
+      if (isObject(ruleValue) && isObject(inputValue)) {
+        const inputWithSchemaPath = process.env.NODE_ENV === "test" ? `../inputWithSchema` : `${__dirname.replace("/dist/validation/lib", "/dist/validation")}/inputWithSchema/index.js`;
+        const inputWithSchemaFile = await import(inputWithSchemaPath);
+        const inputWithSchema = inputWithSchemaFile.default;
+        const validateInputWithSchema = isObject(inputWithSchema) ? inputWithSchema.default : inputWithSchema;
+        const input = isArrayPath(parentPath) ? inputValue : { [parentPath]: inputValue };
+        const errors = validateInputWithSchema(input, ruleValue, parentPath);
+        return Promise.resolve({
+          valid: errors.length === 0,
+          errors: [...errors]
+        });
+      }
+      return Promise.resolve({
+        valid: false,
+        errors: [
+          `${parentPath} schema rule and input value for element must be of type object.`
+        ]
+      });
+    },
+    max: (ruleValue, inputValue, parentPath) => {
+      const valid = inputValue <= ruleValue;
+      if (!valid) {
+        return {
+          valid: false,
+          errors: [`${parentPath} must be less than or equal to ${ruleValue}`]
+        };
+      }
+      return {
+        valid: true,
+        errors: []
+      };
+    },
+    min: (ruleValue, inputValue, parentPath) => {
+      const valid = inputValue >= ruleValue;
+      if (!valid) {
+        return {
+          valid: false,
+          errors: [
+            `${parentPath} must be greater than or equal to ${ruleValue}`
+          ]
+        };
+      }
+      return {
+        valid: true,
+        errors: []
+      };
+    },
+    optional: (ruleValue, inputValue, parentPath) => {
+      const valid = ruleValue === false ? !!inputValue : true;
+      if (!valid) {
+        return {
+          valid: false,
+          errors: [`${parentPath} is required`]
+        };
+      }
+      return {
+        valid: true,
+        errors: []
+      };
+    },
+    regex: (ruleValue, inputValue, parentPath) => {
+      const valid = new RegExp(ruleValue).test(inputValue);
+      if (!valid) {
+        return {
+          valid: false,
+          errors: [`${parentPath} must conform to regex: ${ruleValue}`]
+        };
+      }
+      return {
+        valid: true,
+        errors: []
+      };
+    },
+    required: (ruleValue, inputValue, parentPath) => {
+      const valid = ruleValue === false ? true : !!inputValue;
+      if (!valid) {
+        return {
+          valid: false,
+          errors: [`${parentPath} is required`]
+        };
+      }
+      return {
+        valid: true,
+        errors: []
+      };
+    },
+    type: (ruleValue, inputValue, parentPath) => {
+      const valid = validateType(ruleValue, inputValue);
+      if (inputValue && !valid) {
+        return {
+          valid: false,
+          errors: [`${parentPath} must be of type ${ruleValue}`]
+        };
+      }
+      return {
+        valid: true,
+        errors: []
+      };
+    }
+  }
+};
+export {
+  constants_default as default
+};

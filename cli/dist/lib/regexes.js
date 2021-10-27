@@ -1,1 +1,6 @@
-"use strict";Object.defineProperty(exports,"__esModule",{value:!0});const e=new RegExp(/{([^;]*)}/g),t=new RegExp(/export default [a-zA-Z0-9]+/g);exports.EXPORT_DEFAULT_REGEX=t,exports.OBJECT_REGEX=e;
+const OBJECT_REGEX = new RegExp(/{([^;]*)}/g);
+const EXPORT_DEFAULT_REGEX = new RegExp(/export default [a-zA-Z0-9]+/g);
+export {
+  EXPORT_DEFAULT_REGEX,
+  OBJECT_REGEX
+};

@@ -1,5 +1,5 @@
 export default {
-  "ui/pages/index": {
-    quotes: `Quotes`,
+  "ui/pages/index/index.js": {
+    quote: `Quote`,
   },
 };

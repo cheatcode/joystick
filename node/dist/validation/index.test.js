@@ -1,1 +1,376 @@
-!function(e){"function"==typeof define&&define.amd?define(e):e()}((function(){"use strict";var e=e=>{throw new Error(`[joystick.validation] ${e}`)};const t=e=>!(!e||"object"!=typeof e||Array.isArray(e)),r=e=>!!Array.isArray(e),s=e=>"string"==typeof e;var o=(e,o)=>{switch(e){case"any":return(e=>!!e)(o);case"array":return r(o);case"boolean":return(e=>(!0===e||!1===e)&&"boolean"==typeof e)(o);case"float":return(e=>Number(e)===e&&e%1!=0)(o);case"integer":return(e=>Number(e)===e&&e%1==0)(o);case"number":return(e=>Number(e)===e)(o);case"object":return t(o);case"string":return s(o);default:return!1}},n=(e="")=>new RegExp(/\.[0-9]+\.?/g).test(e);var a={types:["any","array","boolean","float","integer","number","object","string"],rules:{allowedValues:(e,t,r)=>e.includes(t)?{valid:!0,errors:[]}:{valid:!1,errors:[`Field ${r} only allows the following values: ${e.join(", ")}.`]},element:(e,o,n)=>{if(o&&(t(e)||s(e))&&r(o)){const r="test"===process.env.NODE_ENV?"../inputWithSchema":`${__dirname.replace(".joystick/build","node_modules/@joystick.js/node/dist/validation")}/inputWithSchema/index.js`,a=require(r),i=t(a)?a.default:a,l=[];return o.forEach(((t,r)=>{i(t,s(e)?{type:e}:e,`${n}.${r}`).forEach((e=>{l.push(e)}))})),{valid:0===l.length,errors:[...l]}}return{valid:!0,errors:[]}},fields:(e,r,s)=>{if(t(e)&&t(r)){const o="test"===process.env.NODE_ENV?"../inputWithSchema":`${__dirname.replace(".joystick/build","node_modules/@joystick.js/node/dist/validation")}/inputWithSchema/index.js`,a=require(o),i=(t(a)?a.default:a)(n(s)?r:{[s]:r},e,s);return{valid:0===i.length,errors:[...i]}}return{valid:!1,errors:[`${s} schema rule and input value for element must be of type object.`]}},max:(e,t,r)=>t<=e?{valid:!0,errors:[]}:{valid:!1,errors:[`${r} must be less than or equal to ${e}`]},min:(e,t,r)=>t>=e?{valid:!0,errors:[]}:{valid:!1,errors:[`${r} must be greater than or equal to ${e}`]},optional:(e,t,r)=>!1!==e||!!t?{valid:!0,errors:[]}:{valid:!1,errors:[`${r} is required`]},regex:(e,t,r)=>new RegExp(e).test(t)?{valid:!0,errors:[]}:{valid:!1,errors:[`${r} must conform to regex: ${e}`]},required:(e,t,r)=>!1===e||!!t?{valid:!0,errors:[]}:{valid:!1,errors:[`${r} is required`]},type:(e,t,r)=>{const s=o(e,t);return t&&!s?{valid:!1,errors:[`${r} must be of type ${e}`]}:{valid:!0,errors:[]}}}};const i=e=>{(e=>{Object.entries(e).forEach((([e,r])=>{if(!t(r))throw new Error(`Must pass an object containing rules to validate by for ${e} field.`)}))})(e),(e=>{Object.entries(e).forEach((([e,t])=>{Object.keys(t).forEach((t=>{if(!Object.keys(a.rules).includes(t))throw new Error(`Invalid rule name ${t} in rule for ${e} field.`)}))}))})(e),(e=>{Object.entries(e).forEach((([e,t])=>{if(t&&t.type&&!a.types.includes(t.type))throw new Error(`Invalid value for schema field "${e}" type rule. ${t.type} is not supported. Use one of the following: ${a.types.slice(0,a.types.length-1).join(", ")}, or ${a.types[a.types.length-1]}.`)}))})(e)};var l=(r=null)=>{r||e("Must pass schema object."),r&&!t(r)&&e("Must pass schema as an object."),i(r)};const u=(e,t)=>{if(!t)return e;if(!e)return;const r=t.split(".");return u(e[r.shift()],r.join("."))},p=(e={},r="",s=!1)=>{if(s||!s&&!t(e))return e;if(r.includes(".$.")){const[t]=r.split(".$.");return u(e,t)}return u(e,r)},c=({queue:e,rules:r,input:s,path:o,rulesOnlySchema:a})=>{r&&"object"===r.type&&(e=d(e,r.properties,s,o)),r&&"array"===r.type&&t(r.element)&&(e=d(e,r.element,s,`${o}.$`));const i=n(o)?((e="")=>e.split(".").pop())(o):o;return{path:o,rules:r,inputValue:p(s,i,a)}},d=(e=[],t={},r={},s="")=>{const o=!!t.type;if(o||Object.entries(t).forEach((([t,n])=>{const a=c({queue:e,rules:n,input:r,path:`${s?`${s}.${t}`:t}`,rulesOnlySchema:o});e=[...e,a]})),o){const n=s||field,a=c({queue:e,rules:t,input:r,path:n,rulesOnlySchema:o});e=[...e,a]}return e},y=l,m=(t=null,r=null,s="")=>{const o=[];t||e("Must pass input."),r&&Object.keys(r)&&!r.type&&l(r);return d([],r,t,s).forEach((e=>{Object.entries(e.rules).forEach((async([t,r])=>{const s=a.rules[t];if(s&&!e.path.includes(".$.")){const t=s(r,e.inputValue,e.path);t&&!t.valid&&t.errors.forEach((e=>{o.push(e.includes("Field ")?e:`Field ${e}.`)}))}}))})),o};describe("validate/schema/index.js",(()=>{test("throws error if schema argument is not passed",(()=>{expect((()=>{y()})).toThrow("[joystick.validation] Must pass schema object.")})),test("throws error if schema argument is invalid type",(()=>{expect((()=>{y(1)})).toThrow("[joystick.validation] Must pass schema as an object.")})),test("throws error if schema object contains properties with values that are not objects",(()=>{expect((()=>{y({_id:{type:"string"},userId:!1,title:{type:"string"}})})).toThrow("Must pass an object containing rules to validate by for userId field.")})),test("throws error if schema field rule names are unsupported",(()=>{expect((()=>{y({_id:{type:"string",allowedValues:"",element:"",fields:"",max:"",min:"",optional:"",required:"",type:"",hotDog:""},userId:{},title:{type:"string"}})})).toThrow("Invalid rule name hotDog in rule for _id field.")})),test("throws error if schema field rule.type value is unsupported",(()=>{expect((()=>{y({_id:{type:"apples"}})})).toThrow('Invalid value for schema field "_id" type rule. apples is not supported. Use one of the following: any, array, boolean, float, integer, number, object, or string.')}))})),describe("validate/inputWithSchema/index.js",(()=>{test("throws error if input argument is not passed",(()=>{expect((async()=>{m()})).rejects.toThrow("[joystick.validation] Must pass input.")})),test("returns expected errors when rules.allowedValues validator fails",(async()=>{const e=await m({name:"apples"},{name:{type:"string",allowedValues:["buy","more","bitcoin"]}});expect(e).toEqual(["Field name only allows the following values: buy, more, bitcoin."])})),test("returns expected errors when nested rules.allowedValues validator fails",(()=>{const e=m({name:"apples",dog:[{breed:"Corgi"},{breed:"German Shepherd",coats:[{type:"rough"}]},{breed:"English Bulldog"}]},{name:{type:"string",allowedValues:["buy","more","bitcoin"]},dog:{type:"array",element:{breed:{type:"string",allowedValues:["Corgi","German Shepherd","Golden Retriever"]},coats:{type:"array",element:{style:{type:"string",allowedValues:["silky","dry","smooth"]}}}}}});expect(e).toEqual(["Field name only allows the following values: buy, more, bitcoin.","Field dog.1.coats.0.style only allows the following values: silky, dry, smooth.","Field dog.2.breed only allows the following values: Corgi, German Shepherd, Golden Retriever."])})),test("returns expected errors when rules.element (string) validator fails",(()=>{const e=m({birds:[1,2,3]},{birds:{type:"array",element:"string"}});expect(e).toEqual(["Field birds.0 must be of type string.","Field birds.1 must be of type string.","Field birds.2 must be of type string."])})),test("returns expected errors when nested rules.element (string) validator fails",(()=>{const e=m({birds:[{name:"Parrot",attributes:{colors:["blue","green","red"]}},{name:"Snake",attributes:{colors:["purple","orange","teal"]}}]},{birds:{type:"array",element:{name:{type:"string"},attributes:{type:"object",fields:{colors:{type:"array",element:"integer"}}}}}});expect(e).toEqual(["Field birds.0.attributes.colors.0 must be of type integer.","Field birds.0.attributes.colors.1 must be of type integer.","Field birds.0.attributes.colors.2 must be of type integer.","Field birds.1.attributes.colors.0 must be of type integer.","Field birds.1.attributes.colors.1 must be of type integer.","Field birds.1.attributes.colors.2 must be of type integer."])})),test("returns expected errors when rules.fields validator fails",(()=>{const e=m({user:{name:789.456}},{user:{type:"object",fields:{name:{type:"string"}}}});expect(e).toEqual(["Field user.name must be of type string."])})),test("returns expected errors when rules.max validator fails",(()=>{const e=m({price:39.99},{price:{type:"float",max:29.99}});expect(e).toEqual(["Field price must be less than or equal to 29.99."])})),test("returns expected errors when rules.min validator fails",(()=>{const e=m({price:19.99},{price:{type:"float",min:29.99}});expect(e).toEqual(["Field price must be greater than or equal to 29.99."])})),test("returns expected errors when rules.optional (false) fails",(()=>{const e=m({price:29.99},{price:{type:"float",min:29.99},description:{type:"string",optional:!1}});expect(e).toEqual(["Field description is required."])})),test("returns no errors when rules.optional (true)",(()=>{const e=m({price:29.99},{price:{type:"float",min:29.99},description:{type:"string",optional:!0}});expect(e).toEqual([])})),test("returns expected errors when rules.regex fails",(()=>{const e=m({arrayPath:"thing.is.not.in.array"},{arrayPath:{type:"string",regex:new RegExp(/\.[0-9]+\.?/g)}});expect(e).toEqual(["Field arrayPath must conform to regex: /\\.[0-9]+\\.?/g."])})),test("returns expected errors when rules.required (true) fails",(()=>{const e=m({price:29.99},{price:{type:"float",min:29.99},description:{type:"string",required:!0}});expect(e).toEqual(["Field description is required."])})),test("returns no errors when rules.required (false)",(()=>{const e=m({price:29.99},{price:{type:"float",min:29.99},description:{type:"string",required:!1}});expect(e).toEqual([])})),test("returns expected errors when rules.type (array) fails",(()=>{const e=m({name:"array"},{name:{type:"array"}});expect(e).toEqual(["Field name must be of type array."])})),test("returns expected errors when rules.type (boolean) fails",(()=>{const e=m({name:123},{name:{type:"boolean"}});expect(e).toEqual(["Field name must be of type boolean."])})),test("returns expected errors when rules.type (float) fails",(()=>{const e=m({name:123},{name:{type:"float"}});expect(e).toEqual(["Field name must be of type float."])})),test("returns expected errors when rules.type (integer) fails",(()=>{const e=m({name:123.123},{name:{type:"integer"}});expect(e).toEqual(["Field name must be of type integer."])})),test("returns expected errors when rules.type (number) fails",(()=>{const e=m({name:"123.123"},{name:{type:"number"}});expect(e).toEqual(["Field name must be of type number."])})),test("returns expected errors when rules.type (object) fails",(()=>{const e=m({name:[]},{name:{type:"object"}});expect(e).toEqual(["Field name must be of type object."])})),test("returns expected errors when rules.type (string) fails",(()=>{const e=m({name:123},{name:{type:"string"}});expect(e).toEqual(["Field name must be of type string."])})),test("returns array of errors after validation",(()=>{const e=m({name:12345},{name:{type:"string"}});expect(e).toEqual(["Field name must be of type string."])}))}))}));
+import validate from "./index";
+describe("validate/schema/index.js", () => {
+  test("throws error if schema argument is not passed", () => {
+    expect(() => {
+      validate.schema();
+    }).toThrow("[joystick.validation] Must pass schema object.");
+  });
+  test("throws error if schema argument is invalid type", () => {
+    expect(() => {
+      validate.schema(1);
+    }).toThrow("[joystick.validation] Must pass schema as an object.");
+  });
+  test("throws error if schema object contains properties with values that are not objects", () => {
+    expect(() => {
+      validate.schema({
+        _id: {
+          type: "string"
+        },
+        userId: false,
+        title: {
+          type: "string"
+        }
+      });
+    }).toThrow(`Must pass an object containing rules to validate by for userId field.`);
+  });
+  test("throws error if schema field rule names are unsupported", () => {
+    expect(() => {
+      validate.schema({
+        _id: {
+          type: "string",
+          allowedValues: "",
+          element: "",
+          fields: "",
+          max: "",
+          min: "",
+          optional: "",
+          required: "",
+          hotDog: ""
+        },
+        userId: {},
+        title: {
+          type: "string"
+        }
+      });
+    }).toThrow(`Invalid rule name hotDog in rule for _id field.`);
+  });
+  test("throws error if schema field rule.type value is unsupported", () => {
+    expect(() => {
+      validate.schema({
+        _id: {
+          type: "apples"
+        }
+      });
+    }).toThrow(`Invalid value for schema field "_id" type rule. apples is not supported. Use one of the following: any, array, boolean, float, integer, number, object, or string.`);
+  });
+});
+describe("validate/inputWithSchema/index.js", () => {
+  test("throws error if input argument is not passed", () => {
+    expect(async () => {
+      const result = validate.inputWithSchema();
+    }).rejects.toThrow("[joystick.validation] Must pass input.");
+  });
+  test("returns expected errors when rules.allowedValues validator fails", async () => {
+    const errors = await validate.inputWithSchema({
+      name: "apples"
+    }, {
+      name: {
+        type: "string",
+        allowedValues: ["buy", "more", "bitcoin"]
+      }
+    });
+    expect(errors).toEqual([
+      "Field name only allows the following values: buy, more, bitcoin."
+    ]);
+  });
+  test("returns expected errors when nested rules.allowedValues validator fails", () => {
+    const errors = validate.inputWithSchema({
+      name: "apples",
+      dog: [
+        {
+          breed: "Corgi"
+        },
+        {
+          breed: "German Shepherd",
+          coats: [{ type: "rough" }]
+        },
+        {
+          breed: "English Bulldog"
+        }
+      ]
+    }, {
+      name: {
+        type: "string",
+        allowedValues: ["buy", "more", "bitcoin"]
+      },
+      dog: {
+        type: "array",
+        element: {
+          breed: {
+            type: "string",
+            allowedValues: ["Corgi", "German Shepherd", "Golden Retriever"]
+          },
+          coats: {
+            type: "array",
+            element: {
+              style: {
+                type: "string",
+                allowedValues: ["silky", "dry", "smooth"]
+              }
+            }
+          }
+        }
+      }
+    });
+    expect(errors).toEqual([
+      "Field name only allows the following values: buy, more, bitcoin.",
+      "Field dog.1.coats.0.style only allows the following values: silky, dry, smooth.",
+      "Field dog.2.breed only allows the following values: Corgi, German Shepherd, Golden Retriever."
+    ]);
+  });
+  test("returns expected errors when rules.element (string) validator fails", () => {
+    const errors = validate.inputWithSchema({
+      birds: [1, 2, 3]
+    }, {
+      birds: {
+        type: "array",
+        element: "string"
+      }
+    });
+    expect(errors).toEqual([
+      "Field birds.0 must be of type string.",
+      "Field birds.1 must be of type string.",
+      "Field birds.2 must be of type string."
+    ]);
+  });
+  test("returns expected errors when nested rules.element (string) validator fails", () => {
+    const errors = validate.inputWithSchema({
+      birds: [
+        {
+          name: "Parrot",
+          attributes: {
+            colors: ["blue", "green", "red"]
+          }
+        },
+        {
+          name: "Snake",
+          attributes: {
+            colors: ["purple", "orange", "teal"]
+          }
+        }
+      ]
+    }, {
+      birds: {
+        type: "array",
+        element: {
+          name: {
+            type: "string"
+          },
+          attributes: {
+            type: "object",
+            fields: {
+              colors: {
+                type: "array",
+                element: "integer"
+              }
+            }
+          }
+        }
+      }
+    });
+    expect(errors).toEqual([
+      "Field birds.0.attributes.colors.0 must be of type integer.",
+      "Field birds.0.attributes.colors.1 must be of type integer.",
+      "Field birds.0.attributes.colors.2 must be of type integer.",
+      "Field birds.1.attributes.colors.0 must be of type integer.",
+      "Field birds.1.attributes.colors.1 must be of type integer.",
+      "Field birds.1.attributes.colors.2 must be of type integer."
+    ]);
+  });
+  test("returns expected errors when rules.fields validator fails", () => {
+    const errors = validate.inputWithSchema({
+      user: {
+        name: 789.456
+      }
+    }, {
+      user: {
+        type: "object",
+        fields: {
+          name: {
+            type: "string"
+          }
+        }
+      }
+    });
+    expect(errors).toEqual(["Field user.name must be of type string."]);
+  });
+  test("returns expected errors when rules.max validator fails", () => {
+    const errors = validate.inputWithSchema({
+      price: 39.99
+    }, {
+      price: {
+        type: "float",
+        max: 29.99
+      }
+    });
+    expect(errors).toEqual([
+      "Field price must be less than or equal to 29.99."
+    ]);
+  });
+  test("returns expected errors when rules.min validator fails", () => {
+    const errors = validate.inputWithSchema({
+      price: 19.99
+    }, {
+      price: {
+        type: "float",
+        min: 29.99
+      }
+    });
+    expect(errors).toEqual([
+      "Field price must be greater than or equal to 29.99."
+    ]);
+  });
+  test("returns expected errors when rules.optional (false) fails", () => {
+    const errors = validate.inputWithSchema({
+      price: 29.99
+    }, {
+      price: {
+        type: "float",
+        min: 29.99
+      },
+      description: {
+        type: "string",
+        optional: false
+      }
+    });
+    expect(errors).toEqual(["Field description is required."]);
+  });
+  test("returns no errors when rules.optional (true)", () => {
+    const errors = validate.inputWithSchema({
+      price: 29.99
+    }, {
+      price: {
+        type: "float",
+        min: 29.99
+      },
+      description: {
+        type: "string",
+        optional: true
+      }
+    });
+    expect(errors).toEqual([]);
+  });
+  test("returns expected errors when rules.regex fails", () => {
+    const errors = validate.inputWithSchema({
+      arrayPath: "thing.is.not.in.array"
+    }, {
+      arrayPath: {
+        type: "string",
+        regex: new RegExp(/\.[0-9]+\.?/g)
+      }
+    });
+    expect(errors).toEqual([
+      "Field arrayPath must conform to regex: /\\.[0-9]+\\.?/g."
+    ]);
+  });
+  test("returns expected errors when rules.required (true) fails", () => {
+    const errors = validate.inputWithSchema({
+      price: 29.99
+    }, {
+      price: {
+        type: "float",
+        min: 29.99
+      },
+      description: {
+        type: "string",
+        required: true
+      }
+    });
+    expect(errors).toEqual(["Field description is required."]);
+  });
+  test("returns no errors when rules.required (false)", () => {
+    const errors = validate.inputWithSchema({
+      price: 29.99
+    }, {
+      price: {
+        type: "float",
+        min: 29.99
+      },
+      description: {
+        type: "string",
+        required: false
+      }
+    });
+    expect(errors).toEqual([]);
+  });
+  test("returns expected errors when rules.type (array) fails", () => {
+    const errors = validate.inputWithSchema({
+      name: "array"
+    }, {
+      name: {
+        type: "array"
+      }
+    });
+    expect(errors).toEqual(["Field name must be of type array."]);
+  });
+  test("returns expected errors when rules.type (boolean) fails", () => {
+    const errors = validate.inputWithSchema({
+      name: 123
+    }, {
+      name: {
+        type: "boolean"
+      }
+    });
+    expect(errors).toEqual(["Field name must be of type boolean."]);
+  });
+  test("returns expected errors when rules.type (float) fails", () => {
+    const errors = validate.inputWithSchema({
+      name: 123
+    }, {
+      name: {
+        type: "float"
+      }
+    });
+    expect(errors).toEqual(["Field name must be of type float."]);
+  });
+  test("returns expected errors when rules.type (integer) fails", () => {
+    const errors = validate.inputWithSchema({
+      name: 123.123
+    }, {
+      name: {
+        type: "integer"
+      }
+    });
+    expect(errors).toEqual(["Field name must be of type integer."]);
+  });
+  test("returns expected errors when rules.type (number) fails", () => {
+    const errors = validate.inputWithSchema({
+      name: "123.123"
+    }, {
+      name: {
+        type: "number"
+      }
+    });
+    expect(errors).toEqual(["Field name must be of type number."]);
+  });
+  test("returns expected errors when rules.type (object) fails", () => {
+    const errors = validate.inputWithSchema({
+      name: []
+    }, {
+      name: {
+        type: "object"
+      }
+    });
+    expect(errors).toEqual(["Field name must be of type object."]);
+  });
+  test("returns expected errors when rules.type (string) fails", () => {
+    const errors = validate.inputWithSchema({
+      name: 123
+    }, {
+      name: {
+        type: "string"
+      }
+    });
+    expect(errors).toEqual(["Field name must be of type string."]);
+  });
+  test("returns array of errors after validation", () => {
+    const errors = validate.inputWithSchema({
+      name: 12345
+    }, {
+      name: {
+        type: "string"
+      }
+    });
+    expect(errors).toEqual(["Field name must be of type string."]);
+  });
+});

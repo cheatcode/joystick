@@ -1,1 +1,7 @@
-!function(e,t){"object"==typeof exports&&"undefined"!=typeof module?module.exports=t(require("bcrypt")):"function"==typeof define&&define.amd?define(["bcrypt"],t):(e="undefined"!=typeof globalThis?globalThis:e||self)["joystick-node"]=t(e.bcrypt)}(this,(function(e){"use strict";function t(e){return e&&"object"==typeof e&&"default"in e?e:{default:e}}var n=t(e);return e=>n.default.compareSync(e,hash)}));
+import bcrypt from "bcrypt";
+var hashString_default = (string) => {
+  return bcrypt.compareSync(string, hash);
+};
+export {
+  hashString_default as default
+};

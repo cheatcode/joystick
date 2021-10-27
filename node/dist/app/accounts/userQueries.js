@@ -1,1 +1,92 @@
-!function(e,s){"object"==typeof exports&&"undefined"!=typeof module?module.exports=s(require("crypto-extra")):"function"==typeof define&&define.amd?define(["crypto-extra"],s):(e="undefined"!=typeof globalThis?globalThis:e||self)["joystick-node"]=s(e.crypto)}(this,(function(e){"use strict";function s(e){return e&&"object"==typeof e&&"default"in e?e:{default:e}}var o=s(e);return{mongodb:{existingUser:async(e={})=>{let s,o;return e?.emailAddress&&(s=await process.databases.mongodb.collection("users").findOne({emailAddress:e.emailAddress})),e?.username&&(o=await process.databases.mongodb.collection("users").findOne({username:e.username})),s||o?{existingEmailAddress:s?.emailAddress,existingUsername:o?.username}:null},createUser:async(e={})=>{const s=((e=16)=>o.default.randomString(e))();return await process.databases.mongodb.collection("users").insertOne({_id:s,...e}),s},user:async e=>{if(e?.emailAddress){return await process.databases.mongodb.collection("users").findOne({emailAddress:e.emailAddress})}if(e?.username){return await process.databases.mongodb.collection("users").findOne({username:e.username})}return null},addSession:async(e={})=>{await process.databases.mongodb.collection("users").updateOne({_id:e.userId},{$addToSet:{sessions:e.session}})},userWithLoginToken:async e=>await process.databases.mongodb.collection("users").findOne({"sessions.token":e?.token}),addPasswordResetToken:(e={})=>process.databases.mongodb.collection("users").updateOne({emailAddress:e.emailAddress},{$addToSet:{passwordResetTokens:{token:e.token,requestedAt:(new Date).toISOString()}}}),userWithResetToken:async e=>await process.databases.mongodb.collection("users").findOne({"passwordResetTokens.token":e["passwordResetTokens.token"]}),setNewPassword:async(e={})=>process.databases.mongodb.collection("users").updateOne({_id:e?.userId},{$set:{password:e?.hashedPassword}}),removeResetToken:async(e={})=>{const s=await process.databases.mongodb.collection("users").findOne({_id:e?.userId});return process.databases.mongodb.collection("users").updateOne({_id:e?.userId},{$set:{passwordResetTokens:s?.passwordResetTokens?.filter((({token:s})=>s!==e?.token))}})}}}}));
+import generateId from "../../lib/generateId";
+var userQueries_default = {
+  mongodb: {
+    existingUser: async (input = {}) => {
+      let existingUserWithEmailAddress;
+      let existingUserWithUsername;
+      if (input?.emailAddress) {
+        existingUserWithEmailAddress = await process.databases.mongodb.collection("users").findOne({ emailAddress: input.emailAddress });
+      }
+      if (input?.username) {
+        existingUserWithUsername = await process.databases.mongodb.collection("users").findOne({ username: input.username });
+      }
+      return existingUserWithEmailAddress || existingUserWithUsername ? {
+        existingEmailAddress: existingUserWithEmailAddress?.emailAddress,
+        existingUsername: existingUserWithUsername?.username
+      } : null;
+    },
+    createUser: async (input = {}) => {
+      const userId = generateId();
+      await process.databases.mongodb.collection("users").insertOne({ _id: userId, ...input });
+      return userId;
+    },
+    user: async (input) => {
+      if (input?.emailAddress) {
+        const user = await process.databases.mongodb.collection("users").findOne({ emailAddress: input.emailAddress });
+        return user;
+      }
+      if (input?.username) {
+        const user = await process.databases.mongodb.collection("users").findOne({ username: input.username });
+        return user;
+      }
+      return null;
+    },
+    addSession: async (input = {}) => {
+      await process.databases.mongodb.collection("users").updateOne({
+        _id: input.userId
+      }, {
+        $addToSet: {
+          sessions: input.session
+        }
+      });
+    },
+    userWithLoginToken: async (input) => {
+      const user = await process.databases.mongodb.collection("users").findOne({
+        "sessions.token": input?.token
+      });
+      return user;
+    },
+    addPasswordResetToken: (input = {}) => {
+      return process.databases.mongodb.collection("users").updateOne({
+        emailAddress: input.emailAddress
+      }, {
+        $addToSet: {
+          passwordResetTokens: {
+            token: input.token,
+            requestedAt: new Date().toISOString()
+          }
+        }
+      });
+    },
+    userWithResetToken: async (input) => {
+      const user = await process.databases.mongodb.collection("users").findOne({
+        "passwordResetTokens.token": input["passwordResetTokens.token"]
+      });
+      return user;
+    },
+    setNewPassword: async (input = {}) => {
+      return process.databases.mongodb.collection("users").updateOne({
+        _id: input?.userId
+      }, {
+        $set: {
+          password: input?.hashedPassword
+        }
+      });
+    },
+    removeResetToken: async (input = {}) => {
+      const user = await process.databases.mongodb.collection("users").findOne({ _id: input?.userId });
+      return process.databases.mongodb.collection("users").updateOne({
+        _id: input?.userId
+      }, {
+        $set: {
+          passwordResetTokens: user?.passwordResetTokens?.filter(({ token }) => {
+            return token !== input?.token;
+          })
+        }
+      });
+    }
+  }
+};
+export {
+  userQueries_default as default
+};

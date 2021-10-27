@@ -1,1 +1,29 @@
-!function(e,s){"object"==typeof exports&&"undefined"!=typeof module?module.exports=s(require("crypto-extra")):"function"==typeof define&&define.amd?define(["crypto-extra"],s):(e="undefined"!=typeof globalThis?globalThis:e||self)["joystick-node"]=s(e.crypto)}(this,(function(e){"use strict";function s(e){return e&&"object"==typeof e&&"default"in e?e:{default:e}}var n=s(e);const o=(e="",s)=>{const n="object"==typeof s&&(s.reason||s.message)||s;return`${"development"===process.env.NODE_ENV?`[${e}] `:""}${n}`};const t={config:{},keys:{global:{},public:{},private:{}}};var r=()=>{try{const e=!!process.env.JOYSTICK_SETTINGS,s=e&&((e="")=>{try{JSON.parse(e)}catch(e){return!1}return!0})(process.env.JOYSTICK_SETTINGS);if(!e)return t;if(!s)return console.warn(`Could not parse settings. Please verify that your settings-${process.env.NODE_ENV} exports a valid JavaScript object.`),t;return JSON.parse(process.env.JOYSTICK_SETTINGS)||t}catch(e){console.warn(e)}},a={mongodb:{existingUser:async(e={})=>{let s,n;return e?.emailAddress&&(s=await process.databases.mongodb.collection("users").findOne({emailAddress:e.emailAddress})),e?.username&&(n=await process.databases.mongodb.collection("users").findOne({username:e.username})),s||n?{existingEmailAddress:s?.emailAddress,existingUsername:n?.username}:null},createUser:async(e={})=>{const s=((e=16)=>n.default.randomString(e))();return await process.databases.mongodb.collection("users").insertOne({_id:s,...e}),s},user:async e=>{if(e?.emailAddress){return await process.databases.mongodb.collection("users").findOne({emailAddress:e.emailAddress})}if(e?.username){return await process.databases.mongodb.collection("users").findOne({username:e.username})}return null},addSession:async(e={})=>{await process.databases.mongodb.collection("users").updateOne({_id:e.userId},{$addToSet:{sessions:e.session}})},userWithLoginToken:async e=>await process.databases.mongodb.collection("users").findOne({"sessions.token":e?.token}),addPasswordResetToken:(e={})=>process.databases.mongodb.collection("users").updateOne({emailAddress:e.emailAddress},{$addToSet:{passwordResetTokens:{token:e.token,requestedAt:(new Date).toISOString()}}}),userWithResetToken:async e=>await process.databases.mongodb.collection("users").findOne({"passwordResetTokens.token":e["passwordResetTokens.token"]}),setNewPassword:async(e={})=>process.databases.mongodb.collection("users").updateOne({_id:e?.userId},{$set:{password:e?.hashedPassword}}),removeResetToken:async(e={})=>{const s=await process.databases.mongodb.collection("users").findOne({_id:e?.userId});return process.databases.mongodb.collection("users").updateOne({_id:e?.userId},{$set:{passwordResetTokens:s?.passwordResetTokens?.filter((({token:s})=>s!==e?.token))}})}}},d=async(e="",s={})=>{const n=(()=>{const e=(r()?.config?.databases||[]).find((e=>!!e.users));return e&&e.provider})(),o=n&&a[n];if(o&&o[e]){return await o[e](s)}return null};const i=(e="",s="")=>{try{return d("addPasswordResetToken",{emailAddress:e,token:s})}catch(e){reject(o("generateResetToken.setTokenOnUser",e))}};return e=>new Promise(((s,t)=>{(async(e,{resolve:s,reject:t})=>{try{if(!e.emailAddress)return t("Email address is required.");const o=n.default.randomString(32);await i(e.emailAddress,o),console.log({options:e,token:o}),s(o)}catch(e){t(o("generateResetToken",e))}})(e,{resolve:s,reject:t})}))}));
+import crypto from "crypto-extra";
+import formatErrorString from "../../lib/formatErrorString";
+import runUserQuery from "./runUserQuery";
+const setTokenOnUser = (emailAddress = "", token = "") => {
+  try {
+    return runUserQuery("addPasswordResetToken", { emailAddress, token });
+  } catch (exception) {
+    reject(formatErrorString("generateResetToken.setTokenOnUser", exception));
+  }
+};
+const generateResetToken = async (options, { resolve, reject: reject2 }) => {
+  try {
+    if (!options.emailAddress) {
+      return reject2("Email address is required.");
+    }
+    const token = crypto.randomString(32);
+    await setTokenOnUser(options.emailAddress, token);
+    console.log({ options, token });
+    resolve(token);
+  } catch (exception) {
+    reject2(formatErrorString("generateResetToken", exception));
+  }
+};
+var generateResetToken_default = (options) => new Promise((resolve, reject2) => {
+  generateResetToken(options, { resolve, reject: reject2 });
+});
+export {
+  generateResetToken_default as default
+};

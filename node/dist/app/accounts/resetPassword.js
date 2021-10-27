@@ -1,1 +1,64 @@
-!function(e,s){"object"==typeof exports&&"undefined"!=typeof module?module.exports=s(require("bcrypt"),require("crypto-extra"),require("dayjs")):"function"==typeof define&&define.amd?define(["bcrypt","crypto-extra","dayjs"],s):(e="undefined"!=typeof globalThis?globalThis:e||self)["joystick-node"]=s(e.bcrypt,e.crypto,e.dayjs)}(this,(function(e,s,r){"use strict";function t(e){return e&&"object"==typeof e&&"default"in e?e:{default:e}}var o=t(e),a=t(s),n=t(r);const d={config:{},keys:{global:{},public:{},private:{}}};var i=()=>{try{const e=!!process.env.JOYSTICK_SETTINGS,s=e&&((e="")=>{try{JSON.parse(e)}catch(e){return!1}return!0})(process.env.JOYSTICK_SETTINGS);if(!e)return d;if(!s)return console.warn(`Could not parse settings. Please verify that your settings-${process.env.NODE_ENV} exports a valid JavaScript object.`),d;return JSON.parse(process.env.JOYSTICK_SETTINGS)||d}catch(e){console.warn(e)}},c=(e=16)=>a.default.randomString(e),u={mongodb:{existingUser:async(e={})=>{let s,r;return e?.emailAddress&&(s=await process.databases.mongodb.collection("users").findOne({emailAddress:e.emailAddress})),e?.username&&(r=await process.databases.mongodb.collection("users").findOne({username:e.username})),s||r?{existingEmailAddress:s?.emailAddress,existingUsername:r?.username}:null},createUser:async(e={})=>{const s=c();return await process.databases.mongodb.collection("users").insertOne({_id:s,...e}),s},user:async e=>{if(e?.emailAddress){return await process.databases.mongodb.collection("users").findOne({emailAddress:e.emailAddress})}if(e?.username){return await process.databases.mongodb.collection("users").findOne({username:e.username})}return null},addSession:async(e={})=>{await process.databases.mongodb.collection("users").updateOne({_id:e.userId},{$addToSet:{sessions:e.session}})},userWithLoginToken:async e=>await process.databases.mongodb.collection("users").findOne({"sessions.token":e?.token}),addPasswordResetToken:(e={})=>process.databases.mongodb.collection("users").updateOne({emailAddress:e.emailAddress},{$addToSet:{passwordResetTokens:{token:e.token,requestedAt:(new Date).toISOString()}}}),userWithResetToken:async e=>await process.databases.mongodb.collection("users").findOne({"passwordResetTokens.token":e["passwordResetTokens.token"]}),setNewPassword:async(e={})=>process.databases.mongodb.collection("users").updateOne({_id:e?.userId},{$set:{password:e?.hashedPassword}}),removeResetToken:async(e={})=>{const s=await process.databases.mongodb.collection("users").findOne({_id:e?.userId});return process.databases.mongodb.collection("users").updateOne({_id:e?.userId},{$set:{passwordResetTokens:s?.passwordResetTokens?.filter((({token:s})=>s!==e?.token))}})}}},l=async(e="",s={})=>{const r=(()=>{const e=(i()?.config?.databases||[]).find((e=>!!e.users));return e&&e.provider})(),t=r&&u[r];if(t&&t[e]){return await t[e](s)}return null};const p=async(e="",s="")=>{try{const t=await(r=s,o.default.compareSync(r,hash));return await l("setNewPassword",{userId:e,hashedPassword:t}),t}catch(e){throw new Error(`[resetPassword.setNewPasswordOnUser] ${e.message}`)}var r},w=async(e,{resolve:s,reject:r})=>{try{const t=await((e="")=>{try{return l("userWithResetToken",{"passwordResetTokens.token":e})}catch(e){throw new Error(`[resetPassword.getUserWithToken] ${e.message}`)}})(e.token);if(!t)return void r("Sorry, that token is invalid. Please try again.");await p(t?._id,e.password);const o=await(t?._id,t?.emailAddress,{token:c(64),tokenExpiresAt:n.default().add(30,"days").format()});await((e=null,s=null)=>{try{return l("addSession",{userId:e,session:s})}catch(e){throw new Error(formatErrorString("resetPassword.addSessionToUser",e))}})(t?._id,o),await((e=null,s=null)=>{try{return l("removeResetToken",{userId:e,token:s})}catch(e){throw new Error(formatErrorString("resetPassword.removeTokenFromUser",e))}})(t?._id,e.token),s({user:t,...o})}catch(e){r(`[resetPassword] ${e.message}`)}};return e=>new Promise(((s,r)=>{w(e,{resolve:s,reject:r})}))}));
+import hashString from "./hashString";
+import runUserQuery from "./runUserQuery";
+import generateSession from "./generateSession";
+const removeTokenFromUser = (userId = null, token = null) => {
+  try {
+    return runUserQuery("removeResetToken", { userId, token });
+  } catch (error) {
+    throw new Error(formatErrorString("resetPassword.removeTokenFromUser", error));
+  }
+};
+const addSessionToUser = (userId = null, session = null) => {
+  try {
+    return runUserQuery("addSession", { userId, session });
+  } catch (error) {
+    throw new Error(formatErrorString("resetPassword.addSessionToUser", error));
+  }
+};
+const setNewPasswordOnUser = async (userId = "", password = "") => {
+  try {
+    const hashedPassword = await hashString(password);
+    await runUserQuery("setNewPassword", { userId, hashedPassword });
+    return hashedPassword;
+  } catch (exception) {
+    throw new Error(`[resetPassword.setNewPasswordOnUser] ${exception.message}`);
+  }
+};
+const getUserWithToken = (token = "") => {
+  try {
+    return runUserQuery("userWithResetToken", {
+      "passwordResetTokens.token": token
+    });
+  } catch (exception) {
+    throw new Error(`[resetPassword.getUserWithToken] ${exception.message}`);
+  }
+};
+const resetPassword = async (options, { resolve, reject }) => {
+  try {
+    const user = await getUserWithToken(options.token);
+    if (!user) {
+      reject("Sorry, that token is invalid. Please try again.");
+      return;
+    }
+    const hashedNewPassword = await setNewPasswordOnUser(user?._id, options.password);
+    const session = await generateSession({
+      userId: user?._id,
+      emailAddress: user?.emailAddress,
+      password: hashedNewPassword
+    });
+    await addSessionToUser(user?._id, session);
+    await removeTokenFromUser(user?._id, options.token);
+    resolve({
+      user,
+      ...session
+    });
+  } catch (exception) {
+    reject(`[resetPassword] ${exception.message}`);
+  }
+};
+var resetPassword_default = (options) => new Promise((resolve, reject) => {
+  resetPassword(options, { resolve, reject });
+});
+export {
+  resetPassword_default as default
+};

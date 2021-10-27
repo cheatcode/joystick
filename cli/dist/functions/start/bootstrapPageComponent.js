@@ -1,1 +1,44 @@
-"use strict";function e(e){return e&&"object"==typeof e&&"default"in e?e:{default:e}}var t=e(require("chalk"));const n=new RegExp(/export default [a-zA-Z0-9]+/g);module.exports=()=>({transform(e,o){if(["pages"].some((e=>o.includes(e)))){const l=e.match(n)||[],u=l&&l[0];if(!u)return console.log(" "),console.warn(t.default.yellowBright(`All components in the ui/pages directory must have an export default statement (e.g., export default MyPage). Please check the file at ${o}.`)),console.log(" "),null;const r=(u&&u.split(" ")||[]).pop();if(r)return{code:e.replace(`${u};`,`            \n            if (\n              typeof window !== 'undefined' &&\n              window.__joystick_ssr__ === true &&\n              !window.__joystick_layout_page__ &&\n              ui &&\n              ui.mount\n            ) {\n              ui.mount(${r}, window.__joystick_ssr_props__ || {}, document.getElementById('app'));\n            }\n            \n            export default ${r};\n              `)}}return null}});
+import chalk from "chalk";
+import { EXPORT_DEFAULT_REGEX } from "../../lib/regexes.js";
+var bootstrapPageComponent_default = () => {
+  return {
+    transform(code, id) {
+      const shouldBootstrap = ["pages"].some((bootstrapTarget) => {
+        return id.includes(bootstrapTarget);
+      });
+      if (shouldBootstrap) {
+        const matches = code.match(EXPORT_DEFAULT_REGEX) || [];
+        const match = matches && matches[0];
+        if (!match) {
+          console.log(" ");
+          console.warn(chalk.yellowBright(`All components in the ui/pages directory must have an export default statement (e.g., export default MyPage). Please check the file at ${id}.`));
+          console.log(" ");
+          return null;
+        }
+        const matchParts = match && match.split(" ") || [];
+        const componentName = matchParts.pop();
+        if (componentName) {
+          return {
+            code: code.replace(`${match};`, `            
+            if (
+              typeof window !== 'undefined' &&
+              window.__joystick_ssr__ === true &&
+              !window.__joystick_layout_page__ &&
+              ui &&
+              ui.mount
+            ) {
+              ui.mount(${componentName}, window.__joystick_ssr_props__ || {}, document.getElementById('app'));
+            }
+            
+            export default ${componentName};
+              `)
+          };
+        }
+      }
+      return null;
+    }
+  };
+};
+export {
+  bootstrapPageComponent_default as default
+};

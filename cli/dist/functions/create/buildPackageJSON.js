@@ -1,1 +1,20 @@
-"use strict";module.exports=(t="")=>{const s={name:t,version:"1.0.0",description:"",main:"index.js",scripts:{start:"joystick start",test:'echo "Error: no test specified" && exit 1'},keywords:[],author:"",license:"ISC"};return JSON.stringify(s,null,2)};
+var buildPackageJSON_default = (projectName = "") => {
+  const packageJSON = {
+    type: "module",
+    name: projectName,
+    version: "1.0.0",
+    description: "",
+    main: "index.js",
+    scripts: {
+      start: "joystick start",
+      test: 'echo "Error: no test specified" && exit 1'
+    },
+    keywords: [],
+    author: "",
+    license: "ISC"
+  };
+  return JSON.stringify(packageJSON, null, 2);
+};
+export {
+  buildPackageJSON_default as default
+};

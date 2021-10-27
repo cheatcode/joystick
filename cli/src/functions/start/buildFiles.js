@@ -1,21 +1,30 @@
 import fs from "fs-extra";
-import filesToCopy from "./filesToCopy";
-import buildFile from "./buildFile";
+import filesToCopy from "./filesToCopy.js";
+import buildFile from "./buildFile.js";
 
-const getFileTarget = (path = "") => {
-  let target = "umd";
+const getFilePlatform = (path = "") => {
+  let platform = "copy";
 
+  const browserPaths = ["ui/", "lib/", "index.client.js"];
   const nodePaths = ["api/", "index.server.js"];
+
+  const isBrowser = browserPaths.some((browserPath) => {
+    return path.includes(browserPath);
+  });
 
   const isNode = nodePaths.some((nodePath) => {
     return path.includes(nodePath);
   });
 
-  if (isNode) {
-    target = "cjs";
+  if (isBrowser) {
+    platform = "browser";
   }
 
-  return target;
+  if (isNode) {
+    platform = "node";
+  }
+
+  return platform;
 };
 
 export default async (filesToBuild = []) => {
@@ -36,8 +45,8 @@ export default async (filesToBuild = []) => {
         });
       }
 
-      const target = getFileTarget(fileToBuild);
-      return buildFile(fileToBuild, target);
+      const platform = getFilePlatform(fileToBuild);
+      return buildFile(fileToBuild, platform);
     })
   );
 };

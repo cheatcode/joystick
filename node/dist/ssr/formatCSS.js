@@ -1,1 +1,7 @@
-!function(e,t){"object"==typeof exports&&"undefined"!=typeof module?module.exports=t():"function"==typeof define&&define.amd?define(t):(e="undefined"!=typeof globalThis?globalThis:e||self)["joystick-node"]=t()}(this,(function(){"use strict";return(e=[])=>{const t=e.join("")||"";return`<style js-css-ssr="${btoa(t.trim()).substring(0,8)}">${t.trim()}</style>`}}));
+var formatCSS_default = (styles = []) => {
+  const css = styles.join("") || "";
+  return `<style js-css-ssr="${btoa(css.trim()).substring(0, 8)}">${css.trim()}</style>`;
+};
+export {
+  formatCSS_default as default
+};

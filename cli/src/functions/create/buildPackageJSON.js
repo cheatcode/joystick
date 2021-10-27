@@ -1,5 +1,6 @@
 export default (projectName = "") => {
   const packageJSON = {
+    type: "module",
     name: projectName,
     version: "1.0.0",
     description: "",

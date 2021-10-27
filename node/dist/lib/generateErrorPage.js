@@ -1,1 +1,140 @@
-!function(n,e){"object"==typeof exports&&"undefined"!=typeof module?module.exports=e():"function"==typeof define&&define.amd?define(e):(n="undefined"!=typeof globalThis?globalThis:n||self)["joystick-node"]=e()}(this,(function(){"use strict";return({frame:n,path:e,stack:i})=>`\n  <html>\n    <head>\n      <title>Build Error</title>\n      <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.2.0/styles/atom-one-dark.min.css" />\n      <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.2.0/highlight.min.js"><\/script>\n      <style>\n        body {\n          background: #fff;\n          font-size: 16px;\n          line-height: 24px;\n          color: #333;\n          font-family: "Helvetica Neue", "Helvetica", "Arial", sans-serif;\n        }\n\n        * {\n          margin: 0;\n          padding: 0;\n        }\n\n        *, *:before, *:after {\n          box-sizing: border-box;\n        }\n\n        .container {\n          width: 90%;\n          margin: 0 auto;\n          max-width: 1200px;\n        }\n\n        h1,\n        h2,\n        h3,\n        h4,\n        h5,\n        h6 {\n          margin: 0;\n        }\n\n        .container > header {\n          padding: 30px 0;\n        }\n\n        .container > header h1 {\n          font-size: 26px;\n          font-weight: bold;\n          color: #333;\n        }\n\n        .container > header h1 .fa-exclamation-triangle {\n          color: #ffcc00;\n          margin-right: 5px;\n        }\n\n        .container > header h4 {\n          font-size: 18px;\n          font-weight: normal;\n          color: #888;\n          margin-top: 10px;\n        }\n\n        .container > header p {\n          margin: 20px 0 0;\n        }\n\n        .code-block {\n          margin-bottom: 40px;\n          border: 1px solid #eee;\n          border-radius: 3px;\n        }\n\n        .code-block header {\n          border-bottom: 1px solid #eee;\n          padding: 20px;\n          border-radius: 3px;\n        }\n\n        .code-block header .fas {\n          color: #888;\n          margin-right: 5px;\n        }\n\n        .code-block pre {\n          background: #fff;\n          overflow: scroll;\n          margin: -1px;\n          border-radius: 0px 0px 3px 3px;\n        }\n\n        @media screen and (min-width: 768px) {\n          .container {\n            max-width: 728px;\n          }\n\n          .container > header {\n            padding: 50px 0;\n          }\n\n          .container > header p {\n            margin: 30px 0 0;\n          }\n        }\n\n        @media screen and (min-width: 1240px) {\n          .container {\n            max-width: 1200px;\n          }\n\n          width: 100%;\n        }\n      </style>\n      <script src="https://kit.fontawesome.com/225f49d71f.js" crossorigin="anonymous"><\/script>\n    </head>\n    <body>\n      <div class="container">\n        <header>\n          <h1><i class="fas fa-exclamation-triangle"></i> Build Error</h1>\n          <h4>in ${e}</h4>\n          <p><strong>Your app is failing to build</strong>. Review the output below, correct the issue displayed, and then refresh the page:</p>\n        </header>\n        <div class="code-block">\n          <header>\n            <h4><i class="fas fa-code"></i> Code Frame</h4>\n          </header>\n          <pre><code>${n}</code></pre>\n        </div>\n        <div class="code-block">\n          <header>\n            <h4><i class="fas fa-layer-group"></i> Stack Trace</h4>\n          </header>\n          <pre><code>${i}</code></pre>\n        </div>\n      </div>\n      <script>hljs.highlightAll();<\/script>\n    </body>\n  </html>\n`}));
+var generateErrorPage_default = ({ frame, path, stack }) => `
+  <html>
+    <head>
+      <title>Build Error</title>
+      <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.2.0/styles/atom-one-dark.min.css" />
+      <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.2.0/highlight.min.js"><\/script>
+      <style>
+        body {
+          background: #fff;
+          font-size: 16px;
+          line-height: 24px;
+          color: #333;
+          font-family: "Helvetica Neue", "Helvetica", "Arial", sans-serif;
+        }
+
+        * {
+          margin: 0;
+          padding: 0;
+        }
+
+        *, *:before, *:after {
+          box-sizing: border-box;
+        }
+
+        .container {
+          width: 90%;
+          margin: 0 auto;
+          max-width: 1200px;
+        }
+
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {
+          margin: 0;
+        }
+
+        .container > header {
+          padding: 30px 0;
+        }
+
+        .container > header h1 {
+          font-size: 26px;
+          font-weight: bold;
+          color: #333;
+        }
+
+        .container > header h1 .fa-exclamation-triangle {
+          color: #ffcc00;
+          margin-right: 5px;
+        }
+
+        .container > header h4 {
+          font-size: 18px;
+          font-weight: normal;
+          color: #888;
+          margin-top: 10px;
+        }
+
+        .container > header p {
+          margin: 20px 0 0;
+        }
+
+        .code-block {
+          margin-bottom: 40px;
+          border: 1px solid #eee;
+          border-radius: 3px;
+        }
+
+        .code-block header {
+          border-bottom: 1px solid #eee;
+          padding: 20px;
+          border-radius: 3px;
+        }
+
+        .code-block header .fas {
+          color: #888;
+          margin-right: 5px;
+        }
+
+        .code-block pre {
+          background: #fff;
+          overflow: scroll;
+          margin: -1px;
+          border-radius: 0px 0px 3px 3px;
+        }
+
+        @media screen and (min-width: 768px) {
+          .container {
+            max-width: 728px;
+          }
+
+          .container > header {
+            padding: 50px 0;
+          }
+
+          .container > header p {
+            margin: 30px 0 0;
+          }
+        }
+
+        @media screen and (min-width: 1240px) {
+          .container {
+            max-width: 1200px;
+          }
+
+          width: 100%;
+        }
+      </style>
+      <script src="https://kit.fontawesome.com/225f49d71f.js" crossorigin="anonymous"><\/script>
+    </head>
+    <body>
+      <div class="container">
+        <header>
+          <h1><i class="fas fa-exclamation-triangle"></i> Build Error</h1>
+          <h4>in ${path}</h4>
+          <p><strong>Your app is failing to build</strong>. Review the output below, correct the issue displayed, and then refresh the page:</p>
+        </header>
+        <div class="code-block">
+          <header>
+            <h4><i class="fas fa-code"></i> Code Frame</h4>
+          </header>
+          <pre><code>${frame}</code></pre>
+        </div>
+        <div class="code-block">
+          <header>
+            <h4><i class="fas fa-layer-group"></i> Stack Trace</h4>
+          </header>
+          <pre><code>${stack}</code></pre>
+        </div>
+      </div>
+      <script>hljs.highlightAll();<\/script>
+    </body>
+  </html>
+`;
+export {
+  generateErrorPage_default as default
+};

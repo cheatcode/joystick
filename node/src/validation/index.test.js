@@ -41,7 +41,6 @@ describe("validate/schema/index.js", () => {
           min: "",
           optional: "",
           required: "",
-          type: "",
           hotDog: "",
         },
         userId: {},

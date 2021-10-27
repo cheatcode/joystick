@@ -2,8 +2,9 @@ import fs from "fs";
 import { fileURLToPath } from "url";
 import { dirname } from "path";
 import chalk from "chalk";
-import { execSync } from "child_process";
+import { exec } from "child_process";
 import buildPackageJSON from "./buildPackageJSON.js";
+import Loader from "../../lib/loader.js";
 
 const npmRegistry =
   process.env.NODE_ENV === "development"
@@ -45,121 +46,154 @@ const checkIfProjectExists = (projectName = "") => {
 };
 
 export default (projectName) => {
-  const projectAlreadyExists = checkIfProjectExists(projectName);
+  try {
+    process.loader = new Loader({ defaultMessage: "Starting app..." });
+    process.loader.text("Creating app...");
 
-  if (projectAlreadyExists) {
-    throw new Error(
-      `A folder with the name ${projectName} already exists. Please choose a different name and try again.`
+    const projectAlreadyExists = checkIfProjectExists(projectName);
+
+    if (projectAlreadyExists) {
+      throw new Error(
+        `A folder with the name ${projectName} already exists. Please choose a different name and try again.`
+      );
+    }
+
+    createProjectFolder(projectName);
+    createJoystickFolder(projectName);
+    createPackageJSON(projectName);
+
+    createFolders(projectName, [
+      "api",
+      "i18n",
+      "ui",
+      "ui/components",
+      "ui/components/quote",
+      "ui/layouts",
+      "ui/layouts/app",
+      "ui/pages",
+      "ui/pages/error",
+      "ui/pages/index",
+      "lib",
+      "public",
+    ]);
+
+    createFiles(projectName, [
+      {
+        name: "api/index.js",
+        content: fs.readFileSync(
+          `${__dirname}/templates/api/index.js`,
+          "utf-8"
+        ),
+      },
+      {
+        name: "i18n/en-US.js",
+        content: fs.readFileSync(
+          `${__dirname}/templates/i18n/en-US.js`,
+          "utf-8"
+        ),
+      },
+      {
+        name: "public/apple-touch-icon-152x152.png",
+        content: fs.readFileSync(
+          `${__dirname}/templates/public/apple-touch-icon-152x152.png`
+        ),
+      },
+      {
+        name: "public/favicon.ico",
+        content: fs.readFileSync(`${__dirname}/templates/public/favicon.ico`),
+      },
+      {
+        name: "public/manifest.json",
+        content: fs.readFileSync(`${__dirname}/templates/public/manifest.json`),
+      },
+      {
+        name: "public/service-worker.js",
+        content: fs.readFileSync(
+          `${__dirname}/templates/public/service-worker.js`
+        ),
+      },
+      {
+        name: "public/splash-screen-1024x1024.png",
+        content: fs.readFileSync(
+          `${__dirname}/templates/public/splash-screen-1024x1024.png`
+        ),
+      },
+      {
+        name: "ui/components/quote/index.js",
+        content: fs.readFileSync(
+          `${__dirname}/templates/ui/components/quote/index.js`,
+          "utf-8"
+        ),
+      },
+      {
+        name: "ui/layouts/app/index.js",
+        content: fs.readFileSync(
+          `${__dirname}/templates/ui/layouts/app/index.js`,
+          "utf-8"
+        ),
+      },
+      {
+        name: "ui/pages/error/index.js",
+        content: fs.readFileSync(
+          `${__dirname}/templates/ui/pages/error/index.js`,
+          "utf-8"
+        ),
+      },
+      {
+        name: "ui/pages/index/index.js",
+        content: fs.readFileSync(
+          `${__dirname}/templates/ui/pages/index/index.js`,
+          "utf-8"
+        ),
+      },
+      {
+        name: "index.client.js",
+        content: fs.readFileSync(
+          `${__dirname}/templates/index.client.js`,
+          "utf-8"
+        ),
+      },
+      {
+        name: "index.css",
+        content: fs.readFileSync(`${__dirname}/templates/index.css`, "utf-8"),
+      },
+      {
+        name: "index.html",
+        content: fs.readFileSync(`${__dirname}/templates/index.html`, "utf-8"),
+      },
+      {
+        name: "index.server.js",
+        content: fs.readFileSync(
+          `${__dirname}/templates/index.server.js`,
+          "utf-8"
+        ),
+      },
+      {
+        name: "settings.development.json",
+        content: fs.readFileSync(
+          `${__dirname}/templates/settings.development.json`,
+          "utf-8"
+        ),
+      },
+    ]);
+
+    exec(
+      `cd ./${projectName} && npm install --save @joystick.js/ui @joystick.js/node ${npmRegistry}`,
+      (stderr, stdout) => {
+        if (stderr) {
+          process.loader.stop();
+          console.warn(stderr);
+        } else {
+          process.loader.stop();
+          console.log(
+            `${chalk.green(
+              "Project created! To get started, run:"
+            )}\ncd ${projectName} && joystick start`
+          );
+        }
+      }
     );
+  } catch (exception) {
+    console.warn(exception);
   }
-
-  createProjectFolder(projectName);
-  createJoystickFolder(projectName);
-  createPackageJSON(projectName);
-
-  createFolders(projectName, [
-    "api",
-    "i18n",
-    "ui",
-    "ui/components",
-    "ui/components/quote",
-    "ui/pages",
-    "ui/pages/index",
-    "lib",
-    "public",
-  ]);
-
-  createFiles(projectName, [
-    {
-      name: "api/index.js",
-      content: fs.readFileSync(
-        `${__dirname}/functions/create/templates/api/index.js`,
-        "utf-8"
-      ),
-    },
-    {
-      name: "i18n/en-US.js",
-      content: fs.readFileSync(
-        `${__dirname}/functions/create/templates/i18n/en-US.js`,
-        "utf-8"
-      ),
-    },
-    {
-      name: "ui/components/quote/index.js",
-      content: fs.readFileSync(
-        `${__dirname}/functions/create/templates/ui/components/quote/index.js`,
-        "utf-8"
-      ),
-    },
-    {
-      name: "ui/pages/index/index.js",
-      content: fs.readFileSync(
-        `${__dirname}/functions/create/templates/ui/pages/index/index.js`,
-        "utf-8"
-      ),
-    },
-    {
-      name: "public/favicon.ico",
-      content: fs.readFileSync(
-        `${__dirname}/functions/create/templates/public/favicon.ico`
-      ),
-    },
-    {
-      name: "public/apple-touch-icon-152x152.png",
-      content: fs.readFileSync(
-        `${__dirname}/functions/create/templates/public/apple-touch-icon-152x152.png`
-      ),
-    },
-    {
-      name: "index.client.js",
-      content: fs.readFileSync(
-        `${__dirname}/functions/create/templates/index.client.js`,
-        "utf-8"
-      ),
-    },
-    {
-      name: "settings-development.js",
-      content: fs.readFileSync(
-        `${__dirname}/functions/create/templates/settings.env.js`,
-        "utf-8"
-      ),
-    },
-    {
-      name: "settings-staging.js",
-      content: fs.readFileSync(
-        `${__dirname}/functions/create/templates/settings.env.js`,
-        "utf-8"
-      ),
-    },
-    {
-      name: "settings-production.js",
-      content: fs.readFileSync(
-        `${__dirname}/functions/create/templates/settings.env.js`,
-        "utf-8"
-      ),
-    },
-    {
-      name: "index.html",
-      content: fs.readFileSync(
-        `${__dirname}/functions/create/templates/index.html`,
-        "utf-8"
-      ),
-    },
-    {
-      name: "index.server.js",
-      content: fs.readFileSync(
-        `${__dirname}/functions/create/templates/index.server.js`,
-        "utf-8"
-      ),
-    },
-  ]);
-
-  execSync(
-    `cd ./${projectName} && npm install --save @joystick.js/ui @joystick.js/node ${npmRegistry}`
-  );
-
-  console.log(`
-    ${chalk.green("Project created! To get started, run:")}\n
-    cd ${projectName} && joystick start
-  `);
 };

@@ -1,1 +1,141 @@
-"use strict";var e=require("fs"),t=require("url"),n=require("path"),i=require("chalk"),c=require("child_process");function a(e){return e&&"object"==typeof e&&"default"in e?e:{default:e}}var s=a(e),r=a(i);const o="development"===process.env.NODE_ENV?"--registry http://localhost:4873":"",u=t.fileURLToPath("undefined"==typeof document?new(require("url").URL)("file:"+__filename).href:document.currentScript&&document.currentScript.src||new URL("index.js",document.baseURI).href),l=n.dirname(u),d=(e="")=>{s.default.writeFileSync(`./${e}/package.json`,((e="")=>{const t={name:e,version:"1.0.0",description:"",main:"index.js",scripts:{start:"joystick start",test:'echo "Error: no test specified" && exit 1'},keywords:[],author:"",license:"ISC"};return JSON.stringify(t,null,2)})(e))};module.exports=e=>{if(((e="")=>s.default.existsSync(`./${e}`))(e))throw new Error(`A folder with the name ${e} already exists. Please choose a different name and try again.`);((e="")=>{s.default.mkdirSync(`./${e}`)})(e),((e="")=>{s.default.mkdirSync(`./${e}/.joystick`),s.default.mkdirSync(`./${e}/.joystick/build`)})(e),d(e),((e,t=[])=>{t.forEach((t=>{s.default.mkdirSync(`./${e}/${t}`)}))})(e,["api","i18n","ui","ui/components","ui/components/quote","ui/pages","ui/pages/index","lib","public"]),((e,t=[])=>{t.forEach((({name:t,content:n})=>{s.default.writeFileSync(`./${e}/${t}`,n)}))})(e,[{name:"api/index.js",content:s.default.readFileSync(`${l}/functions/create/templates/api/index.js`,"utf-8")},{name:"i18n/en-US.js",content:s.default.readFileSync(`${l}/functions/create/templates/i18n/en-US.js`,"utf-8")},{name:"ui/components/quote/index.js",content:s.default.readFileSync(`${l}/functions/create/templates/ui/components/quote/index.js`,"utf-8")},{name:"ui/pages/index/index.js",content:s.default.readFileSync(`${l}/functions/create/templates/ui/pages/index/index.js`,"utf-8")},{name:"public/favicon.ico",content:s.default.readFileSync(`${l}/functions/create/templates/public/favicon.ico`)},{name:"public/apple-touch-icon-152x152.png",content:s.default.readFileSync(`${l}/functions/create/templates/public/apple-touch-icon-152x152.png`)},{name:"index.client.js",content:s.default.readFileSync(`${l}/functions/create/templates/index.client.js`,"utf-8")},{name:"settings-development.js",content:s.default.readFileSync(`${l}/functions/create/templates/settings.env.js`,"utf-8")},{name:"settings-staging.js",content:s.default.readFileSync(`${l}/functions/create/templates/settings.env.js`,"utf-8")},{name:"settings-production.js",content:s.default.readFileSync(`${l}/functions/create/templates/settings.env.js`,"utf-8")},{name:"index.html",content:s.default.readFileSync(`${l}/functions/create/templates/index.html`,"utf-8")},{name:"index.server.js",content:s.default.readFileSync(`${l}/functions/create/templates/index.server.js`,"utf-8")}]),c.execSync(`cd ./${e} && npm install --save @joystick.js/ui @joystick.js/node ${o}`),console.log(`\n    ${r.default.green("Project created! To get started, run:")}\n\n    cd ${e} && joystick start\n  `)};
+import fs from "fs";
+import { fileURLToPath } from "url";
+import { dirname } from "path";
+import chalk from "chalk";
+import { exec } from "child_process";
+import buildPackageJSON from "./buildPackageJSON.js";
+import Loader from "../../lib/loader.js";
+const npmRegistry = process.env.NODE_ENV === "development" ? "--registry http://localhost:4873" : "";
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const createFiles = (projectName, files = []) => {
+  files.forEach(({ name, content }) => {
+    fs.writeFileSync(`./${projectName}/${name}`, content);
+  });
+};
+const createFolders = (projectName, folders = []) => {
+  folders.forEach((folder) => {
+    fs.mkdirSync(`./${projectName}/${folder}`);
+  });
+};
+const createPackageJSON = (projectName = "") => {
+  fs.writeFileSync(`./${projectName}/package.json`, buildPackageJSON(projectName));
+};
+const createJoystickFolder = (projectName = "") => {
+  fs.mkdirSync(`./${projectName}/.joystick`);
+  fs.mkdirSync(`./${projectName}/.joystick/build`);
+};
+const createProjectFolder = (projectName = "") => {
+  return fs.mkdirSync(`./${projectName}`);
+};
+const checkIfProjectExists = (projectName = "") => {
+  return fs.existsSync(`./${projectName}`);
+};
+var create_default = (projectName) => {
+  try {
+    process.loader = new Loader({ defaultMessage: "Starting app..." });
+    process.loader.text("Creating app...");
+    const projectAlreadyExists = checkIfProjectExists(projectName);
+    if (projectAlreadyExists) {
+      throw new Error(`A folder with the name ${projectName} already exists. Please choose a different name and try again.`);
+    }
+    createProjectFolder(projectName);
+    createJoystickFolder(projectName);
+    createPackageJSON(projectName);
+    createFolders(projectName, [
+      "api",
+      "i18n",
+      "ui",
+      "ui/components",
+      "ui/components/quote",
+      "ui/layouts",
+      "ui/layouts/app",
+      "ui/pages",
+      "ui/pages/error",
+      "ui/pages/index",
+      "lib",
+      "public"
+    ]);
+    createFiles(projectName, [
+      {
+        name: "api/index.js",
+        content: fs.readFileSync(`${__dirname}/templates/api/index.js`, "utf-8")
+      },
+      {
+        name: "i18n/en-US.js",
+        content: fs.readFileSync(`${__dirname}/templates/i18n/en-US.js`, "utf-8")
+      },
+      {
+        name: "public/apple-touch-icon-152x152.png",
+        content: fs.readFileSync(`${__dirname}/templates/public/apple-touch-icon-152x152.png`)
+      },
+      {
+        name: "public/favicon.ico",
+        content: fs.readFileSync(`${__dirname}/templates/public/favicon.ico`)
+      },
+      {
+        name: "public/manifest.json",
+        content: fs.readFileSync(`${__dirname}/templates/public/manifest.json`)
+      },
+      {
+        name: "public/service-worker.js",
+        content: fs.readFileSync(`${__dirname}/templates/public/service-worker.js`)
+      },
+      {
+        name: "public/splash-screen-1024x1024.png",
+        content: fs.readFileSync(`${__dirname}/templates/public/splash-screen-1024x1024.png`)
+      },
+      {
+        name: "ui/components/quote/index.js",
+        content: fs.readFileSync(`${__dirname}/templates/ui/components/quote/index.js`, "utf-8")
+      },
+      {
+        name: "ui/layouts/app/index.js",
+        content: fs.readFileSync(`${__dirname}/templates/ui/layouts/app/index.js`, "utf-8")
+      },
+      {
+        name: "ui/pages/error/index.js",
+        content: fs.readFileSync(`${__dirname}/templates/ui/pages/error/index.js`, "utf-8")
+      },
+      {
+        name: "ui/pages/index/index.js",
+        content: fs.readFileSync(`${__dirname}/templates/ui/pages/index/index.js`, "utf-8")
+      },
+      {
+        name: "index.client.js",
+        content: fs.readFileSync(`${__dirname}/templates/index.client.js`, "utf-8")
+      },
+      {
+        name: "index.css",
+        content: fs.readFileSync(`${__dirname}/templates/index.css`, "utf-8")
+      },
+      {
+        name: "index.html",
+        content: fs.readFileSync(`${__dirname}/templates/index.html`, "utf-8")
+      },
+      {
+        name: "index.server.js",
+        content: fs.readFileSync(`${__dirname}/templates/index.server.js`, "utf-8")
+      },
+      {
+        name: "settings.development.json",
+        content: fs.readFileSync(`${__dirname}/templates/settings.development.json`, "utf-8")
+      }
+    ]);
+    exec(`cd ./${projectName} && npm install --save @joystick.js/ui @joystick.js/node ${npmRegistry}`, (stderr, stdout) => {
+      if (stderr) {
+        process.loader.stop();
+        console.warn(stderr);
+      } else {
+        process.loader.stop();
+        console.log(`${chalk.green("Project created! To get started, run:")}
+cd ${projectName} && joystick start`);
+      }
+    });
+  } catch (exception) {
+    console.warn(exception);
+  }
+};
+export {
+  create_default as default
+};

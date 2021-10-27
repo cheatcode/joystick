@@ -1,1 +1,19 @@
-!function(e,o){"object"==typeof exports&&"undefined"!=typeof module?module.exports=o():"function"==typeof define&&define.amd?define(o):(e="undefined"!=typeof globalThis?globalThis:e||self)["joystick-node"]=o()}(this,(function(){"use strict";return(e,o,t)=>{["OPTIONS","HEAD","CONNECT","GET","POST","PUT","DELETE","PATCH"].includes(e.method)||o.status(405).send(`${e.method} not allowed.`),t()}}));
+var requestMethods_default = (req, res, next) => {
+  const allowedMethods = [
+    "OPTIONS",
+    "HEAD",
+    "CONNECT",
+    "GET",
+    "POST",
+    "PUT",
+    "DELETE",
+    "PATCH"
+  ];
+  if (!allowedMethods.includes(req.method)) {
+    res.status(405).send(`${req.method} not allowed.`);
+  }
+  next();
+};
+export {
+  requestMethods_default as default
+};

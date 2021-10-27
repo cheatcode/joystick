@@ -1,1 +1,11 @@
-!function(e,t){"object"==typeof exports&&"undefined"!=typeof module?module.exports=t(require("dayjs"),require("crypto-extra")):"function"==typeof define&&define.amd?define(["dayjs","crypto-extra"],t):(e="undefined"!=typeof globalThis?globalThis:e||self)["joystick-node"]=t(e.dayjs,e.crypto)}(this,(function(e,t){"use strict";function o(e){return e&&"object"==typeof e&&"default"in e?e:{default:e}}var n=o(e),d=o(t),r=(e=16)=>d.default.randomString(e);return()=>({token:r(64),tokenExpiresAt:n.default().add(30,"days").format()})}));
+import dayjs from "dayjs";
+import generateId from "../../lib/generateId";
+var generateSession_default = () => {
+  return {
+    token: generateId(64),
+    tokenExpiresAt: dayjs().add(30, "days").format()
+  };
+};
+export {
+  generateSession_default as default
+};

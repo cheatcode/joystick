@@ -1,1 +1,6 @@
-!function(e,t){"object"==typeof exports&&"undefined"!=typeof module?module.exports=t():"function"==typeof define&&define.amd?define(t):(e="undefined"!=typeof globalThis?globalThis:e||self)["joystick-node"]=t()}(this,(function(){"use strict";return(e="")=>new RegExp(/\.[0-9]+\.?/g).test(e)}));
+var isArrayPath_default = (path = "") => {
+  return new RegExp(/\.[0-9]+\.?/g).test(path);
+};
+export {
+  isArrayPath_default as default
+};

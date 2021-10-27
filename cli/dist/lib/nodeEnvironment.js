@@ -1,1 +1,9 @@
-"use strict";Object.defineProperty(exports,"__esModule",{value:!0});const e=process&&process.NODE_ENV,o="development"===e,s="production"===e;exports.default=e,exports.isDevelopment=o,exports.isProduction=s;
+const nodeEnvironment = process && process.NODE_ENV;
+const isDevelopment = nodeEnvironment === "development";
+const isProduction = nodeEnvironment === "production";
+var nodeEnvironment_default = nodeEnvironment;
+export {
+  nodeEnvironment_default as default,
+  isDevelopment,
+  isProduction
+};

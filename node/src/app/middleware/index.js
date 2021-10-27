@@ -29,7 +29,7 @@ export default (app, port, config = {}) => {
 
   app.use(requestMethods);
   app.use(compression());
-  app.use(express.static("public"));
+  app.use(express.static("public", { eTag: false, maxAge: "0" }));
 
   app.use("/_joystick/heartbeat", (_req, res) => {
     res.status(200).send("<3");
@@ -48,11 +48,20 @@ export default (app, port, config = {}) => {
 
   app.use(
     "/_joystick/index.client.js",
-    express.static(".joystick/build/index.client.js")
+    express.static(".joystick/build/index.client.js", {
+      eTag: false,
+      maxAge: "0",
+    })
   );
 
-  app.use("/_joystick/index.css", express.static(".joystick/build/index.css"));
-  app.use("/_joystick/ui", express.static(".joystick/build/ui"));
+  app.use(
+    "/_joystick/index.css",
+    express.static(".joystick/build/index.css", { eTag: false, maxAge: "0" })
+  );
+  app.use(
+    "/_joystick/ui",
+    express.static(".joystick/build/ui", { eTag: false, maxAge: "0" })
+  );
   app.use("/_joystick/hmr/client.js", (_req, res) => {
     res.set("Content-Type", "text/javascript");
     const hmrClient = fs.readFileSync(

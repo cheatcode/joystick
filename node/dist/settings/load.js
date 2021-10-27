@@ -1,1 +1,29 @@
-!function(e,t){"object"==typeof exports&&"undefined"!=typeof module?module.exports=t():"function"==typeof define&&define.amd?define(t):(e="undefined"!=typeof globalThis?globalThis:e||self)["joystick-node"]=t()}(this,(function(){"use strict";const e={config:{},keys:{global:{},public:{},private:{}}};return()=>{try{const t=!!process.env.JOYSTICK_SETTINGS,n=t&&((e="")=>{try{JSON.parse(e)}catch(e){return!1}return!0})(process.env.JOYSTICK_SETTINGS);if(!t)return e;if(!n)return console.warn(`Could not parse settings. Please verify that your settings-${process.env.NODE_ENV} exports a valid JavaScript object.`),e;return JSON.parse(process.env.JOYSTICK_SETTINGS)||e}catch(e){console.warn(e)}}}));
+import isValidJSONString from "../lib/isValidJSONString";
+const defaultSettings = {
+  config: {},
+  keys: {
+    global: {},
+    public: {},
+    private: {}
+  }
+};
+var load_default = () => {
+  try {
+    const settingsExist = !!process.env.JOYSTICK_SETTINGS;
+    const settingsAreValid = settingsExist && isValidJSONString(process.env.JOYSTICK_SETTINGS);
+    if (!settingsExist) {
+      return defaultSettings;
+    }
+    if (!settingsAreValid) {
+      console.warn(`Could not parse settings. Please verify that your settings-${process.env.NODE_ENV} exports a valid JavaScript object.`);
+      return defaultSettings;
+    }
+    const settings = JSON.parse(process.env.JOYSTICK_SETTINGS);
+    return settings || defaultSettings;
+  } catch (exception) {
+    console.warn(exception);
+  }
+};
+export {
+  load_default as default
+};

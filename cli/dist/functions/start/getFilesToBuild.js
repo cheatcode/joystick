@@ -1,1 +1,24 @@
-"use strict";var e=require("fs"),t=require("path");function r(e){return e&&"object"==typeof e&&"default"in e?e:{default:e}}var i=r(e);function u(e,r=[]){const o=i.default.readdirSync(e).map((r=>t.join(e,r)));return r.push(...o),o.forEach((e=>{i.default.statSync(e).isDirectory()&&u(e,r)})),r}module.exports=()=>u("./").filter((e=>!["node_modules",".joystick"].some((t=>e.includes(t))))).filter((e=>!i.default.lstatSync(e).isDirectory()));
+import fs from "fs";
+import { join } from "path";
+function rreaddirSync(dir, allFiles = []) {
+  const files = fs.readdirSync(dir).map((f) => join(dir, f));
+  allFiles.push(...files);
+  files.forEach((f) => {
+    fs.statSync(f).isDirectory() && rreaddirSync(f, allFiles);
+  });
+  return allFiles;
+}
+var getFilesToBuild_default = () => {
+  const files = rreaddirSync("./");
+  const filteredFiles = files.filter((path) => {
+    return !["node_modules", ".joystick"].some((excludedPath) => {
+      return path.includes(excludedPath);
+    });
+  }).filter((path) => {
+    return !fs.lstatSync(path).isDirectory();
+  });
+  return filteredFiles;
+};
+export {
+  getFilesToBuild_default as default
+};

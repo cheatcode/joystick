@@ -1,1 +1,16 @@
-!function(e,o){"object"==typeof exports&&"undefined"!=typeof module?module.exports=o():"function"==typeof define&&define.amd?define(o):(e="undefined"!=typeof globalThis?globalThis:e||self)["joystick-node"]=o()}(this,(function(){"use strict";return(e={})=>{let o="mongodb://";return e&&(e.username||e.password)&&(o=`${o}${e.username||""}:${e.password||""}@`),e&&e.hosts&&Array.isArray(e.hosts)&&(o=`${o}${e.hosts.map((e=>`${e.hostname}:${e.port}`)).join(",")}`),e&&e.database&&(o=`${o}/${e.database}`),o}}));
+var buildConnectionString_default = (connection = {}) => {
+  let connectionString = "mongodb://";
+  if (connection && (connection.username || connection.password)) {
+    connectionString = `${connectionString}${connection.username || ""}:${connection.password || ""}@`;
+  }
+  if (connection && connection.hosts && Array.isArray(connection.hosts)) {
+    connectionString = `${connectionString}${connection.hosts.map((host) => `${host.hostname}:${host.port}`).join(",")}`;
+  }
+  if (connection && connection.database) {
+    connectionString = `${connectionString}/${connection.database}`;
+  }
+  return connectionString;
+};
+export {
+  buildConnectionString_default as default
+};

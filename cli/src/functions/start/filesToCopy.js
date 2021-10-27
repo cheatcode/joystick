@@ -1,4 +1,5 @@
 export default [
+  { path: "i18n" },
   { path: "public" },
   { path: "index.html" },
   { path: "index.css" },

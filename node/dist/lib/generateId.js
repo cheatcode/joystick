@@ -1,1 +1,5 @@
-!function(e,t){"object"==typeof exports&&"undefined"!=typeof module?module.exports=t(require("crypto-extra")):"function"==typeof define&&define.amd?define(["crypto-extra"],t):(e="undefined"!=typeof globalThis?globalThis:e||self)["joystick-node"]=t(e.crypto)}(this,(function(e){"use strict";function t(e){return e&&"object"==typeof e&&"default"in e?e:{default:e}}var o=t(e);return(e=16)=>o.default.randomString(e)}));
+import crypto from "crypto-extra";
+var generateId_default = (length = 16) => crypto.randomString(length);
+export {
+  generateId_default as default
+};

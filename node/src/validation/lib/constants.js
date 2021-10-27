@@ -1,6 +1,13 @@
+import { createRequire } from "module";
+import { fileURLToPath } from "url";
+import { dirname } from "path";
 import { isObject, isArray, isString } from "./typeValidators";
 import validateType from "./validateType";
 import isArrayPath from "./isArrayPath";
+
+const require = createRequire(import.meta.url);
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const types = [
   "any",
@@ -35,7 +42,7 @@ export default {
         errors: [],
       };
     },
-    element: (ruleValue, inputValue, parentPath) => {
+    element: async (ruleValue, inputValue, parentPath) => {
       // NOTE: Allow for element to be passed as a type string so you can do arrays of single
       // primitive elements (e.g., ['a', 'b', 'c'] or [1, 2, 3]).
 
@@ -48,11 +55,11 @@ export default {
           process.env.NODE_ENV === "test"
             ? `../inputWithSchema`
             : `${__dirname.replace(
-                ".joystick/build",
-                "node_modules/@joystick.js/node/dist/validation"
+                "/dist/validation/lib",
+                "/dist/validation"
               )}/inputWithSchema/index.js`;
-        const inputWithSchema = require(inputWithSchemaPath);
-
+        const inputWithSchemaFile = await import(inputWithSchemaPath);
+        const inputWithSchema = inputWithSchemaFile.default;
         const validateInputWithSchema = isObject(inputWithSchema)
           ? inputWithSchema.default
           : inputWithSchema;
@@ -71,27 +78,28 @@ export default {
           });
         });
 
-        return {
+        return Promise.resolve({
           valid: elementErrors.length === 0,
           errors: [...elementErrors],
-        };
+        });
       }
 
-      return {
+      return Promise.resolve({
         valid: true,
         errors: [],
-      };
+      });
     },
-    fields: (ruleValue, inputValue, parentPath) => {
+    fields: async (ruleValue, inputValue, parentPath) => {
       if (isObject(ruleValue) && isObject(inputValue)) {
         const inputWithSchemaPath =
           process.env.NODE_ENV === "test"
             ? `../inputWithSchema`
             : `${__dirname.replace(
-                ".joystick/build",
-                "node_modules/@joystick.js/node/dist/validation"
+                "/dist/validation/lib",
+                "/dist/validation"
               )}/inputWithSchema/index.js`;
-        const inputWithSchema = require(inputWithSchemaPath);
+        const inputWithSchemaFile = await import(inputWithSchemaPath);
+        const inputWithSchema = inputWithSchemaFile.default;
         const validateInputWithSchema = isObject(inputWithSchema)
           ? inputWithSchema.default
           : inputWithSchema;
@@ -108,18 +116,18 @@ export default {
 
         const errors = validateInputWithSchema(input, ruleValue, parentPath);
 
-        return {
+        return Promise.resolve({
           valid: errors.length === 0,
           errors: [...errors],
-        };
+        });
       }
 
-      return {
+      return Promise.resolve({
         valid: false,
         errors: [
           `${parentPath} schema rule and input value for element must be of type object.`,
         ],
-      };
+      });
     },
     max: (ruleValue, inputValue, parentPath) => {
       const valid = inputValue <= ruleValue;

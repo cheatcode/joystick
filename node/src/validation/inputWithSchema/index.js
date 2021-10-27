@@ -107,7 +107,7 @@ const validateInputWithSchema = (
         const validator = constants.rules[ruleName];
 
         if (validator && !validationTask.path.includes(".$.")) {
-          const result = validator(
+          const result = await validator(
             ruleValue,
             validationTask.inputValue,
             validationTask.path

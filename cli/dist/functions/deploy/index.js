@@ -1,1 +1,3 @@
-"use strict";module.exports=()=>{console.log("Deploy")};
+module.exports = () => {
+  console.log("Deploy");
+};

@@ -1,5 +1,5 @@
-import mongodb from "./mongodb/index";
-import checkMongoDBConnection from "./mongodb/checkConnection";
+import mongodb from "./mongodb/index.js";
+import checkMongoDBConnection from "./mongodb/checkConnection.js";
 
 export default async (provider = "", settings = {}) => {
   if (provider === "mongodb") {

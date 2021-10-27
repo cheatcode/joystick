@@ -1,12 +1,22 @@
-!function(e,r){"object"==typeof exports&&"undefined"!=typeof module?module.exports=r():"function"==typeof define&&define.amd?define(r):(e="undefined"!=typeof globalThis?globalThis:e||self)["joystick-node"]=r()}(this,(function(){"use strict";var e={exports:{}},r=Object.getOwnPropertySymbols,n=Object.prototype.hasOwnProperty,t=Object.prototype.propertyIsEnumerable;
-/*
-	object-assign
-	(c) Sindre Sorhus
-	@license MIT
-	*/function o(e){if(null==e)throw new TypeError("Object.assign cannot be called with null or undefined");return Object(e)}var i=function(){try{if(!Object.assign)return!1;var e=new String("abc");if(e[5]="de","5"===Object.getOwnPropertyNames(e)[0])return!1;for(var r={},n=0;n<10;n++)r["_"+String.fromCharCode(n)]=n;if("0123456789"!==Object.getOwnPropertyNames(r).map((function(e){return r[e]})).join(""))return!1;var t={};return"abcdefghijklmnopqrst".split("").forEach((function(e){t[e]=e})),"abcdefghijklmnopqrst"===Object.keys(Object.assign({},t)).join("")}catch(e){return!1}}()?Object.assign:function(e,i){for(var s,a,u=o(e),l=1;l<arguments.length;l++){for(var c in s=Object(arguments[l]))n.call(s,c)&&(u[c]=s[c]);if(r){a=r(s);for(var f=0;f<a.length;f++)t.call(s,a[f])&&(u[a[f]]=s[a[f]])}}return u},s={exports:{}};
-/*!
-	 * vary
-	 * Copyright(c) 2014-2017 Douglas Christopher Wilson
-	 * MIT Licensed
-	 */
-s.exports=function(e,r){if(!e||!e.getHeader||!e.setHeader)throw new TypeError("res argument is required");var n=e.getHeader("Vary")||"",t=Array.isArray(n)?n.join(", "):String(n);(n=u(t,r))&&e.setHeader("Vary",n)},s.exports.append=u;var a=/^[!#$%&'*+\-.^_`|~0-9A-Za-z]+$/;function u(e,r){if("string"!=typeof e)throw new TypeError("header argument is required");if(!r)throw new TypeError("field argument is required");for(var n=Array.isArray(r)?r:l(String(r)),t=0;t<n.length;t++)if(!a.test(n[t]))throw new TypeError("field argument contains an invalid header name");if("*"===e)return e;var o=e,i=l(e.toLowerCase());if(-1!==n.indexOf("*")||-1!==i.indexOf("*"))return"*";for(var s=0;s<n.length;s++){var u=n[s].toLowerCase();-1===i.indexOf(u)&&(i.push(u),o=o?o+", "+n[s]:n[s])}return o}function l(e){for(var r=0,n=[],t=0,o=0,i=e.length;o<i;o++)switch(e.charCodeAt(o)){case 32:t===r&&(t=r=o+1);break;case 44:n.push(e.substring(t,r)),t=r=o+1;break;default:r=o+1}return n.push(e.substring(t,r)),n}!function(){var r=i,n=s.exports,t={origin:"*",methods:"GET,HEAD,PUT,PATCH,POST,DELETE",preflightContinue:!1,optionsSuccessStatus:204};function o(e){return"string"==typeof e||e instanceof String}function a(e,r){if(Array.isArray(r)){for(var n=0;n<r.length;++n)if(a(e,r[n]))return!0;return!1}return o(r)?e===r:r instanceof RegExp?r.test(e):!!r}function u(e,r){var n,t=r.headers.origin,i=[];return e.origin&&"*"!==e.origin?o(e.origin)?(i.push([{key:"Access-Control-Allow-Origin",value:e.origin}]),i.push([{key:"Vary",value:"Origin"}])):(n=a(t,e.origin),i.push([{key:"Access-Control-Allow-Origin",value:!!n&&t}]),i.push([{key:"Vary",value:"Origin"}])):i.push([{key:"Access-Control-Allow-Origin",value:"*"}]),i}function l(e){return!0===e.credentials?{key:"Access-Control-Allow-Credentials",value:"true"}:null}function c(e){var r=e.exposedHeaders;return r?(r.join&&(r=r.join(",")),r&&r.length?{key:"Access-Control-Expose-Headers",value:r}:null):null}function f(e,r){for(var t=0,o=e.length;t<o;t++){var i=e[t];i&&(Array.isArray(i)?f(i,r):"Vary"===i.key&&i.value?n(r,i.value):i.value&&r.setHeader(i.key,i.value))}}e.exports=function(e){var n=null;return n="function"==typeof e?e:function(r,n){n(null,e)},function(e,o,i){n(e,(function(n,s){if(n)i(n);else{var a=r({},t,s),p=null;a.origin&&"function"==typeof a.origin?p=a.origin:a.origin&&(p=function(e,r){r(null,a.origin)}),p?p(e.headers.origin,(function(r,n){r||!n?i(r):(a.origin=n,function(e,r,n,t){var o=[];"OPTIONS"===(r.method&&r.method.toUpperCase&&r.method.toUpperCase())?(o.push(u(e,r)),o.push(l(e)),o.push(function(e){var r=e.methods;return r.join&&(r=e.methods.join(",")),{key:"Access-Control-Allow-Methods",value:r}}(e)),o.push(function(e,r){var n=e.allowedHeaders||e.headers,t=[];return n?n.join&&(n=n.join(",")):(n=r.headers["access-control-request-headers"],t.push([{key:"Vary",value:"Access-Control-Request-Headers"}])),n&&n.length&&t.push([{key:"Access-Control-Allow-Headers",value:n}]),t}(e,r)),o.push(function(e){var r=("number"==typeof e.maxAge||e.maxAge)&&e.maxAge.toString();return r&&r.length?{key:"Access-Control-Max-Age",value:r}:null}(e)),o.push(c(e)),f(o,n),e.preflightContinue?t():(n.statusCode=e.optionsSuccessStatus,n.setHeader("Content-Length","0"),n.end())):(o.push(u(e,r)),o.push(l(e)),o.push(c(e)),f(o,n),t())}(a,e,o,i))})):i()}}))}}}();var c=e.exports;return(e={},r="")=>(n,t,o)=>{const i=[`http://localhost:${r}`,...e?.allowedUrls||[]];return c({credentials:!0,origin:function(e,r){!e||i.includes(e)?r(null,!0):r(new Error(`${e} not permitted by CORS policy.`))}})(n,t,o)}}));
+import cors from "cors";
+var cors_default = (config = {}, port = "") => {
+  return (req, res, next) => {
+    const allowedUrls = [
+      `http://localhost:${port}`,
+      ...config?.allowedUrls || []
+    ];
+    return cors({
+      credentials: true,
+      origin: function(origin, callback) {
+        if (!origin || allowedUrls.includes(origin)) {
+          callback(null, true);
+        } else {
+          callback(new Error(`${origin} not permitted by CORS policy.`));
+        }
+      }
+    })(req, res, next);
+  };
+};
+export {
+  cors_default as default
+};

@@ -1,1 +1,34 @@
-!function(e,o){"object"==typeof exports&&"undefined"!=typeof module?o(exports):"function"==typeof define&&define.amd?define(["exports"],o):o((e="undefined"!=typeof globalThis?globalThis:e||self)["joystick-node"]={})}(this,(function(e){"use strict";e.isAny=e=>!!e,e.isArray=e=>!!Array.isArray(e),e.isBoolean=e=>(!0===e||!1===e)&&"boolean"==typeof e,e.isFloat=e=>Number(e)===e&&e%1!=0,e.isInteger=e=>Number(e)===e&&e%1==0,e.isNumber=e=>Number(e)===e,e.isObject=e=>!(!e||"object"!=typeof e||Array.isArray(e)),e.isString=e=>"string"==typeof e,Object.defineProperty(e,"__esModule",{value:!0})}));
+const isAny = (value) => {
+  return !!value;
+};
+const isObject = (value) => {
+  return !!(value && typeof value === "object" && !Array.isArray(value));
+};
+const isArray = (value) => {
+  return !!Array.isArray(value);
+};
+const isBoolean = (value) => {
+  return (value === true || value === false) && typeof value === "boolean";
+};
+const isFloat = (value) => {
+  return Number(value) === value && value % 1 !== 0;
+};
+const isInteger = (value) => {
+  return Number(value) === value && value % 1 === 0;
+};
+const isNumber = (value) => {
+  return Number(value) === value;
+};
+const isString = (value) => {
+  return typeof value === "string";
+};
+export {
+  isAny,
+  isArray,
+  isBoolean,
+  isFloat,
+  isInteger,
+  isNumber,
+  isObject,
+  isString
+};

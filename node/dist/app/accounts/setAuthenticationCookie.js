@@ -1,1 +1,11 @@
-!function(e,t){"object"==typeof exports&&"undefined"!=typeof module?module.exports=t(require("dayjs")):"function"==typeof define&&define.amd?define(["dayjs"],t):(e="undefined"!=typeof globalThis?globalThis:e||self)["joystick-node"]=t(e.dayjs)}(this,(function(e){"use strict";function t(e){return e&&"object"==typeof e&&"default"in e?e:{default:e}}var o=t(e),n=(e=null)=>({secure:"development"!==process.env.NODE_ENV,httpOnly:!0,expires:o.default(e).toDate()});return(e=null,t=null)=>e&&t?(e.cookie("joystickLoginToken",t.token,n(t.tokenExpiresAt)),e.cookie("joystickLoginTokenExpiresAt",t.tokenExpiresAt,n(t.tokenExpiresAt)),e):null}));
+import getBaseAuthenticationCookie from "./getBaseAuthenticationCookie";
+var setAuthenticationCookie_default = (res = null, authentication = null) => {
+  if (!res || !authentication)
+    return null;
+  res.cookie("joystickLoginToken", authentication.token, getBaseAuthenticationCookie(authentication.tokenExpiresAt));
+  res.cookie("joystickLoginTokenExpiresAt", authentication.tokenExpiresAt, getBaseAuthenticationCookie(authentication.tokenExpiresAt));
+  return res;
+};
+export {
+  setAuthenticationCookie_default as default
+};

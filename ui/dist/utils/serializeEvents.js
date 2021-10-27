@@ -1,1 +1,1 @@
-!function(e,t){"object"==typeof exports&&"undefined"!=typeof module?module.exports=t():"function"==typeof define&&define.amd?define(t):(e="undefined"!=typeof globalThis?globalThis:e||self)["joystick-ui"]=t()}(this,(function(){"use strict";return(e={})=>Object.entries(e).map((([e,t])=>{const[o,n]=e.split(" ");return{type:o.toLowerCase(),selector:n,handler:t}}))}));
+var p=(e={})=>Object.entries(e).map(([t,r])=>{let[n,o]=t.split(" ");return{type:n.toLowerCase(),selector:o,handler:r}});export{p as default};

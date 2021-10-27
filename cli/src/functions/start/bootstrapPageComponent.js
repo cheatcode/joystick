@@ -1,5 +1,5 @@
 import chalk from "chalk";
-import { EXPORT_DEFAULT_REGEX } from "../../lib/regexes";
+import { EXPORT_DEFAULT_REGEX } from "../../lib/regexes.js";
 
 export default () => {
   return {

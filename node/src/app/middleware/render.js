@@ -1,7 +1,10 @@
 import fs from "fs";
+import { createRequire } from "module";
 import ssr from "../../ssr/index.js";
 import { isObject } from "../../validation/lib/typeValidators";
 import settings from "../../settings";
+
+const require = createRequire(import.meta.url);
 
 const getUrl = (request = {}) => {
   return {
@@ -11,7 +14,12 @@ const getUrl = (request = {}) => {
   };
 };
 
-const getTranslations = (buildPath = "", pagePath = "", user = {}) => {
+const getFile = async (buildPath = "") => {
+  const file = await import(buildPath);
+  return file.default;
+};
+
+const getTranslations = async (buildPath = "", pagePath = "", user = {}) => {
   const defaultLanguage =
     user?.language || settings?.config?.i18n?.defaultLanguage;
   const hasDefaultLanguageFile = fs.existsSync(
@@ -22,7 +30,7 @@ const getTranslations = (buildPath = "", pagePath = "", user = {}) => {
   const hasLanguageFile = fs.existsSync(`${buildPath}/i18n/${language}.js`);
 
   if (hasLanguageFile) {
-    const languageFile = require(`${buildPath}/i18n/${language}.js`);
+    const languageFile = await getFile(`${buildPath}/i18n/${language}.js`);
     const isValidLanguageFile = languageFile && isObject(languageFile);
 
     if (isValidLanguageFile) {
@@ -32,7 +40,9 @@ const getTranslations = (buildPath = "", pagePath = "", user = {}) => {
   }
 
   if (hasDefaultLanguageFile) {
-    const defaultLanguageFile = require(`${buildPath}/i18n/${defaultLanguage}.js`);
+    const defaultLanguageFile = await getFile(
+      `${buildPath}/i18n/${defaultLanguage}.js`
+    );
     const isValidDefaultLanguageFile =
       defaultLanguageFile && isObject(defaultLanguageFile);
 
@@ -45,12 +55,8 @@ const getTranslations = (buildPath = "", pagePath = "", user = {}) => {
   return {};
 };
 
-const getFile = (buildPath = "") => {
-  return require(buildPath);
-};
-
 export default (req, res, next) => {
-  res.render = function (path = "", options = {}) {
+  res.render = async function (path = "", options = {}) {
     const buildPath = `${process.cwd()}/.joystick/build`;
     const pagePath = `${buildPath}/${path}`;
     const layoutPath = options.layout ? `${buildPath}/${options.layout}` : null;
@@ -63,12 +69,12 @@ export default (req, res, next) => {
       res.status(404).send(`404 — Layout not found: ${options.layout}`);
     }
 
-    const pageFile = getFile(pagePath);
+    const pageFile = await getFile(pagePath);
     const Page = pageFile;
-    const layoutFile = layoutPath ? getFile(layoutPath) : null;
+    const layoutFile = layoutPath ? await getFile(layoutPath) : null;
     const Layout = layoutFile;
 
-    const translations = getTranslations(buildPath, path, req.user);
+    const translations = await getTranslations(buildPath, path, req.user);
     const url = getUrl(req);
     const props = { ...(options?.props || {}) };
 

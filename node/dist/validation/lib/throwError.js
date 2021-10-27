@@ -1,1 +1,6 @@
-!function(e,o){"object"==typeof exports&&"undefined"!=typeof module?module.exports=o():"function"==typeof define&&define.amd?define(o):(e="undefined"!=typeof globalThis?globalThis:e||self)["joystick-node"]=o()}(this,(function(){"use strict";return e=>{throw new Error(`[joystick.validation] ${e}`)}}));
+var throwError_default = (message) => {
+  throw new Error(`[joystick.validation] ${message}`);
+};
+export {
+  throwError_default as default
+};

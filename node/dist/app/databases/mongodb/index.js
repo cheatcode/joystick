@@ -1,1 +1,34 @@
-!function(t,e){"object"==typeof exports&&"undefined"!=typeof module?module.exports=e(require("mongodb"),require("chalk")):"function"==typeof define&&define.amd?define(["mongodb","chalk"],e):(t="undefined"!=typeof globalThis?globalThis:t||self)["joystick-node"]=e(t.mongodb,t.chalk)}(this,(function(t,e){"use strict";function s(t){return t&&"object"==typeof t&&"default"in t?t:{default:t}}var o=s(e),n=t=>{let e=null,s=null,o="",n="",i="",l="",p=!1;t.includes("authSource")&&(e=t.split("authSource=").pop()),t.includes("?")&&(t=t.split("?").shift()),p=t.includes("srv"),i=(t=t.split("://").pop()).split(":").shift();let a=t.split(":").length;return 2===a?(l=(t=t.split(":").pop()).split("@").shift(),o=(t=t.split("@").pop()).split("/").shift(),n=t.split("/").pop()):3===a&&(l=(t=`${t.split(":")[1]}:${t.split(":")[2]}`).split("@").shift(),o=(t=t.split("@").pop()).split(":").shift(),t=t.split(":").pop(),s=parseInt(t.split("/").shift()),n=t.split("/").pop()),{host:o,username:i,password:l,db:n,srv:p,authDb:e,port:s}};return async(e=null)=>{const s=((t={})=>{let e="mongodb://";return t&&(t.username||t.password)&&(e=`${e}${t.username||""}:${t.password||""}@`),t&&t.hosts&&Array.isArray(t.hosts)&&(e=`${e}${t.hosts.map((t=>`${t.hostname}:${t.port}`)).join(",")}`),t&&t.database&&(e=`${e}/${t.database}`),e})(e||{hosts:[{hostname:"127.0.0.1",port:parseInt(process.env.PORT,10)+1}],database:"joystick"}),i=n(s);try{const e=await t.MongoClient.connect(s,{connectTimeoutMS:3e3,socketTimeoutMS:3e3,useNewUrlParser:!0,useUnifiedTopology:!0,ssl:!1}),o=e.db(i.db);return{client:e,db:o}}catch(t){console.warn(o.default.yellowBright("\nFailed to connect to MongoDB. Please double-check connection settings and try again."))}}}));
+import { MongoClient } from "mongodb";
+import chalk from "chalk";
+import mongoUri from "mongo-uri-tool";
+import buildConnectionString from "./buildConnectionString";
+var mongodb_default = async (connectionFromSettings = null) => {
+  const connection = connectionFromSettings || {
+    hosts: [
+      { hostname: "127.0.0.1", port: parseInt(process.env.PORT, 10) + 1 }
+    ],
+    database: "joystick"
+  };
+  const connectionString = buildConnectionString(connection);
+  const parsedURI = mongoUri.parseUri(connectionString);
+  try {
+    const client = await MongoClient.connect(connectionString, {
+      connectTimeoutMS: 3e3,
+      socketTimeoutMS: 3e3,
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+      ssl: false
+    });
+    const db = client.db(parsedURI.db);
+    return {
+      client,
+      db
+    };
+  } catch (exception) {
+    console.warn(chalk.yellowBright(`
+Failed to connect to MongoDB. Please double-check connection settings and try again.`));
+  }
+};
+export {
+  mongodb_default as default
+};

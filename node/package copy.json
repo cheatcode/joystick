@@ -1,0 +1,71 @@
+{
+  "name": "@joystick.js/node",
+  "version": "1.0.0-beta.1",
+  "description": "A Node.js framework for building web apps.",
+  "main": "./dist/index.js",
+  "scripts": {
+    "dev": "export NODE_ENV=development && rollup -c rollup.config.js -w",
+    "build": "rm -rf ./dist && export NODE_ENV=production && rollup -c",
+    "development:release": "export NODE_ENV=development && npm run build && node release.js",
+    "production:release": "export NODE_ENV=production && npm run build && node release.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "jest": {
+    "testPathIgnorePatterns": [
+      "<rootDir>/dist"
+    ]
+  },
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^20.0.0",
+    "@rollup/plugin-json": "^4.1.0",
+    "@rollup/plugin-node-resolve": "^13.0.4",
+    "glob": "^7.1.7",
+    "rollup": "^2.56.2",
+    "rollup-plugin-copy": "^3.4.0",
+    "rollup-plugin-html": "^0.2.1",
+    "rollup-plugin-polyfill-node": "^0.7.0",
+    "rollup-plugin-terser": "^7.0.2",
+    "semver": "^7.3.5"
+  },
+  "dependencies": {
+    "@babel/core": "^7.15.5",
+    "@babel/preset-env": "^7.15.6",
+    "@joystick.js/ui": "^0.20.0",
+    "aws-sdk": "^2.1011.0",
+    "babel-jest": "^27.2.1",
+    "bcrypt": "^5.0.1",
+    "bson-ext": "^4.0.2",
+    "bufferutil": "^4.0.3",
+    "chalk": "^4.1.2",
+    "compression": "^1.7.4",
+    "cookie-parser": "^1.4.5",
+    "cors": "^2.8.5",
+    "crypto-extra": "^1.0.1",
+    "css": "^3.0.0",
+    "dayjs": "^1.10.7",
+    "esbuild": "^0.13.3",
+    "express": "^4.17.1",
+    "html-to-text": "^8.0.0",
+    "jsonwebtoken": "^8.5.1",
+    "juice": "^8.0.0",
+    "kerberos": "^1.1.7",
+    "mock-aws-s3": "^4.0.2",
+    "mongo-uri-tool": "^1.0.1",
+    "mongodb": "^4.1.3",
+    "mongodb-client-encryption": "^1.2.7",
+    "nock": "^13.1.4",
+    "node-fetch": "^3.0.0",
+    "nodemailer": "^6.7.0",
+    "process": "^0.11.10",
+    "punycode": "^2.1.1",
+    "querystring": "^0.2.1",
+    "serve-favicon": "^2.5.0",
+    "snappy": "^7.0.3",
+    "url-pattern": "^1.0.3",
+    "utf-8-validate": "^5.0.5",
+    "ws": "^8.2.1"
+  }
+}

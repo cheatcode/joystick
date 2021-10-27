@@ -2,18 +2,22 @@
 
 import chalk from "chalk";
 import child_process from "child_process";
-import path from "path";
+import path, { dirname } from "path";
+import { fileURLToPath } from "url";
 import ps from "ps-node";
 import watch from "node-watch";
 import fs from "fs";
-import Loader from "../../lib/loader";
-import getFilesToBuild from "./getFilesToBuild";
-import buildFiles from "./buildFiles";
-import filesToCopy from "./filesToCopy";
-import checkIfPortAvailable from "./checkIfPortAvailable";
-import getCodependenciesForFile from "./getCodependenciesForFile";
-import isValidJSONString from "../../../../node/src/lib/isValidJSONString";
-import startDatabaseProvider from "./databases/startProvider";
+import Loader from "../../lib/loader.js";
+import getFilesToBuild from "./getFilesToBuild.js";
+import buildFiles from "./buildFiles.js";
+import filesToCopy from "./filesToCopy.js";
+import checkIfPortAvailable from "./checkIfPortAvailable.js";
+import getCodependenciesForFile from "./getCodependenciesForFile.js";
+import isValidJSONString from "../../lib/isValidJSONString.js";
+import startDatabaseProvider from "./databases/startProvider.js";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const isObject = (value) => {
   return !!(value && typeof value === "object" && !Array.isArray(value));
@@ -86,9 +90,10 @@ const handleHMRProcessSTDIO = () => {
 
 const startHMRProcess = () => {
   const hmrProcess = child_process.fork(
-    path.resolve(`${__dirname}/functions/start/hmrServer.js`),
+    path.resolve(`${__dirname}/hmrServer.js`),
     [],
     {
+      execArgv: ["--no-warnings", "--experimental-specifier-resolution=node"],
       // NOTE: Pipe stdin, stdout, and stderr. IPC establishes a message channel so we
       // communicate with the child_process.
       silent: true,
@@ -141,8 +146,9 @@ const handleServerProcessSTDIO = () => {
 const startApplicationProcess = () => {
   const serverProcess = child_process.fork(
     path.resolve(".joystick/build/index.server.js"),
-    ["--no-warnings"],
+    [],
     {
+      execArgv: ["--no-warnings", "--experimental-specifier-resolution=node"],
       // NOTE: Pipe stdin, stdout, and stderr. IPC establishes a message channel so we
       // communicate with the child_process.
       silent: true,
@@ -186,9 +192,6 @@ const initialBuild = async (path, format) => {
     fs.unlinkSync(fileMapPath);
   }
 
-  // TODO: Can we just compare hashes on files to decide if they need to be built?
-  // This would enable fast cold startups w/o the need for a complete rebuild on
-  // each startup.
   process.loader.text("Building app...");
   const filesToBuild = getFilesToBuild();
 
@@ -305,7 +308,6 @@ const startWatcher = async () => {
 
 const startDatabase = async (database = {}) => {
   // validateDatabase(databases);
-  // TODO: supported, correct settings, installed, is only users, connection works (testable?)
 
   if (database.provider && database.provider === "mongodb") {
     await startDatabaseProvider("mongodb", database);

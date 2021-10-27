@@ -1,1 +1,25 @@
-"use strict";var e=require("child_process"),t=require("url"),s=require("path");function r(e){return e&&"object"==typeof e&&"default"in e?e:{default:e}}var l=r(require("chalk"));class i{constructor(e={}){this.message=e.defaultMessage,this.frame=0,this.frames=[l.default.yellowBright(">>-----"),l.default.yellowBright("->>----"),l.default.yellowBright("--\x3e>---"),l.default.yellowBright("---\x3e>--"),l.default.yellowBright("----\x3e>-"),l.default.yellowBright("-----\x3e>"),l.default.yellowBright("----<<-"),l.default.yellowBright("---<<--"),l.default.yellowBright("--<<---"),l.default.yellowBright("-<<----"),l.default.yellowBright("<<-----")],this.freezeFrames={stable:l.default.yellowBright("---\x3e---"),error:l.default.redBright("!!!")}}getFrame(){return this.frame===this.frames.length-1?(this.frame=0,this.frame):(this.frame+=1,this.frame)}start(e=""){e&&(this.message=e),this.interval=setInterval((()=>{const e=this.getFrame();process.stdout.cursorTo(0),process.stdout.write(`${this.frames[e]} ${this.message}`)}),80)}stop(){clearInterval(this.interval),process.stdout.cursorTo(0),process.stdout.clearLine(),this.message="",this.interval=null}text(e=""){process.stdout.clearLine(),e&&(this.message=e),this.interval||this.start()}pause(e="",t="stable"){process.stdout.clearLine(),e&&(this.message=e),clearInterval(this.interval),this.interval=null;const s=this.freezeFrames[t];process.stdout.cursorTo(0),process.stdout.write(`${s?`${s} `:""}${this.message}`)}stable(e=""){this.pause(e)}error(e=""){this.pause(e,"error")}}const o=t.fileURLToPath("undefined"==typeof document?new(require("url").URL)("file:"+__filename).href:document.currentScript&&document.currentScript.src||new URL("index.js",document.baseURI).href),a=s.dirname(o);module.exports=()=>{console.log("");const t=new i({defaultMessage:"Building app..."});t.start("Building app...");const s=a.replace("/functions/build",""),r=`${a.replace("/dist","/node_modules/rollup/dist/bin/rollup")}`;e.exec(`${r} -c ${s}/lib/rollup.config.js`,((e,s)=>{e?console.log(e):(t.pause("App built to .joystick/build!"),console.log(""),console.log(s))}))};
+import { exec } from "child_process";
+import { fileURLToPath } from "url";
+import { dirname } from "path";
+import Loader from "../../lib/loader.js";
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+var build_default = () => {
+  console.log("");
+  const loader = new Loader({ defaultMessage: "Building app..." });
+  loader.start("Building app...");
+  const cliPath = __dirname.replace("/functions/build", "");
+  const rollupPath = `${__dirname.replace("/dist", "/node_modules/rollup/dist/bin/rollup")}`;
+  exec(`${rollupPath} -c ${cliPath}/lib/rollup.config.js`, (stderr, stdout) => {
+    if (stderr) {
+      console.log(stderr);
+    } else {
+      loader.pause("App built to .joystick/build!");
+      console.log("");
+      console.log(stdout);
+    }
+  });
+};
+export {
+  build_default as default
+};

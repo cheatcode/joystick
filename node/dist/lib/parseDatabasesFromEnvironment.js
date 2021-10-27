@@ -1,1 +1,9 @@
-!function(e,o){"object"==typeof exports&&"undefined"!=typeof module?module.exports=o():"function"==typeof define&&define.amd?define(o):(e="undefined"!=typeof globalThis?globalThis:e||self)["joystick-node"]=o()}(this,(function(){"use strict";return(e="")=>e&&"string"==typeof e?JSON.parse(e):{}}));
+var parseDatabasesFromEnvironment_default = (databases = "") => {
+  if (databases && typeof databases === "string") {
+    return JSON.parse(databases);
+  }
+  return {};
+};
+export {
+  parseDatabasesFromEnvironment_default as default
+};

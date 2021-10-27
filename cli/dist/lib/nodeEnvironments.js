@@ -1,1 +1,8 @@
-"use strict";Object.defineProperty(exports,"__esModule",{value:!0});const e=process.env.NODE_ENV&&"development"===process.env.NODE_ENV,s=process.env.NODE_ENV&&"staging"===process.env.NODE_ENV,o=process.env.NODE_ENV&&"production"===process.env.NODE_ENV;exports.isDevelopment=e,exports.isProduction=o,exports.isStaging=s;
+const isDevelopment = process.env.NODE_ENV && process.env.NODE_ENV === "development";
+const isStaging = process.env.NODE_ENV && process.env.NODE_ENV === "staging";
+const isProduction = process.env.NODE_ENV && process.env.NODE_ENV === "production";
+export {
+  isDevelopment,
+  isProduction,
+  isStaging
+};

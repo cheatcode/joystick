@@ -1,1 +1,1 @@
-!function(e,t){"object"==typeof exports&&"undefined"!=typeof module?module.exports=t():"function"==typeof define&&define.amd?define(t):(e="undefined"!=typeof globalThis?globalThis:e||self)["joystick-ui"]=t()}(this,(function(){"use strict";const e=e=>e;return{html:e,css:e}}));
+var t=e=>e,o={html:t,css:t};export{o as default};

@@ -1,1 +1,42 @@
-"use strict";var e=require("ws"),t=require("node-watch"),s=require("fs");function n(e){return e&&"object"==typeof e&&"default"in e?e:{default:e}}var o=n(t),i=n(s),r=((t=2600)=>{new e.WebSocketServer({port:parseInt(t,10)+1,path:"/_joystick/hmr"}).on("connection",(function(e){e.on("message",(t=>{const s=JSON.parse(t);s&&s.type&&"HMR_WATCHLIST"===s.type&&s.tags&&[...s.tags,"index.css","index.html","package.json","settings.test.json","settings.development.json","settings.staging.json","settings.production.json"].forEach((t=>{if(i.default.existsSync(`./${t}`)){o.default(`./.joystick/build/${t}`).on("change",(()=>{e.send(JSON.stringify({type:"FILE_CHANGE",path:t}))}))}}))}))}))})(process.env.PORT||2600);module.exports=r;
+import { WebSocketServer } from "ws";
+import watch from "node-watch";
+import fs from "fs";
+var hmrServer_default = ((port = 2600) => {
+  let fileWatchers = [];
+  const websocketServer = new WebSocketServer({
+    port: parseInt(port, 10) + 1,
+    path: "/_joystick/hmr"
+  });
+  websocketServer.on("connection", function connection(websocketConnection) {
+    websocketConnection.on("message", (message) => {
+      const parsedMessage = JSON.parse(message);
+      const isWatchlistMessage = parsedMessage && parsedMessage.type && parsedMessage.type === "HMR_WATCHLIST";
+      if (isWatchlistMessage && parsedMessage.tags) {
+        [
+          ...parsedMessage.tags,
+          "index.css",
+          "index.html",
+          "package.json",
+          "settings.test.json",
+          "settings.development.json",
+          "settings.staging.json",
+          "settings.production.json"
+        ].forEach((fileToWatch) => {
+          if (fs.existsSync(`./${fileToWatch}`)) {
+            const watcher = watch(`./.joystick/build/${fileToWatch}`);
+            fileWatchers.push(watcher);
+            watcher.on("change", () => {
+              websocketConnection.send(JSON.stringify({
+                type: "FILE_CHANGE",
+                path: fileToWatch
+              }));
+            });
+          }
+        });
+      }
+    });
+  });
+})(process.env.PORT || 2600);
+export {
+  hmrServer_default as default
+};

@@ -1,1 +1,50 @@
-!function(e,s){"object"==typeof exports&&"undefined"!=typeof module?module.exports=s(require("bcrypt"),require("crypto-extra"),require("dayjs")):"function"==typeof define&&define.amd?define(["bcrypt","crypto-extra","dayjs"],s):(e="undefined"!=typeof globalThis?globalThis:e||self)["joystick-node"]=s(e.bcrypt,e.crypto,e.dayjs)}(this,(function(e,s,r){"use strict";function n(e){return e&&"object"==typeof e&&"default"in e?e:{default:e}}var o=n(e),t=n(s),a=n(r);const d=(e="",s)=>{const r="object"==typeof s&&(s.reason||s.message)||s;return`${"development"===process.env.NODE_ENV?`[${e}] `:""}${r}`};const i={config:{},keys:{global:{},public:{},private:{}}};var c=()=>{try{const e=!!process.env.JOYSTICK_SETTINGS,s=e&&((e="")=>{try{JSON.parse(e)}catch(e){return!1}return!0})(process.env.JOYSTICK_SETTINGS);if(!e)return i;if(!s)return console.warn(`Could not parse settings. Please verify that your settings-${process.env.NODE_ENV} exports a valid JavaScript object.`),i;return JSON.parse(process.env.JOYSTICK_SETTINGS)||i}catch(e){console.warn(e)}},u=(e=16)=>t.default.randomString(e),l={mongodb:{existingUser:async(e={})=>{let s,r;return e?.emailAddress&&(s=await process.databases.mongodb.collection("users").findOne({emailAddress:e.emailAddress})),e?.username&&(r=await process.databases.mongodb.collection("users").findOne({username:e.username})),s||r?{existingEmailAddress:s?.emailAddress,existingUsername:r?.username}:null},createUser:async(e={})=>{const s=u();return await process.databases.mongodb.collection("users").insertOne({_id:s,...e}),s},user:async e=>{if(e?.emailAddress){return await process.databases.mongodb.collection("users").findOne({emailAddress:e.emailAddress})}if(e?.username){return await process.databases.mongodb.collection("users").findOne({username:e.username})}return null},addSession:async(e={})=>{await process.databases.mongodb.collection("users").updateOne({_id:e.userId},{$addToSet:{sessions:e.session}})},userWithLoginToken:async e=>await process.databases.mongodb.collection("users").findOne({"sessions.token":e?.token}),addPasswordResetToken:(e={})=>process.databases.mongodb.collection("users").updateOne({emailAddress:e.emailAddress},{$addToSet:{passwordResetTokens:{token:e.token,requestedAt:(new Date).toISOString()}}}),userWithResetToken:async e=>await process.databases.mongodb.collection("users").findOne({"passwordResetTokens.token":e["passwordResetTokens.token"]}),setNewPassword:async(e={})=>process.databases.mongodb.collection("users").updateOne({_id:e?.userId},{$set:{password:e?.hashedPassword}}),removeResetToken:async(e={})=>{const s=await process.databases.mongodb.collection("users").findOne({_id:e?.userId});return process.databases.mongodb.collection("users").updateOne({_id:e?.userId},{$set:{passwordResetTokens:s?.passwordResetTokens?.filter((({token:s})=>s!==e?.token))}})}}},p=async(e="",s={})=>{const r=(()=>{const e=(c()?.config?.databases||[]).find((e=>!!e.users));return e&&e.provider})(),n=r&&l[r];if(n&&n[e]){return await n[e](s)}return null};const m=async(e,{resolve:s,reject:r})=>{try{const n=await p("user",{emailAddress:e.emailAddress,username:e.username});if(!n)throw new Error(`A user with the ${e.emailAddress?"email address":"username"} ${e.emailAddress||e.username} could not be found.`);if(!((e=null,s=null)=>{try{return o.default.compareSync(e,s)}catch(e){throw new Error(d("login.checkIfValidPassword",e))}})(e.password,n.password))return r("Incorrect password.");const t=await{token:u(64),tokenExpiresAt:a.default().add(30,"days").format()};await((e=null,s=null)=>{try{return p("addSession",{userId:e,session:s})}catch(e){throw new Error(d("login.addSessionToUser",e))}})(n._id,t);const{password:i,sessions:c,...l}=n;return s({...t,user:{...l}})}catch(e){r(d("login",e))}};return e=>new Promise(((s,r)=>{m(e,{resolve:s,reject:r})}))}));
+import bcrypt from "bcrypt";
+import formatErrorString from "../../lib/formatErrorString";
+import runUserQuery from "./runUserQuery";
+import generateSession from "./generateSession";
+const addSessionToUser = (userId = null, session = null) => {
+  try {
+    return runUserQuery("addSession", { userId, session });
+  } catch (error) {
+    throw new Error(formatErrorString("login.addSessionToUser", error));
+  }
+};
+const checkIfValidPassword = (passwordFromLogin = null, passwordHashFromUser = null) => {
+  try {
+    return bcrypt.compareSync(passwordFromLogin, passwordHashFromUser);
+  } catch (error) {
+    throw new Error(formatErrorString("login.checkIfValidPassword", error));
+  }
+};
+const login = async (options, { resolve, reject }) => {
+  try {
+    const user = await runUserQuery("user", {
+      emailAddress: options.emailAddress,
+      username: options.username
+    });
+    if (!user) {
+      throw new Error(`A user with the ${options.emailAddress ? "email address" : "username"} ${options.emailAddress || options.username} could not be found.`);
+    }
+    const isValidPassword = checkIfValidPassword(options.password, user.password);
+    if (!isValidPassword) {
+      return reject("Incorrect password.");
+    }
+    const session = await generateSession();
+    await addSessionToUser(user._id, session);
+    const { password, sessions, ...restOfUser } = user;
+    return resolve({
+      ...session,
+      user: {
+        ...restOfUser
+      }
+    });
+  } catch (error) {
+    reject(formatErrorString("login", error));
+  }
+};
+var login_default = (options) => new Promise((resolve, reject) => {
+  login(options, { resolve, reject });
+});
+export {
+  login_default as default
+};

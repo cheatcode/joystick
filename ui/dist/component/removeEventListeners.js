@@ -1,1 +1,1 @@
-!function(e,t){"object"==typeof exports&&"undefined"!=typeof module?module.exports=t():"function"==typeof define&&define.amd?define(t):(e="undefined"!=typeof globalThis?globalThis:e||self)["joystick-ui"]=t()}(this,(function(){"use strict";return(e=[])=>{for(const t of e)t.element&&t.eventType&&t.eventListener&&t.element.removeEventListener(t.eventType,t.eventListener)}}));
+var n=(t=[])=>{for(let e of t)e.element&&e.eventType&&e.eventListener&&e.element.removeEventListener(e.eventType,e.eventListener)};export{n as default};

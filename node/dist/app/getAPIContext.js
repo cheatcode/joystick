@@ -1,1 +1,23 @@
-!function(e,s){"object"==typeof exports&&"undefined"!=typeof module?module.exports=s():"function"==typeof define&&define.amd?define(s):(e="undefined"!=typeof globalThis?globalThis:e||self)["joystick-node"]=s()}(this,(function(){"use strict";return(e={},s=null)=>new Promise((async(n,r)=>{if("function"==typeof s){return n({...await s(e.req,e.res),req:e.req,res:e.res,...process.databases||{}})}return n({...s,req:e.req,res:e.res,...process.databases||{}})}))}));
+import parseDatabasesFromEnvironment from "../lib/parseDatabasesFromEnvironment.js";
+var getAPIContext_default = (httpContext = {}, context = null) => {
+  return new Promise(async (resolve, reject) => {
+    if (typeof context === "function") {
+      const compiledContext = await context(httpContext.req, httpContext.res);
+      return resolve({
+        ...compiledContext,
+        req: httpContext.req,
+        res: httpContext.res,
+        ...process.databases || {}
+      });
+    }
+    return resolve({
+      ...context,
+      req: httpContext.req,
+      res: httpContext.res,
+      ...process.databases || {}
+    });
+  });
+};
+export {
+  getAPIContext_default as default
+};

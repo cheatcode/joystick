@@ -1,7 +1,7 @@
 import fs from "fs";
 import chalk from "chalk";
 import { codeFrameColumns } from "@babel/code-frame";
-import { OBJECT_REGEX } from "../../lib/regexes";
+import { OBJECT_REGEX } from "../../lib/regexes.js";
 
 const getCodeFrame = (id = "", location = {}) => {
   const file = fs.readFileSync(id, "utf-8");

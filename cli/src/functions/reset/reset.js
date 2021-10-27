@@ -6,8 +6,8 @@ import chalk from "chalk";
 import Mongo from "mongodb";
 import ps from "ps-node";
 import mongoUri from "mongo-uri-tool";
-import Loader from "../../lib/loader";
-import settings from "../../lib/settings";
+import Loader from "../../lib/loader.js";
+import settings from "../../lib/settings.js";
 
 const exec = util.promisify(child_process.exec);
 

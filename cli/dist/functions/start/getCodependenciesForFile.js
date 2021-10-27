@@ -1,1 +1,54 @@
-"use strict";function e(e){return e&&"object"==typeof e&&"default"in e?e:{default:e}}var s=e(require("fs"));module.exports=(e="")=>((e=[],s={})=>Object.entries(s).filter((([s,t])=>{const r=t&&t.imports&&t.imports.some((s=>e.some((e=>s.path.includes(e))))),u=t&&t.requires&&t.requires.some((s=>e.some((e=>s.path.includes(e)))));return r||u})).map((([e])=>e.replace(`${process.cwd()}/`,""))))(((e="")=>{const s=e.split("/"),t=[];return s.forEach(((e,r)=>{let u=`${e}`;s.slice(r+1,s.length).forEach((e=>{u=u+=`/${e}`,t.push(u),e.includes(".")&&t.push(u.split(".")[0])}))})),t.push(`./${s[0]}`),t.push(`./${s[0]}/index`),t.push(`./${s[0]}/index.js`),t})(e),(()=>{const e=".joystick/build/fileMap.json";if(s.default.existsSync(e)){const t=s.default.readFileSync(e,"utf-8");return t?JSON.parse(t):{}}return{}})());
+import fs from "fs";
+const findCodependenciesInMap = (pathVariations = [], map = {}) => {
+  return Object.entries(map).filter(([codependentPath, codependentDependencies]) => {
+    const hasMatchingImports = codependentDependencies && codependentDependencies.imports && codependentDependencies.imports.some((codependentDependency) => {
+      return pathVariations.some((pathVariation) => {
+        return codependentDependency.path.includes(pathVariation);
+      });
+    });
+    const hasMatchingRequires = codependentDependencies && codependentDependencies.requires && codependentDependencies.requires.some((codependentDependency) => {
+      return pathVariations.some((pathVariation) => {
+        return codependentDependency.path.includes(pathVariation);
+      });
+    });
+    return hasMatchingImports || hasMatchingRequires;
+  }).map(([matchingCodependentPath]) => {
+    return matchingCodependentPath.replace(`${process.cwd()}/`, "");
+  });
+};
+const readFileDependencyMap = () => {
+  const fileDependencyMapPath = `.joystick/build/fileMap.json`;
+  if (fs.existsSync(fileDependencyMapPath)) {
+    const fileDependencyMapAsJSON = fs.readFileSync(fileDependencyMapPath, "utf-8");
+    const fileMap = fileDependencyMapAsJSON ? JSON.parse(fileDependencyMapAsJSON) : {};
+    return fileMap;
+  }
+  return {};
+};
+const getPathVariations = (path = "") => {
+  const pathParts = path.split("/");
+  const variations = [];
+  pathParts.forEach((pathPart, pathPartIndex) => {
+    let base = `${pathPart}`;
+    pathParts.slice(pathPartIndex + 1, pathParts.length).forEach((part) => {
+      base = base += `/${part}`;
+      variations.push(base);
+      if (part.includes(".")) {
+        variations.push(base.split(".")[0]);
+      }
+    });
+  });
+  variations.push(`./${pathParts[0]}`);
+  variations.push(`./${pathParts[0]}/index`);
+  variations.push(`./${pathParts[0]}/index.js`);
+  return variations;
+};
+var getCodependenciesForFile_default = (pathToFind = "") => {
+  const pathVariations = getPathVariations(pathToFind);
+  const fileDependencyMap = readFileDependencyMap();
+  const codpendencies = findCodependenciesInMap(pathVariations, fileDependencyMap);
+  return codpendencies;
+};
+export {
+  getCodependenciesForFile_default as default
+};

@@ -1,1 +1,27 @@
-!function(e,n){"object"==typeof exports&&"undefined"!=typeof module?module.exports=n(require("chalk")):"function"==typeof define&&define.amd?define(["chalk"],n):(e="undefined"!=typeof globalThis?globalThis:e||self)["joystick-node"]=n(e.chalk)}(this,(function(e){"use strict";function n(e){return e&&"object"==typeof e&&"default"in e?e:{default:e}}var t=n(e);return(e=null)=>e?e&&!e.host?(console.warn(t.default.redBright(`Invalid SMTP settings: config.smtp.host not defined in settings.${process.env.NODE_ENV}.js`)),!1):e&&!e.port?(console.warn(t.default.redBright(`Invalid SMTP settings: config.smtp.port not defined in settings.${process.env.NODE_ENV}.js`)),!1):e&&!e.username?(console.warn(t.default.redBright(`Invalid SMTP settings: config.smtp.username not defined in settings.${process.env.NODE_ENV}.js`)),!1):!(e&&!e.password)||(console.warn(t.default.redBright(`Invalid SMTP settings: config.smtp.password not defined in settings.${process.env.NODE_ENV}.js`)),!1):(console.warn(t.default.redBright(`Invalid SMTP settings: config.smtp not defined in settings.${process.env.NODE_ENV}.js`)),!1)}));
+import chalk from "chalk";
+var validateSMTPSettings_default = (settings = null) => {
+  if (!settings) {
+    console.warn(chalk.redBright(`Invalid SMTP settings: config.smtp not defined in settings.${process.env.NODE_ENV}.js`));
+    return false;
+  }
+  if (settings && !settings.host) {
+    console.warn(chalk.redBright(`Invalid SMTP settings: config.smtp.host not defined in settings.${process.env.NODE_ENV}.js`));
+    return false;
+  }
+  if (settings && !settings.port) {
+    console.warn(chalk.redBright(`Invalid SMTP settings: config.smtp.port not defined in settings.${process.env.NODE_ENV}.js`));
+    return false;
+  }
+  if (settings && !settings.username) {
+    console.warn(chalk.redBright(`Invalid SMTP settings: config.smtp.username not defined in settings.${process.env.NODE_ENV}.js`));
+    return false;
+  }
+  if (settings && !settings.password) {
+    console.warn(chalk.redBright(`Invalid SMTP settings: config.smtp.password not defined in settings.${process.env.NODE_ENV}.js`));
+    return false;
+  }
+  return true;
+};
+export {
+  validateSMTPSettings_default as default
+};

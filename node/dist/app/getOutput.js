@@ -1,1 +1,69 @@
-!function(e,n){"object"==typeof exports&&"undefined"!=typeof module?module.exports=n():"function"==typeof define&&define.amd?define(n):(e="undefined"!=typeof globalThis?globalThis:e||self)["joystick-node"]=n()}(this,(function(){"use strict";const e=e=>!(!e||"object"!=typeof e||Array.isArray(e)),n=(t={},i=[])=>(Object.entries(t).forEach((([l,r])=>{const o=i.find((e=>e.key===l));return o||delete t[l],o&&e(r)&&0===o.children.length?r:o&&e(r)&&o.children.length>0?n(r,o.children):void(o&&Array.isArray(r)&&o.children&&o.children.length>0&&r.forEach((t=>{if(t&&e(t))return n(t,o.children)})))})),t),t=(e=[])=>{const[n,...t]=e;return{head:n,tail:t}},i=(e=[],n=[])=>(n.forEach((n=>{const l=e.find((e=>e.key===n.head));if(!l){const l=n.tail&&n.tail.length>0?t(n.tail):null;e.push({key:n.head,children:l?i([],[l]):[]})}if(l){const e=n.tail&&n.tail.length>0?t(n.tail):null;l.children=[...e?i(l.children,[e]):[]]}})),e);return(e={},l=[])=>{const r=[],o=((e=[])=>e.map((e=>t(e))))(((e=[])=>e.map((e=>e.split("."))))(l));return i(r,o),n(e,r)}}));
+import { isObject } from "../validation/lib/typeValidators";
+const getOutput = (object = {}, fields = []) => {
+  Object.entries(object).forEach(([key, value]) => {
+    const keyInFields = fields.find((field) => field.key === key);
+    if (!keyInFields) {
+      delete object[key];
+    }
+    if (keyInFields && isObject(value) && keyInFields.children.length === 0) {
+      return value;
+    }
+    if (keyInFields && isObject(value) && keyInFields.children.length > 0) {
+      return getOutput(value, keyInFields.children);
+    }
+    if (keyInFields && Array.isArray(value) && keyInFields.children && keyInFields.children.length > 0) {
+      value.forEach((valueElement) => {
+        if (valueElement && isObject(valueElement)) {
+          return getOutput(valueElement, keyInFields.children);
+        }
+      });
+    }
+  });
+  return object;
+};
+const getPathPartArrays = (paths = []) => {
+  return paths.map((path) => {
+    return path.split(".");
+  });
+};
+const getHeadTail = (pathPartArray = []) => {
+  const [head, ...tail] = pathPartArray;
+  return {
+    head,
+    tail
+  };
+};
+const getHeadTailForPaths = (pathPartArrays = []) => {
+  return pathPartArrays.map((pathPartArray) => {
+    return getHeadTail(pathPartArray);
+  });
+};
+const addToMap = (map = [], headTailForPaths = []) => {
+  headTailForPaths.forEach((headTailForPath) => {
+    const existingMapEntry = map.find((mapEntry) => mapEntry.key === headTailForPath.head);
+    if (!existingMapEntry) {
+      const headTailForChildren = headTailForPath.tail && headTailForPath.tail.length > 0 ? getHeadTail(headTailForPath.tail) : null;
+      map.push({
+        key: headTailForPath.head,
+        children: headTailForChildren ? addToMap([], [headTailForChildren]) : []
+      });
+    }
+    if (existingMapEntry) {
+      const headTailForChildren = headTailForPath.tail && headTailForPath.tail.length > 0 ? getHeadTail(headTailForPath.tail) : null;
+      existingMapEntry.children = [
+        ...headTailForChildren ? addToMap(existingMapEntry.children, [headTailForChildren]) : []
+      ];
+    }
+  });
+  return map;
+};
+var getOutput_default = (output = {}, outputFields = []) => {
+  const map = [];
+  const pathPartArrays = getPathPartArrays(outputFields);
+  const headTailForPaths = getHeadTailForPaths(pathPartArrays);
+  addToMap(map, headTailForPaths);
+  return getOutput(output, map);
+};
+export {
+  getOutput_default as default
+};

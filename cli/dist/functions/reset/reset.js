@@ -1,1 +1,115 @@
-"use strict";var e=require("fs"),t=require("util"),s=require("child_process"),o=require("command-exists"),r=require("chalk"),a=require("mongodb"),n=require("ps-node"),l=require("mongo-uri-tool");function i(e){return e&&"object"==typeof e&&"default"in e?e:{default:e}}var d=i(e),c=i(t),u=i(s),p=i(o),h=i(r),f=i(a),g=i(n),m=i(l);class w{constructor(e={}){this.message=e.defaultMessage,this.frame=0,this.frames=[h.default.yellowBright(">>-----"),h.default.yellowBright("->>----"),h.default.yellowBright("--\x3e>---"),h.default.yellowBright("---\x3e>--"),h.default.yellowBright("----\x3e>-"),h.default.yellowBright("-----\x3e>"),h.default.yellowBright("----<<-"),h.default.yellowBright("---<<--"),h.default.yellowBright("--<<---"),h.default.yellowBright("-<<----"),h.default.yellowBright("<<-----")],this.freezeFrames={stable:h.default.yellowBright("---\x3e---"),error:h.default.redBright("!!!")}}getFrame(){return this.frame===this.frames.length-1?(this.frame=0,this.frame):(this.frame+=1,this.frame)}start(e=""){e&&(this.message=e),this.interval=setInterval((()=>{const e=this.getFrame();process.stdout.cursorTo(0),process.stdout.write(`${this.frames[e]} ${this.message}`)}),80)}stop(){clearInterval(this.interval),process.stdout.cursorTo(0),process.stdout.clearLine(),this.message="",this.interval=null}text(e=""){process.stdout.clearLine(),e&&(this.message=e),this.interval||this.start()}pause(e="",t="stable"){process.stdout.clearLine(),e&&(this.message=e),clearInterval(this.interval),this.interval=null;const s=this.freezeFrames[t];process.stdout.cursorTo(0),process.stdout.write(`${s?`${s} `:""}${this.message}`)}stable(e=""){this.pause(e)}error(e=""){this.pause(e,"error")}}var y={};const b=c.default.promisify(u.default.exec),v=(e=[])=>{process.loader.stop(),e.forEach((e=>{g.default.kill(e)})),process.exit()},B=async()=>{const e=(()=>{const e=y&&y.databases&&y.databases.mongodb,t=e&&e.uri;if(!e||e&&!t)throw new Error(h.default.redBright("Must have a valid databases.mongodb.uri value in your settings-<env>.json file to connect to MongoDB."));return{uri:t,parsedUri:m.default.parseUri(t),options:Object.assign({},e.options)}})();if(!process.mongodb&&e){const t=await f.default.MongoClient.connect(e.uri,{poolSize:"development"===process.env.NODE_ENV?10:100,useNewUrlParser:!0,useUnifiedTopology:!0,authSource:"admin",ssl:"development"!==process.env.NODE_ENV,...e.options}),s=t.db(e.parsedUri.db);return{db:s,Collection:s.collection.bind(s),connection:t}}return null},x=async()=>{d.default.existsSync(".data/mongodb")||d.default.mkdirSync(".data/mongodb",{recursive:!0});const{stdout:e}=await b("mongod --port 27017 --dbpath ./.data/mongodb --quiet --fork --logpath ./.data/mongodb/log"),t=((e=null)=>{const t=e&&e.match(/forked process:+\s[0-9]+/gi),s=t&&t[0]&&t[0].replace("forked process: ","");return s&&parseInt(s,10)})(e);return process.mongoProcessId=t,t},q=async()=>{"development"!==process.env.NODE_ENV&&(console.log(h.default.redBright("To prevent catastrophic data loss, reset is disabled outside of your development environment.")),process.exit(1)),process.isReset=!0,process.loader=new w,process.loader.start("Resetting database...");if(p.default.sync("mongod")){const e=await x();((e=[])=>{process.on("SIGINT",(()=>v(e))),process.on("SIGTERM",(()=>v(e)))})([e]);const t=await B();await(async e=>{const t=e&&e.db&&await e.db.listCollections().toArray();for(let s=0;s<t.length;s+=1){const o=t[s],r=o&&o.name,a=r&&e.db.collection(r);a&&await a.deleteMany()}return!0})(t),g.default.kill(e),process.loader.stable("Database reset!\n\n"),process.exit()}else process.loader.stop(),console.warn(`\n  ${h.default.red("MongoDB not installed.")}\n\n  ${h.default.green("Download MongoDB at https://www.mongodb.com/try/download/community")}\n\n  After installation, try to run this command again to start MongoDB alongside your app.\n\n  `),process.exit(1)};(async()=>{q()})();
+import fs from "fs";
+import util from "util";
+import child_process from "child_process";
+import commandExists from "command-exists";
+import chalk from "chalk";
+import Mongo from "mongodb";
+import ps from "ps-node";
+import mongoUri from "mongo-uri-tool";
+import Loader from "../../lib/loader.js";
+import settings from "../../lib/settings.js";
+const exec = util.promisify(child_process.exec);
+const resetDatabase = async (mongodb) => {
+  const collections = mongodb && mongodb.db && await mongodb.db.listCollections().toArray();
+  for (let i = 0; i < collections.length; i += 1) {
+    const collectionFromList = collections[i];
+    const collectionName = collectionFromList && collectionFromList.name;
+    const collection = collectionName && mongodb.db.collection(collectionName);
+    if (collection) {
+      await collection.deleteMany();
+    }
+  }
+  return true;
+};
+const handleCleanup = (processIds = []) => {
+  process.loader.stop();
+  processIds.forEach((processId) => {
+    ps.kill(processId);
+  });
+  process.exit();
+};
+const handleSignalEvents = (processIds = []) => {
+  process.on("SIGINT", () => handleCleanup(processIds));
+  process.on("SIGTERM", () => handleCleanup(processIds));
+};
+const getMongoProcessId = (stdout = null) => {
+  const forkedProcessId = stdout && stdout.match(/forked process:+\s[0-9]+/gi);
+  const processId = forkedProcessId && forkedProcessId[0] && forkedProcessId[0].replace("forked process: ", "");
+  return processId && parseInt(processId, 10);
+};
+const getConnectionOptions = () => {
+  const mongodbSettings = settings && settings.databases && settings.databases.mongodb;
+  const uri = mongodbSettings && mongodbSettings.uri;
+  if (!mongodbSettings || mongodbSettings && !uri) {
+    throw new Error(chalk.redBright("Must have a valid databases.mongodb.uri value in your settings-<env>.json file to connect to MongoDB."));
+  }
+  return {
+    uri,
+    parsedUri: mongoUri.parseUri(uri),
+    options: Object.assign({}, mongodbSettings.options)
+  };
+};
+const connectToMongoDB = async () => {
+  const connectionOptions = getConnectionOptions();
+  if (!process.mongodb && connectionOptions) {
+    const mongodb = await Mongo.MongoClient.connect(connectionOptions.uri, {
+      poolSize: process.env.NODE_ENV === "development" ? 10 : 100,
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+      authSource: "admin",
+      ssl: process.env.NODE_ENV !== "development",
+      ...connectionOptions.options
+    });
+    const db = mongodb.db(connectionOptions.parsedUri.db);
+    return {
+      db,
+      Collection: db.collection.bind(db),
+      connection: mongodb
+    };
+  }
+  return null;
+};
+const startMongoDB = async () => {
+  const dataDirectoryExists = fs.existsSync(".data/mongodb");
+  if (!dataDirectoryExists) {
+    fs.mkdirSync(".data/mongodb", { recursive: true });
+  }
+  const { stdout } = await exec("mongod --port 27017 --dbpath ./.data/mongodb --quiet --fork --logpath ./.data/mongodb/log");
+  const mongoProcessId = getMongoProcessId(stdout);
+  process.mongoProcessId = mongoProcessId;
+  return mongoProcessId;
+};
+const warnMongoDBMissing = () => {
+  console.warn(`
+  ${chalk.red("MongoDB not installed.")}
+
+  ${chalk.green("Download MongoDB at https://www.mongodb.com/try/download/community")}
+
+  After installation, try to run this command again to start MongoDB alongside your app.
+
+  `);
+};
+const reset = async () => {
+  if (process.env.NODE_ENV !== "development") {
+    console.log(chalk.redBright("To prevent catastrophic data loss, reset is disabled outside of your development environment."));
+    process.exit(1);
+  }
+  process.isReset = true;
+  process.loader = new Loader();
+  process.loader.start("Resetting database...");
+  const mongodbExists = commandExists.sync("mongod");
+  if (mongodbExists) {
+    const mongoProcessId = await startMongoDB();
+    handleSignalEvents([mongoProcessId]);
+    const mongodb = await connectToMongoDB();
+    await resetDatabase(mongodb);
+    ps.kill(mongoProcessId);
+    process.loader.stable("Database reset!\n\n");
+    process.exit();
+  } else {
+    process.loader.stop();
+    warnMongoDBMissing();
+    process.exit(1);
+  }
+};
+(async () => reset())();

@@ -1,1 +1,134 @@
-!function(e,t){"object"==typeof exports&&"undefined"!=typeof module?module.exports=t():"function"==typeof define&&define.amd?define(t):(e="undefined"!=typeof globalThis?globalThis:e||self)["joystick-node"]=t()}(this,(function(){"use strict";const e=(t=null)=>{fetch(`${window.location.origin}/_joystick/heartbeat`).then((async e=>{const n=await e.text();n&&"<3"===n&&t&&(console.clear(),console.log("[hmr] Listening for changes..."),t())})).catch((async n=>{console.log("Server unavailable. Trying again..."),setTimeout((()=>{e(t)}),500)}))};let t=null,n=0;const o=(e={},s=null)=>{let i=new WebSocket(`ws://localhost:${process.env.PORT}/_joystick/hmr`);t&&(clearInterval(t),t=null);const c={client:i,send:(t={})=>(e.queryParams&&(t={...t,...e.queryParams}),i.send(JSON.stringify(t)))};return i.addEventListener("open",(()=>{console.log("[hmr] Listening for changes..."),n=0,s&&s(c)})),i.addEventListener("message",(t=>{t?.data&&e.onMessage&&e.onMessage(JSON.parse(t.data))})),i.addEventListener("close",(()=>{console.log("[hmr] Disconnected from server"),i=null,e.autoReconnect&&!t&&(t=setInterval((()=>{i=null,n<12?(o(e,s),console.log(`[hmr] Attempting to reconnect (${n+1}/12)...`),n+=1):(console.log("[hmr] Reconnection attempts exhausted. Server is unavailable."),clearInterval(t))}),5e3))})),c};return o({autoReconnect:!0,onMessage:(t={})=>{if(t&&t.type&&"FILE_CHANGE"===t.type){window.__joystick_hmr_update__=!0;const n=t?.path,o=`/_joystick/${n}`,s=document.querySelector(`script[src="${o}"]`),i=o.includes("index.css"),c=o.includes("index.html"),l=o.includes("settings."),r=i?document.querySelector(`link[href="${o}"]`):null;if((c||l)&&location.reload(),r){const e=document.createElement("link");e.rel="stylesheet",e.href=o,r.parentNode.removeChild(r),document.body.appendChild(e)}s&&o.includes("ui/pages")&&(()=>{if("undefined"!=typeof window&&window.__joystick__){const e=window.__joystick__?._internal?.eventListeners?.attached,t=window.__joystick__?._internal?.timers;e&&e.length>0&&window.__joystick__?._utils?.removeEventListeners(e),t&&t.length>0&&t.forEach((({type:e,id:t})=>{"timeout"===e&&window.clearTimeout(t),"interval"===e&&window.clearInterval(t)}))}})(),s&&e((()=>{const e=document.createElement("script");e.src=o,s.parentNode.removeChild(s),document.body.appendChild(e)})),window.__joystick_layout__&&n&&n.includes("pages")&&e((()=>{const e=document.querySelector(`script[src="${window.__joystick_layout__}"]`),t=document.createElement("script");t.src=window.__joystick_layout__,e.parentNode.removeChild(e),document.body.appendChild(t)}))}}},(e=>{const t=[].map.call(document.querySelectorAll("script"),(e=>e&&e.src)).filter((e=>e.includes("/_joystick"))).filter((e=>!e.includes("/hmr"))).filter((e=>!e.includes("/_joystick/utils/process.js"))).map((e=>e.replace(`${window.location.origin}/`,"").replace("_joystick/","")));e.send({type:"HMR_WATCHLIST",tags:t})}))}));
+// src/app/middleware/hmr/client.js
+var serverAvailable = (callback = null) => {
+  fetch(`${window.location.origin}/_joystick/heartbeat`).then(async (response) => {
+    const data = await response.text();
+    if (data && data === "<3" && callback) {
+      console.log("[hmr] Listening for changes...");
+      callback();
+    }
+  }).catch(async (error) => {
+    console.log("Server unavailable. Trying again...");
+    setTimeout(() => {
+      serverAvailable(callback);
+    }, 500);
+  });
+};
+var cleanup = () => {
+  if (typeof window !== "undefined" && window.__joystick__) {
+    const eventListeners = window.__joystick__?._internal?.eventListeners?.attached;
+    const timers = window.__joystick__?._internal?.timers;
+    if (eventListeners && eventListeners.length > 0) {
+      window.__joystick__?._utils?.removeEventListeners(eventListeners);
+    }
+    if (timers && timers.length > 0) {
+      timers.forEach(({ type, id }) => {
+        if (type === "timeout") {
+          window.clearTimeout(id);
+        }
+        if (type === "interval") {
+          window.clearInterval(id);
+        }
+      });
+    }
+  }
+};
+var reconnectInterval = null;
+var reconnectAttempts = 0;
+var websocketClient = (options = {}, onConnect = null) => {
+  let client = new WebSocket(`ws://localhost:${process.env.PORT}/_joystick/hmr`);
+  if (reconnectInterval) {
+    clearInterval(reconnectInterval);
+    reconnectInterval = null;
+  }
+  const connection = {
+    client,
+    send: (message = {}) => {
+      if (options.queryParams) {
+        message = { ...message, ...options.queryParams };
+      }
+      return client.send(JSON.stringify(message));
+    }
+  };
+  client.addEventListener("open", () => {
+    console.log(`[hmr] Listening for changes...`);
+    reconnectAttempts = 0;
+    if (onConnect)
+      onConnect(connection);
+  });
+  client.addEventListener("message", (event) => {
+    if (event?.data && options.onMessage) {
+      options.onMessage(JSON.parse(event.data));
+    }
+  });
+  client.addEventListener("close", () => {
+    console.log(`[hmr] Disconnected from server`);
+    client = null;
+    if (options.autoReconnect && !reconnectInterval) {
+      reconnectInterval = setInterval(() => {
+        client = null;
+        if (reconnectAttempts < 12) {
+          websocketClient(options, onConnect);
+          console.log(`[hmr] Attempting to reconnect (${reconnectAttempts + 1}/12)...`);
+          reconnectAttempts += 1;
+        } else {
+          console.log(`[hmr] Reconnection attempts exhausted. Server is unavailable.`);
+          clearInterval(reconnectInterval);
+        }
+      }, 5e3);
+    }
+  });
+  return connection;
+};
+var client_default = (() => websocketClient({
+  autoReconnect: true,
+  onMessage: (message = {}) => {
+    if (message && message.type && message.type === "FILE_CHANGE") {
+      window.__joystick_hmr_update__ = true;
+      const path = message?.path;
+      const scriptPath = `/_joystick/${path}`;
+      const script = document.querySelector(`script[src="${scriptPath}"]`);
+      const isCSS = scriptPath.includes("index.css");
+      const isHTML = scriptPath.includes("index.html");
+      const isSettings = scriptPath.includes("settings.");
+      const stylesheet = isCSS ? document.querySelector(`link[href="${scriptPath}"]`) : null;
+      if (isHTML || isSettings) {
+        location.reload();
+      }
+      if (stylesheet) {
+        serverAvailable(() => {
+          const newStylesheet = document.createElement("link");
+          newStylesheet.rel = "stylesheet";
+          newStylesheet.href = scriptPath;
+          stylesheet.parentNode.removeChild(stylesheet);
+          document.body.appendChild(newStylesheet);
+        });
+      }
+      if (script && scriptPath.includes("ui/pages")) {
+        cleanup();
+      }
+      if (script) {
+        serverAvailable(() => {
+          location.reload();
+        });
+      }
+      if (window.__joystick_layout__ && path && path.includes("pages")) {
+        serverAvailable(() => {
+          location.reload();
+        });
+      }
+    }
+  }
+}, (connection) => {
+  const joystickScriptTags = [].map.call(document.querySelectorAll("script"), (scriptTag) => {
+    return scriptTag && scriptTag.src;
+  }).filter((scriptPath) => scriptPath.includes("/_joystick")).filter((scriptPath) => !scriptPath.includes("/hmr")).filter((scriptPath) => !scriptPath.includes("/_joystick/utils/process.js")).map((scriptPath) => {
+    return scriptPath.replace(`${window.location.origin}/`, "").replace("_joystick/", "");
+  });
+  connection.send({
+    type: "HMR_WATCHLIST",
+    tags: joystickScriptTags
+  });
+}))();
+export {
+  client_default as default
+};

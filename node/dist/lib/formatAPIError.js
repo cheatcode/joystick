@@ -1,1 +1,11 @@
-!function(e,o){"object"==typeof exports&&"undefined"!=typeof module?module.exports=o():"function"==typeof define&&define.amd?define(o):(e="undefined"!=typeof globalThis?globalThis:e||self)["joystick-node"]=o()}(this,(function(){"use strict";var e=(e={})=>Object.getOwnPropertyNames(e).reduce(((o,t)=>(o[t]=e[t],o)),{});return(o={},t="")=>({error:e(o),message:o?.message||o?.reason||o,location:t})}));
+import getErrorObject from "./getErrorObject";
+var formatAPIError_default = (exception = {}, location = "") => {
+  return {
+    error: getErrorObject(exception),
+    message: exception?.message || exception?.reason || exception,
+    location
+  };
+};
+export {
+  formatAPIError_default as default
+};

@@ -2,17 +2,6 @@ import ui, { get } from "@joystick.js/ui";
 import Quote from "../../components/quote";
 
 const Index = ui.component({
-  state: {
-    quotes: [],
-  },
-  lifecycle: {
-    onBeforeMount: async (component) => {
-      const quotes = await get("quotes");
-      component.setState({ quotes });
-    },
-    onMount: () => {},
-    onBeforeUnmount: () => {},
-  },
   methods: {
     handleLogHello: () => {
       console.log("Hello!");
@@ -24,31 +13,20 @@ const Index = ui.component({
     },
   },
   css: `
-    h4 {
+    div p {
       font-size: 18px;
-      font-weight: bold;
-      border-bottom: 1px solid #eee;
-      padding: 0px 0px 20px;
-      margin-bottom: 40px;
-      color: #333;
+      background: #eee;
+      padding: 20px;
     }
   `,
-  render: ({ state, i18n, each, component }) => {
+  render: ({ component, i18n }) => {
     return `
       <div>
-        <h4>${i18n("quotes")}</h4>
-        <ul>
-          ${each(state.quotes, (quote) => {
-            return `
-              <li>
-                ${component(Quote, {
-                  quote: quote.text,
-                  attribution: quote.attribution,
-                })}
-              </li>
-            `;
-          })}
-        </ul>
+        <p>${i18n("quote")}</p>
+        ${component(Quote, {
+          quote: "Light up the darkness.",
+          attribution: "Bob Marley",
+        })}
       </div>
     `;
   },

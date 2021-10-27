@@ -1,1 +1,47 @@
-"use strict";function e(e){return e&&"object"==typeof e&&"default"in e?e:{default:e}}var t=e(require("chalk"));const n=new RegExp(/export default [a-zA-Z0-9]+/g);module.exports=()=>({transform(e,o){if(["layouts"].some((e=>o.includes(e)))){const s=e.match(n)||[],l=s&&s[0];if(!l)return console.log(" "),console.warn(t.default.yellowBright(`All components in the ui/layouts directory must have an export default statement (e.g., export default MyLayout). Please check the file at ${o}.`)),console.log(" "),null;const a=(l&&l.split(" ")||[]).pop();if(a)return{code:e.replace(`${l};`,`if (\n                typeof window !== 'undefined' &&\n                window.__joystick_ssr__ === true &&\n                window.__joystick_layout_page__ &&\n                ui &&\n                ui.mount\n              ) {\n                fetch(window.__joystick_layout_page_url__).then(async (response) => {\n                  const file = await response.text();\n                  const component = eval(file);\n                  ui.mount(${a}, Object.assign({ ...window.__joystick_ssr_props__ }, { page: window[window.__joystick_layout_page__].js }), document.getElementById('app'));\n                });\n              }\n            \n            export default ${a};\n              `)}}return null}});
+import chalk from "chalk";
+import { EXPORT_DEFAULT_REGEX } from "../../lib/regexes.js";
+var bootstrapLayoutComponent_default = () => {
+  return {
+    transform(code, id) {
+      const shouldBootstrap = ["layouts"].some((bootstrapTarget) => {
+        return id.includes(bootstrapTarget);
+      });
+      if (shouldBootstrap) {
+        const matches = code.match(EXPORT_DEFAULT_REGEX) || [];
+        const match = matches && matches[0];
+        if (!match) {
+          console.log(" ");
+          console.warn(chalk.yellowBright(`All components in the ui/layouts directory must have an export default statement (e.g., export default MyLayout). Please check the file at ${id}.`));
+          console.log(" ");
+          return null;
+        }
+        const matchParts = match && match.split(" ") || [];
+        const componentName = matchParts.pop();
+        if (componentName) {
+          return {
+            code: code.replace(`${match};`, `if (
+                typeof window !== 'undefined' &&
+                window.__joystick_ssr__ === true &&
+                window.__joystick_layout_page__ &&
+                ui &&
+                ui.mount
+              ) {
+                fetch(window.__joystick_layout_page_url__).then(async (response) => {
+                  const file = await response.text();
+                  const component = eval(file);
+                  ui.mount(${componentName}, Object.assign({ ...window.__joystick_ssr_props__ }, { page: window[window.__joystick_layout_page__].js }), document.getElementById('app'));
+                });
+              }
+            
+            export default ${componentName};
+              `)
+          };
+        }
+      }
+      return null;
+    }
+  };
+};
+export {
+  bootstrapLayoutComponent_default as default
+};

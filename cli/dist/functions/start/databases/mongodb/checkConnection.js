@@ -1,1 +1,24 @@
-"use strict";var e=require("mongodb");function o(e){return e&&"object"==typeof e&&"default"in e?e:{default:e}}var t=o(require("chalk"));module.exports=async o=>{const s=((e={})=>{let o="mongodb://";return e&&(e.username||e.password)&&(o=`${o}${e.username||""}:${e.password||""}@`),e&&e.hosts&&Array.isArray(e.hosts)&&(o=`${o}${e.hosts.map((e=>`${e.hostname}:${e.port}`)).join(",")}`),e&&e.database&&(o=`${o}/${e.database}`),o})(o);try{return(await e.MongoClient.connect(s,{connectTimeoutMS:3e3,socketTimeoutMS:3e3,useNewUrlParser:!0,useUnifiedTopology:!0,ssl:!1})).close(),!0}catch(e){console.warn(t.default.yellowBright("\nFailed to connect to MongoDB. Please double-check connection settings and try again.")),process.exit(1)}};
+import { MongoClient } from "mongodb";
+import chalk from "chalk";
+import buildConnectionString from "./buildConnectionString.js";
+var checkConnection_default = async (connection) => {
+  const connectionString = buildConnectionString(connection);
+  try {
+    const connection2 = await MongoClient.connect(connectionString, {
+      connectTimeoutMS: 3e3,
+      socketTimeoutMS: 3e3,
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+      ssl: false
+    });
+    connection2.close();
+    return true;
+  } catch (exception) {
+    console.warn(chalk.yellowBright(`
+Failed to connect to MongoDB. Please double-check connection settings and try again.`));
+    process.exit(1);
+  }
+};
+export {
+  checkConnection_default as default
+};
