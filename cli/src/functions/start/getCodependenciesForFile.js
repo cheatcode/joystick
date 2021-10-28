@@ -50,6 +50,8 @@ const getPathVariations = (path = "") => {
   const pathParts = path.split("/");
   const variations = [];
 
+  variations.push(`/${pathPart}`);
+
   pathParts.forEach((pathPart, pathPartIndex) => {
     let base = `${pathPart}`;
 
@@ -65,6 +67,11 @@ const getPathVariations = (path = "") => {
   variations.push(`./${pathParts[0]}`);
   variations.push(`./${pathParts[0]}/index`);
   variations.push(`./${pathParts[0]}/index.js`);
+
+  // TODO: This may wreak havoc eventually, but going to let it slide
+  // for now.
+  variations.push(`/index`);
+  variations.push(`/index.js`);
 
   return variations;
 };
