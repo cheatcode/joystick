@@ -127,7 +127,7 @@ npm i -g @joystick.js/cli
 
 **Note**: the `-g` flag here is important as you want to install the CLI as part of your computer's _global_ NPM packages.
 
-> **Node Warning**: Joystick is best used with Node.js 14+ with 16+ being preferred. If you don't have Node.js installed, or, want to learn how to manage multiple versions on one computer: [read this tutorial](https://cheatcode.co/tutorials/how-to-install-node-js-and-manage-versions-with-nvm).
+> **Node Warning**: Joystick is best used with Node.js 16+. If you don't have Node.js installed, or, want to learn how to manage multiple versions on one computer: [read this tutorial](https://cheatcode.co/tutorials/how-to-install-node-js-and-manage-versions-with-nvm).
 
 ## Getting Started
 
