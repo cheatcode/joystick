@@ -50,10 +50,10 @@ const getPathVariations = (path = "") => {
   const pathParts = path.split("/");
   const variations = [];
 
-  variations.push(`/${pathPart}`);
-
   pathParts.forEach((pathPart, pathPartIndex) => {
     let base = `${pathPart}`;
+
+    variations.push(`/${pathPart}`);
 
     pathParts.slice(pathPartIndex + 1, pathParts.length).forEach((part) => {
       base = base += `/${part}`;

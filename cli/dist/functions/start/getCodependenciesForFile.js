@@ -30,6 +30,7 @@ const getPathVariations = (path = "") => {
   const variations = [];
   pathParts.forEach((pathPart, pathPartIndex) => {
     let base = `${pathPart}`;
+    variations.push(`/${pathPart}`);
     pathParts.slice(pathPartIndex + 1, pathParts.length).forEach((part) => {
       base = base += `/${part}`;
       variations.push(base);
@@ -41,6 +42,8 @@ const getPathVariations = (path = "") => {
   variations.push(`./${pathParts[0]}`);
   variations.push(`./${pathParts[0]}/index`);
   variations.push(`./${pathParts[0]}/index.js`);
+  variations.push(`/index`);
+  variations.push(`/index.js`);
   return variations;
 };
 var getCodependenciesForFile_default = (pathToFind = "") => {
