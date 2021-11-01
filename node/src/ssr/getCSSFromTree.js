@@ -31,6 +31,8 @@ const buildPrefixedAST = (componentId = "", cssString = "") => {
               }),
             };
           }
+
+          return rule;
         }),
       },
     };
