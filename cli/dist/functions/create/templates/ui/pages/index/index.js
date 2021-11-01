@@ -8,7 +8,7 @@ const Index = ui.component({
     },
   },
   events: {
-    "click .say-hello": (component) => {
+    "click .say-hello": (event, component) => {
       component.methods.handleLogHello();
     },
   },
