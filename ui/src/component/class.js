@@ -43,8 +43,12 @@ class Component {
       this.url = {
         ...url,
         isActive: (path) => {
-          const pattern = new URLPattern(url.route);
-          return !!pattern.match(path);
+          if (url.route !== '*') {
+            const pattern = new URLPattern(url.route);
+            return !!pattern.match(path);
+          }
+
+          return false;
         },
       };
     }
@@ -53,8 +57,12 @@ class Component {
       this.url = {
         ...window.__joystick_url__,
         isActive: (path) => {
-          const pattern = new URLPattern(window.__joystick_url__.route);
-          return !!pattern.match(path);
+          if (url.route !== '*') {
+            const pattern = new URLPattern(window.__joystick_url__.route);
+            return !!pattern.match(path);
+          }
+
+          return false;
         },
       };
     }
