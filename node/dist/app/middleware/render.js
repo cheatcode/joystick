@@ -40,7 +40,7 @@ const getTranslations = async (buildPath = "", pagePath = "", user = {}) => {
 };
 var render_default = (req, res, next) => {
   res.render = async function(path = "", options = {}) {
-    const buildPath = `${process.cwd()}/.joystick/build`;
+    const buildPath = `${process.cwd().replace(".joystick/build", "")}/.joystick/build`;
     const pagePath = `${buildPath}/${path}`;
     const layoutPath = options.layout ? `${buildPath}/${options.layout}` : null;
     if (!fs.existsSync(pagePath)) {
