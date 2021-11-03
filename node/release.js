@@ -23,7 +23,7 @@ execSync(
 );
 
 if (process.env.NODE_ENV === 'production') {
-  execSync(`git add . && git commit -m "release @joystick.js/node@${version}"`);
+  execSync(`git add . && git commit -m "release @joystick.js/node@${version}" && git push origin master`);
 }
 
 if (process.env.NODE_ENV === 'development') {
