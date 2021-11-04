@@ -1,13 +1,42 @@
 #!/usr/bin/env node --no-warnings
-import cli from "commander";
-import create from "./functions/create/index.js";
-import build from "./functions/build/index.js";
-import start from "./functions/start/index.js";
-cli.description("Create and manage Joystick apps.");
-cli.usage("command");
-cli.addHelpCommand(false);
-cli.helpOption("-h, --help", "Learn how to use this command line interface (CLI).");
-cli.command("create <projectName>").description("Create a new Joystick app.").action(create);
-cli.command("build").description("Build an existing Joystick app.").action(build);
-cli.command("start").description("Start an existing Joystick app.").option("-p, --port <port>", "Run Joystick on a custom port.").option("-e, --environment <environment>", "Set the process.env.NODE_ENV for Joystick.").action(start);
-cli.parse(process.argv);
+import chalk from "chalk";
+import help from "./lib/help.js";
+import functions from "./functions/index.js";
+import getArgs from "./lib/getArgs.js";
+import getOptions from "./lib/getOptions.js";
+const functionNames = Object.keys(functions);
+const functionsCalled = process.argv.filter((arg) => functionNames.includes(arg));
+const showHelp = process.argv.some((arg) => ["-h", "--help"].includes(arg));
+if (showHelp || functionsCalled.length === 0) {
+  help();
+  process.exit(0);
+}
+if (functionsCalled.length > 1) {
+  console.log(chalk.red("Only one function can be called at a time."));
+  process.exit(0);
+}
+if (functionsCalled.includes("create")) {
+  const args = getArgs(functions.create.args);
+  const options = getOptions(functions.create.options);
+  if (!args.name) {
+    console.log(chalk.red("Must pass a <name> for your app to joystick create. Run joystick --help for examples."));
+    process.exit(0);
+  }
+  if (functions.create.function && typeof functions.create.function === "function") {
+    functions.create.function(args, options);
+  }
+}
+if (functionsCalled.includes("start")) {
+  const args = getArgs(functions.start.args);
+  const options = getOptions(functions.start.options);
+  if (functions.start.function && typeof functions.start.function === "function") {
+    functions.start.function(args, options);
+  }
+}
+if (functionsCalled.includes("build")) {
+  const args = getArgs(functions.build.args);
+  const options = getOptions(functions.build.options);
+  if (functions.build.function && typeof functions.build.function === "function") {
+    functions.build.function(args, options);
+  }
+}

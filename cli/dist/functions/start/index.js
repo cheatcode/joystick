@@ -265,9 +265,12 @@ const loadSettings = async () => {
   const settingsFilePath = `${process.cwd()}/settings.${environment}.json`;
   const hasSettingsFile = fs.existsSync(settingsFilePath);
   if (!hasSettingsFile) {
-    console.warn(`A settings file could not be found for this environment. If you have settings for this environment (${environment}), creating a settings.${environment}.js at the root of your project and restart Joystick.`);
-    process.env.JOYSTICK_SETTINGS = {};
-    return;
+    console.log("");
+    console.log(chalk.red(`A settings file could not be found for this environment (${environment}).`));
+    console.log("");
+    console.log(chalk.yellow(`Create a settings.${environment}.json file at the root of your project and restart Joystick. For more information, read the documentation here: ${chalk.blue("https://github.com/cheatcode/joystick#settings")}`));
+    console.log("");
+    process.exit(0);
   }
   const rawSettingsFile = fs.readFileSync(settingsFilePath, "utf-8");
   const settingsFile = isValidJSONString(rawSettingsFile) ? rawSettingsFile : "{}";
@@ -277,14 +280,14 @@ const loadSettings = async () => {
 const checkIfJoystickProject = () => {
   return fs.existsSync(`${process.cwd()}/.joystick`);
 };
-var start_default = async (options = {}) => {
+var start_default = async (args = {}, options = {}) => {
   process.loader = new Loader({ defaultMessage: "Starting app..." });
   const port = options?.port ? parseInt(options?.port) : 2600;
   const isJoystickProject = checkIfJoystickProject();
   const portIsAvailable = await checkIfPortAvailable(port);
   if (!isJoystickProject) {
-    console.log(chalk.yellowBright(`This is not a Joystick project. A .joystick folder could not be found. Double-check you're in the right folder or create a new project with joystick create <project>`));
-    return;
+    console.log(chalk.red(`This is not a Joystick project. A .joystick folder could not be found.`));
+    process.exit(0);
   }
   if (portIsAvailable) {
     process.env.NODE_ENV = options?.environment || "development";
@@ -294,7 +297,8 @@ var start_default = async (options = {}) => {
     startWatcher();
     handleSignalEvents([]);
   } else {
-    console.log(`Port ${port} is already in use. Free up that port or pass another port with joystick start --port <PORT>.`);
+    console.log(chalk.red(`Port ${port} is already in use. Free up that port or pass another port with joystick start --port <PORT>.`));
+    process.exit(0);
   }
 };
 export {

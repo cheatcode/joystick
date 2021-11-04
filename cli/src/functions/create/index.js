@@ -45,17 +45,17 @@ const checkIfProjectExists = (projectName = "") => {
   return fs.existsSync(`./${projectName}`);
 };
 
-export default (projectName) => {
+export default (args = {}) => {
   try {
     process.loader = new Loader({ defaultMessage: "Starting app..." });
     process.loader.text("Creating app...");
-
+    
+    const projectName = args?.name;
     const projectAlreadyExists = checkIfProjectExists(projectName);
 
     if (projectAlreadyExists) {
-      throw new Error(
-        `A folder with the name ${projectName} already exists. Please choose a different name and try again.`
-      );
+      console.log(chalk.red(`A folder with the name ${projectName} already exists. Please choose a different name and try again.`));
+      process.exit(0);
     }
 
     createProjectFolder(projectName);

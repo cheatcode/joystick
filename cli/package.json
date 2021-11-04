@@ -1,7 +1,7 @@
 {
   "name": "@joystick.js/cli",
-  "version": "1.0.0-beta.9",
-  "developmentVersion": "1.0.0-beta.101",
+  "version": "1.0.0-beta.102",
+  "developmentVersion": "1.0.0-beta.127",
   "type": "module",
   "description": "CLI for the Joystick JavaScript framework.",
   "main": "development.js",
@@ -25,7 +25,6 @@
     "acorn": "^8.5.0",
     "chalk": "^4.1.2",
     "command-exists": "^1.2.9",
-    "commander": "^8.3.0",
     "esbuild": "^0.13.9",
     "fs-extra": "^10.0.0",
     "mongo-uri-tool": "^1.0.1",
