@@ -1,8 +1,8 @@
 export default (getterName = "", getterOptions = {}) => {
   if (fetch) {
     return new Promise((resolve, reject) => {
-      const input = JSON.stringify(getterOptions.input || {});
-      const output = JSON.stringify(getterOptions.output || {});
+      const input = getterOptions.input ? JSON.stringify(getterOptions.input) : null;
+      const output = getterOptions.output ? JSON.stringify(getterOptions.output) : null;
 
       const options = {
         method: "GET",
