@@ -78,7 +78,7 @@ The full-stack JavaScript framework.
       - [Getters](#getters)
       - [Setters](#setters)
       - [Validating inputs](#validating-inputs)
-      = [Authorization](#authorization)
+      - [Authorization](#authorization)
       - [Schema](#schema)
       - [get()](#get)
       - [set()](#set)
