@@ -78,6 +78,7 @@ The full-stack JavaScript framework.
       - [Getters](#getters)
       - [Setters](#setters)
       - [Validating inputs](#validating-inputs)
+      = [Authorization](#authorization)
       - [Schema](#schema)
       - [get()](#get)
       - [set()](#set)
@@ -1953,6 +1954,42 @@ input: {
 ```
 
 While your data should be kept shallow for the sake of clarity and simplicity, Joystick's validation can technically be nested infinitely as it runs recursively to an arbitrary depth.
+
+#### Authorization
+
+Depending on your app, you may need to authorize access to your API conditionally. To do this, all getters and setters in Joystick support an `authorized()` function which will return an HTTP 403 Fordbidden error to the original request when returning `false`:
+
+```javascript
+export default {
+  createPost: {
+    input: {
+      title: {
+        type: "string",
+        required: true,
+      },
+    },
+    authorized: (input, context) => {
+      return !!context?.user;
+    },
+    set: async (input, context) => {
+      const postId = joystick.id();
+
+      await context.mongodb.collection("posts").insertOne({
+        _id: joystick.id(),
+        ...input,
+      });
+
+      return {
+        _id: postId,
+      };
+    },
+  },
+};
+```
+
+The `authorized()` function receives two arguments: the validated `input` for the getter or setter request and the `context` object for the request (identical to the `get()` and `set()` function of the getter or setter itself).
+
+If the function returns a Boolean `true`, the request runs as normal. If the function returns a Boolean `false`, the request is rejected and returns an HTTP 403 Forbidden error along with a "Not authorized to access" error message.
 
 #### Schema
 
