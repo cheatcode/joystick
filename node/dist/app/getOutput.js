@@ -62,6 +62,11 @@ var getOutput_default = (output = {}, outputFields = []) => {
   const pathPartArrays = getPathPartArrays(outputFields);
   const headTailForPaths = getHeadTailForPaths(pathPartArrays);
   addToMap(map, headTailForPaths);
+  if (Array.isArray(output)) {
+    return output.map((element) => {
+      return getOutput(element, map);
+    });
+  }
   return getOutput(output, map);
 };
 export {

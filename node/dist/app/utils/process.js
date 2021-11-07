@@ -20,9 +20,9 @@ var __toModule = (module) => {
   return __reExport(__markAsModule(__defProp(module != null ? __create(__getProtoOf(module)) : {}, "default", module && module.__esModule && "default" in module ? { get: () => module.default, enumerable: true } : { value: module, enumerable: true })), module);
 };
 
-// ../../../../node_modules/process/browser.js
+// node_modules/process/browser.js
 var require_browser = __commonJS({
-  "../../../../node_modules/process/browser.js"(exports, module) {
+  "node_modules/process/browser.js"(exports, module) {
     var process2 = module.exports = {};
     var cachedSetTimeout;
     var cachedClearTimeout;

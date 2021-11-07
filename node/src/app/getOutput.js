@@ -95,5 +95,11 @@ export default (output = {}, outputFields = []) => {
 
   addToMap(map, headTailForPaths);
 
+  if (Array.isArray(output)) {
+    return output.map((element) => {
+      return getOutput(element, map);
+    });
+  }
+
   return getOutput(output, map);
 };

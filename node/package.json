@@ -1,7 +1,7 @@
 {
   "name": "@joystick.js/node",
-  "version": "1.0.0-beta.8",
-  "developmentVersion": "1.0.0-beta.101",
+  "version": "1.0.0-beta.9",
+  "developmentVersion": "1.0.0-beta.104",
   "type": "module",
   "description": "A Node.js framework for building web apps.",
   "main": "./dist/index.js",
@@ -30,6 +30,7 @@
     "mongodb": "^4.1.3",
     "node-fetch": "^3.0.0",
     "nodemailer": "^6.7.0",
+    "process": "^0.11.10",
     "serve-favicon": "^2.5.0"
   },
   "devDependencies": {
