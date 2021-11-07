@@ -11,10 +11,29 @@ var registerSetters_default = (express, setters = [], context = {}) => {
         const setter_context = await getAPIContext({ req, res }, context);
         const input = req?.body?.input;
         const output = req?.body?.output;
+        const authorized = setter_options?.authorized;
         const set = setter_options?.set;
-        let errors = [];
+        let validationErrors = [];
         if (setter_options?.input) {
-          errors = validate.inputWithSchema(input, setter_options.input);
+          validationErrors = validate.inputWithSchema(input, setter_options.input);
+        }
+        if (validationErrors.length > 0) {
+          console.log(validationErrors);
+          return res.status(400).send(JSON.stringify({
+            errors: validationErrors.map((error) => {
+              return formatAPIError(new Error(error, "validation"));
+            })
+          }));
+        }
+        if (authorized && typeof authorized === "function") {
+          const isAuthorized = await authorized(input, setter_context);
+          if (!isAuthorized) {
+            return res.status(403).send(JSON.stringify({
+              errors: [
+                formatAPIError(new Error(`Not authorized to access ${setter_name}.`, "authorized"))
+              ]
+            }));
+          }
         }
         if (set && typeof set === "function") {
           try {
@@ -27,14 +46,6 @@ var registerSetters_default = (express, setters = [], context = {}) => {
               errors: [formatAPIError(exception, "server")]
             }));
           }
-        }
-        if (errors.length > 0) {
-          console.log(errors);
-          return res.status(400).send(JSON.stringify({
-            errors: errors.map((error) => {
-              return formatAPIError(new Error(error, "validation"));
-            })
-          }));
         }
         res.status(200).send(JSON.stringify({ errors: [] }));
       });

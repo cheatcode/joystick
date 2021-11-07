@@ -12,12 +12,31 @@ var registerGetters_default = (express, getters = [], context = {}) => {
         const { query } = req;
         const input = query?.input ? JSON.parse(query?.input) : null;
         const output = query?.output ? JSON.parse(query?.output) : null;
+        const authorized = getter_options?.authorized;
         const get = getter_options?.get;
-        let errors = [];
+        let validationErrors = [];
         if (getter_options?.input) {
-          errors = validate.inputWithSchema(input, getter_options.input);
+          validationErrors = validate.inputWithSchema(input, getter_options.input);
         }
-        if (get && typeof get === "function" && errors.length === 0) {
+        if (validationErrors.length > 0) {
+          console.log(validationErrors);
+          return res.status(400).send(JSON.stringify({
+            errors: validationErrors.map((error) => {
+              return formatAPIError(new Error(error, "validation"));
+            })
+          }));
+        }
+        if (authorized && typeof authorized === "function") {
+          const isAuthorized = await authorized(input, getter_context);
+          if (!isAuthorized) {
+            return res.status(403).send(JSON.stringify({
+              errors: [
+                formatAPIError(new Error(`Not authorized to access ${getter_name}.`, "authorized"))
+              ]
+            }));
+          }
+        }
+        if (get && typeof get === "function") {
           try {
             const data = await get(input, getter_context) || {};
             const response = output ? getOutput(data, output) : data;
@@ -28,14 +47,6 @@ var registerGetters_default = (express, getters = [], context = {}) => {
               errors: [formatAPIError(exception, "server")]
             }));
           }
-        }
-        if (errors.length > 0) {
-          console.log(errors);
-          return res.status(400).send(JSON.stringify({
-            errors: errors.map((error) => {
-              return formatAPIError(new Error(error, "validation"));
-            })
-          }));
         }
         res.status(200).send(JSON.stringify({ errors: [] }));
       });
