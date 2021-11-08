@@ -42,7 +42,7 @@ var generateErrorPage_default = ({ frame, path, stack }) => `
         }
 
         .container > header h1 {
-          font-size: 26px;
+          font-size: 24px;
           font-weight: bold;
           color: #333;
         }
@@ -50,6 +50,7 @@ var generateErrorPage_default = ({ frame, path, stack }) => `
         .container > header h1 .fa-exclamation-triangle {
           color: #ffcc00;
           margin-right: 5px;
+          font-size: 22px;
         }
 
         .container > header h4 {
@@ -70,20 +71,25 @@ var generateErrorPage_default = ({ frame, path, stack }) => `
         }
 
         .code-block header {
-          border-bottom: 1px solid #eee;
+          background: #22252b;
           padding: 20px;
-          border-radius: 3px;
+          border-radius: 3px 3px 0px 0px;
         }
 
         .code-block header .fas {
-          color: #888;
+          color: #aaa;
           margin-right: 5px;
+        }
+
+        .code-block header h4 {
+          color: #fff;
+          font-weight: normal;
         }
 
         .code-block pre {
           background: #fff;
           overflow: scroll;
-          margin: -1px;
+          margin: 0px;
           border-radius: 0px 0px 3px 3px;
         }
 
