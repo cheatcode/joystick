@@ -1,6 +1,5 @@
 /* eslint-disable consistent-return */
 
-import chalk from "chalk";
 import child_process from "child_process";
 import path, { dirname } from "path";
 import { fileURLToPath } from "url";
@@ -15,6 +14,7 @@ import checkIfPortAvailable from "./checkIfPortAvailable.js";
 import getCodependenciesForFile from "./getCodependenciesForFile.js";
 import isValidJSONString from "../../lib/isValidJSONString.js";
 import startDatabaseProvider from "./databases/startProvider.js";
+import CLILog from "../../lib/CLILog.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -71,7 +71,10 @@ const handleHMRProcessSTDIO = () => {
   try {
     if (process.hmrProcess) {
       process.hmrProcess.on("error", (error) => {
-        console.log(error);
+        CLILog(error.toString(), {
+          level: 'danger',
+          docs: 'https://github.com/cheatcode/joystick',
+        });
       });
 
       process.hmrProcess.stdout.on("data", (data) => {
@@ -80,7 +83,10 @@ const handleHMRProcessSTDIO = () => {
 
       process.hmrProcess.stderr.on("data", (data) => {
         process.loader.stop();
-        console.log(chalk.redBright(data.toString()));
+        CLILog(data.toString(), {
+          level: 'danger',
+          docs: 'https://github.com/cheatcode/joystick',
+        });
       });
     }
   } catch (exception) {
@@ -138,7 +144,10 @@ const handleServerProcessSTDIO = () => {
 
       process.serverProcess.stderr.on("data", (data) => {
         process.loader.stop();
-        console.log(chalk.redBright(data.toString()));
+        CLILog(data.toString(), {
+          level: 'danger',
+          docs: 'https://github.com/cheatcode/joystick',
+        });
       });
     }
   } catch (exception) {
@@ -310,8 +319,6 @@ const startWatcher = async () => {
 };
 
 const startDatabase = async (database = {}) => {
-  // validateDatabase(databases);
-
   if (database.provider && database.provider === "mongodb") {
     await startDatabaseProvider("mongodb", database);
   }
@@ -336,28 +343,27 @@ const validateDatabases = (databases = []) => {
     .filter((database) => !!database);
 
   if (databasesNotAsObjects && databasesNotAsObjects.length > 0) {
-    console.log(
-      chalk.red(
-        "Please ensure that each database in the config.databases array is an object. Correct the array and restart your app."
-      )
-    );
+    CLILog(`Please ensure that each database in the config.databases array in your settings.${process.env.NODE_ENV}.json is an object. Correct the array and restart your app.`, {
+      level: 'danger',
+      docs: 'https://github.com/cheatcode/joystick#databases',
+    });
     process.exit(1);
   }
 
   if (userDatabases && userDatabases.length > 1) {
-    console.log(
-      chalk.red(
-        "Please select a single database for your user accounts and restart your app."
-      )
-    );
+    CLILog(`Please select a single database for your user accounts and restart your app.`, {
+      level: 'danger',
+      docs: 'https://github.com/cheatcode/joystick#users-database',
+    });
     process.exit(1);
   }
 
   if (databasesWithDuplicateNames && databasesWithDuplicateNames.length > 1) {
-    console.log(
-      chalk.red(
-        "Please only specify a database provider once. Remove any duplicates from your config.databases array and restart your app."
-      )
+    CLILog(
+      `Please only specify a database provider once. Remove any duplicates from the config.databases array in your settings.${process.env.NODE_ENV}.json and restart your app.`, {
+        level: 'danger',
+        docs: 'https://github.com/cheatcode/joystick#databases',
+      }
     );
     process.exit(1);
   }
@@ -389,16 +395,28 @@ const loadSettings = async () => {
   const hasSettingsFile = fs.existsSync(settingsFilePath);
 
   if (!hasSettingsFile) {
-    console.log('');
-    console.log(chalk.red(`A settings file could not be found for this environment (${environment}).`));
-    console.log('');
-    console.log(chalk.yellow(`Create a settings.${environment}.json file at the root of your project and restart Joystick. For more information, read the documentation here: ${chalk.blue('https://github.com/cheatcode/joystick#settings')}`));
-    console.log('');
+    CLILog(`A settings file could not be found for this environment (${environment}). Create a settings.${environment}.json file at the root of your project and restart Joystick.`, {
+      level: 'danger',
+      docs: 'https://github.com/cheatcode/joystick#settings',
+    });
     process.exit(0);
   }
 
   const rawSettingsFile = fs.readFileSync(settingsFilePath, "utf-8");
-  const settingsFile = isValidJSONString(rawSettingsFile)
+  const isValidJSON = isValidJSONString(rawSettingsFile);
+
+  if (!isValidJSON) {
+    CLILog(`Failed to parse settings file. Double-check the syntax in your settings.${environment}.json file at the root of your project and restart Joystick.`, {
+      level: 'danger',
+      docs: 'https://github.com/cheatcode/joystick#settings',
+      tools: [
+        { title: 'JSON Linter', url: 'https://jsonlint.com/' }
+      ],
+    });
+    process.exit(0);
+  }
+
+  const settingsFile = isValidJSON
     ? rawSettingsFile
     : "{}";
 
@@ -420,9 +438,10 @@ export default async (args = {}, options = {}) => {
   const portIsAvailable = await checkIfPortAvailable(port);
 
   if (!isJoystickProject) {
-    console.log(
-      chalk.red(`This is not a Joystick project. A .joystick folder could not be found.`)
-    );
+    CLILog('This is not a Joystick project. A .joystick folder could not be found.', {
+      level: 'danger',
+      docs: 'https://github.com/cheatcode/joystick',
+    });
     process.exit(0);
   }
 
@@ -436,7 +455,10 @@ export default async (args = {}, options = {}) => {
     startWatcher();
     handleSignalEvents([]);
   } else {
-    console.log(chalk.red(`Port ${port} is already in use. Free up that port or pass another port with joystick start --port <PORT>.`));
+    CLILog(`Port ${port} is already in use. Free up that port or pass another port with joystick start --port <PORT>.`, {
+      level: 'danger',
+      docs: 'https://github.com/cheatcode/joystick#joystick-start',
+    });
     process.exit(0);
   }
 };
