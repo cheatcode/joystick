@@ -82,14 +82,19 @@ const readFileDependencyMap = () => {
 };
 
 export default (path = "", source = "") => {
-  const fileDependencyMap = readFileDependencyMap();
-  const fileAST = parseFileToAST(source);
-  const imports = getImportsAndRequires(fileAST);
-
-  fileDependencyMap[path] = imports;
-
-  fs.writeFileSync(
-    `.joystick/build/fileMap.json`,
-    JSON.stringify(fileDependencyMap, null, 2)
-  );
+  try {
+    const fileDependencyMap = readFileDependencyMap();
+    const fileAST = parseFileToAST(source);
+    const imports = fileAST ? getImportsAndRequires(fileAST) : [];
+  
+    fileDependencyMap[path] = imports;
+  
+    fs.writeFileSync(
+      `.joystick/build/fileMap.json`,
+      JSON.stringify(fileDependencyMap, null, 2)
+    );
+  } catch (exception) {
+    // Do nothing. This exists to handle acorn parsing errors that are also picked
+    // up by the esbuild parser (we want to defer to esbuild).
+  }
 };

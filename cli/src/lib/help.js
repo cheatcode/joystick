@@ -2,6 +2,7 @@
 import chalk from 'chalk';
 import { createRequire } from 'module';
 import functions from '../functions/index.js';
+import rainbowRoad from './rainbowRoad.js';
 
 const require = createRequire(import.meta.url);
 const packageJSON = require('../../package.json');
@@ -22,10 +23,6 @@ const buildOptionsForFunction = (functionOptions = {}) => {
       ${chalk.green(optionName)}${createSpacer(15, optionName)}${optionSettings.flags && Object.keys(optionSettings.flags).map((flag) => chalk.magenta(flag)).join(', ')}${createSpacer(15, optionName)}${optionSettings.description}
    `;
  }).join('\r');
-};
-
-const rainbowRoad = () => {
-  return `${chalk.red('=')}${chalk.green('=')}${chalk.blue('=')}${chalk.red('=')}${chalk.green('=')}${chalk.blue('=')}`;
 };
 
 export default () => {

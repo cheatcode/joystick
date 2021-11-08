@@ -1,5 +1,8 @@
 import esbuild from "esbuild";
+import fs from "fs";
 import plugins from "./buildPlugins.js";
+import onWarn from "./onWarn.js";
+import getCodeFrame from "../../lib/getCodeFrame.js";
 const configs = {
   node: (inputPath) => ({
     entryPoints: [inputPath],
@@ -8,6 +11,7 @@ const configs = {
     platform: "node",
     format: "esm",
     minify: process.env.NODE_ENV !== "development",
+    logLevel: "silent",
     plugins: [plugins.generateFileDependencyMap]
   }),
   browser: (inputPath) => ({
@@ -18,6 +22,7 @@ const configs = {
     platform: "browser",
     format: "esm",
     minify: process.env.NODE_ENV !== "development",
+    logLevel: "silent",
     plugins: [
       plugins.generateFileDependencyMap,
       plugins.bootstrapLayoutComponent,
@@ -25,14 +30,44 @@ const configs = {
     ]
   })
 };
-var buildFile_default = (file = "", platform = "") => {
-  const config = configs[platform] && configs[platform](file);
-  if (config) {
-    return esbuild.build(config).catch((error) => {
-      console.log(error);
+var buildFile_default = async (file = "", platform = "") => {
+  return new Promise(async (resolve) => {
+    const config = configs[platform] && configs[platform](file);
+    if (config) {
+      try {
+        await esbuild.build(config);
+        return resolve({
+          success: true
+        });
+      } catch (exception) {
+        const error = exception?.errors[0];
+        const snippet = getCodeFrame(file, {
+          line: error?.location?.line,
+          column: error?.location?.column
+        });
+        onWarn({
+          file,
+          stack: exception?.stack,
+          line: error?.location?.line,
+          column: error?.location?.column,
+          snippet,
+          lineWithError: error?.location?.lineText?.trim(),
+          message: error?.text
+        });
+        return resolve({
+          success: false,
+          path: file,
+          error: {
+            stack: exception?.stack,
+            snippet
+          }
+        });
+      }
+    }
+    return resolve({
+      success: true
     });
-  }
-  return Promise.resolve();
+  });
 };
 export {
   buildFile_default as default

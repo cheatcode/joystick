@@ -1,6 +1,7 @@
 import chalk from "chalk";
 import { createRequire } from "module";
 import functions from "../functions/index.js";
+import rainbowRoad from "./rainbowRoad.js";
 const require2 = createRequire(import.meta.url);
 const packageJSON = require2("../../package.json");
 const createSpacer = (target = 5, start = "") => {
@@ -17,9 +18,6 @@ const buildOptionsForFunction = (functionOptions = {}) => {
       ${chalk.green(optionName)}${createSpacer(15, optionName)}${optionSettings.flags && Object.keys(optionSettings.flags).map((flag) => chalk.magenta(flag)).join(", ")}${createSpacer(15, optionName)}${optionSettings.description}
    `;
   }).join("\r");
-};
-const rainbowRoad = () => {
-  return `${chalk.red("=")}${chalk.green("=")}${chalk.blue("=")}${chalk.red("=")}${chalk.green("=")}${chalk.blue("=")}`;
 };
 var help_default = () => {
   console.log(`

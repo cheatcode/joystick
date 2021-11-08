@@ -47,11 +47,14 @@ const readFileDependencyMap = () => {
   return {};
 };
 var updateFileMap_default = (path = "", source = "") => {
-  const fileDependencyMap = readFileDependencyMap();
-  const fileAST = parseFileToAST(source);
-  const imports = getImportsAndRequires(fileAST);
-  fileDependencyMap[path] = imports;
-  fs.writeFileSync(`.joystick/build/fileMap.json`, JSON.stringify(fileDependencyMap, null, 2));
+  try {
+    const fileDependencyMap = readFileDependencyMap();
+    const fileAST = parseFileToAST(source);
+    const imports = fileAST ? getImportsAndRequires(fileAST) : [];
+    fileDependencyMap[path] = imports;
+    fs.writeFileSync(`.joystick/build/fileMap.json`, JSON.stringify(fileDependencyMap, null, 2));
+  } catch (exception) {
+  }
 };
 export {
   updateFileMap_default as default

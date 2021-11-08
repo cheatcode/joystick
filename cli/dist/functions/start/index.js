@@ -91,6 +91,7 @@ const handleServerProcessSTDIO = () => {
   try {
     if (process.serverProcess) {
       process.serverProcess.on("error", (error) => {
+        console.log("HERE HERE");
         console.log(error);
       });
       process.serverProcess.stdout.on("data", (data) => {
@@ -98,7 +99,9 @@ const handleServerProcessSTDIO = () => {
         if (message && message.includes("App running at:")) {
           process.loader.stable(message);
         } else {
-          console.log(message);
+          if (message && !message.includes("BUILD_ERROR")) {
+            console.log(message);
+          }
         }
       });
       process.serverProcess.stderr.on("data", (data) => {
