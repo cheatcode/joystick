@@ -17,7 +17,7 @@ const logError = (warning = {}) => {
   }
   if (snippetParts && snippetParts.length > 0) {
     snippetParts.forEach((line) => {
-      if (line.includes(`>  ${warning.line} |`)) {
+      if (line.includes(`> ${warning.line} |`)) {
         return console.log(`   ${chalk.red(line)}`);
       }
       return console.log(`   ${chalk.gray(line)}`);

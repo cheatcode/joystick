@@ -6,6 +6,8 @@ import { fileURLToPath } from "url";
 import ps from "ps-node";
 import watch from "node-watch";
 import fs from "fs";
+import { killPortProcess } from 'kill-port-process';
+import chokidar from 'chokidar';
 import Loader from "../../lib/loader.js";
 import getFilesToBuild from "./getFilesToBuild.js";
 import buildFiles from "./buildFiles.js";
@@ -15,6 +17,7 @@ import getCodependenciesForFile from "./getCodependenciesForFile.js";
 import isValidJSONString from "../../lib/isValidJSONString.js";
 import startDatabaseProvider from "./databases/startProvider.js";
 import CLILog from "../../lib/CLILog.js";
+import readDirectorySync from "../../lib/readDirectorySync.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -24,15 +27,62 @@ const isObject = (value) => {
 };
 
 const watchlist = [
-  { path: "./ui" },
-  { path: "./lib" },
-  { path: "./i18n" },
-  { path: "./index.client.js" },
-  { path: "./api" },
-  { path: "./email" },
-  { path: "./index.server.js" },
+  { path: "ui" },
+  { path: "lib" },
+  { path: "i18n" },
+  { path: "api" },
+  { path: "email" },
+  { path: "index.client.js" },
+  { path: "index.server.js" },
   ...filesToCopy,
 ];
+
+const requiredFileCheck = () => {
+  return new Promise((resolve) => {
+    const requiredFiles = [
+      { path: 'index.server.js', type: 'file' },
+      { path: 'index.html', type: 'file' },
+      { path: 'index.client.js', type: 'file' },
+      { path: 'api', type: 'directory' },
+      { path: 'i18n', type: 'directory' },
+      { path: 'lib', type: 'directory' },
+      { path: 'public', type: 'directory' },
+      { path: 'ui', type: 'directory' },
+      { path: 'ui/components', type: 'directory' },
+      { path: 'ui/layouts', type: 'directory' },
+      { path: 'ui/pages', type: 'directory' },
+    ];
+
+    requiredFiles.forEach((requiredFile) => {
+      const exists = fs.existsSync(`${process.cwd()}/${requiredFile.path}`);
+      const stats = exists && fs.statSync(`${process.cwd()}/${requiredFile.path}`);
+      const isFile = stats && stats.isFile();
+      const isDirectory = stats && stats.isDirectory();
+
+      if (requiredFile && requiredFile.type === 'file') {
+        if (!exists || (exists && !isFile)) {
+          CLILog(`The path ${requiredFile.path} must exist in your project and must be a file (not a directory).`, {
+            level: 'danger',
+            docs: 'https://github.com/cheatcode/joystick#folder-and-file-structure'
+          });
+          process.exit(0);
+        }
+      }
+
+      if (requiredFile && requiredFile.type === 'directory') {
+        if (!exists || (exists && !isDirectory)) {
+          CLILog(`The path ${requiredFile.path} must exist in your project and must be a directory (not a file).`, {
+            level: 'danger',
+            docs: 'https://github.com/cheatcode/joystick#folder-and-file-structure'
+          });
+          process.exit(0);
+        }
+      }
+    });
+
+    resolve();
+  });
+};
 
 const handleCleanup = (processIds = []) => {
   process.loader.stop();
@@ -126,7 +176,6 @@ const handleServerProcessSTDIO = () => {
   try {
     if (process.serverProcess) {
       process.serverProcess.on("error", (error) => {
-        console.log('HERE HERE');
         console.log(error);
       });
 
@@ -192,7 +241,7 @@ const restartApplicationProcess = () => {
   startHMRProcess();
 };
 
-const initialBuild = async (path, format) => {
+const initialBuild = async () => {
   const buildPath = `.joystick/build`;
   const fileMapPath = `.joystick/build/fileMap.json`;
 
@@ -206,6 +255,8 @@ const initialBuild = async (path, format) => {
 
   process.loader.text("Building app...");
 
+  await requiredFileCheck();
+
   const filesToBuild = getFilesToBuild();
   const fileResults = await buildFiles(filesToBuild);
 
@@ -215,105 +266,100 @@ const initialBuild = async (path, format) => {
     .includes(false);
 
   if (!hasErrors) {
+    process.initialBuildComplete = true;
     startApplicationProcess();
     startHMRProcess();
+    // If the file has errors on startup, no way to trigger a restart w/o a watcher.
   }
 };
 
 const startWatcher = async () => {
   await initialBuild();
 
-  watchlist.forEach(({ path }) => {
-    if (fs.existsSync(`./${path}`)) {
-      watch(path, { recursive: true }, async function (event, name) {
-        process.loader.text("Rebuilding app...");
+  const watcher = chokidar.watch(watchlist.map(({ path }) => path));
 
-        if (
-          event === "update" &&
-          fs.existsSync(`./${name}`) &&
-          fs.lstatSync(`./${name}`).isDirectory()
-        ) {
-          fs.mkdirSync(`./.joystick/build/${name}`);
-          restartApplicationProcess();
-        }
+  watcher.on('all', async (event, path) => {
+    if (['addDir', 'add'].includes(event) && !process.initialBuildComplete) {
+      return;
+    }
 
-        // TODO: Is this correct? If it's a copy, why am I building it after?
-        if (!!filesToCopy.find((fileToCopy) => fileToCopy.path === name)) {
-          fs.writeFileSync(`./.joystick/build/${name}`, fs.readFileSync(name));
+    await requiredFileCheck();
+    process.loader.text("Rebuilding app...");
 
-          const codependencies = getCodependenciesForFile(name);
+    if (
+      ['addDir'].includes(event) &&
+      fs.existsSync(path) &&
+      fs.lstatSync(path).isDirectory() &&
+      !fs.existsSync(`./.joystick/build/${path}`)
+    ) {
+      fs.mkdirSync(`./.joystick/build/${path}`);
+      restartApplicationProcess();
+    }
 
-          const fileResults = await buildFiles([name]);
-          const codependencyResult = await buildFiles(codependencies);
+    if (!!filesToCopy.find((fileToCopy) => fileToCopy.path === path)) {
+      const isDirectory = fs.statSync(path).isDirectory();
 
-          const hasErrors = [...fileResults, ...codependencyResult]
-            .filter((result) => !!result)
-            .map(({ success }) => success)
-            .includes(false);
+      if (isDirectory && !fs.existsSync(`./.joystick/build/${path}`)) {
+        fs.mkdirSync(`./.joystick/build/${path}`);
+      }
+      
+      if (!isDirectory) {
+        fs.writeFileSync(`./.joystick/build/${path}`, fs.readFileSync(path));
+      }
 
-          if (process.serverProcess && hasErrors) {
-            process.serverProcess.send(
-              JSON.stringify({
-                error: "BUILD_ERROR",
-                paths: [...fileResults, ...codependencyResult]
-                  .filter(({ success }) => !success)
-                  .map(({ path, error }) => ({ path, error })),
-              })
-            );
-          }
+      await loadSettings();
+      return restartApplicationProcess();
+    }
 
-          if (!hasErrors) {
-            await loadSettings();
-            return restartApplicationProcess();
-          }
-        }
+    if (['add', 'change'].includes(event)) {
+      const codependencies = getCodependenciesForFile(path);
 
-        if (event === "update") {
-          const codependencies = getCodependenciesForFile(name);
+      const fileResults = await buildFiles([path]);
+      const fileResultsHaveErrors = fileResults.filter((result) => !!result)
+        .map(({ success }) => success)
+        .includes(false);
 
-          const fileResults = await buildFiles([name]);
-          const codependencyResult = await buildFiles(codependencies);
+      const codependencyResult = fileResultsHaveErrors ? [] : await buildFiles(codependencies);
+      const codependencyResultsHaveErrors = codependencyResult.filter((result) => !!result)
+        .map(({ success }) => success)
+        .includes(false);
 
-          const hasErrors = [...fileResults, ...codependencyResult]
-            .filter((result) => !!result)
-            .map(({ success }) => success)
-            .includes(false);
+      const hasErrors = fileResultsHaveErrors || codependencyResultsHaveErrors;
 
-          if (process.serverProcess && hasErrors) {
-            process.serverProcess.send(
-              JSON.stringify({
-                error: "BUILD_ERROR",
-                paths: [...fileResults, ...codependencyResult]
-                  .filter(({ success }) => !success)
-                  .map(({ path, error }) => ({ path, error })),
-              })
-            );
-          }
+      if (process.serverProcess && hasErrors) {
+        process.serverProcess.send(
+          JSON.stringify({
+            error: "BUILD_ERROR",
+            paths: [...fileResults, ...codependencyResult]
+              .filter(({ success }) => !success)
+              .map(({ path: pathWithError, error }) => ({ path: pathWithError, error })),
+          })
+        );
+      }
 
-          if (!hasErrors) {
-            restartApplicationProcess();
-          }
-        }
+      if (!hasErrors) {
+        process.initialBuildComplete = true;
+        restartApplicationProcess();
+      }
+    }
 
-        if (event === "remove" && !fs.existsSync(`./.joystick/build/${name}`)) {
-          restartApplicationProcess();
-        }
+    if (['unlink', 'unlinkDir'].includes(event) && !fs.existsSync(`./.joystick/build/${path}`)) {
+      restartApplicationProcess();
+    }
 
-        if (event === "remove" && fs.existsSync(`./.joystick/build/${name}`)) {
-          const path = `./.joystick/build/${name}`;
-          const stats = fs.lstatSync(path);
+    if (['unlink', 'unlinkDir'].includes(event) && fs.existsSync(`./.joystick/build/${path}`)) {
+      const pathToUnlink = `./.joystick/build/${path}`;
+      const stats = fs.lstatSync(pathToUnlink);
 
-          if (stats.isDirectory()) {
-            fs.rmdirSync(path, { recursive: true });
-          }
+      if (stats.isDirectory()) {
+        fs.rmdirSync(pathToUnlink, { recursive: true });
+      }
 
-          if (stats.isFile()) {
-            fs.unlinkSync(path);
-          }
+      if (stats.isFile()) {
+        fs.unlinkSync(pathToUnlink);
+      }
 
-          restartApplicationProcess();
-        }
-      });
+      restartApplicationProcess();
     }
   });
 };
@@ -435,7 +481,6 @@ export default async (args = {}, options = {}) => {
 
   const port = options?.port ? parseInt(options?.port) : 2600;
   const isJoystickProject = checkIfJoystickProject();
-  const portIsAvailable = await checkIfPortAvailable(port);
 
   if (!isJoystickProject) {
     CLILog('This is not a Joystick project. A .joystick folder could not be found.', {
@@ -445,20 +490,15 @@ export default async (args = {}, options = {}) => {
     process.exit(0);
   }
 
-  if (portIsAvailable) {
-    process.env.NODE_ENV = options?.environment || "development";
-    process.env.PORT = options?.port ? parseInt(options?.port) : 2600;
+  await killPortProcess(port);
 
-    await loadSettings();
-    await startDatabases();
+  process.title = 'joystick';
+  process.env.NODE_ENV = options?.environment || "development";
+  process.env.PORT = options?.port ? parseInt(options?.port) : 2600;
 
-    startWatcher();
-    handleSignalEvents([]);
-  } else {
-    CLILog(`Port ${port} is already in use. Free up that port or pass another port with joystick start --port <PORT>.`, {
-      level: 'danger',
-      docs: 'https://github.com/cheatcode/joystick#joystick-start',
-    });
-    process.exit(0);
-  }
+  await loadSettings();
+  await startDatabases();
+
+  startWatcher();
+  handleSignalEvents([]);
 };

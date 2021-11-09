@@ -3,6 +3,7 @@ import chalk from "chalk";
 import util from "util";
 import commandExists from "command-exists";
 import child_process, { spawn } from "child_process";
+import { killPortProcess } from "kill-port-process";
 const exec = util.promisify(child_process.exec);
 const getMongoProcessId = (stdout = null) => {
   const forkedProcessId = stdout && stdout.match(/forked process:+\s[0-9]+/gi);
@@ -32,7 +33,9 @@ const startMongoDB = async () => {
     fs.mkdirSync(".joystick/data/mongodb", { recursive: true });
   }
   try {
-    const { stdout } = await exec(`mongod --port ${parseInt(process.env.PORT, 10) + 1} --dbpath ./.joystick/data/mongodb --quiet --fork --logpath ./.joystick/data/mongodb/log`);
+    const mongodbPort = parseInt(process.env.PORT, 10) + 1;
+    await killPortProcess(mongodbPort);
+    const { stdout } = await exec(`mongod --port ${mongodbPort} --dbpath ./.joystick/data/mongodb --quiet --fork --logpath ./.joystick/data/mongodb/log`);
     return getMongoProcessId(stdout);
   } catch (exception) {
     console.warn(exception);

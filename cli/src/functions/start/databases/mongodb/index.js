@@ -3,6 +3,7 @@ import chalk from "chalk";
 import util from "util";
 import commandExists from "command-exists";
 import child_process, { spawn } from "child_process";
+import { killPortProcess } from 'kill-port-process';
 
 const exec = util.promisify(child_process.exec);
 
@@ -46,10 +47,10 @@ const startMongoDB = async () => {
   }
 
   try {
+    const mongodbPort = parseInt(process.env.PORT, 10) + 1;
+    await killPortProcess(mongodbPort);
     const { stdout } = await exec(
-      `mongod --port ${
-        parseInt(process.env.PORT, 10) + 1
-      } --dbpath ./.joystick/data/mongodb --quiet --fork --logpath ./.joystick/data/mongodb/log`
+      `mongod --port ${mongodbPort} --dbpath ./.joystick/data/mongodb --quiet --fork --logpath ./.joystick/data/mongodb/log`
     );
 
     return getMongoProcessId(stdout);
