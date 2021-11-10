@@ -74,6 +74,7 @@ The full-stack JavaScript framework.
         - [Rendering a page](#rendering-a-page)
         - [Rendering in a layout](#rendering-in-a-layout)
         - [Passing props to res.render()](#passing-props-to-resrender)
+        - [Setting SEO metadata in rendered HTML](#setting-seo-metadata-in-rendered-html)
     - [API](#api-1)
       - [Getters](#getters)
       - [Setters](#setters)
@@ -1779,6 +1780,64 @@ node.app({
   },
 });
 ```
+
+##### Setting SEO Metadata in Rendered HTML
+
+For pages rendered with `res.render()` that require custom SEO metadata in the `<head></head>` tag of the rendered HTML, the `head` property can be leveraged in the options object passed to `res.render()`. The `head` property supports three properties: `title`, `tags`, and `jsonld`.
+
+`title`
+
+The `head.title` property contains the value to be set in the `<title></title>` tag inside of the `<head></head>` tag.
+
+`tags`
+
+The `head.tags` property contains an object supporting three properties: `meta`, `link`, and `script`. Each property is set to an array of objects, with each object representing the HTML attributes to set on a tag of that type (e.g., objects in the `head.tags.meta` array represent `<meta />` tags to add to the `<head></head>`).
+
+`jsonld`
+
+The `head.jsonld` property contains an object containing [JSON-LD](https://developers.google.com/search/docs/advanced/structured-data/intro-structured-data) properties to be rendered into a `<script></script>` tag with a `type` attribute equal to `application/ld+json`.
+
+```javascript
+node.app({
+  node.app({
+  api,
+  routes: {
+    "/recipes": (req, res) => {
+      res.render("ui/pages/recipes/index.js", {
+        layout: "ui/layouts/site/index.js",
+        head: {
+          title: "Sushi Recipes",
+          tags: {
+            meta: [
+              { name: 'description', content: 'Recipes for preparing authentic Japanese sushi at home.' },
+            ],
+            link: [
+              { rel: 'stylesheet', href: '/fonts.css' },
+            ],
+            script: [
+              { src: 'https://kit.fontawesome.com/d91Zfc923L.js', crossorigin: 'anonymous' },
+            ],
+          },
+          jsonld: {
+            "@context": "https://schema.org/",
+            "@type": "Recipe",
+            name: "Sushi Recipesl",
+            author: {
+              "@type": "Person",
+              name: "Oliver Nguyen",
+            },
+            datePublished: "2021-11-10",
+            description:
+              "Recipes for preparing authentic Japanese sushi at home.",
+          },
+        },
+      });
+    },
+  },
+});
+```
+
+When a user visits `/recipes` in the example above, the data in the `head` object will be automatically rendered into the `<head></head>` tag of the HTML for that page.
 
 ### API
 
