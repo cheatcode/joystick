@@ -24,6 +24,7 @@ class Component {
 
     this.options = options || {};
     this.name = "";
+    this.defaultProps = options.defaultProps || {};
     this.props = options.props || {};
     this.state = {};
     this.lifecycle = {
@@ -37,6 +38,7 @@ class Component {
     this.children = [];
     this.translations = translations;
 
+    this.handleSetProps();
     this.handleAttachOptionsToInstance();
 
     if (typeof window === "undefined") {
@@ -78,8 +80,20 @@ class Component {
     return joystick;
   }
 
+  handleCompileProps() {
+    // NOTE: Combine this.props and this.defaultProps key names and filter to uniques only.
+    const props = [...Object.keys(this.props || {}), ...Object.keys(this.defaultProps || {})].filter((value, index, self) => {
+      return self.indexOf(value) === index;
+    });
+
+    return props.reduce((compiledProps, propName) => {
+      compiledProps[propName] = this.props[propName] || this.defaultProps[propName] || null;
+      return compiledProps;
+    }, {});
+  }
+
   handleSetProps(props) {
-    this.props = props;
+    this.props = this.handleCompileProps();
   }
 
   handleAttachOptionsToInstance() {

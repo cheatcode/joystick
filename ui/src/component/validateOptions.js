@@ -111,6 +111,7 @@ const allowed = {
   options: [
     "name",
     "props",
+    "defaultProps",
     "state",
     "lifecycle",
     "methods",
