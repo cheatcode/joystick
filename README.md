@@ -1781,7 +1781,7 @@ node.app({
 });
 ```
 
-##### Setting SEO Metadata in Rendered HTML
+##### Setting SEO metadata in rendered HTML
 
 For pages rendered with `res.render()` that require custom SEO metadata in the `<head></head>` tag of the rendered HTML, the `head` property can be leveraged in the options object passed to `res.render()`. The `head` property supports three properties: `title`, `tags`, and `jsonld`.
 
@@ -1799,7 +1799,6 @@ The `head.jsonld` property contains an object containing [JSON-LD](https://devel
 
 ```javascript
 node.app({
-  node.app({
   api,
   routes: {
     "/recipes": (req, res) => {
