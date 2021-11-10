@@ -3,6 +3,13 @@ import semver from "semver";
 import { createRequire } from "module";
 import fs from 'fs';
 
+const setPackageJSONVersions = (originalVersion, version) => {
+  packageJSON.version = originalVersion;
+  packageJSON.developmentVersion = version;
+  console.log({ originalVersion, version });
+  fs.writeFileSync('package.json', JSON.stringify(packageJSON, null, 2));
+};
+
 const require = createRequire(import.meta.url);
 const packageJSON = require("./package.json");
 
@@ -18,17 +25,18 @@ const registry =
     ? "--registry http://localhost:4873"
     : "";
 
-execSync(
-  `npm version ${version} --allow-same-version ${registry} && npm publish --access public ${force} ${registry}`
-);
+try {
+  execSync(
+    `npm version ${version} --allow-same-version ${registry} && npm publish --access public ${force} ${registry}`
+  );
+} catch (exception) {
+  setPackageJSONVersions(originalVersion, version);
+}
 
 if (process.env.NODE_ENV === 'production') {
   execSync(`git add . && git commit -m "release @joystick.js/node@${version}" && git push origin master`);
 }
 
 if (process.env.NODE_ENV === 'development') {
-  packageJSON.version = originalVersion;
-  packageJSON.developmentVersion = version;
-  console.log({ originalVersion, version });
-  fs.writeFileSync('package.json', JSON.stringify(packageJSON, null, 2))
+  setPackageJSONVersions(originalVersion, version);
 }

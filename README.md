@@ -1078,6 +1078,32 @@ const Book = ui.component({
 export default Book;
 ```
 
+Optionally, `defaultProps` can be set on a component in the event that a prop you expected to be passed is not:
+
+```javascript
+import ui from "@joystick.js/ui";
+
+const Book = ui.component({
+  defaultProps: {
+    title: 'No Title',
+    year: 'Unknown Year',
+    author: 'No Author',
+  },
+  render: ({ props }) => {
+    return `
+      <div class="book">
+        <h2>${props.title} (${props.year})</h2>
+        <h4>by ${props.author}</h4>
+      </div>
+    `;
+  },
+});
+
+export default Book;
+```
+
+In the example above, if `title`, `year`, or `author` is not defined on `props`, Joystick will automatically assign their value to the corresponding value in `defaultProps`. Here, if `props.title` was undefined, we'd expect it to be set to "No Title."
+
 ### State
 
 When rendering Joystick components, state can be used to render arbitrary data and control the display of the component. There are three options for interacting with state in a Joystick component:
