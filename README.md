@@ -1820,7 +1820,7 @@ node.app({
           jsonld: {
             "@context": "https://schema.org/",
             "@type": "Recipe",
-            name: "Sushi Recipesl",
+            name: "Sushi Recipes",
             author: {
               "@type": "Person",
               name: "Oliver Nguyen",
