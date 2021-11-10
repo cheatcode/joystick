@@ -1,6 +1,7 @@
 import fs from "fs";
 import getCSSFromTree from "./getCSSFromTree";
 import formatCSS from "./formatCSS";
+import setHeadTagsInHTML from "./setHeadTagsInHTML";
 
 export default ({
   Component,
@@ -9,6 +10,7 @@ export default ({
   url = {},
   translations = {},
   layout = null,
+  head = null,
 }) => {
   try {
     const component = Component(props, url, translations);
@@ -25,7 +27,7 @@ export default ({
     const html = component.renderToHTML(tree, translations);
     const css = formatCSS(getCSSFromTree(tree));
 
-    return baseHTML
+    const baseHTMLWithReplacements = baseHTML
       .replace("${meta}", "")
       .replace("${css}", css)
       .replace("${scripts}", "")
@@ -69,6 +71,12 @@ export default ({
         <script type="module" src="/_joystick/hmr/client.js"></script>
         `
       );
+
+    if (head) {
+      return setHeadTagsInHTML(baseHTMLWithReplacements, head);
+    }
+
+    return baseHTMLWithReplacements;
   } catch (exception) {
     console.warn(exception);
   }

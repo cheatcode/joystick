@@ -65,7 +65,8 @@ var render_default = (req, res, next) => {
       path,
       url,
       translations,
-      layout: options.layout
+      layout: options.layout,
+      head: options.head
     });
     return res.status(200).send(html);
   };

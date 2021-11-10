@@ -1,13 +1,15 @@
 import fs from "fs";
 import getCSSFromTree from "./getCSSFromTree";
 import formatCSS from "./formatCSS";
+import setHeadTagsInHTML from "./setHeadTagsInHTML";
 var ssr_default = ({
   Component,
   props = {},
   path = "",
   url = {},
   translations = {},
-  layout = null
+  layout = null,
+  head = null
 }) => {
   try {
     const component = Component(props, url, translations);
@@ -19,7 +21,7 @@ var ssr_default = ({
     const baseHTML = fs.readFileSync(`${process.cwd()}/index.html`, "utf-8");
     const html = component.renderToHTML(tree, translations);
     const css = formatCSS(getCSSFromTree(tree));
-    return baseHTML.replace("${meta}", "").replace("${css}", css).replace("${scripts}", "").replace('<div id="app"></div>', `
+    const baseHTMLWithReplacements = baseHTML.replace("${meta}", "").replace("${css}", css).replace("${scripts}", "").replace('<div id="app"></div>', `
         <div id="app">${html.wrapped}</div>
         <script>
           window.__joystick_ssr__ = true;
@@ -44,6 +46,10 @@ var ssr_default = ({
         ${layout ? `<script type="module" src="/_joystick/${layout}"><\/script>` : ""}
         <script type="module" src="/_joystick/hmr/client.js"><\/script>
         `);
+    if (head) {
+      return setHeadTagsInHTML(baseHTMLWithReplacements, head);
+    }
+    return baseHTMLWithReplacements;
   } catch (exception) {
     console.warn(exception);
   }

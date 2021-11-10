@@ -89,6 +89,7 @@ export default (req, res, next) => {
       url,
       translations,
       layout: options.layout,
+      head: options.head,
     });
 
     return res.status(200).send(html);
