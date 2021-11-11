@@ -240,7 +240,6 @@ class ValidateForm {
 }
 
 const validateForm = (form, options) => {
-  console.log(form, options);
   return new Promise((resolve, reject) => {
     try {
       const validation = new ValidateForm(form, options);
