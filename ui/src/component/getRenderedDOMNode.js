@@ -1,0 +1,1 @@
+export default (id = '') => document.querySelector(`[js-c="${id}"]`);

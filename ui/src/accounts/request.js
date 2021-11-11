@@ -30,7 +30,7 @@ export default (endpoint = "", endpointOptions = {}) => {
           if (data && data.errors) {
             console.log(
               `%c❌ accounts.${endpoint} request failed with the following errors:`,
-              'background-color: #ffcc00; padding: 7px; font-family: "inherit"; font-size: 11px; line-height: 10px; color: #000;'
+              'background-color: #ffcc00; padding: 7px; font-family: "Helvetica Neue", "Helvetica", "Arial", sans-serif; font-size: 11px; line-height: 10px; color: #000;'
             );
 
             data.errors.forEach((error) => {
@@ -51,7 +51,7 @@ export default (endpoint = "", endpointOptions = {}) => {
         .catch((error) => {
           console.log(
             `%c❌ accounts.${endpoint} request failed with the following network error:`,
-            'background-color: #ffcc00; padding: 7px; font-family: "inherit"; font-size: 11px; line-height: 10px; color: #000;'
+            'background-color: #ffcc00; padding: 7px; font-family: "Helvetica Neue", "Helvetica", "Arial", sans-serif; font-size: 15px; line-height: 15px; color: #000;'
           );
           console.log(error);
           reject(error);

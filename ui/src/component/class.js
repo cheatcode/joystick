@@ -11,6 +11,8 @@ import renderFunctions from "./renderFunctions";
 import joystick from "../index";
 import { JOYSTICK_COMMENT_REGEX } from "./constants";
 import generateId from "./generateId";
+import getRenderedDOMNode from './getRenderedDOMNode';
+import validateForm from "./validateForm";
 
 class Component {
   constructor(options = {}, url = {}, translations = null) {
@@ -37,6 +39,7 @@ class Component {
     this.css = "";
     this.children = [];
     this.translations = translations;
+    this.validateForm = validateForm;
 
     this.handleSetProps();
     this.handleAttachOptionsToInstance();
@@ -68,6 +71,11 @@ class Component {
         },
       };
     }
+  }
+
+  handleSetDOMNode() {
+    const DOMNode = getRenderedDOMNode(this.id);
+    this.DOMNode = DOMNode;
   }
 
   handleGetJoystickInstance() {
@@ -325,8 +333,11 @@ class Component {
       this.handleDetachEvents();
       this.dom.actual = patch(this.getDOMNodeToPatch(this.dom.virtual));
       this.dom.virtual = updatedDOM.virtual;
+
+      this.handleSetDOMNode();
       this.handleAttachCSS();
       this.handleAttachEvents();
+
       const joystickInstance = this.handleGetJoystickInstance();
       joystickInstance._internal.eventListeners.queue.process();
     }

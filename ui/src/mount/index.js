@@ -51,6 +51,7 @@ export default (Component, props = {}, target) => {
   joystick._internal.lifecycle.onBeforeMount.process();
   mount(dom, target);
 
+  component.handleSetDOMNode();
   component.handleAttachCSS();
   component.handleAttachEvents();
 

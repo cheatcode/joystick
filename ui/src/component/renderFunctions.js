@@ -24,6 +24,15 @@ const component = function component(Component, props) {
     // NOTE: this is bound to parent component instance inside of class.js.
     component.parent = this;
 
+    // NOTE: Do this to ensure component is rendered in DOM before trying to set its
+    // DOMNode back onto its instance AND that the node is available on this before we
+    // assign any lifecycle methods, etc.
+    joystickInstance._internal.lifecycle.onMount.array.push({
+      callback: () => {
+        component.handleSetDOMNode();
+      },
+    });
+
     if (component.options && component.options.lifecycle) {
       if (component.options.lifecycle.onBeforeMount) {
         joystickInstance._internal.lifecycle.onBeforeMount.array.push({
@@ -68,6 +77,7 @@ const component = function component(Component, props) {
     const html = component.renderToHTML();
 
     component.dom = dom;
+
     component.handleAttachCSS();
     component.handleAttachEvents(component.parent);
 
