@@ -1,5 +1,5 @@
 import bcrypt from "bcrypt";
 
 export default (string) => {
-  return bcrypt.compareSync(string, hash);
+  return bcrypt.hashSync(string, 10);
 };

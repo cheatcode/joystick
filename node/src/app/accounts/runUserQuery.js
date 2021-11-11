@@ -8,7 +8,7 @@ export default async (queryName = "", inputs = {}) => {
 
   if (query) {
     const response = await queryMapForDatabase[queryName](inputs);
-    return response;
+    return Promise.resolve(response);
   }
 
   return null;

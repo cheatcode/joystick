@@ -29,6 +29,10 @@ var userQueries_default = {
         const user = await process.databases.mongodb.collection("users").findOne({ username: input.username });
         return user;
       }
+      if (input?._id) {
+        const user = await process.databases.mongodb.collection("users").findOne({ _id: input._id });
+        return user;
+      }
       return null;
     },
     addSession: async (input = {}) => {

@@ -6,7 +6,7 @@ var runUserQuery_default = async (queryName = "", inputs = {}) => {
   const query = queryMapForDatabase && queryMapForDatabase[queryName];
   if (query) {
     const response = await queryMapForDatabase[queryName](inputs);
-    return response;
+    return Promise.resolve(response);
   }
   return null;
 };
