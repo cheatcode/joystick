@@ -15,6 +15,9 @@ export default {
   matches: (rule, value = "") => {
     return rule === value;
   },
+  maxLength: (rule, value = "") => {
+    return value.length <= rule;
+  },
   minLength: (rule, value = "") => {
     return value.length >= rule;
   },

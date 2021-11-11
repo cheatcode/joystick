@@ -58,6 +58,7 @@ The full-stack JavaScript framework.
     - [Methods](#methods)
     - [DOM Events](#dom-events)
     - [CSS](#css)
+    - [Form Validation](#form-validation)
     - [Accessing URL and query params](#accessing-url-and-query-params)
     - [Writing comments](#writing-comments)
 10. [@joystick.js/node](#joystickjsnode)
@@ -1379,6 +1380,162 @@ const Form = ui.component({
 export default Form;
 ```
 
+### Form Validation
+
+If you need to validate a user's form input in your components, `@joystick.js/ui` includes a built-in, real-time form validator with several built in validation functions and dynamic error message rendering.
+
+```javascript
+import ui, { accounts } from '@joystick.js/ui';
+
+const Login = ui.component({
+  events: {
+    'submit form': (event, component) => {
+      event.preventDefault();
+      component.validateForm(event.target, {
+        rules: {
+          emailAddress: {
+            required: true,
+          },
+          password: {
+            required: true,
+          },
+        },
+        messages: {
+          emailAddress: {
+            required: 'Email address is required.',
+          },
+          password: {
+            required: 'Password is required.',
+          }
+        },
+      }).then(() => {
+        accounts.login({
+          emailAddress: event.target.emailAddress.value,
+          password: event.target.password.value,
+        }).then(() => {
+          location.pathname = '/dashboard';
+        });
+      }).catch(() => {});
+    },
+  },
+  render: () => {
+    return `
+      <form>
+        <div class="row">
+          <div class="col-xs-12 col-lg-5 col-xl-4">
+            <div class="mb-3">
+              <label class="form-label">Email Address</label>
+              <input class="form-control" type="email" name="emailAddress" placeholder="Email Address" />
+            </div>
+            <div class="mb-4">
+              <label class="form-label">Password</label>
+              <input class="form-control" type="password" name="password" placeholder="Email Address" />
+            </div>
+            <div class="d-grid">
+              <button type="submit" class="btn btn-primary">
+                Log In
+              </button>
+            </div>
+          </div>
+        </div>
+      </form>
+    `;
+  },
+});
+
+export default Login;
+```
+
+The form validator is accessed via the component instance as `component.formValidator()`. It takes two arguments: the DOM element representing the `<form></form>` you wish to validate and an options object containing the validation rules and error messages to render if the user's input fails validation.
+
+On the options object, the `rules` property is set to an object where each of its properties corresponds to the `name` attribute on some input in your form. Set to that property is another object containing the rules for that field.
+
+When `component.validateForm()` is called, it will attempt to validate the form per the rules you've specified. If it succeeds, it will resolve the JavaScript Promise it returns (meaning you can handle any post-validation work in the `.then()` callback of `component.validateForm()`). If it fails, error messages will automatically be rendered beneath the offending inputs and the JavaScript Promise returned is rejected (meaning you can handle any failure in the `.catch()` callback of `component.validateForm()`).
+
+Currently, `component.validateForm()` offers the following validation rules:
+
+<table>
+  <thead>
+    <tr>
+      <th>Rule name</th>
+      <th>Possible value(s)</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>creditCard</td>
+      <td>Boolean <code>true</code> or <code>false</code></td>
+      <td>Validates whether the field's input contains a valid credit card number.</td>
+    </tr>
+    <tr>
+      <td>email</td>
+      <td>Boolean <code>true</code> or <code>false</code></td>
+      <td>Validates whether the field's input contains a valid email address.</td>
+    </tr>
+    <tr>
+      <td>equals</td>
+      <td>Some value to compare with the user's input (e.g., a string).</td>
+      <td>Validates whether the field's input is equal to the rule's value.</td>
+    </tr>
+    <tr>
+      <td>matches</td>
+      <td>Some value to compare with the user's input (e.g., a string).</td>
+      <td>Validates whether the field's input matches (in value and type) the rule's value.</td>
+    </tr>
+    <tr>
+      <td>maxLength</td>
+      <td>An integer</td>
+      <td>Validates whether the field's input is less than or equal to the rule's value.</td>
+    </tr>
+    <tr>
+      <td>minLength</td>
+      <td>An integer</td>
+      <td>Validates whether the field's input is greater than or equal to the rule's value.</td>
+    </tr>
+    <tr>
+      <td>phone</td>
+      <td>Boolean <code>true</code> or <code>false</code></td>
+      <td>Validates whether the field's input is a telephone number.</td>
+    </tr>
+    <tr>
+      <td>postalCode</td>
+      <td>Boolean <code>true</code> or <code>false</code></td>
+      <td>Validates whether the field's input is a postal code (zip code).</td>
+    </tr>
+    <tr>
+      <td>required</td>
+      <td>Boolean <code>true</code> or <code>false</code></td>
+      <td>Validates whether the field's input exists or not.</td>
+    </tr>
+    <tr>
+      <td>semVer</td>
+      <td>Boolean <code>true</code> or <code>false</code></td>
+      <td>Validates whether the field's input is a <a href="https://semver.org/">semantic version</a>.</td>
+    </tr>
+    <tr>
+      <td>slug</td>
+      <td>Boolean <code>true</code> or <code>false</code></td>
+      <td>Validates whether the field's input is a slug <code>a-slug-like-this</code>.</td>
+    </tr>
+    <tr>
+      <td>strongPassword</td>
+      <td>Boolean <code>true</code> or <code>false</code></td>
+      <td>Validates whether the field's input confirms to the <a href="https://www.npmjs.com/package/validator"><code>isStrongPassword</code> function from the <code>validator</code> dependency</a> used by <code>validateForm</code>.</td>
+    </tr>
+    <tr>
+      <td>url</td>
+      <td>Boolean <code>true</code> or <code>false</code></td>
+      <td>Validates whether the field's input is a valid URL.</td>
+    </tr>
+    <tr>
+      <td>vat</td>
+      <td>Boolean <code>true</code> or <code>false</code></td>
+      <td>Validates whether the field's input is a valid VAT code.</td>
+    </tr>
+  </tbody>
+</table>
+
 ### Accessing URL and query params
 
 When using `@joystick.js/ui` with `@joystick.js/node`, current URL information is available via the `url` property on the component instance.
@@ -2291,7 +2448,7 @@ SelectiveFetch allows us to tailor the output from a getter or setter to meet th
 
 To utilize SelectiveFetch, as part of the options object passed to a `get()` or `set()` call, include the `output` property, set to an array of strings describing the data you want to get back in return.
 
-For example, iimage one of our getters returned data like this:
+For example, imagine one of our getters returned data like this:
 
 ```javascript
 {
