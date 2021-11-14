@@ -38,7 +38,7 @@ export default (setterName = "", setterOptions = {}) => {
         .catch((error) => {
           console.log(
             "%c❌ set request failed with the following network error:",
-            'background-color: #ffcc00; padding: 7px; font-family: "Helvetica Neue", "Helvetica", "Arial", sans-serif; font-size: 15px; line-height: 15px; color: #000;'
+            'background-color: #ffcc00; padding: 7px; font-family: "Helvetica Neue", "Helvetica", "Arial", sans-serif; font-size: 13px; line-height: 13px; color: #000;'
           );
           console.log(error);
           reject(error);

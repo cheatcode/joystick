@@ -24,7 +24,7 @@ export default (getterName = "", getterOptions = {}) => {
           if (data && data.errors) {
             console.log(
               "%c❌ get request failed with the following errors:",
-              'background-color: #ffcc00; padding: 7px; font-family: "Helvetica Neue", "Helvetica", "Arial", sans-serif; font-size: 15px; line-height: 15px; color: #000;'
+              'background-color: #ffcc00; padding: 7px; font-family: "Helvetica Neue", "Helvetica", "Arial", sans-serif; font-size: 13px; line-height: 13px; color: #000;'
             );
 
             data.errors.forEach((error) => {
