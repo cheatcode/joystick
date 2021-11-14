@@ -1,3 +1,4 @@
+import chalk from "chalk";
 import getAPIURLComponent from "./getAPIURLComponent";
 import getAPIContext from "./getAPIContext";
 import formatAPIError from "../lib/formatAPIError";
@@ -16,10 +17,15 @@ var registerGetters_default = (express, getters = [], context = {}) => {
         const get = getter_options?.get;
         let validationErrors = [];
         if (getter_options?.input) {
-          validationErrors = validate.inputWithSchema(input, getter_options.input);
+          validationErrors = await validate.inputWithSchema(input, getter_options.input);
         }
         if (validationErrors.length > 0) {
-          console.log(validationErrors);
+          console.log("");
+          console.log(`Input validation for getter "${getter_name}" failed with the following errors:
+`);
+          validationErrors.forEach((validationError, index) => {
+            console.log(`#${index + 1}. ${validationError}`);
+          });
           return res.status(400).send(JSON.stringify({
             errors: validationErrors.map((error) => {
               return formatAPIError(new Error(error, "validation"));

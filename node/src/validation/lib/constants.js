@@ -57,6 +57,9 @@ export default {
             : `${__dirname.replace(
                 "/dist/validation/lib",
                 "/dist/validation"
+              ).replace(
+                "/src/validation/lib",
+                "/src/validation"
               )}/inputWithSchema/index.js`;
         const inputWithSchemaFile = await import(inputWithSchemaPath);
         const inputWithSchema = inputWithSchemaFile.default;
@@ -64,30 +67,32 @@ export default {
           ? inputWithSchema.default
           : inputWithSchema;
 
-        const elementErrors = [];
+        // NOTE: Usage of .flatMap may seem excessive here but it's required because we're
+        // doing recursive calls to validateInputWithSchema of n depth. Each call returns
+        // an array which means on complex nested schemas, we get back arrays of arrays of
+        // error strings when really we just want one flat array for the full tree.
+        const elementErrors = await Promise.all(
+          inputValue.flatMap(async (element, elementIndex) => {
+            const errors = await validateInputWithSchema(
+              element,
+              isString(ruleValue) ? { type: ruleValue } : ruleValue,
+              `${parentPath}.${elementIndex}`
+            );
 
-        inputValue.forEach((element, elementIndex) => {
-          const errors = validateInputWithSchema(
-            element,
-            isString(ruleValue) ? { type: ruleValue } : ruleValue,
-            `${parentPath}.${elementIndex}`
-          );
+            return errors.flatMap((error) => error);
+          })
+        );
 
-          errors.forEach((error) => {
-            elementErrors.push(error);
-          });
-        });
-
-        return Promise.resolve({
+        return {
           valid: elementErrors.length === 0,
-          errors: [...elementErrors],
-        });
+          errors: elementErrors.flatMap((elementError) => elementError),
+        };
       }
 
-      return Promise.resolve({
+      return {
         valid: true,
         errors: [],
-      });
+      };
     },
     fields: async (ruleValue, inputValue, parentPath) => {
       if (isObject(ruleValue) && isObject(inputValue)) {
@@ -97,7 +102,11 @@ export default {
             : `${__dirname.replace(
                 "/dist/validation/lib",
                 "/dist/validation"
+              ).replace(
+                "/src/validation/lib",
+                "/src/validation"
               )}/inputWithSchema/index.js`;
+              
         const inputWithSchemaFile = await import(inputWithSchemaPath);
         const inputWithSchema = inputWithSchemaFile.default;
         const validateInputWithSchema = isObject(inputWithSchema)
@@ -114,20 +123,20 @@ export default {
           ? inputValue
           : { [parentPath]: inputValue };
 
-        const errors = validateInputWithSchema(input, ruleValue, parentPath);
+        const errors = await validateInputWithSchema(input, ruleValue, parentPath);
 
-        return Promise.resolve({
+        return {
           valid: errors.length === 0,
           errors: [...errors],
-        });
+        };
       }
 
-      return Promise.resolve({
+      return {
         valid: false,
         errors: [
-          `${parentPath} schema rule and input value for element must be of type object.`,
+          `Field ${parentPath} schema rule and input value for element must be of type object.`,
         ],
-      });
+      };
     },
     max: (ruleValue, inputValue, parentPath) => {
       const valid = inputValue <= ruleValue;
@@ -135,7 +144,7 @@ export default {
       if (!valid) {
         return {
           valid: false,
-          errors: [`${parentPath} must be less than or equal to ${ruleValue}`],
+          errors: [`Field ${parentPath} must be less than or equal to ${ruleValue}.`],
         };
       }
 
@@ -151,7 +160,7 @@ export default {
         return {
           valid: false,
           errors: [
-            `${parentPath} must be greater than or equal to ${ruleValue}`,
+            `Field ${parentPath} must be greater than or equal to ${ruleValue}.`,
           ],
         };
       }
@@ -167,7 +176,7 @@ export default {
       if (!valid) {
         return {
           valid: false,
-          errors: [`${parentPath} is required`],
+          errors: [`Field ${parentPath} is required.`],
         };
       }
 
@@ -182,7 +191,7 @@ export default {
       if (!valid) {
         return {
           valid: false,
-          errors: [`${parentPath} must conform to regex: ${ruleValue}`],
+          errors: [`Field ${parentPath} must conform to regex: ${ruleValue}.`],
         };
       }
 
@@ -197,7 +206,7 @@ export default {
       if (!valid) {
         return {
           valid: false,
-          errors: [`${parentPath} is required`],
+          errors: [`Field ${parentPath} is required.`],
         };
       }
 
@@ -212,7 +221,7 @@ export default {
       if (inputValue && !valid) {
         return {
           valid: false,
-          errors: [`${parentPath} must be of type ${ruleValue}`],
+          errors: [`Field ${parentPath} must be of type ${ruleValue}.`],
         };
       }
 

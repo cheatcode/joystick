@@ -1,87 +1,118 @@
 import validate from "./index";
+import { handleGetInputValue, getArrayPathKey, addToValidationQueue } from './inputWithSchema';
 
 describe("validate/schema/index.js", () => {
-  test("throws error if schema argument is not passed", () => {
-    expect(() => {
-      validate.schema();
-    }).toThrow("[joystick.validation] Must pass schema object.");
-  });
-
-  test("throws error if schema argument is invalid type", () => {
-    expect(() => {
-      validate.schema(1);
-    }).toThrow("[joystick.validation] Must pass schema as an object.");
-  });
-
-  test("throws error if schema object contains properties with values that are not objects", () => {
-    expect(() => {
-      validate.schema({
-        _id: {
-          type: "string",
-        },
-        userId: false,
-        title: {
-          type: "string",
-        },
-      });
-    }).toThrow(
-      `Must pass an object containing rules to validate by for userId field.`
-    );
-  });
-
-  test("throws error if schema field rule names are unsupported", () => {
-    expect(() => {
-      validate.schema({
-        _id: {
-          type: "string",
-          allowedValues: "",
-          element: "",
-          fields: "",
-          max: "",
-          min: "",
-          optional: "",
-          required: "",
-          hotDog: "",
-        },
-        userId: {},
-        title: {
-          type: "string",
-        },
-      });
-    }).toThrow(`Invalid rule name hotDog in rule for _id field.`);
-  });
-
-  test("throws error if schema field rule.type value is unsupported", () => {
-    expect(() => {
-      validate.schema({
-        _id: {
-          type: "apples",
-        },
-      });
-    }).toThrow(
-      `Invalid value for schema field "_id" type rule. apples is not supported. Use one of the following: any, array, boolean, float, integer, number, object, or string.`
-    );
-  });
-});
-
-describe("validate/inputWithSchema/index.js", () => {
-  test("throws error if input argument is not passed", () => {
-    expect(async () => {
-      const result = validate.inputWithSchema();
-    }).rejects.toThrow("[joystick.validation] Must pass input.");
-  });
-
   // test("throws error if schema argument is not passed", () => {
   //   expect(() => {
-  //     validate.inputWithSchema({});
+  //     validate.schema();
   //   }).toThrow("[joystick.validation] Must pass schema object.");
   // });
 
   // test("throws error if schema argument is invalid type", () => {
   //   expect(() => {
-  //     validate.inputWithSchema({}, 1);
+  //     validate.schema(1);
   //   }).toThrow("[joystick.validation] Must pass schema as an object.");
   // });
+
+  // test("throws error if schema object contains properties with values that are not objects", () => {
+  //   expect(() => {
+  //     validate.schema({
+  //       _id: {
+  //         type: "string",
+  //       },
+  //       userId: false,
+  //       title: {
+  //         type: "string",
+  //       },
+  //     });
+  //   }).toThrow(
+  //     `Must pass an object containing rules to validate by for userId field.`
+  //   );
+  // });
+
+  // test("throws error if schema field rule names are unsupported", () => {
+  //   expect(() => {
+  //     validate.schema({
+  //       _id: {
+  //         type: "string",
+  //         allowedValues: "",
+  //         element: "",
+  //         fields: "",
+  //         max: "",
+  //         min: "",
+  //         optional: "",
+  //         required: "",
+  //         hotDog: "",
+  //       },
+  //       userId: {},
+  //       title: {
+  //         type: "string",
+  //       },
+  //     });
+  //   }).toThrow(`Invalid rule name hotDog in rule for _id field.`);
+  // });
+
+  // test("throws error if schema field rule.type value is unsupported", () => {
+  //   expect(() => {
+  //     validate.schema({
+  //       _id: {
+  //         type: "apples",
+  //       },
+  //     });
+  //   }).toThrow(
+  //     `Invalid value for schema field "_id" type rule. apples is not supported. Use one of the following: any, array, boolean, float, integer, number, object, or string.`
+  //   );
+  // });
+});
+
+describe("validate/inputWithSchema/index.js", () => {
+  test("does not throw if process.env.NODE_ENV equals test", () => {
+    expect(async () => {
+      process.env.NODE_ENV = 'test';
+      const result = await validate.inputWithSchema({}, {});
+    }).not.toThrow();
+  });
+
+  test("does not throw if process.env.NODE_ENV does not equal test", () => {
+    expect(async () => {
+      process.env.NODE_ENV = 'production';
+      const result = await validate.inputWithSchema({}, {});
+    }).not.toThrow();
+  });
+
+  test("throws error if input argument is not passed", () => {
+    expect(async () => {
+      const result = await validate.inputWithSchema();
+    }).rejects.toThrow("[joystick.validation] Must pass input.");
+  });
+
+  test("addToValidationQueue throws error if queue argument is not an array", () => {
+    expect(() => {
+      addToValidationQueue(3);
+    }).toThrow("queue must be an array");
+  });
+
+  test("handleGetInputValue throws error if path argument is not a string", () => {
+    expect(() => {
+      handleGetInputValue(null, 3, false);
+    }).toThrow("path must be passed as a string");
+  });
+
+  test("getArrayPathKey returns a string with the name of they key", () => {
+    const arrayPathKey = getArrayPathKey('this.is.the.thing');
+    expect(arrayPathKey).toEqual("thing");
+  });
+
+  test("getArrayPathKey returns a string if arrayPath is undefined", () => {
+    const arrayPathKey = getArrayPathKey();
+    expect(arrayPathKey).toEqual("");
+  });
+
+  test("getArrayPathKey throws error if arrayPath argument is not a string", () => {
+    expect(() => {
+      getArrayPathKey(5);
+    }).toThrow("arrayPath must be a type of string");
+  });
 
   test("returns expected errors when rules.allowedValues validator fails", async () => {
     const errors = await validate.inputWithSchema(
@@ -101,8 +132,8 @@ describe("validate/inputWithSchema/index.js", () => {
     ]);
   });
 
-  test("returns expected errors when nested rules.allowedValues validator fails", () => {
-    const errors = validate.inputWithSchema(
+  test("returns expected errors when nested rules.allowedValues validator fails", async () => {
+    const errors = await validate.inputWithSchema(
       {
         name: "apples",
         dog: [
@@ -151,8 +182,8 @@ describe("validate/inputWithSchema/index.js", () => {
     ]);
   });
 
-  test("returns expected errors when rules.element (string) validator fails", () => {
-    const errors = validate.inputWithSchema(
+  test("returns expected errors when rules.element (string) validator fails", async () => {
+    const errors = await validate.inputWithSchema(
       {
         birds: [1, 2, 3],
       },
@@ -171,8 +202,8 @@ describe("validate/inputWithSchema/index.js", () => {
     ]);
   });
 
-  test("returns expected errors when nested rules.element (string) validator fails", () => {
-    const errors = validate.inputWithSchema(
+  test("returns expected errors when nested rules.element (string) validator fails", async () => {
+    const errors = await validate.inputWithSchema(
       {
         birds: [
           {
@@ -220,8 +251,26 @@ describe("validate/inputWithSchema/index.js", () => {
     ]);
   });
 
-  test("returns expected errors when rules.fields validator fails", () => {
-    const errors = validate.inputWithSchema(
+  test("returns expected errors when rules.fields validator is passed value other than object", async () => {
+    const errors = await validate.inputWithSchema(
+      {
+        user: {
+          name: 789.456,
+        },
+      },
+      {
+        user: {
+          type: "object",
+          fields: "no bueno",
+        },
+      }
+    );
+
+    expect(errors).toEqual(["Field user schema rule and input value for element must be of type object."]);
+  });
+
+  test("returns expected errors when rules.fields validator fails", async () => {
+    const errors = await validate.inputWithSchema(
       {
         user: {
           name: 789.456,
@@ -242,8 +291,8 @@ describe("validate/inputWithSchema/index.js", () => {
     expect(errors).toEqual(["Field user.name must be of type string."]);
   });
 
-  test("returns expected errors when rules.max validator fails", () => {
-    const errors = validate.inputWithSchema(
+  test("returns expected errors when rules.max validator fails", async () => {
+    const errors = await validate.inputWithSchema(
       {
         price: 39.99,
       },
@@ -260,8 +309,24 @@ describe("validate/inputWithSchema/index.js", () => {
     ]);
   });
 
-  test("returns expected errors when rules.min validator fails", () => {
-    const errors = validate.inputWithSchema(
+  test("returns no errors when rules.max validator returns valid true", async () => {
+    const errors = await validate.inputWithSchema(
+      {
+        price: 39.99,
+      },
+      {
+        price: {
+          type: "float",
+          max: 39.99,
+        },
+      }
+    );
+
+    expect(errors).toEqual([]);
+  });
+
+  test("returns expected errors when rules.min validator fails", async () => {
+    const errors = await validate.inputWithSchema(
       {
         price: 19.99,
       },
@@ -278,8 +343,8 @@ describe("validate/inputWithSchema/index.js", () => {
     ]);
   });
 
-  test("returns expected errors when rules.optional (false) fails", () => {
-    const errors = validate.inputWithSchema(
+  test("returns expected errors when rules.optional (false) fails", async () => {
+    const errors = await validate.inputWithSchema(
       {
         price: 29.99,
       },
@@ -298,8 +363,8 @@ describe("validate/inputWithSchema/index.js", () => {
     expect(errors).toEqual(["Field description is required."]);
   });
 
-  test("returns no errors when rules.optional (true)", () => {
-    const errors = validate.inputWithSchema(
+  test("returns no errors when rules.optional (true)", async () => {
+    const errors = await validate.inputWithSchema(
       {
         price: 29.99,
       },
@@ -318,8 +383,8 @@ describe("validate/inputWithSchema/index.js", () => {
     expect(errors).toEqual([]);
   });
 
-  test("returns expected errors when rules.regex fails", () => {
-    const errors = validate.inputWithSchema(
+  test("returns expected errors when rules.regex fails", async () => {
+    const errors = await validate.inputWithSchema(
       {
         arrayPath: "thing.is.not.in.array",
       },
@@ -336,8 +401,24 @@ describe("validate/inputWithSchema/index.js", () => {
     ]);
   });
 
-  test("returns expected errors when rules.required (true) fails", () => {
-    const errors = validate.inputWithSchema(
+  test("returns no errors when rules.regex returns valid true", async () => {
+    const errors = await validate.inputWithSchema(
+      {
+        arrayPath: ".0.",
+      },
+      {
+        arrayPath: {
+          type: "string",
+          regex: new RegExp(/\.[0-9]+\.?/g),
+        },
+      }
+    );
+
+    expect(errors).toEqual([]);
+  });
+
+  test("returns expected errors when rules.required (true) fails", async () => {
+    const errors = await validate.inputWithSchema(
       {
         price: 29.99,
       },
@@ -356,8 +437,8 @@ describe("validate/inputWithSchema/index.js", () => {
     expect(errors).toEqual(["Field description is required."]);
   });
 
-  test("returns no errors when rules.required (false)", () => {
-    const errors = validate.inputWithSchema(
+  test("returns no errors when rules.required (false)", async () => {
+    const errors = await validate.inputWithSchema(
       {
         price: 29.99,
       },
@@ -376,8 +457,8 @@ describe("validate/inputWithSchema/index.js", () => {
     expect(errors).toEqual([]);
   });
 
-  test("returns expected errors when rules.type (array) fails", () => {
-    const errors = validate.inputWithSchema(
+  test("returns expected errors when rules.type (array) fails", async () => {
+    const errors = await validate.inputWithSchema(
       {
         name: "array",
       },
@@ -390,9 +471,10 @@ describe("validate/inputWithSchema/index.js", () => {
 
     expect(errors).toEqual(["Field name must be of type array."]);
   });
+  
 
-  test("returns expected errors when rules.type (boolean) fails", () => {
-    const errors = validate.inputWithSchema(
+  test("returns expected errors when rules.type (boolean) fails", async () => {
+    const errors = await validate.inputWithSchema(
       {
         name: 123,
       },
@@ -406,8 +488,8 @@ describe("validate/inputWithSchema/index.js", () => {
     expect(errors).toEqual(["Field name must be of type boolean."]);
   });
 
-  test("returns expected errors when rules.type (float) fails", () => {
-    const errors = validate.inputWithSchema(
+  test("returns expected errors when rules.type (float) fails", async () => {
+    const errors = await validate.inputWithSchema(
       {
         name: 123,
       },
@@ -421,8 +503,8 @@ describe("validate/inputWithSchema/index.js", () => {
     expect(errors).toEqual(["Field name must be of type float."]);
   });
 
-  test("returns expected errors when rules.type (integer) fails", () => {
-    const errors = validate.inputWithSchema(
+  test("returns expected errors when rules.type (integer) fails", async () => {
+    const errors = await validate.inputWithSchema(
       {
         name: 123.123,
       },
@@ -436,8 +518,8 @@ describe("validate/inputWithSchema/index.js", () => {
     expect(errors).toEqual(["Field name must be of type integer."]);
   });
 
-  test("returns expected errors when rules.type (number) fails", () => {
-    const errors = validate.inputWithSchema(
+  test("returns expected errors when rules.type (number) fails", async () => {
+    const errors = await validate.inputWithSchema(
       {
         name: "123.123",
       },
@@ -451,8 +533,8 @@ describe("validate/inputWithSchema/index.js", () => {
     expect(errors).toEqual(["Field name must be of type number."]);
   });
 
-  test("returns expected errors when rules.type (object) fails", () => {
-    const errors = validate.inputWithSchema(
+  test("returns expected errors when rules.type (object) fails", async () => {
+    const errors = await validate.inputWithSchema(
       {
         name: [],
       },
@@ -466,8 +548,8 @@ describe("validate/inputWithSchema/index.js", () => {
     expect(errors).toEqual(["Field name must be of type object."]);
   });
 
-  test("returns expected errors when rules.type (string) fails", () => {
-    const errors = validate.inputWithSchema(
+  test("returns expected errors when rules.type (string) fails", async () => {
+    const errors = await validate.inputWithSchema(
       {
         name: 123,
       },
@@ -481,8 +563,23 @@ describe("validate/inputWithSchema/index.js", () => {
     expect(errors).toEqual(["Field name must be of type string."]);
   });
 
-  test("returns array of errors after validation", () => {
-    const errors = validate.inputWithSchema(
+  test("returns no errors when rules.type (any) is passed", async () => {
+    const errors = await validate.inputWithSchema(
+      {
+        name: 123,
+      },
+      {
+        name: {
+          type: "any",
+        },
+      }
+    );
+
+    expect(errors).toEqual([]);
+  });
+
+  test("returns array of errors after validation", async () => {
+    const errors = await validate.inputWithSchema(
       {
         name: 12345,
       },

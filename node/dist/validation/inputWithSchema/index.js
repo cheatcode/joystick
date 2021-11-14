@@ -1,10 +1,13 @@
 import throwError from "../lib/throwError";
 import validateSchema from "../schema/index";
-import { isObject } from "../lib/typeValidators";
+import { isObject, isString } from "../lib/typeValidators";
 import isArrayPath from "../lib/isArrayPath";
 import getValueFromObject from "../lib/getValueFromObject";
 import constants from "../lib/constants";
-const handleGetInputValue = (input = {}, path = "", rulesOnlySchema = false) => {
+const handleGetInputValue = (input = null, path = "", rulesOnlySchema = false) => {
+  if (path && !isString(path)) {
+    throw new Error("path must be passed as a string");
+  }
   if (rulesOnlySchema || !rulesOnlySchema && !isObject(input)) {
     return input;
   }
@@ -15,6 +18,12 @@ const handleGetInputValue = (input = {}, path = "", rulesOnlySchema = false) => 
   return getValueFromObject(input, path);
 };
 const getArrayPathKey = (arrayPath = "") => {
+  if (!arrayPath) {
+    return "";
+  }
+  if (arrayPath && !isString(arrayPath)) {
+    throw new Error("arrayPath must be a type of string");
+  }
   const arrayPathParts = arrayPath.split(".");
   return arrayPathParts.pop();
 };
@@ -33,6 +42,9 @@ const addValidationTask = ({ queue, rules, input, path, rulesOnlySchema }) => {
   };
 };
 const addToValidationQueue = (queue = [], schema = {}, input = {}, parentPath = "") => {
+  if (queue && !Array.isArray(queue)) {
+    throw new Error("queue must be an array");
+  }
   const rulesOnlySchema = !!schema.type;
   if (!rulesOnlySchema) {
     Object.entries(schema).forEach(([field2, rules]) => {
@@ -60,7 +72,7 @@ const addToValidationQueue = (queue = [], schema = {}, input = {}, parentPath = 
   }
   return queue;
 };
-const validateInputWithSchema = (input = null, schema = null, parentPath = "") => {
+const validateInputWithSchema = async (input = null, schema = null, parentPath = "") => {
   const errors = [];
   if (!input) {
     throwError("Must pass input.");
@@ -69,22 +81,25 @@ const validateInputWithSchema = (input = null, schema = null, parentPath = "") =
     validateSchema(schema);
   }
   const queue = addToValidationQueue([], schema, input, parentPath);
-  queue.forEach((validationTask) => {
-    Object.entries(validationTask.rules).forEach(async ([ruleName, ruleValue]) => {
+  await Promise.all(queue.flatMap((validationTask) => {
+    return Object.entries(validationTask.rules).flatMap(async ([ruleName, ruleValue]) => {
       const validator = constants.rules[ruleName];
       if (validator && !validationTask.path.includes(".$.")) {
         const result = await validator(ruleValue, validationTask.inputValue, validationTask.path);
         if (result && !result.valid) {
-          result.errors.forEach((error) => {
-            errors.push(error.includes("Field ") ? error : `Field ${error}.`);
+          return result.errors.forEach((error) => {
+            return errors.push(error);
           });
         }
       }
     });
-  });
+  }));
   return errors;
 };
 var inputWithSchema_default = validateInputWithSchema;
 export {
-  inputWithSchema_default as default
+  addToValidationQueue,
+  inputWithSchema_default as default,
+  getArrayPathKey,
+  handleGetInputValue
 };

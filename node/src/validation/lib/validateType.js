@@ -27,7 +27,5 @@ export default (type, value) => {
       return isObject(value);
     case "string":
       return isString(value);
-    default:
-      return false;
   }
 };

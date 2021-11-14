@@ -26,8 +26,6 @@ var validateType_default = (type, value) => {
       return isObject(value);
     case "string":
       return isString(value);
-    default:
-      return false;
   }
 };
 export {

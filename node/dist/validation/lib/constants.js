@@ -37,53 +37,50 @@ var constants_default = {
     },
     element: async (ruleValue, inputValue, parentPath) => {
       if (inputValue && (isObject(ruleValue) || isString(ruleValue)) && isArray(inputValue)) {
-        const inputWithSchemaPath = process.env.NODE_ENV === "test" ? `../inputWithSchema` : `${__dirname.replace("/dist/validation/lib", "/dist/validation")}/inputWithSchema/index.js`;
+        const inputWithSchemaPath = process.env.NODE_ENV === "test" ? `../inputWithSchema` : `${__dirname.replace("/dist/validation/lib", "/dist/validation").replace("/src/validation/lib", "/src/validation")}/inputWithSchema/index.js`;
         const inputWithSchemaFile = await import(inputWithSchemaPath);
         const inputWithSchema = inputWithSchemaFile.default;
         const validateInputWithSchema = isObject(inputWithSchema) ? inputWithSchema.default : inputWithSchema;
-        const elementErrors = [];
-        inputValue.forEach((element, elementIndex) => {
-          const errors = validateInputWithSchema(element, isString(ruleValue) ? { type: ruleValue } : ruleValue, `${parentPath}.${elementIndex}`);
-          errors.forEach((error) => {
-            elementErrors.push(error);
-          });
-        });
-        return Promise.resolve({
+        const elementErrors = await Promise.all(inputValue.flatMap(async (element, elementIndex) => {
+          const errors = await validateInputWithSchema(element, isString(ruleValue) ? { type: ruleValue } : ruleValue, `${parentPath}.${elementIndex}`);
+          return errors.flatMap((error) => error);
+        }));
+        return {
           valid: elementErrors.length === 0,
-          errors: [...elementErrors]
-        });
+          errors: elementErrors.flatMap((elementError) => elementError)
+        };
       }
-      return Promise.resolve({
+      return {
         valid: true,
         errors: []
-      });
+      };
     },
     fields: async (ruleValue, inputValue, parentPath) => {
       if (isObject(ruleValue) && isObject(inputValue)) {
-        const inputWithSchemaPath = process.env.NODE_ENV === "test" ? `../inputWithSchema` : `${__dirname.replace("/dist/validation/lib", "/dist/validation")}/inputWithSchema/index.js`;
+        const inputWithSchemaPath = process.env.NODE_ENV === "test" ? `../inputWithSchema` : `${__dirname.replace("/dist/validation/lib", "/dist/validation").replace("/src/validation/lib", "/src/validation")}/inputWithSchema/index.js`;
         const inputWithSchemaFile = await import(inputWithSchemaPath);
         const inputWithSchema = inputWithSchemaFile.default;
         const validateInputWithSchema = isObject(inputWithSchema) ? inputWithSchema.default : inputWithSchema;
         const input = isArrayPath(parentPath) ? inputValue : { [parentPath]: inputValue };
-        const errors = validateInputWithSchema(input, ruleValue, parentPath);
-        return Promise.resolve({
+        const errors = await validateInputWithSchema(input, ruleValue, parentPath);
+        return {
           valid: errors.length === 0,
           errors: [...errors]
-        });
+        };
       }
-      return Promise.resolve({
+      return {
         valid: false,
         errors: [
-          `${parentPath} schema rule and input value for element must be of type object.`
+          `Field ${parentPath} schema rule and input value for element must be of type object.`
         ]
-      });
+      };
     },
     max: (ruleValue, inputValue, parentPath) => {
       const valid = inputValue <= ruleValue;
       if (!valid) {
         return {
           valid: false,
-          errors: [`${parentPath} must be less than or equal to ${ruleValue}`]
+          errors: [`Field ${parentPath} must be less than or equal to ${ruleValue}.`]
         };
       }
       return {
@@ -97,7 +94,7 @@ var constants_default = {
         return {
           valid: false,
           errors: [
-            `${parentPath} must be greater than or equal to ${ruleValue}`
+            `Field ${parentPath} must be greater than or equal to ${ruleValue}.`
           ]
         };
       }
@@ -111,7 +108,7 @@ var constants_default = {
       if (!valid) {
         return {
           valid: false,
-          errors: [`${parentPath} is required`]
+          errors: [`Field ${parentPath} is required.`]
         };
       }
       return {
@@ -124,7 +121,7 @@ var constants_default = {
       if (!valid) {
         return {
           valid: false,
-          errors: [`${parentPath} must conform to regex: ${ruleValue}`]
+          errors: [`Field ${parentPath} must conform to regex: ${ruleValue}.`]
         };
       }
       return {
@@ -137,7 +134,7 @@ var constants_default = {
       if (!valid) {
         return {
           valid: false,
-          errors: [`${parentPath} is required`]
+          errors: [`Field ${parentPath} is required.`]
         };
       }
       return {
@@ -150,7 +147,7 @@ var constants_default = {
       if (inputValue && !valid) {
         return {
           valid: false,
-          errors: [`${parentPath} must be of type ${ruleValue}`]
+          errors: [`Field ${parentPath} must be of type ${ruleValue}.`]
         };
       }
       return {

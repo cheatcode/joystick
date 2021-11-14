@@ -1,3 +1,4 @@
+import chalk from "chalk";
 import getAPIURLComponent from "./getAPIURLComponent.js";
 import getAPIContext from "./getAPIContext.js";
 import formatAPIError from "../lib/formatAPIError.js";
@@ -15,10 +16,15 @@ var registerSetters_default = (express, setters = [], context = {}) => {
         const set = setter_options?.set;
         let validationErrors = [];
         if (setter_options?.input) {
-          validationErrors = validate.inputWithSchema(input, setter_options.input);
+          validationErrors = await validate.inputWithSchema(input, setter_options.input);
         }
         if (validationErrors.length > 0) {
-          console.log(validationErrors);
+          console.log("");
+          console.log(`Input validation for setter "${setter_name}" failed with the following errors:
+`);
+          validationErrors.forEach((validationError, index) => {
+            console.log(`#${index + 1}. ${validationError}`);
+          });
           return res.status(400).send(JSON.stringify({
             errors: validationErrors.map((error) => {
               return formatAPIError(new Error(error, "validation"));

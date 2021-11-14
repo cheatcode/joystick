@@ -1,15 +1,19 @@
 import throwError from "../lib/throwError";
 import validateSchema from "../schema/index";
-import { isObject } from "../lib/typeValidators";
+import { isObject, isString } from "../lib/typeValidators";
 import isArrayPath from "../lib/isArrayPath";
 import getValueFromObject from "../lib/getValueFromObject";
 import constants from "../lib/constants";
 
-const handleGetInputValue = (
-  input = {},
+export const handleGetInputValue = (
+  input = null,
   path = "",
   rulesOnlySchema = false
 ) => {
+  if (path && !isString(path)) {
+    throw new Error('path must be passed as a string');
+  }
+
   if (rulesOnlySchema || (!rulesOnlySchema && !isObject(input))) {
     return input;
   }
@@ -22,7 +26,15 @@ const handleGetInputValue = (
   return getValueFromObject(input, path);
 };
 
-const getArrayPathKey = (arrayPath = "") => {
+export const getArrayPathKey = (arrayPath = "") => {
+  if (!arrayPath) {
+    return '';
+  }
+
+  if (arrayPath && !isString(arrayPath)) {
+    throw new Error('arrayPath must be a type of string');
+  }
+
   const arrayPathParts = arrayPath.split(".");
   return arrayPathParts.pop();
 };
@@ -45,12 +57,16 @@ const addValidationTask = ({ queue, rules, input, path, rulesOnlySchema }) => {
   };
 };
 
-const addToValidationQueue = (
+export const addToValidationQueue = (
   queue = [],
   schema = {},
   input = {},
   parentPath = ""
 ) => {
+  if (queue && !Array.isArray(queue)) {
+    throw new Error('queue must be an array');
+  }
+
   // NOTE: If schema.type is present, we're forcing the schema for an array
   // item that's not an object (see element rule in /lib/constants.js).
   const rulesOnlySchema = !!schema.type;
@@ -84,7 +100,7 @@ const addToValidationQueue = (
   return queue;
 };
 
-const validateInputWithSchema = (
+const validateInputWithSchema = async (
   input = null,
   schema = null,
   parentPath = ""
@@ -101,8 +117,8 @@ const validateInputWithSchema = (
 
   const queue = addToValidationQueue([], schema, input, parentPath);
 
-  queue.forEach((validationTask) => {
-    Object.entries(validationTask.rules).forEach(
+  await Promise.all(queue.flatMap((validationTask) => {
+    return Object.entries(validationTask.rules).flatMap(
       async ([ruleName, ruleValue]) => {
         const validator = constants.rules[ruleName];
 
@@ -114,14 +130,14 @@ const validateInputWithSchema = (
           );
 
           if (result && !result.valid) {
-            result.errors.forEach((error) => {
-              errors.push(error.includes("Field ") ? error : `Field ${error}.`);
+            return result.errors.forEach((error) => {
+              return errors.push(error);
             });
           }
         }
       }
     );
-  });
+  }));
 
   return errors;
 };
