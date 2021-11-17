@@ -45,10 +45,10 @@ export default async (file = "", platform = "") => {
       } catch (exception) {
         const error = exception?.errors[0];
 
-        const snippet = getCodeFrame(file, {
+        const snippet = fs.existsSync(file) ? getCodeFrame(file, {
           line: error?.location?.line,
           column: error?.location?.column,
-        });
+        }) : null;
 
         onWarn({
           file,

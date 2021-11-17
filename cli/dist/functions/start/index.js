@@ -15,7 +15,7 @@ import getCodependenciesForFile from "./getCodependenciesForFile.js";
 import isValidJSONString from "../../lib/isValidJSONString.js";
 import startDatabaseProvider from "./databases/startProvider.js";
 import CLILog from "../../lib/CLILog.js";
-import readDirectorySync from "../../lib/readDirectorySync.js";
+import removeDeletedDependenciesFromMap from "./removeDeletedDependenciesFromMap.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const isObject = (value) => {
@@ -206,18 +206,16 @@ const initialBuild = async () => {
   const fileResults = await buildFiles(filesToBuild);
   const hasErrors = [...fileResults].filter((result) => !!result).map(({ success }) => success).includes(false);
   if (!hasErrors) {
-    process.initialBuildComplete = true;
     startApplicationProcess();
     startHMRProcess();
   }
 };
 const startWatcher = async () => {
   await initialBuild();
-  const watcher = chokidar.watch(watchlist.map(({ path: path2 }) => path2));
+  const watcher = chokidar.watch(watchlist.map(({ path: path2 }) => path2), {
+    ignoreInitial: true
+  });
   watcher.on("all", async (event, path2) => {
-    if (["addDir", "add"].includes(event) && !process.initialBuildComplete) {
-      return;
-    }
     await requiredFileCheck();
     process.loader.text("Rebuilding app...");
     if (["addDir"].includes(event) && fs.existsSync(path2) && fs.lstatSync(path2).isDirectory() && !fs.existsSync(`./.joystick/build/${path2}`)) {
@@ -235,11 +233,12 @@ const startWatcher = async () => {
       await loadSettings();
       return restartApplicationProcess();
     }
-    if (["add", "change"].includes(event)) {
+    if (["add", "change"].includes(event) && fs.existsSync(path2)) {
       const codependencies = getCodependenciesForFile(path2);
       const fileResults = await buildFiles([path2]);
       const fileResultsHaveErrors = fileResults.filter((result) => !!result).map(({ success }) => success).includes(false);
-      const codependencyResult = fileResultsHaveErrors ? [] : await buildFiles(codependencies);
+      removeDeletedDependenciesFromMap(codependencies.deleted);
+      const codependencyResult = fileResultsHaveErrors ? [] : await buildFiles(codependencies.existing);
       const codependencyResultsHaveErrors = codependencyResult.filter((result) => !!result).map(({ success }) => success).includes(false);
       const hasErrors = fileResultsHaveErrors || codependencyResultsHaveErrors;
       if (process.serverProcess && hasErrors) {

@@ -1,4 +1,5 @@
 import fs from "fs";
+import readFileDependencyMap from "./readFileDependencyMap.js";
 
 const findCodependenciesInMap = (pathVariations = [], map = {}) => {
   return Object.entries(map)
@@ -26,24 +27,6 @@ const findCodependenciesInMap = (pathVariations = [], map = {}) => {
     .map(([matchingCodependentPath]) => {
       return matchingCodependentPath.replace(`${process.cwd()}/`, "");
     });
-};
-
-const readFileDependencyMap = () => {
-  const fileDependencyMapPath = `.joystick/build/fileMap.json`;
-
-  if (fs.existsSync(fileDependencyMapPath)) {
-    const fileDependencyMapAsJSON = fs.readFileSync(
-      fileDependencyMapPath,
-      "utf-8"
-    );
-    const fileMap = fileDependencyMapAsJSON
-      ? JSON.parse(fileDependencyMapAsJSON)
-      : {};
-
-    return fileMap;
-  }
-
-  return {};
 };
 
 const getPathVariations = (path = "") => {
@@ -78,6 +61,7 @@ const getPathVariations = (path = "") => {
 
 export default (pathToFind = "") => {
   const pathVariations = getPathVariations(pathToFind);
+
   const fileDependencyMap = readFileDependencyMap();
 
   const codpendencies = findCodependenciesInMap(
@@ -85,5 +69,12 @@ export default (pathToFind = "") => {
     fileDependencyMap
   );
 
-  return codpendencies;
+  return {
+    existing: codpendencies.filter((codependency) => {
+      return !!fs.existsSync(codependency);
+    }),
+    deleted: codpendencies.filter((codependency) => {
+      return !fs.existsSync(codependency);
+    }),
+  };
 };
