@@ -12,7 +12,7 @@ export const isArray = (value) => {
 };
 
 export const isBoolean = (value) => {
-  return (value === true || value === false) && typeof value === "boolean";
+  return (value === true || value === false);
 };
 
 export const isFloat = (value) => {

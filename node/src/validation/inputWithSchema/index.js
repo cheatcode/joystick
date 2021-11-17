@@ -86,7 +86,7 @@ export const addToValidationQueue = (
   }
 
   if (rulesOnlySchema) {
-    const path = parentPath || field;
+    const path = parentPath;
     const validationTask = addValidationTask({
       queue,
       rules: schema,

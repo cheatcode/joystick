@@ -2,67 +2,67 @@ import validate from "./index";
 import { handleGetInputValue, getArrayPathKey, addToValidationQueue } from './inputWithSchema';
 
 describe("validate/schema/index.js", () => {
-  // test("throws error if schema argument is not passed", () => {
-  //   expect(() => {
-  //     validate.schema();
-  //   }).toThrow("[joystick.validation] Must pass schema object.");
-  // });
+  test("throws error if schema argument is not passed", () => {
+    expect(() => {
+      validate.schema();
+    }).toThrow("[joystick.validation] Must pass schema object.");
+  });
 
-  // test("throws error if schema argument is invalid type", () => {
-  //   expect(() => {
-  //     validate.schema(1);
-  //   }).toThrow("[joystick.validation] Must pass schema as an object.");
-  // });
+  test("throws error if schema argument is invalid type", () => {
+    expect(() => {
+      validate.schema(1);
+    }).toThrow("[joystick.validation] Must pass schema as an object.");
+  });
 
-  // test("throws error if schema object contains properties with values that are not objects", () => {
-  //   expect(() => {
-  //     validate.schema({
-  //       _id: {
-  //         type: "string",
-  //       },
-  //       userId: false,
-  //       title: {
-  //         type: "string",
-  //       },
-  //     });
-  //   }).toThrow(
-  //     `Must pass an object containing rules to validate by for userId field.`
-  //   );
-  // });
+  test("throws error if schema object contains properties with values that are not objects", () => {
+    expect(() => {
+      validate.schema({
+        _id: {
+          type: "string",
+        },
+        userId: false,
+        title: {
+          type: "string",
+        },
+      });
+    }).toThrow(
+      `Must pass an object containing rules to validate by for userId field.`
+    );
+  });
 
-  // test("throws error if schema field rule names are unsupported", () => {
-  //   expect(() => {
-  //     validate.schema({
-  //       _id: {
-  //         type: "string",
-  //         allowedValues: "",
-  //         element: "",
-  //         fields: "",
-  //         max: "",
-  //         min: "",
-  //         optional: "",
-  //         required: "",
-  //         hotDog: "",
-  //       },
-  //       userId: {},
-  //       title: {
-  //         type: "string",
-  //       },
-  //     });
-  //   }).toThrow(`Invalid rule name hotDog in rule for _id field.`);
-  // });
+  test("throws error if schema field rule names are unsupported", () => {
+    expect(() => {
+      validate.schema({
+        _id: {
+          type: "string",
+          allowedValues: "",
+          element: "",
+          fields: "",
+          max: "",
+          min: "",
+          optional: "",
+          required: "",
+          hotDog: "",
+        },
+        userId: {},
+        title: {
+          type: "string",
+        },
+      });
+    }).toThrow(`Invalid rule name hotDog in rule for _id field.`);
+  });
 
-  // test("throws error if schema field rule.type value is unsupported", () => {
-  //   expect(() => {
-  //     validate.schema({
-  //       _id: {
-  //         type: "apples",
-  //       },
-  //     });
-  //   }).toThrow(
-  //     `Invalid value for schema field "_id" type rule. apples is not supported. Use one of the following: any, array, boolean, float, integer, number, object, or string.`
-  //   );
-  // });
+  test("throws error if schema field rule.type value is unsupported", () => {
+    expect(() => {
+      validate.schema({
+        _id: {
+          type: "apples",
+        },
+      });
+    }).toThrow(
+      `Invalid value for schema field "_id" type rule. apples is not supported. Use one of the following: any, array, boolean, float, integer, number, object, or string.`
+    );
+  });
 });
 
 describe("validate/inputWithSchema/index.js", () => {
@@ -591,5 +591,17 @@ describe("validate/inputWithSchema/index.js", () => {
     );
 
     expect(errors).toEqual(["Field name must be of type string."]);
+  });
+
+  test("throws error if file at path for dynamic require of inputWithSchema does not exist", () => {
+    // TODO:
+  });
+
+  test("throws error if file dynamically required for inputWithSchema returns an object without a default property", () => {
+    // TODO:
+  });
+
+  test("returns valid true if inputWithSchema cannot be dynamically required", () => {
+    // TODO: Make this an escape hatch if something is wrong with Joystick?
   });
 });
