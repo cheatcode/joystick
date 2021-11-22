@@ -176,6 +176,12 @@ export default (args = {}) => {
         ),
       },
     ]);
+  
+    // NOTE: Pure aesthetics. Above step completes so quickly that it almost looks like
+    // it's skipped. Add a buffer of 1.5s here to make for a better dev experience.
+    setTimeout(() => {
+      process.loader.text("Installing dependencies...");
+    }, 1500);
 
     exec(
       `cd ./${projectName} && npm install --save @joystick.js/ui @joystick.js/node ${npmRegistry}`,

@@ -124,6 +124,9 @@ var create_default = (args = {}) => {
         content: fs.readFileSync(`${__dirname}/templates/settings.development.json`, "utf-8")
       }
     ]);
+    setTimeout(() => {
+      process.loader.text("Installing dependencies...");
+    }, 1500);
     exec(`cd ./${projectName} && npm install --save @joystick.js/ui @joystick.js/node ${npmRegistry}`, (stderr, stdout) => {
       if (stderr) {
         process.loader.stop();
