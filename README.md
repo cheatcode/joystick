@@ -61,6 +61,7 @@ The full-stack JavaScript framework.
     - [Form Validation](#form-validation)
     - [Accessing URL and query params](#accessing-url-and-query-params)
     - [Writing comments](#writing-comments)
+    - [Accessing a Component's DOM Node](#accessing-the-dom-node)
 10. [@joystick.js/node](#joystickjsnode)
     - [Defining an app](#defining-an-app)
     - [Middleware](#middleware)
@@ -1597,6 +1598,33 @@ const Navigation = ui.component({
 
 export default Navigation;
 ```
+
+### Accessing the DOM Node
+
+If you're working with third-party packages or trying to manipulate the DOM directly, you may need to access the rendered DOM node that represents your component in the browser. In `@joystick.js/ui`, all components are rendered inside of a wrapper `<div></div>` with a `js-c` attribute set to a unique ID for that component. This `<div></div>` represents the "boundary" for your component in the rendered HTML (what Joystick sets as the DOM node).
+
+The DOM node for your component can be accessed via the component instance's `DOMNode` property, like this:
+
+```javascript
+import ui from '@joystick.js/ui';
+
+const Map = ui.component({
+  lifecycle: {
+    onMount: (component) => {
+      const map = component.DOMNode.querySelector('#map');
+    },
+  },
+  render: () => {
+    return `
+      <div>
+        <div id="map"></div>
+      </div>
+    `;
+  },
+});
+```
+
+The `component.DOMNode` property is accessible in _all_ locations where the `component` instance is passed, however, it's best utilized in the `lifecycle.onMount` method and `events` handler methods. **The one exception to this is the `lifecycle.onBeforeMount` method where the DOM node does not yet exist**.
 
 ## @joystick.js/node
 
