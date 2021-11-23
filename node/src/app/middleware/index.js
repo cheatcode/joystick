@@ -11,6 +11,8 @@ import generateErrorPage from "../../lib/generateErrorPage.js";
 import hasLoginTokenExpired from "../accounts/hasLoginTokenExpired.js";
 import runUserQuery from "../accounts/runUserQuery.js";
 
+const faviconPath = process.env.NODE_ENV === 'test' ? `${process.cwd()}/src/tests/mocks/app/public/favicon.ico` : 'public/favicon.ico'; 
+
 export default (app, port, config = {}) => {
   app.use((_req, res, next) => {
     if (process.BUILD_ERROR) {
@@ -75,7 +77,7 @@ export default (app, port, config = {}) => {
       )
     );
   });
-  app.use(favicon("public/favicon.ico"));
+  app.use(favicon(faviconPath));
   app.use(cookieParser());
   app.use(bodyParser(config?.bodyParser));
   app.use(cors(config?.cors, port));

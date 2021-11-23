@@ -8,7 +8,7 @@ const isArray = (value) => {
   return !!Array.isArray(value);
 };
 const isBoolean = (value) => {
-  return (value === true || value === false) && typeof value === "boolean";
+  return value === true || value === false;
 };
 const isFloat = (value) => {
   return Number(value) === value && value % 1 !== 0;

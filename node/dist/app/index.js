@@ -6,6 +6,7 @@ import parseDatabasesFromEnvironment from "../lib/parseDatabasesFromEnvironment.
 import mongodb from "./databases/mongodb/index.js";
 import accounts from "./accounts";
 import formatAPIError from "../lib/formatAPIError";
+import hasLoginTokenExpired from "./accounts/hasLoginTokenExpired.js";
 class App {
   constructor(options = {}) {
     handleProcessErrors(options?.events);
@@ -13,8 +14,8 @@ class App {
     this.loadDatabases(() => {
       this.express = initExpress(this.onStartApp, options);
       this.initAPI(options.api);
-      this.routes = this.initRoutes(options.routes);
       this.initAccounts();
+      this.routes = this.initRoutes(options.routes);
     });
   }
   async loadDatabases(callback) {
@@ -117,6 +118,14 @@ class App {
     });
   }
   initAccounts() {
+    this.express.app.get("/nonsense", (req, res) => {
+      res.send("Terrible");
+    });
+    this.express.app.get("/api/_accounts/authenticated", (req, res) => {
+      console.log("TEST");
+      const loginTokenHasExpired = hasLoginTokenExpired(res, req?.cookies?.joystickLoginToken, req?.cookies?.joystickLoginTokenExpiresAt);
+      res.status(200).send(JSON.stringify({ status: !loginTokenHasExpired ? 200 : 401, authenticated: !loginTokenHasExpired }));
+    });
     this.express.app.post("/api/_accounts/signup", async (req, res) => {
       try {
         const signup = await accounts.signup({

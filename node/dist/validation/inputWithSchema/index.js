@@ -47,8 +47,8 @@ const addToValidationQueue = (queue = [], schema = {}, input = {}, parentPath = 
   }
   const rulesOnlySchema = !!schema.type;
   if (!rulesOnlySchema) {
-    Object.entries(schema).forEach(([field2, rules]) => {
-      const path = `${parentPath ? `${parentPath}.${field2}` : field2}`;
+    Object.entries(schema).forEach(([field, rules]) => {
+      const path = `${parentPath ? `${parentPath}.${field}` : field}`;
       const validationTask = addValidationTask({
         queue,
         rules,
@@ -60,7 +60,7 @@ const addToValidationQueue = (queue = [], schema = {}, input = {}, parentPath = 
     });
   }
   if (rulesOnlySchema) {
-    const path = parentPath || field;
+    const path = parentPath;
     const validationTask = addValidationTask({
       queue,
       rules: schema,

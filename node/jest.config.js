@@ -1,6 +1,6 @@
 export default {
-  clearMocks: true,
   collectCoverage: true,
   coverageDirectory: '../coverage',
-  rootDir: './src'
+  rootDir: './',
+  transform: {},
 }

@@ -1,14 +1,14 @@
-import { parse } from 'node-html-parser';
+import htmlParser from 'node-html-parser';
 
 export default (htmlString = '', head = {}) => {
-  const html = parse(htmlString);
+  const html = htmlParser.parse(htmlString);
   const headTag = html.querySelector('head');
 
   if (head.title) {
     const existingTitle = headTag.querySelector('title');
     
     if (existingTitle) {
-      const newTitle = parse(`<title>${head.title}</title>`);
+      const newTitle = htmlParser.parse(`<title>${head.title}</title>`);
       headTag.exchangeChild(existingTitle, newTitle);
     }
   
@@ -20,7 +20,7 @@ export default (htmlString = '', head = {}) => {
   if (head.tags && head.tags.meta && Array.isArray(head.tags.meta) && head.tags.meta.length > 0) {
     head.tags.meta.forEach((metaTag) => {
       const existingTag = headTag.querySelector(`meta[name="${metaTag.name}"]`);
-      const newTag = parse(`<meta />`);
+      const newTag = htmlParser.parse(`<meta />`);
   
       Object.entries(metaTag).forEach(([attributeName, attributeValue]) => {
         newTag.querySelector('meta').setAttribute(attributeName, attributeValue);
@@ -38,7 +38,7 @@ export default (htmlString = '', head = {}) => {
   
   if (head.tags && head.tags.link && Array.isArray(head.tags.link) && head.tags.link.length > 0) {
     head.tags.link.forEach((linkTag) => {
-      const newTag = parse(`<link />`);
+      const newTag = htmlParser.parse(`<link />`);
   
       Object.entries(linkTag).forEach(([attributeName, attributeValue]) => {
         newTag.querySelector('link').setAttribute(attributeName, attributeValue);
@@ -50,7 +50,7 @@ export default (htmlString = '', head = {}) => {
   
   if (head.tags && head.tags.script && Array.isArray(head.tags.script) && head.tags.script.length > 0) {
     head.tags.script.forEach((scriptTag) => {
-      const newTag = parse(`<script></script>`);
+      const newTag = htmlParser.parse(`<script></script>`);
   
       Object.entries(scriptTag).forEach(([attributeName, attributeValue]) => {
         newTag.querySelector('script').setAttribute(attributeName, attributeValue);
@@ -61,7 +61,7 @@ export default (htmlString = '', head = {}) => {
   }
   
   if (head.jsonld) {
-    const newTag = parse(`<script></script>`);
+    const newTag = htmlParser.parse(`<script></script>`);
     const tag = newTag.querySelector('script');
   
     tag.setAttribute('type', 'application/ld+json');

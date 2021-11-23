@@ -6,54 +6,61 @@ import parseDatabasesFromEnvironment from "../lib/parseDatabasesFromEnvironment.
 import mongodb from "./databases/mongodb/index.js";
 import accounts from "./accounts";
 import formatAPIError from "../lib/formatAPIError";
+import hasLoginTokenExpired from "./accounts/hasLoginTokenExpired.js";
+import { isObject } from "../validation/lib/typeValidators.js";
 
-class App {
+export class App {
   constructor(options = {}) {
     handleProcessErrors(options?.events);
-
     this.databases = [];
+    this.express = {};
+  }
 
-    this.loadDatabases(() => {
-      this.express = initExpress(this.onStartApp, options);
-      this.initAPI(options.api);
-      this.routes = this.initRoutes(options.routes);
-      this.initAccounts();
-    });
+  async start(options = {}) {
+    this.databases = await this.loadDatabases();
+    this.express = initExpress(this.onStartApp, options);
+    this.initAccounts();
+    this.initAPI(options?.api);
+    this.initRoutes(options?.routes);
   }
 
   async loadDatabases(callback) {
-    const databasesFromEnvironment = parseDatabasesFromEnvironment(
-      process.env.databases
-    );
-
-    const databases = Object.entries(databasesFromEnvironment).map(
-      ([databaseName, databaseSettings]) => {
-        return {
-          name: databaseName,
-          settings: databaseSettings,
-        };
-      }
-    );
-
-    await Promise.all(
-      databases.map(async (database) => {
-        if (database.name === "mongodb") {
-          const instance = await mongodb(database?.settings?.connection);
-          const connection = {
-            ...database,
-            ...instance,
+    try {
+      const databasesFromEnvironment = parseDatabasesFromEnvironment(
+        process.env.databases
+      );
+  
+      const databases = Object.entries(databasesFromEnvironment).map(
+        ([databaseName, databaseSettings]) => {
+          return {
+            name: databaseName,
+            settings: databaseSettings,
           };
-
-          process.databases = {
-            [database.name]: connection.db,
-          };
-
-          return connection;
         }
-      })
-    );
-
-    return callback(process.databases);
+      );
+  
+      await Promise.all(
+        databases.map(async (database) => {
+          if (database.name === "mongodb") {
+            const instance = await mongodb(database?.settings?.connection);
+            const connection = {
+              ...database,
+              ...instance,
+            };
+  
+            process.databases = {
+              [database.name]: connection.db,
+            };
+  
+            return connection;
+          }
+        })
+      );
+  
+      return process.databases;
+    } catch (exception) {
+      console.warn(exception);
+    }
   }
 
   onStartApp(express = {}) {
@@ -66,16 +73,16 @@ class App {
     console.log(`App running at: http://localhost:${express.port}`);
   }
 
-  async initAPI(api = {}) {
+  initAPI(api = {}) {
     const context = api?.context;
     const getters = api?.getters;
     const setters = api?.setters;
 
-    if (Object.keys(getters).length > 0) {
+    if (getters && isObject(getters) && Object.keys(getters).length > 0) {
       registerGetters(this.express, Object.entries(getters), context);
     }
 
-    if (Object.keys(setters).length > 0) {
+    if (setters && isObject(setters) && Object.keys(setters).length > 0) {
       registerSetters(this.express, Object.entries(setters), context);
     }
   }
@@ -154,6 +161,21 @@ class App {
   }
 
   initAccounts() {
+    this.express.app.get("/nonsense", (req, res) => {
+      res.send('Terrible');  
+    });
+
+    this.express.app.get("/api/_accounts/authenticated", (req, res) => {
+      console.log('TEST');
+      const loginTokenHasExpired = hasLoginTokenExpired(
+        res,
+        req?.cookies?.joystickLoginToken,
+        req?.cookies?.joystickLoginTokenExpiresAt
+      );
+
+      res.status(200).send(JSON.stringify({ status: !loginTokenHasExpired ? 200 : 401, authenticated: !loginTokenHasExpired }));
+    });
+
     this.express.app.post("/api/_accounts/signup", async (req, res) => {
       try {
         const signup = await accounts.signup({
@@ -263,8 +285,9 @@ class App {
 }
 
 export default (options = {}) => {
-  return new Promise((resolve) => {
+  return new Promise(async (resolve) => {
     const app = new App(options);
+    await app.start(options);
     return resolve(app.express);
   });
 };
