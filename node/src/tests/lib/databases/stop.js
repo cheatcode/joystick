@@ -1,5 +1,7 @@
 import { killPortProcess } from "kill-port-process";
+import reset from "./mongodb/reset";
 
 export default async () => {
-  await killPortProcess(process.env.PORT + 1);
+  await reset(process.databases.mongodb);
+  await killPortProcess(parseInt(process.env.PORT, 10) + 1);
 };

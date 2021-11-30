@@ -1,8 +1,8 @@
-import setAppSettingsForTest from '../tests/lib/setAppSettingsForTest';
-import startMongoDB from '../tests/lib/databases/mongodb/start';
+import { killPortProcess } from 'kill-port-process';
+import startMongoDB from './mongodb/start';
 
-export default (databaseName = '') => {
-  await killPortProcess(process.env.PORT + 1);
+export default async (databaseName = '') => {
+  await killPortProcess(parseInt(process.env.PORT, 10) + 1);
   let processId;
   
   if (databaseName === 'mongodb') {
@@ -16,14 +16,14 @@ export default (databaseName = '') => {
         hosts: [
           {
             hostname: "127.0.0.1",
-            port: process.env.PORT + 1,
+            port: parseInt(process.env.PORT, 10) + 1,
           },
         ],
         database: "app",
         username: "",
         password: "",
       },
-      settings,
+      settings: {},
     },
   });
 

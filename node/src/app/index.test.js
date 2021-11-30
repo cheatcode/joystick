@@ -5,7 +5,7 @@ import generateId from '../lib/generateId';
 import assertRoutesDoNotExistInRegexes from '../tests/lib/assertRoutesDoNotExistInRegexes';
 import assertRoutesExistInRegexes from '../tests/lib/assertRoutesExistInRegexes';
 import setAppSettingsForTest from '../tests/lib/setAppSettingsForTest';
-import startTestDatabase from '../tests/lib/databases/mongodb/start';
+import startTestDatabase from '../tests/lib/databases/start';
 import stopTestDatabase from '../tests/lib/databases/stop';
 import getRouteRegexes from '../tests/lib/getRouteRegexes';
 
@@ -22,6 +22,8 @@ global.joystick = {
     },
   },
 };
+
+jest.setTimeout(30000);
 
 describe('index.js', () => {
   beforeAll(async () => {
@@ -374,33 +376,33 @@ describe('index.js', () => {
     }
   });
 
-  test('verify that a /_accounts/signup request will set a cookie and return a user if passed a valid signup request', async () => {
-    const instance = await app({});
-    const route = instance?.app?._router?.stack.find((stackItem) => {
-      return stackItem?.route?.path === '/api/_accounts/signup';
-    });
+  // test('verify that a /_accounts/signup request will set a cookie and return a user if passed a valid signup request', async () => {
+  //   const instance = await app({});
+  //   const route = instance?.app?._router?.stack.find((stackItem) => {
+  //     return stackItem?.route?.path === '/api/_accounts/signup';
+  //   });
 
-    const req = mockRequest({
-      body: {
-        emailAddress: 'test@test.com',
-        password: 'password',
-        metadata: {},
-      },
-    });
+  //   const req = mockRequest({
+  //     body: {
+  //       emailAddress: 'test@test.com',
+  //       password: 'password',
+  //       metadata: {},
+  //     },
+  //   });
 
-    const res = mockResponse();
-    const handler = route?.route?.stack[0] && route?.route?.stack[0].handle;
+  //   const res = mockResponse();
+  //   const handler = route?.route?.stack[0] && route?.route?.stack[0].handle;
     
-    if (instance?.server?.close && typeof instance.server.close === 'function') {
-      instance.server.close();
-    }
+  //   if (instance?.server?.close && typeof instance.server.close === 'function') {
+  //     instance.server.close();
+  //   }
 
-    if (handler) {
-      await handler(req, res, () => {});
-      expect(res.status).toHaveBeenCalledWith(200);
-      expect(res.send).toHaveBeenCalledWith(null);
-    }
-  });
+  //   if (handler) {
+  //     await handler(req, res, () => {});
+  //     expect(res.status).toHaveBeenCalledWith(200);
+  //     expect(res.send).toHaveBeenCalledWith(null);
+  //   }
+  // });
 
   // test('verify that a /_accounts/login request will set a cookie and return a user if passed a valid login request', async () => {
 

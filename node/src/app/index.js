@@ -30,7 +30,6 @@ export class App {
   }
 
   async loadDatabases(callback) {
-    console.log('DBS', process.env.databases);
     const databasesFromEnvironment = parseDatabasesFromEnvironment(
       process.env.databases
     );

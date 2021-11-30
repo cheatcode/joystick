@@ -50,7 +50,7 @@ export default async () => {
   }
 
   const result = execSync(
-    "mongod --port 2603 --dbpath ./tests/.data/mongodb --quiet --fork --logpath ./tests/.data/mongodb/log"
+    `mongod --port ${parseInt(process.env.PORT, 10) + 1} --dbpath ./tests/.data/mongodb --quiet --fork --logpath ./tests/.data/mongodb/log`
   );
 
   const stdout = result.toString();
