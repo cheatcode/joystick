@@ -4,6 +4,6 @@ import generateId from "../../lib/generateId";
 export default () => {
   return {
     token: generateId(64),
-    tokenExpiresAt: dayjs().add(30, "days").format(),
+    tokenExpiresAt: dayjs().utc().add(30, "days").format(),
   };
 };

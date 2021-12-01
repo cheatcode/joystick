@@ -1,7 +1,6 @@
-import { afterAll, beforeAll, expect, jest, test } from '@jest/globals';
-import dayjs from 'dayjs';
+import { afterAll, afterEach, beforeAll, expect, jest, test } from '@jest/globals';
 import { mockRequest, mockResponse } from 'jest-mock-req-res';
-import generateId from '../lib/generateId';
+import { killPortProcess } from "kill-port-process";
 import assertRoutesDoNotExistInRegexes from '../tests/lib/assertRoutesDoNotExistInRegexes';
 import assertRoutesExistInRegexes from '../tests/lib/assertRoutesExistInRegexes';
 import setAppSettingsForTest from '../tests/lib/setAppSettingsForTest';
@@ -9,7 +8,32 @@ import startTestDatabase from '../tests/lib/databases/start';
 import stopTestDatabase from '../tests/lib/databases/stop';
 import getRouteRegexes from '../tests/lib/getRouteRegexes';
 
+jest.mock('../../node_modules/crypto-extra', () => {
+  return {
+    randomString: () => 'abc1234',
+  };
+});
+
+jest.mock('../../node_modules/bcrypt', () => {
+  return {
+    hashSync: () => 'hashed$password',
+    compareSync: () => {
+      return true;
+    },
+  };
+});
+
+jest.mock('../../node_modules/dayjs', () => {
+  const _dayjs = jest.requireActual('../../node_modules/dayjs');
+  const _utc = jest.requireActual('../../node_modules/dayjs/plugin/utc');
+  _dayjs.extend(_utc);
+
+  return () => _dayjs('2022-01-01T00:00:00.000Z');
+});
+
+const dayjs = (await import('dayjs')).default;
 const app = (await import('./index')).default;
+const generateId = (await import('../lib/generateId')).default;
 
 global.joystick = {
   settings: {
@@ -22,8 +46,6 @@ global.joystick = {
     },
   },
 };
-
-jest.setTimeout(30000);
 
 describe('index.js', () => {
   beforeAll(async () => {
@@ -58,6 +80,10 @@ describe('index.js', () => {
     });
   
     await startTestDatabase('mongodb');
+  });
+
+  afterEach(async () => {
+    await killPortProcess(process.env.PORT);
   });
 
   afterAll(async () => {
@@ -355,6 +381,10 @@ describe('index.js', () => {
       return stackItem?.route?.path === '/api/_accounts/authenticated';
     });
 
+    if (instance?.server?.close && typeof instance.server.close === 'function') {
+      instance.server.close();
+    }
+
     const req = mockRequest({
       cookies: {
         joystickLoginToken: 'testToken123',
@@ -367,42 +397,40 @@ describe('index.js', () => {
     
     if (handler) {
       handler(req, res, () => {});
-      expect(res.status).toHaveBeenCalledWith(401);
-      expect(res.send).toHaveBeenCalledWith('{\"status\":401,\"authenticated\":false}');
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.send).toHaveBeenCalledWith('{\"status\":200,\"authenticated\":true}');
     }
+  });
+
+  test('verify that a /_accounts/signup request will set a cookie and return a user if passed a valid signup request', async () => {
+    const instance = await app({});
+    const route = instance?.app?._router?.stack.find((stackItem) => {
+      return stackItem?.route?.path === '/api/_accounts/signup';
+    });
 
     if (instance?.server?.close && typeof instance.server.close === 'function') {
       instance.server.close();
     }
-  });
 
-  // test('verify that a /_accounts/signup request will set a cookie and return a user if passed a valid signup request', async () => {
-  //   const instance = await app({});
-  //   const route = instance?.app?._router?.stack.find((stackItem) => {
-  //     return stackItem?.route?.path === '/api/_accounts/signup';
-  //   });
+    const req = mockRequest({
+      body: {
+        emailAddress: 'test@test.com',
+        password: 'password',
+        metadata: {},
+      },
+    });
 
-  //   const req = mockRequest({
-  //     body: {
-  //       emailAddress: 'test@test.com',
-  //       password: 'password',
-  //       metadata: {},
-  //     },
-  //   });
-
-  //   const res = mockResponse();
-  //   const handler = route?.route?.stack[0] && route?.route?.stack[0].handle;
+    const res = mockResponse();
+    const handler = route?.route?.stack[0] && route?.route?.stack[0].handle;
     
-  //   if (instance?.server?.close && typeof instance.server.close === 'function') {
-  //     instance.server.close();
-  //   }
-
-  //   if (handler) {
-  //     await handler(req, res, () => {});
-  //     expect(res.status).toHaveBeenCalledWith(200);
-  //     expect(res.send).toHaveBeenCalledWith(null);
-  //   }
-  // });
+    if (handler) {
+      await handler(req, res, () => {});
+      expect(res.cookie).toHaveBeenCalledWith('joystickLoginToken', 'abc1234', { secure: true, httpOnly: true, expires: dayjs().toDate() });
+      expect(res.cookie).toHaveBeenCalledWith('joystickLoginTokenExpiresAt', "2022-01-31T00:00:00Z", { secure: true, httpOnly: true, expires: dayjs().toDate() });
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.send).toHaveBeenCalledWith('{\"_id\":\"abc1234\",\"password\":\"hashed$password\",\"emailAddress\":\"test@test.com\"}');
+    }
+  });
 
   // test('verify that a /_accounts/login request will set a cookie and return a user if passed a valid login request', async () => {
 
