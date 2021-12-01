@@ -388,7 +388,7 @@ describe('index.js', () => {
     const req = mockRequest({
       cookies: {
         joystickLoginToken: 'testToken123',
-        joystickLoginTokenExpiresAt: dayjs().subtract(1, 'minute').format(),
+        joystickLoginTokenExpiresAt: jest.requireActual('../../node_modules/dayjs')().subtract(1, 'minute').format(),
       },
     });
 
@@ -397,8 +397,8 @@ describe('index.js', () => {
     
     if (handler) {
       handler(req, res, () => {});
-      expect(res.status).toHaveBeenCalledWith(200);
-      expect(res.send).toHaveBeenCalledWith('{\"status\":200,\"authenticated\":true}');
+      expect(res.status).toHaveBeenCalledWith(401);
+      expect(res.send).toHaveBeenCalledWith('{\"status\":401,\"authenticated\":false}');
     }
   });
 
