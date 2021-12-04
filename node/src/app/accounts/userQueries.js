@@ -113,7 +113,7 @@ export default {
         .collection("users")
         .findOne({ _id: input?.userId });
 
-      return process.databases.mongodb.collection("users").updateOne(
+      await process.databases.mongodb.collection("users").updateOne(
         {
           _id: input?.userId,
         },
@@ -127,6 +127,8 @@ export default {
           },
         }
       );
+
+      return process.databases.mongodb.collection("users").findOne({ _id: input?.userId });
     },
   },
 };

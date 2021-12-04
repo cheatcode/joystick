@@ -109,6 +109,7 @@ const allowed = {
   ],
   lifecycle: ["onBeforeMount", "onMount", "onBeforeUnmount"],
   options: [
+    "id",
     "name",
     "props",
     "defaultProps",

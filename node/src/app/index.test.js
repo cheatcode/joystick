@@ -31,6 +31,54 @@ jest.mock('../../node_modules/dayjs', () => {
   return () => _dayjs('2022-01-01T00:00:00.000Z');
 });
 
+const nodemailer = {
+  smtp: {
+    sendMail: jest.fn(),
+  },
+};
+
+jest.mock('../../node_modules/nodemailer', () => {
+  return {
+    createTransport: jest.fn(() => {
+      return {
+        sendMail: nodemailer.smtp.sendMail,
+      };
+    })
+  };
+});
+
+jest.mock('../../node_modules/@joystick.js/ui/dist/component/generateId.js', () => {
+  return 'component1234';
+});
+
+setAppSettingsForTest({
+  "config": {
+    "databases": [
+      {
+        "provider": "mongodb",
+        "users": true,
+        "options": {}
+      }
+    ],
+    "i18n": {
+      "defaultLanguage": "en-US"
+    },
+    "middleware": {},
+    "email": {
+      "from": "app@test.com",
+      "smtp": {
+        "host": "fake.email.com",
+        "port": 587,
+        "username": "test",
+        "password": "password"
+      }
+    }
+  },
+  "global": {},
+  "public": {},
+  "private": {}
+});
+
 const dayjs = (await import('dayjs')).default;
 const app = (await import('./index')).default;
 const generateId = (await import('../lib/generateId')).default;
@@ -50,34 +98,6 @@ global.joystick = {
 describe('index.js', () => {
   beforeAll(async () => {
     process.env.PORT = 3600;
-
-    setAppSettingsForTest({
-      "config": {
-        "databases": [
-          {
-            "provider": "mongodb",
-            "users": true,
-            "options": {}
-          }
-        ],
-        "i18n": {
-          "defaultLanguage": "en-US"
-        },
-        "middleware": {},
-        "email": {
-          "from": "",
-          "smtp": {
-            "host": "",
-            "port": 587,
-            "username": "",
-            "password": ""
-          }
-        }
-      },
-      "global": {},
-      "public": {},
-      "private": {}
-    });
   
     await startTestDatabase('mongodb');
   });
@@ -341,11 +361,63 @@ describe('index.js', () => {
     expect(process.BUILD_ERROR).toEqual(testMessage);
   });
 
-  test('if callback function is assigned to route, it is called as expected', async () => {
-    // TODO: Do this for both object-based and function-based routes.
-    // TODO: Mock out the req, res objects.
-    // TODO: Verify that the callback itself is called (via spy function).
-    // TODO: Verify context is properly set on req object.
+  test('if callback function is assigned to function-based route, it is called as expected', async () => {
+    const instance = await app({
+      routes: {
+        '/test': (req, res) => {
+          res.status(200).send('Called as expected.');
+        },
+      },
+    });
+  
+    const route = instance?.app?._router?.stack.find((stackItem) => {
+      return stackItem?.route?.path === '/test';
+    });
+ 
+    if (instance?.server?.close && typeof instance.server.close === 'function') {
+      instance.server.close();
+    }
+
+    const req = mockRequest();
+    const res = mockResponse();
+    const handler = route?.route?.stack[0] && route?.route?.stack[0].handle;
+
+    if (handler) {
+      await handler(req, res, () => {});
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.send).toHaveBeenCalledWith('Called as expected.');
+    }
+  });
+
+  test('if callback function is assigned to an object-based route, it is called as expected', async () => {
+    const instance = await app({
+      routes: {
+        '/test': {
+          method: 'GET',
+          handler: (req, res) => {
+            res.status(200).send('Called as expected.');
+          },
+        },
+      },
+    });
+  
+    const route = instance?.app?._router?.stack.find((stackItem) => {
+      return stackItem?.route?.path === '/test';
+    });
+ 
+    if (instance?.server?.close && typeof instance.server.close === 'function') {
+      instance.server.close();
+    }
+
+    const req = mockRequest();
+    const res = mockResponse();
+    const handler = route?.route?.stack[0] && route?.route?.stack[0].handle;
+
+    if (handler) {
+      await handler(req, res, () => {});
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.send).toHaveBeenCalledWith('Called as expected.');
+    }
   });
 
   test('verify that a /_accounts/authenticated request will return true if passed a valid cookie', async () => {
@@ -432,19 +504,145 @@ describe('index.js', () => {
     }
   });
 
-  // test('verify that a /_accounts/login request will set a cookie and return a user if passed a valid login request', async () => {
+  test('verify that a /_accounts/login request will set a cookie and return a user if passed a valid login request', async () => {
+    const instance = await app({});
+    const route = instance?.app?._router?.stack.find((stackItem) => {
+      return stackItem?.route?.path === '/api/_accounts/login';
+    });
 
-  // });
+    if (instance?.server?.close && typeof instance.server.close === 'function') {
+      instance.server.close();
+    }
 
-  // test('verify that a /_accounts/logout request deletes the cookie', async () => {
+    const req = mockRequest({
+      body: {
+        emailAddress: 'test@test.com',
+        password: 'password',
+      },
+    });
 
-  // });
+    const res = mockResponse();
+    const handler = route?.route?.stack[0] && route?.route?.stack[0].handle;
+    
+    if (handler) {
+      await handler(req, res, () => {});
+      expect(res.cookie).toHaveBeenCalledWith('joystickLoginToken', 'abc1234', { secure: true, httpOnly: true, expires: dayjs().toDate() });
+      expect(res.cookie).toHaveBeenCalledWith('joystickLoginTokenExpiresAt', "2022-01-31T00:00:00Z", { secure: true, httpOnly: true, expires: dayjs().toDate() });
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.send).toHaveBeenCalledWith('{\"_id\":\"abc1234\",\"emailAddress\":\"test@test.com\"}');
+    }
+  });
 
-  // test('verify that a /_accounts/recover-password request attempts to send an email', async () => {
+  test('verify that a /_accounts/logout request deletes the cookie', async () => {
+    const instance = await app({});
+    const loginRoute = instance?.app?._router?.stack.find((stackItem) => {
+      return stackItem?.route?.path === '/api/_accounts/login';
+    });
+    const logoutRoute = instance?.app?._router?.stack.find((stackItem) => {
+      return stackItem?.route?.path === '/api/_accounts/logout';
+    });
 
-  // });
+    if (instance?.server?.close && typeof instance.server.close === 'function') {
+      instance.server.close();
+    }
 
-  // test('verify that a /_accounts/reset-password request sets a cookie and returns the user', async () => {
+    const loginRequest = mockRequest({
+      body: {
+        emailAddress: 'test@test.com',
+        password: 'password',
+      },
+    });
+    const loginResponse = mockResponse();
+    const loginHandler = loginRoute?.route?.stack[0] && loginRoute?.route?.stack[0].handle;
 
-  // });
+    const logoutRequest = mockRequest();
+    const logoutResponse = mockResponse();
+    const logoutHandler = logoutRoute?.route?.stack[0] && logoutRoute?.route?.stack[0].handle;
+    
+    if (loginHandler && logoutHandler) {
+      await loginHandler(loginRequest, loginResponse, () => {});
+      await logoutHandler(logoutRequest, logoutResponse, () => {});
+  
+      expect(loginResponse.cookie).toHaveBeenCalledWith('joystickLoginToken', 'abc1234', { secure: true, httpOnly: true, expires: dayjs().toDate() });
+      expect(loginResponse.cookie).toHaveBeenCalledWith('joystickLoginTokenExpiresAt', "2022-01-31T00:00:00Z", { secure: true, httpOnly: true, expires: dayjs().toDate() });
+      expect(logoutResponse.cookie).toHaveBeenCalledWith('joystickLoginToken', null, { secure: true, httpOnly: true, expires: dayjs().toDate() });
+      expect(logoutResponse.cookie).toHaveBeenCalledWith('joystickLoginTokenExpiresAt', null, { secure: true, httpOnly: true, expires: dayjs().toDate() });
+    }
+  });
+
+  test('verify that a /_accounts/recover-password request attempts to send an email', async () => {
+    const instance = await app({});
+    const route = instance?.app?._router?.stack.find((stackItem) => {
+      return stackItem?.route?.path === '/api/_accounts/recover-password';
+    });
+
+    if (instance?.server?.close && typeof instance.server.close === 'function') {
+      instance.server.close();
+    }
+
+    const req = mockRequest({
+      body: {
+        emailAddress: 'test@test.com',
+      },
+    });
+
+    const res = mockResponse();
+    const handler = route?.route?.stack[0] && route?.route?.stack[0].handle;
+
+    if (handler) {
+      await handler(req, res, () => {});
+      expect(nodemailer.smtp.sendMail).toHaveBeenCalledWith({
+        from: 'app@test.com',
+        to: 'test@test.com',
+        subject: 'Reset Your Password',
+        html: '<!doctype html>\n' +
+          '<html class="no-js" lang="en">\n' +
+          '  <head>\n' +
+          '    <meta charset="utf-8">\n' +
+          '    <title>Joystick</title>\n' +
+          '    \n' +
+          '  </head>\n' +
+          `  <body style="color: #000; font-family: 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif; font-size: 16px; line-height: 24px;">\n` +
+          '    <div id="email"><div js-c="testComponent1234">\n' +
+          '      <p>A password reset was requested for this email address (test@test.com). If you requested this reset, click the link below to reset your password:</p>\n' +
+          '      <p><a href="http://localhost:3600/reset-password/abc1234">Reset Password</a></p>\n' +
+          '    </div></div>\n' +
+          '  </body>\n' +
+          '</html>\n',
+        text: 'A password reset was requested for this email address (test@test.com). If you\n' +
+          'requested this reset, click the link below to reset your password:\n' +
+          '\n' +
+          'Reset Password [http://localhost:3600/reset-password/abc1234]'
+      });
+    }
+  });
+
+  test('verify that a /_accounts/reset-password request sets a cookie and returns the user', async () => {
+    const instance = await app({});
+    const route = instance?.app?._router?.stack.find((stackItem) => {
+      return stackItem?.route?.path === '/api/_accounts/reset-password';
+    });
+
+    if (instance?.server?.close && typeof instance.server.close === 'function') {
+      instance.server.close();
+    }
+
+    const req = mockRequest({
+      body: {
+        token: 'abc1234',
+        password: 'test@test.com',
+      },
+    });
+
+    const res = mockResponse();
+    const handler = route?.route?.stack[0] && route?.route?.stack[0].handle;
+
+    if (handler) {
+      await handler(req, res, () => {});
+      expect(res.cookie).toHaveBeenCalledWith('joystickLoginToken', 'abc1234', { secure: true, httpOnly: true, expires: dayjs().toDate() });
+      expect(res.cookie).toHaveBeenCalledWith('joystickLoginTokenExpiresAt', "2022-01-31T00:00:00Z", { secure: true, httpOnly: true, expires: dayjs().toDate() });
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.send).toHaveBeenCalledWith('{\"_id\":\"abc1234\",\"password\":\"hashed$password\",\"emailAddress\":\"test@test.com\",\"sessions\":[{\"token\":\"abc1234\",\"tokenExpiresAt\":\"2022-01-31T00:00:00Z\"}],\"passwordResetTokens\":[]}');
+    }
+  });
 });

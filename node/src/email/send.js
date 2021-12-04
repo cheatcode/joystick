@@ -3,16 +3,11 @@ import nodemailer from "nodemailer";
 import fs from "fs";
 import { htmlToText } from "html-to-text";
 import juice from "juice";
-import { createRequire } from "module";
 import settings from "../settings";
 import validateSMTPSettings from "./validateSMTPSettings";
 import render from "./render";
 
-const require = createRequire(import.meta.url);
-
-// TODO: Fallback to default reset-password.js in /templates/reset-password.js here.
-
-export default ({ template: templateName, props, ...restOfOptions }) => {
+export default async ({ template: templateName, props, ...restOfOptions }) => {
   const validSMTPSettings = validateSMTPSettings(settings?.config?.email?.smtp);
 
   if (!validSMTPSettings) {
@@ -32,38 +27,32 @@ export default ({ template: templateName, props, ...restOfOptions }) => {
       })
     : null;
 
-  const templatePath = `${process.cwd()}/.joystick/build/email/${templateName}.js`;
+  let templatePath = process.env.NODE_ENV === 'test' ? `${process.cwd()}/src/email/templates/reset-password.js` : `${process.cwd()}/.joystick/build/email/${templateName}.js`;
   const options = {
     from: settings?.config?.email?.from,
     ...restOfOptions,
   };
 
   if (templateName && !fs.existsSync(templatePath)) {
-    console.warn(
-      chalk.redBright(
-        `Could not find an email template with the name ${templateName}.js in /email.`
-      )
-    );
+    templatePath = `./templates/reset-password.js`;
   }
 
-  console.log({
-    templateName,
-    exists: fs.existsSync(templatePath),
-  });
-
   if (templateName && fs.existsSync(templatePath)) {
-    const template = require(templatePath);
-    console.log(template);
-    const html = render({
-      Component: template,
-      props,
-    });
-
-    const text = htmlToText(html);
-    const htmlWithStylesInlined = juice(html);
-
-    options.html = htmlWithStylesInlined;
-    options.text = text;
+    try {
+      const template = (await import(templatePath)).default;
+      const html = render({
+        Component: template,
+        props,
+      });
+  
+      const text = htmlToText(html);
+      const htmlWithStylesInlined = juice(html);
+  
+      options.html = htmlWithStylesInlined;
+      options.text = text;
+    } catch (exception) {
+      console.warn(exception);
+    }
   }
 
   console.log(options);

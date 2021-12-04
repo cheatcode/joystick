@@ -18,7 +18,7 @@ class Component {
   constructor(options = {}, url = {}, translations = null) {
     validateOptions(options);
 
-    this.id = generateId(8);
+    this.id = options.id || generateId(8);
     this.dom = {
       virtual: {},
       actual: {},

@@ -56,17 +56,18 @@ const resetPassword = async (options, { resolve, reject }) => {
       options.password
     );
 
+    const updatedUser = await removeTokenFromUser(user?._id, options.token);
+
     const session = await generateSession({
-      userId: user?._id,
-      emailAddress: user?.emailAddress,
+      userId: updatedUser?._id,
+      emailAddress: updatedUser?.emailAddress,
       password: hashedNewPassword,
     });
 
-    await addSessionToUser(user?._id, session);
-    await removeTokenFromUser(user?._id, options.token);
+    await addSessionToUser(updatedUser?._id, session);
 
     resolve({
-      user,
+      user: updatedUser,
       ...session,
     });
   } catch (exception) {

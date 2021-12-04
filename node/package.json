@@ -39,6 +39,7 @@
     "@babel/core": "^7.16.0",
     "@babel/preset-env": "^7.16.0",
     "@jest/globals": "^27.3.1",
+    "@joystick.js/ui": "^1.0.0-beta.234",
     "babel-jest": "^27.3.1",
     "esbuild": "^0.13.9",
     "jest": "^27.3.1",
