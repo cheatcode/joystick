@@ -1,0 +1,5 @@
+.build
+src
+tests
+coverage
+release.js
