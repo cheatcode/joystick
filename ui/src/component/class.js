@@ -50,7 +50,7 @@ class Component {
         isActive: (path) => {
           if (url.route !== '*') {
             const pattern = new URLPattern(url.route);
-            return !!pattern.match(path);
+            return (url.path && url.path === path) || !!pattern.match(path);
           }
 
           return false;
@@ -64,7 +64,7 @@ class Component {
         isActive: (path) => {
           if (url.route !== '*') {
             const pattern = new URLPattern(window.__joystick_url__.route);
-            return !!pattern.match(path);
+            return (window.__joystick_url__.path && window.__joystick_url__.path === path) || !!pattern.match(path);
           }
 
           return false;
