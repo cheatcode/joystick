@@ -7,16 +7,23 @@ import mongodb from "./databases/mongodb/index.js";
 import accounts from "./accounts";
 import formatAPIError from "../lib/formatAPIError";
 import hasLoginTokenExpired from "./accounts/hasLoginTokenExpired.js";
+import { isObject } from "../validation/lib/typeValidators.js";
+import isValidHTTPMethod from "../lib/isValidHTTPMethod.js";
+import supportedHTTPMethods from "../lib/supportedHTTPMethods.js";
+import log from "../lib/log.js";
+process.setMaxListeners(0);
 class App {
   constructor(options = {}) {
     handleProcessErrors(options?.events);
     this.databases = [];
-    this.loadDatabases(() => {
-      this.express = initExpress(this.onStartApp, options);
-      this.initAPI(options.api);
-      this.initAccounts();
-      this.routes = this.initRoutes(options.routes);
-    });
+    this.express = {};
+  }
+  async start(options = {}) {
+    this.databases = await this.loadDatabases();
+    this.express = initExpress(this.onStartApp, options);
+    this.initAccounts();
+    this.initAPI(options?.api);
+    this.initRoutes(options?.routes);
   }
   async loadDatabases(callback) {
     const databasesFromEnvironment = parseDatabasesFromEnvironment(process.env.databases);
@@ -39,7 +46,7 @@ class App {
         return connection;
       }
     }));
-    return callback(process.databases);
+    return process.databases;
   }
   onStartApp(express = {}) {
     process.on("message", (message) => {
@@ -47,49 +54,75 @@ class App {
     });
     console.log(`App running at: http://localhost:${express.port}`);
   }
-  async initAPI(api = {}) {
+  initAPI(api = {}) {
     const context = api?.context;
     const getters = api?.getters;
     const setters = api?.setters;
-    if (Object.keys(getters).length > 0) {
+    if (getters && isObject(getters) && Object.keys(getters).length > 0) {
       registerGetters(this.express, Object.entries(getters), context);
     }
-    if (Object.keys(setters).length > 0) {
+    if (setters && isObject(setters) && Object.keys(setters).length > 0) {
       registerSetters(this.express, Object.entries(setters), context);
     }
   }
   initRoutes(routes = {}) {
     Object.entries(routes).forEach(([path, callback]) => {
-      if (path && callback && typeof callback === "object") {
-        const method = callback.method?.toLowerCase();
-        this.express.app[method](path, async (req, res, next) => {
-          if (callback.handler) {
-            callback.handler(Object.assign(req, {
-              context: {
-                ...req?.context || {},
-                ifLoggedIn: (redirectPath = "", callback2 = null) => {
-                  if (!!req?.context?.user && redirectPath) {
-                    return res.redirect(redirectPath);
-                  }
-                  if (callback2) {
-                    return callback2();
-                  }
-                },
-                ifNotLoggedIn: (redirectPath = "", callback2 = null) => {
-                  if (!req?.context?.user && redirectPath) {
-                    return res.redirect(redirectPath);
-                  }
-                  if (callback2) {
-                    return callback2();
-                  }
-                },
-                ...process.databases || {}
-              }
-            }), res, next);
-          }
+      const isObjectBasedRoute = path && callback && typeof callback === "object";
+      const isFunctionBasedRoute = path && callback && typeof callback === "function";
+      const method = callback?.method?.toLowerCase();
+      const isValidMethod = method && isValidHTTPMethod(method) || false;
+      const isValidHandler = isFunctionBasedRoute && typeof callback === "function" || isObjectBasedRoute && callback && callback.handler && typeof callback.handler === "function";
+      if (isFunctionBasedRoute && !isValidHandler) {
+        log(`Cannot register route ${path}. When defining a route using the function-based pattern, route must be set to a function.`, {
+          level: "danger",
+          docs: "https://github.com/cheatcode/joystick#defining-routes"
         });
       }
-      if (path && callback && typeof callback === "function") {
+      if (isObjectBasedRoute && !isValidHandler) {
+        log(`Cannot register route ${path}. When defining a route using the object-based pattern, the handler property must be set to a function.`, {
+          level: "danger",
+          docs: "https://github.com/cheatcode/joystick#defining-routes-for-specific-http-methods"
+        });
+      }
+      if (isObjectBasedRoute && !method || isObjectBasedRoute && method && !isValidMethod) {
+        log(`Cannot register route ${path}. When defining a route using the object-based pattern, the method property must be set to a valid HTTP method: ${supportedHTTPMethods.join(", ")}.`, {
+          level: "danger",
+          docs: "https://github.com/cheatcode/joystick#defining-routes-for-specific-http-methods"
+        });
+      }
+      if (isObjectBasedRoute && callback && !callback.handler) {
+        log(`Cannot register route ${path}. When defining a route using the object-based pattern, the handler property must be set to a function.`, {
+          level: "danger",
+          docs: "https://github.com/cheatcode/joystick#defining-routes-for-specific-http-methods"
+        });
+      }
+      if (isObjectBasedRoute && method && isValidMethod && callback && callback.handler) {
+        this.express.app[method](path, async (req, res, next) => {
+          callback.handler(Object.assign(req, {
+            context: {
+              ...req?.context || {},
+              ifLoggedIn: (redirectPath = "", callback2 = null) => {
+                if (!!req?.context?.user && redirectPath) {
+                  return res.redirect(redirectPath);
+                }
+                if (callback2) {
+                  return callback2();
+                }
+              },
+              ifNotLoggedIn: (redirectPath = "", callback2 = null) => {
+                if (!req?.context?.user && redirectPath) {
+                  return res.redirect(redirectPath);
+                }
+                if (callback2) {
+                  return callback2();
+                }
+              },
+              ...process.databases || {}
+            }
+          }), res, next);
+        });
+      }
+      if (isFunctionBasedRoute) {
         this.express.app.get(path, (req, res, next) => {
           callback(Object.assign(req, {
             context: {
@@ -118,13 +151,10 @@ class App {
     });
   }
   initAccounts() {
-    this.express.app.get("/nonsense", (req, res) => {
-      res.send("Terrible");
-    });
-    this.express.app.get("/api/_accounts/authenticated", (req, res) => {
-      console.log("TEST");
-      const loginTokenHasExpired = hasLoginTokenExpired(res, req?.cookies?.joystickLoginToken, req?.cookies?.joystickLoginTokenExpiresAt);
-      res.status(200).send(JSON.stringify({ status: !loginTokenHasExpired ? 200 : 401, authenticated: !loginTokenHasExpired }));
+    this.express.app.get("/api/_accounts/authenticated", async (req, res) => {
+      const loginTokenHasExpired = await hasLoginTokenExpired(res, req?.cookies?.joystickLoginToken, req?.cookies?.joystickLoginTokenExpiresAt);
+      const status = !loginTokenHasExpired ? 200 : 401;
+      return res.status(status).send(JSON.stringify({ status, authenticated: !loginTokenHasExpired }));
     });
     this.express.app.post("/api/_accounts/signup", async (req, res) => {
       try {
@@ -210,11 +240,13 @@ class App {
   }
 }
 var app_default = (options = {}) => {
-  return new Promise((resolve) => {
+  return new Promise(async (resolve) => {
     const app = new App(options);
+    await app.start(options);
     return resolve(app.express);
   });
 };
 export {
+  App,
   app_default as default
 };

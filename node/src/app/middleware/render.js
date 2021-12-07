@@ -11,6 +11,7 @@ const getUrl = (request = {}) => {
     params: request.params,
     query: request.query,
     route: request.route.path,
+    path: request.url,
   };
 };
 

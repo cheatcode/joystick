@@ -1,7 +1,8 @@
 import fs from "fs";
 import getCSSFromTree from "../ssr/getCSSFromTree";
 import formatCSS from "../ssr/formatCSS";
-const defaultBaseHTML = fs.readFileSync(`${process.cwd()}/node_modules/@joystick.js/node/dist/email/templates/base.html`, "utf-8");
+const defaultBaseHTMLPath = process.env.NODE_ENV === "test" ? `${process.cwd()}/src/email/templates/base.html` : `${process.cwd()}/node_modules/@joystick.js/node/dist/email/templates/base.html`;
+const defaultBaseHTML = fs.readFileSync(defaultBaseHTMLPath, "utf-8");
 var render_default = ({ Component, props = {} }) => {
   try {
     const component = Component(props);

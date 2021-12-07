@@ -195,8 +195,8 @@ export class App {
   }
 
   initAccounts() {
-    this.express.app.get("/api/_accounts/authenticated", (req, res) => {
-      const loginTokenHasExpired = hasLoginTokenExpired(
+    this.express.app.get("/api/_accounts/authenticated", async (req, res) => {
+      const loginTokenHasExpired = await hasLoginTokenExpired(
         res,
         req?.cookies?.joystickLoginToken,
         req?.cookies?.joystickLoginTokenExpiresAt

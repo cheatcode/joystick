@@ -10,6 +10,7 @@ import render from "./render.js";
 import generateErrorPage from "../../lib/generateErrorPage.js";
 import hasLoginTokenExpired from "../accounts/hasLoginTokenExpired.js";
 import runUserQuery from "../accounts/runUserQuery.js";
+const faviconPath = process.env.NODE_ENV === "test" ? `${process.cwd()}/src/tests/mocks/app/public/favicon.ico` : "public/favicon.ico";
 var middleware_default = (app, port, config = {}) => {
   app.use((_req, res, next) => {
     if (process.BUILD_ERROR) {
@@ -44,12 +45,12 @@ var middleware_default = (app, port, config = {}) => {
     const hmrClient = fs.readFileSync(`${process.cwd()}/node_modules/@joystick.js/node/dist/app/middleware/hmr/client.js`, "utf-8");
     res.send(hmrClient.replace("${process.env.PORT}", parseInt(process.env.PORT, 10) + 1));
   });
-  app.use(favicon("public/favicon.ico"));
+  app.use(favicon(faviconPath));
   app.use(cookieParser());
   app.use(bodyParser(config?.bodyParser));
   app.use(cors(config?.cors, port));
   app.use(async (req, res, next) => {
-    const loginTokenHasExpired = hasLoginTokenExpired(res, req?.cookies?.joystickLoginToken, req?.cookies?.joystickLoginTokenExpiresAt);
+    const loginTokenHasExpired = await hasLoginTokenExpired(res, req?.cookies?.joystickLoginToken, req?.cookies?.joystickLoginTokenExpiresAt);
     req.context = {
       ...req?.context || {},
       user: !loginTokenHasExpired && await runUserQuery("userWithLoginToken", {

@@ -82,7 +82,7 @@ export default (app, port, config = {}) => {
   app.use(bodyParser(config?.bodyParser));
   app.use(cors(config?.cors, port));
   app.use(async (req, res, next) => {
-    const loginTokenHasExpired = hasLoginTokenExpired(
+    const loginTokenHasExpired = await hasLoginTokenExpired(
       res,
       req?.cookies?.joystickLoginToken,
       req?.cookies?.joystickLoginTokenExpiresAt

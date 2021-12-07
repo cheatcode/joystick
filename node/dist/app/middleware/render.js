@@ -8,7 +8,8 @@ const getUrl = (request = {}) => {
   return {
     params: request.params,
     query: request.query,
-    route: request.route.path
+    route: request.route.path,
+    path: request.url
   };
 };
 const getFile = async (buildPath = "") => {

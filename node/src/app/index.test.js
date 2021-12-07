@@ -437,7 +437,7 @@ describe('index.js', () => {
     const handler = route?.route?.stack[0] && route?.route?.stack[0].handle;
     
     if (handler) {
-      handler(req, res, () => {});
+      await handler(req, res, () => {});
       expect(res.status).toHaveBeenCalledWith(200);
       expect(res.send).toHaveBeenCalledWith('{\"status\":200,\"authenticated\":true}');
     }
@@ -468,7 +468,7 @@ describe('index.js', () => {
     const handler = route?.route?.stack[0] && route?.route?.stack[0].handle;
     
     if (handler) {
-      handler(req, res, () => {});
+      await handler(req, res, () => {});
       expect(res.status).toHaveBeenCalledWith(401);
       expect(res.send).toHaveBeenCalledWith('{\"status\":401,\"authenticated\":false}');
     }

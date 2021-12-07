@@ -3,4 +3,7 @@ export default {
   coverageDirectory: '../coverage',
   rootDir: './',
   transform: {},
+  testPathIgnorePatterns: [
+    '<rootDir>/dist'
+  ],
 }

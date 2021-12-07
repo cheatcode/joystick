@@ -66,7 +66,9 @@ const signup = async (options, { resolve, reject }) => {
     const userId = await insertUserInDatabase(userToCreate);
     const user = await getUserByUserId(userId);
     const session = generateSession();
-    await addSessionToUser(user._id, session);
+    if (user?._id) {
+      await addSessionToUser(user._id, session);
+    }
     return resolve({
       ...session,
       userId,

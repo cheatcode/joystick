@@ -3,16 +3,14 @@ import nodemailer from "nodemailer";
 import fs from "fs";
 import { htmlToText } from "html-to-text";
 import juice from "juice";
-import { createRequire } from "module";
 import settings from "../settings";
 import validateSMTPSettings from "./validateSMTPSettings";
 import render from "./render";
-const require2 = createRequire(import.meta.url);
-var send_default = ({ template: templateName, props, ...restOfOptions }) => {
+var send_default = async ({ template: templateName, props, ...restOfOptions }) => {
   const validSMTPSettings = validateSMTPSettings(settings?.config?.email?.smtp);
   if (!validSMTPSettings) {
     console.warn(chalk.redBright("Cannot send email, invalid SMTP settings."));
-    return;
+    return Promise.resolve(null);
   }
   const smtp = validSMTPSettings ? nodemailer.createTransport({
     host: settings?.config?.email?.smtp?.host,
@@ -23,31 +21,21 @@ var send_default = ({ template: templateName, props, ...restOfOptions }) => {
       pass: settings?.config?.email?.smtp?.password
     }
   }) : null;
-  const templatePath = `${process.cwd()}/.joystick/build/email/${templateName}.js`;
+  let templatePath = process.env.NODE_ENV === "test" ? `${process.cwd()}/src/email/templates/reset-password.js` : `${process.cwd()}/.joystick/build/email/${templateName}.js`;
+  const templateExists = templateName && !fs.existsSync(templatePath);
   const options = {
     from: settings?.config?.email?.from,
     ...restOfOptions
   };
-  if (templateName && !fs.existsSync(templatePath)) {
-    console.warn(chalk.redBright(`Could not find an email template with the name ${templateName}.js in /email.`));
-  }
-  console.log({
-    templateName,
-    exists: fs.existsSync(templatePath)
+  const template = (await (templateExists ? import(templatePath) : import("./templates/reset-password.js"))).default;
+  const html = render({
+    Component: template,
+    props
   });
-  if (templateName && fs.existsSync(templatePath)) {
-    const template = require2(templatePath);
-    console.log(template);
-    const html = render({
-      Component: template,
-      props
-    });
-    const text = htmlToText(html);
-    const htmlWithStylesInlined = juice(html);
-    options.html = htmlWithStylesInlined;
-    options.text = text;
-  }
-  console.log(options);
+  const text = htmlToText(html);
+  const htmlWithStylesInlined = juice(html);
+  options.html = htmlWithStylesInlined;
+  options.text = text;
   return smtp.sendMail(options);
 };
 export {

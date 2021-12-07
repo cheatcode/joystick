@@ -56,12 +56,21 @@ const copyFiles = (filesToCopy = []) => {
 
 const filesToBuild = getFilesToBuild();
 
+const isNotJavaScript = (path = "") => {
+  const extension = path.split('.').pop();
+  return extension && !extension.match(/\js$/);
+};
+
 const files = filesToBuild.map((path) => {
   let target = "esm";
 
-  const copyPaths = ["email/templates/base.html"];
+  console.log({path});
 
-  const isCopyPath = copyPaths.some((copyPath) => {
+  const copyPaths = [
+    "email/templates/base.html",
+  ];
+
+  const isCopyPath = isNotJavaScript(path) || copyPaths.some((copyPath) => {
     return path.includes(copyPath);
   });
 

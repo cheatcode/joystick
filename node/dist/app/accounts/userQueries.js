@@ -79,7 +79,7 @@ var userQueries_default = {
     },
     removeResetToken: async (input = {}) => {
       const user = await process.databases.mongodb.collection("users").findOne({ _id: input?.userId });
-      return process.databases.mongodb.collection("users").updateOne({
+      await process.databases.mongodb.collection("users").updateOne({
         _id: input?.userId
       }, {
         $set: {
@@ -88,6 +88,7 @@ var userQueries_default = {
           })
         }
       });
+      return process.databases.mongodb.collection("users").findOne({ _id: input?.userId });
     }
   }
 };

@@ -15,7 +15,6 @@ const generateResetToken = async (options, { resolve, reject: reject2 }) => {
     }
     const token = crypto.randomString(32);
     await setTokenOnUser(options.emailAddress, token);
-    console.log({ options, token });
     resolve(token);
   } catch (exception) {
     reject2(formatErrorString("generateResetToken", exception));
