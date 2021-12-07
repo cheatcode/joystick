@@ -27,10 +27,15 @@ const getFilePlatform = (path = "") => {
   return platform;
 };
 
+const isNotJavaScript = (path = "") => {
+  const extension = path.split('.').pop();
+  return extension && !extension.match(/\js$/);
+};
+
 export default async (filesToBuild = []) => {
   return Promise.all(
     filesToBuild.map(async (fileToBuild) => {
-      const isFileToCopy = filesToCopy.some((fileToCopy) => {
+      const isFileToCopy = isNotJavaScript(fileToBuild) || filesToCopy.some((fileToCopy) => {
         return fileToBuild.includes(fileToCopy.path);
       });
 
