@@ -91,8 +91,8 @@ const component = function component(Component, props) {
 
 const each = function each(items, callback) {
   return items
-    .map((item) => {
-      return callback(item);
+    .map((item, itemIndex) => {
+      return callback(item, itemIndex);
     })
     .join("\n");
 };
