@@ -3,6 +3,7 @@ import { createRequire } from "module";
 import ssr from "../../ssr/index.js";
 import { isObject } from "../../validation/lib/typeValidators";
 import settings from "../../settings";
+import generateErrorPage from "../../lib/generateErrorPage.js";
 const require2 = createRequire(import.meta.url);
 const getUrl = (request = {}) => {
   return {
@@ -45,10 +46,20 @@ var render_default = (req, res, next) => {
     const pagePath = `${buildPath}/${path}`;
     const layoutPath = options.layout ? `${buildPath}/${options.layout}` : null;
     if (!fs.existsSync(pagePath)) {
-      res.status(404).send(`404 \u2014 Page not found: ${path}`);
+      return res.status(404).send(generateErrorPage({
+        type: "pageNotFound",
+        path: `res.render('${path}')`,
+        frame: null,
+        stack: `A page component at the path ${path} could not be found.`
+      }));
     }
     if (layoutPath && !fs.existsSync(layoutPath)) {
-      res.status(404).send(`404 \u2014 Layout not found: ${options.layout}`);
+      return res.status(404).send(generateErrorPage({
+        type: "layoutNotFound",
+        path: `res.render('${path}', { layout: '${options.layout}' })`,
+        frame: null,
+        stack: `A layout component at the path ${options.layout} could not be found.`
+      }));
     }
     const pageFile = await getFile(pagePath);
     const Page = pageFile;
