@@ -15,8 +15,6 @@ const buildFile = (fileToBuild) => {
   const [_, file] = fileToBuild.split("src/");
   const isBrowserFile = checkIfBrowserFile(file);
 
-  console.log({ isBrowserFile, file });
-
   return esbuild
     .build({
       entryPoints: [`src/${file}`],
@@ -26,12 +24,6 @@ const buildFile = (fileToBuild) => {
       format: "esm",
       minify: false,
       plugins: [],
-      // external: [
-      //   // bcrypt > @mapbox/node-pre-gyp
-      //   "mock-aws-s3",
-      //   "aws-sdk",
-      //   "nock",
-      // ],
     })
     .catch((error) => {
       console.log(error);
@@ -63,8 +55,6 @@ const isNotJavaScript = (path = "") => {
 
 const files = filesToBuild.map((path) => {
   let target = "esm";
-
-  console.log({path});
 
   const copyPaths = [
     "email/templates/base.html",
