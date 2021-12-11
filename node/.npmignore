@@ -1,4 +1,8 @@
-tests
-src
-coverage
 .build
+coverage
+src
+tests
+.babelrc
+jest.config.js
+release.js
+wallaby.conf.js

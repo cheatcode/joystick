@@ -1,4 +1,4 @@
-import component from "./component";
+import _component from "./component";
 import mount from "./mount";
 import QueueArray from "./utils/queueArray";
 import api from "./api";
@@ -17,7 +17,7 @@ const joystick = {
     },
     tree: {},
   },
-  component,
+  component: _component,
   mount,
   get: api.get,
   set: api.set,
@@ -59,6 +59,7 @@ if (typeof window !== "undefined") {
   }
 }
 
+export const component = _component;
 export const get = api.get;
 export const set = api.set;
 export const accounts = _accounts;
