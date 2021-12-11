@@ -1,8 +1,8 @@
 {
   "name": "@joystick.js/ui",
   "type": "module",
-  "version": "1.0.0-beta.13",
-  "developmentVersion": "1.0.0-beta.231",
+  "version": "1.0.0-beta.16",
+  "developmentVersion": "1.0.0-beta.238",
   "description": "A JavaScript framework for building user interfaces.",
   "main": "./dist/index.js",
   "scripts": {
