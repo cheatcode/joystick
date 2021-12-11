@@ -90,6 +90,7 @@ The full-stack JavaScript framework.
       - [Adding a language file](#adding-a-language-file)
       - [Accessing translations](#accessing-translations)
     - [Handling process events](#handling-process-events)
+    -[__filename and __dirname](#__filename-and-__dirname)
 11. [Deployment](#deployment)
 
 ---
@@ -2656,6 +2657,22 @@ node
 ```
 
 The list of events in this example (and their names) represent the full list of events that you can listen for through Joystick. Of course, you can still manually tap into the Node.js `process` directly if you need access to other events, or, prefer a DIY approach to handling.
+
+## __filename and __dirname
+
+Because `@joystick.js/node` uses the `--experimental-modules` flag to enable ES Module support in Joystick, the `__filename` and `__dirname` global variables you expect to have access to in a Node.js app are unavailable. To supplement, `@joystick.js/node` includes two polyfill functions for mimicing the behavior of these variables: `__filename()` and `__dirname()`.
+
+```javascript
+import { __filename, __dirname } from '@joystick.js/node';
+
+console.log(__filename(import.meta.url));
+// Absolute path to the current file in your .joystick/build directory.
+
+console.log(__dirname(import.meta.url));
+// Absolute path to the current directory in your .joystick/build directory.
+```
+
+Here, when you call the functions, you need to pass the global `import.meta.url` value from Node which describes the current path of the file where `import.meta.url` is utilized. If you _do not_ pass `import.meta.url` to either function, it will return an empty string.
 
 ## Deployment
 
