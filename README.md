@@ -90,7 +90,7 @@ The full-stack JavaScript framework.
       - [Adding a language file](#adding-a-language-file)
       - [Accessing translations](#accessing-translations)
     - [Handling process events](#handling-process-events)
-    -[__filename and __dirname](#__filename-and-__dirname)
+    - [__filename and __dirname](#__filename-and-__dirname)
 11. [Deployment](#deployment)
 
 ---
