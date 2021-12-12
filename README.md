@@ -34,6 +34,7 @@ The full-stack JavaScript framework.
    - [joystick create](#joystick-create)
    - [joystick start](#joystick-start)
    - [joystick build](#joystick-build)
+   - [joystick update](#joystick-update)
 7. [Databases](#databases)
    - [Adding a database](#adding-a-database)
    - [Users database](#users-database)
@@ -403,6 +404,24 @@ cd ~/projects/spotify && joystick build
 This will build your application to the `.joystick/build` folder at the root of the project.
 
 **Note**: this feature is not well-tuned for production environments yet. **Use with caution and low expectations**.
+
+### joystick update
+
+### joystick build
+
+To update an existing Joystick project, from the root of the project, run:
+
+```javascript
+joystick update
+```
+
+For example, assuming your project lives at `~/projects/spotify` on your computer:
+
+```javascript
+cd ~/projects/spotify && joystick update
+```
+
+This will update `@joystick.js/node` and `@joystick.js/ui` in the project and `@joystick.js/cli` globally on your computer.
 
 ## Databases
 
