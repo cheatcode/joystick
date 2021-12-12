@@ -40,3 +40,10 @@ if (functionsCalled.includes("build")) {
     functions.build.function(args, options);
   }
 }
+if (functionsCalled.includes("update")) {
+  const args = getArgs(functions.update.args);
+  const options = getOptions(functions.update.options);
+  if (functions.update.function && typeof functions.update.function === "function") {
+    functions.update.function(args, options);
+  }
+}

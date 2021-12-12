@@ -32,7 +32,7 @@ console.log(`
   
   ${chalk.yellowBright('@joystick.js/cli')} ${chalk.magenta(`(v${packageJSON.version})`)}
   
-  ${chalk.blue('Create, start, and build your Joystick app.')}
+  ${chalk.blue('Create, start, build, and update your Joystick app.')}
   
   ${chalk.gray('https://github.com/cheatcode/joystick')}
   

@@ -1,6 +1,7 @@
 import create from './create/index.js';
 import start from './start/index.js';
 import build from './build/index.js';
+import update from './update/index.js';
 // import deploy from './deploy/index.js';
 
 const [_node, _bin, ...rawArgs] = process.argv;
@@ -59,6 +60,13 @@ export default {
     args: {},
     options: {},
     function: build,
+  },
+  update: {
+    set: !!rawArgs.includes('update'),
+    description: 'Update all Joystick packages to their latest version.',
+    args: {},
+    options: {},
+    function: update,
   },
   // deploy: {
   //   set: !!rawArgs.includes('deploy'),
