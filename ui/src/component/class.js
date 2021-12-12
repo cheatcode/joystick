@@ -12,7 +12,7 @@ import joystick from "../index";
 import { JOYSTICK_COMMENT_REGEX } from "./constants";
 import generateId from "./generateId";
 import getRenderedDOMNode from './getRenderedDOMNode';
-import validateForm from "./validateForm";
+import validateForm from "../validateForm";
 
 class Component {
   constructor(options = {}, url = {}, translations = null) {

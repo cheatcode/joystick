@@ -2,7 +2,7 @@
   "name": "@joystick.js/ui",
   "type": "module",
   "version": "1.0.0-beta.18",
-  "developmentVersion": "1.0.0-beta.244",
+  "developmentVersion": "1.0.0-beta.247",
   "description": "A JavaScript framework for building user interfaces.",
   "main": "./dist/index.js",
   "scripts": {
@@ -15,8 +15,7 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "url-pattern": "^1.0.3",
-    "validator": "^13.7.0"
+    "url-pattern": "^1.0.3"
   },
   "devDependencies": {
     "esbuild": "^0.13.9",

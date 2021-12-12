@@ -1563,8 +1563,8 @@ Currently, `component.validateForm()` offers the following validation rules:
     </tr>
     <tr>
       <td>postalCode</td>
-      <td>Boolean <code>true</code> or <code>false</code></td>
-      <td>Validates whether the field's input is a postal code (zip code).</td>
+      <td>Boolean <code>true</code> or <code>false</code> or <code>Object</code> with an <code>ISO</code> property as a <code>String</code> and <code>rule</code> property as a Boolean <code>true</code> or <code>false</code>.</td>
+      <td>Validates whether the field's input is a postal code (zip code). If defined as an object, regex will be set to the postal code pattern for the specified <a href="https://gist.github.com/jamesbar2/1c677c22df8f21e869cca7e439fc3f5b">ISO code</a>.</td>
     </tr>
     <tr>
       <td>required</td>
@@ -1593,8 +1593,8 @@ Currently, `component.validateForm()` offers the following validation rules:
     </tr>
     <tr>
       <td>vat</td>
-      <td>Boolean <code>true</code> or <code>false</code></td>
-      <td>Validates whether the field's input is a valid VAT code.</td>
+      <td>Boolean <code>true</code> or <code>false</code> or <code>Object</code> with an <code>ISO</code> property as a <code>String</code> and <code>rule</code> property as a Boolean <code>true</code> or <code>false</code>.</td>
+      <td>Validates whether the field's input is a valid VAT code. If defined as an object, regex will be set to the postal code pattern for the specified <a href="https://gist.github.com/marcinlerka/630cc05d11bb10c5f1904506ff92abcd">ISO code</a>.</td>
     </tr>
   </tbody>
 </table>

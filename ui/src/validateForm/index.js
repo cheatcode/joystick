@@ -25,8 +25,20 @@ class ValidateForm {
     ];
 
     this.defaultValidationErrors = {
-      required: "This field is required.",
-      email: "Must be a valid email.",
+      required: () => "This field is required.",
+      email: () => "Must be a valid email.",
+      creditCard: () => "Must be a valid credit card number.",
+      equals: (rule) => `Value must equal ${rule}.`,
+      matches: (rule) => `Field must match ${rule}.`,
+      maxLength: (rule) => `Field value can be no greater than ${rule}.`,
+      minLength: (rule) => `Field value can be no less than ${rule}.`,
+      phone: () => `Field value must be a valid telephone number.`,
+      postalCode: () => `Field value must be a valid postal code.`,
+      semVer: () => `Field value must be a valid semantic version.`,
+      slug: () => `Field value must be a valid URL slug.`,
+      strongPassword: () => `Field value must be a valid password.`,
+      url: () => `Field value must be a valid URL.`,
+      vat: () => `Field value must be a valid VAT code.`,
     };
 
     if (!form) {
@@ -160,7 +172,7 @@ class ValidateForm {
         this.markValidationAsInvalid(field, validation.name);
         this.renderError(
           field.element,
-          errorMessage || this.defaultValidationErrors[validation.name]
+          errorMessage || this.defaultValidationErrors[validation.name](validation.rule, value)
         );
       } else {
         this.markValidationAsValid(field, validation.name);
@@ -204,7 +216,7 @@ class ValidateForm {
     const validator = validators[validation.name];
 
     if (validator) {
-      return validator(validation.rule, value, isChecked);
+      return validator(validation.rule, value, { isChecked });
     }
   }
 
