@@ -407,8 +407,6 @@ This will build your application to the `.joystick/build` folder at the root of 
 
 ### joystick update
 
-### joystick build
-
 To update an existing Joystick project, from the root of the project, run:
 
 ```javascript
