@@ -1,26 +1,36 @@
+const getHTTPMethod = (endpoint = null) => {
+ return { authenticated: 'GET' }[endpoint] || 'POST';
+};
+
+const getFormattedEndpoint = (endpoint = '') => {
+  return {
+    authenticated: "authenticated",
+    signup: "signup",
+    login: "login",
+    logout: "logout",
+    recoverPassword: "recover-password",
+    resetPassword: "reset-password",
+  }[endpoint];
+};
+
 export default (endpoint = "", endpointOptions = {}) => {
   if (fetch) {
     return new Promise((resolve, reject) => {
-      const formattedEndpoint = {
-        signup: "signup",
-        login: "login",
-        logout: "logout",
-        recoverPassword: "recover-password",
-        resetPassword: "reset-password",
-      }[endpoint];
+      const httpMethod = getHTTPMethod(endpoint);
+      const formattedEndpoint = getFormattedEndpoint(endpoint);
 
       return fetch(
         `${window.location.origin}/api/_accounts/${formattedEndpoint}`,
         {
-          method: "POST",
+          method: httpMethod,
           mode: "cors",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({
+          body: httpMethod === 'POST' ? JSON.stringify({
             ...endpointOptions,
             origin: window?.location?.origin,
-          }),
+          }) : null,
           credentials: "include",
         }
       )

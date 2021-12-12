@@ -44,6 +44,7 @@ The full-stack JavaScript framework.
    - [accounts.signup](#accountssignup)
    - [accounts.login](#accountslogin)
    - [accounts.logout](#accountslogout)
+   - [accounts.authenticated](#accountsauthenticated)
    - [accounts.recoverPassword](#accountsrecoverpassword)
    - [accounts.resetPassword](#accountsresetpassword)
 9. [@joystick.js/ui](#joystickjsui)
@@ -523,7 +524,7 @@ When you start your app with `joystick start`, Joystick will test this `connecti
 
 Joystick includes a basic email address/password accounts system that you can use to create users in your app.
 
-To facilitate in the management of accounts `@joystick.js/ui` exports an object `accounts` that includes a handful of methods for managing users: `accounts.signup`, `accounts.login`, `accounts.logout`, `accounts.recoverPassword`, and `accounts.resetPassword`.
+To facilitate in the management of accounts `@joystick.js/ui` exports an object `accounts` that includes a handful of methods for managing users: `accounts.signup`, `accounts.login`, `accounts.logout`, `accounts.authenticated`, `accounts.recoverPassword`, and `accounts.resetPassword`.
 
 ### accounts.signup
 
@@ -718,6 +719,49 @@ export default Navigation;
 ```
 
 Once called, Joystick will unset the `joystickLoginToken` and `joystickLoginTokenExpiresAt` in the user's cookies.
+
+### accounts.authenticated
+
+If you'd like to check the authenicated status of a user, call the `accounts.authenticated()` function.
+
+```javascript
+import ui, { accounts } from "@joystick.js/ui";
+
+const Navigation = ui.component({
+  state: {
+    authenticated: false,
+  },
+  lifecycle: {
+    onMount: async (component) => {
+      const authenticated = await accounts.authenticated();
+      component.setState({ authenticated });
+    },
+  },
+  render: ({ state }) => {
+    return `
+      <nav>
+        ${state.authenticated ? `
+          <ul>
+            <li><a href="/dashboard">Dashboard</a></li>
+            <li><a href="/documents">Documents</a></li>
+            <li><a href="/settings">Settings</a></li>
+            <li class="logout">Logout</li>
+          </ul>
+        ` : `
+          <ul>
+            <li><a href="/login">Login</a></li>
+            <li><a href="/signup">Signup</a></li>
+          </ul>
+        `}
+      </nav>
+    `;
+  },
+});
+
+export default Navigation;
+```
+
+Once called, `accounts.authenticated()` will return a `true` or `false` value indicating the user's authentication status.
 
 ### accounts.recoverPassword
 
