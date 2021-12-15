@@ -1,1 +1,1 @@
-var p=(e={})=>Object.entries(e).map(([t,r])=>{let[n,o]=t.split(" ");return{type:n.toLowerCase(),selector:o,handler:r}});export{p as default};
+var s=(e={})=>Object.entries(e).map(([t,r])=>{let[o,...n]=t.split(" ");return{type:o.toLowerCase(),selector:n.join(" "),handler:r}});export{s as default};
