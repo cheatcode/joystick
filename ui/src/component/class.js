@@ -172,25 +172,29 @@ class Component {
     events.forEach((event) => {
       joystickInstance._internal.eventListeners.queue.array.push({
         callback: () => {
-          const element = document.querySelector(
-            `[js-c="${this.id}"] ${event.selector}`
-          );
+          const elements = [
+            ...document.querySelectorAll(
+              `[js-c="${this.id}"] ${event.selector}`
+            )
+          ];
 
-          if (element) {
-            // NOTE: Pass this.id because we need a way to uniquely identify listeners
-            // in joystick._internal.eventListeners.attached when removing listeners.
-            addEventListener({
-              joystickInstance,
-              id: this.id,
-              parentId: parent?.id,
-              element,
-              eventType: event.type,
-              eventListener: function listener(DOMEvent) {
-                Object.defineProperty(DOMEvent, "target", {
-                  value: DOMEvent.composedPath()[0],
-                });
-                event.handler(DOMEvent, component);
-              },
+          if (elements && elements.length > 0) {
+            elements.forEach((element) => {
+              // NOTE: Pass this.id because we need a way to uniquely identify listeners
+              // in joystick._internal.eventListeners.attached when removing listeners.
+              addEventListener({
+                joystickInstance,
+                id: this.id,
+                parentId: parent?.id,
+                element,
+                eventType: event.type,
+                eventListener: function listener(DOMEvent) {
+                  Object.defineProperty(DOMEvent, "target", {
+                    value: DOMEvent.composedPath()[0],
+                  });
+                  event.handler(DOMEvent, component);
+                },
+              });
             });
           }
         },
