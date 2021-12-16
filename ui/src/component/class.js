@@ -240,7 +240,7 @@ class Component {
         document.head.removeChild(existingStyleForComponent);
       }
 
-      if (!existingStyleForHash) {
+      if (!existingStyleForComponent || !existingStyleForHash) {
         const style = document.createElement("style");
 
         style.innerHTML = this.handlePrefixCSS(this.options.css, this.id);
@@ -324,6 +324,7 @@ class Component {
   };
 
   render(options = {}) {
+    console.log('CALL this.render on class');
     if (options && options.mounting) {
       const updatedDOM = this.renderToDOM({ includeActual: true });
       this.dom = updatedDOM;
@@ -397,6 +398,7 @@ class Component {
     const actual = options.includeActual ? render(virtual) : null;
 
     return {
+      html,
       virtual,
       actual,
     };
