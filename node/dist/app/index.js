@@ -163,7 +163,7 @@ class App {
           password: req?.body?.password,
           metadata: req?.body?.metadata
         });
-        accounts.setAuthenticationCookie(res, {
+        accounts._setAuthenticationCookie(res, {
           token: signup?.token,
           tokenExpiresAt: signup?.tokenExpiresAt
         });
@@ -182,7 +182,7 @@ class App {
           username: req?.body?.username,
           password: req?.body?.password
         });
-        accounts.setAuthenticationCookie(res, {
+        accounts._setAuthenticationCookie(res, {
           token: login?.token,
           tokenExpiresAt: login?.tokenExpiresAt
         });
@@ -196,7 +196,7 @@ class App {
     });
     this.express.app.post("/api/_accounts/logout", async (req, res) => {
       try {
-        accounts.unsetAuthenticationCookie(res);
+        accounts._unsetAuthenticationCookie(res);
         res.status(200).send(JSON.stringify({}));
       } catch (exception) {
         console.log(exception);
@@ -225,7 +225,7 @@ class App {
           token: req?.body?.token,
           password: req?.body?.password
         });
-        accounts.setAuthenticationCookie(res, {
+        accounts._setAuthenticationCookie(res, {
           token: reset?.token,
           tokenExpiresAt: reset?.tokenExpiresAt
         });
