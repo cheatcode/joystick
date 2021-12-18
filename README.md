@@ -47,6 +47,12 @@ The full-stack JavaScript framework.
    - [accounts.authenticated](#accountsauthenticated)
    - [accounts.recoverPassword](#accountsrecoverpassword)
    - [accounts.resetPassword](#accountsresetpassword)
+   - [accounts.roles](#accountsroles)
+     - [accounts.roles.add](#accountsrolesadd)
+     - [accounts.roles.remove](#accountsrolesremove)
+     - [accounts.roles.grant](#accountsrolesgrant)
+     - [accounts.roles.revoke](#accountsrolesrevoke)
+     - [accounts.roles.userHasRole](#accountsrolesuserhasrole)
 9. [@joystick.js/ui](#joystickjsui)
     - [Writing a component](#writing-a-component)
     - [Render functions](#render-functions)
@@ -848,6 +854,157 @@ export default ResetPassword;
 ```
 
 If a reset is succesful, two HTTP-only cookies will be created in the user's browser: `joystickLoginToken` and `joystickLoginTokenExpiresAt`. Once this exists, Joystick will automatically retrieve the user from your users database and include them in every HTTP request to the server.
+
+### accounts.roles
+
+Joystick ships with a basic roles system for performing authorization checks on users in your database. All roles are stored in the `roles` collection/table in your database. Roles granted to users are stored in the `roles` array on a user's document/row in the `users` database.
+
+#### accounts.roles.add
+
+Creates a new role, adding it to the `roles` collection/table in the database (a convenience so you can see which roles you've granted across all users). You do not have to call `accounts.roles.add()` before granting a role to a user. Joystick will automatically add unrecognized roles to the `roles` collection/table when they're passed to `accounts.roles.grant()`.
+
+```javascript
+import { accounts } from '@joystick.js/node';
+
+export default {
+  adminCreateRole: {
+    input: {
+      role: {
+        type: "string",
+        required: true,
+      }
+    },
+    set: (input = {}) => {
+      return accounts.roles.add(input?.role);
+    },
+  },
+}
+```
+
+Here, we create a fictitious [setter](#setters) endpoint `adminCreateRole` which receives a role to add as an input.
+
+#### accounts.roles.remove
+
+Removes an existing role from the `roles` collection/table in the database as well as any users with that role in their `roles` array.
+
+```javascript
+import { accounts } from '@joystick.js/node';
+
+export default {
+  adminDeleteRole: {
+    input: {
+      role: {
+        type: "string",
+        required: true,
+      }
+    },
+    set: (input = {}) => {
+      return accounts.roles.remove(input?.role);
+    },
+  },
+}
+```
+
+Here, we create a fictitious [setter](#setters) endpoint `adminDeleteRole` which receives a role to remove as an input.
+
+#### accounts.roles.list
+
+Returns a list of roles in the roles collection in the database.
+
+```javascript
+import { accounts } from '@joystick.js/node';
+
+export default {
+  adminGetRoles: {
+    get: (input = {}) => {
+      return accounts.roles.list();
+    },
+  },
+}
+```
+
+Here, we create a fictitious [getter](#getters) endpoint `adminGetRoles` which retrieves a list of roles.
+
+#### accounts.roles.grant
+
+Adds a role to the `roles` array on a user in the database and to the `roles` collection/table if it doesn't already exist there.
+
+```javascript
+import { accounts } from '@joystick.js/node';
+
+export default {
+  signup: {
+    input: {
+      emailAddress: {
+        type: "string",
+        required: true,
+      },
+      password: {
+        type: "string",
+        required: true,
+      },
+      role: {
+        type: "string",
+        required: true,
+      }
+    },
+    set: async (input = {}) => {
+      const user = await accounts.signup({ emailAddress: input?.emailAddress, password: input?.password });
+      await accounts.roles.grant(user?.userId, input?.role);
+      return user;
+    },
+  },
+}
+```
+
+Here, we create a fictitious [setter](#setters) endpoint `signup` which receives an email address, password, and role for a new user, creating the user and granting them the role passed in the input.
+
+#### accounts.roles.revoke
+
+Remove a role from the `roles` array on a user in the database.
+
+```javascript
+import { accounts } from '@joystick.js/node';
+
+export default {
+  demoteManager: {
+    input: {
+      userId: {
+        type: "string",
+        required: true,
+      },
+    },
+    set: async (input = {}) => {
+      await accounts.roles.revoke(input?.userId, 'manager');
+      await accounts.roles.grant(input?.userId, 'employee');
+      return user;
+    },
+  },
+}
+```
+
+Here, we create a fictitious [setter](#setters) endpoint `demoteManager` which receives a `userId` and revokes the `manager` role and then grants the `employee` role.
+
+#### accounts.roles.userHasRole
+
+Returns true or false as to whether or not a user has a role.
+
+```javascript
+import { accounts } from '@joystick.js/node';
+
+export default {
+  adminGetRoles: {
+    authorized: (input, context) => {
+      return accounts.roles.userHasRole(context?.user?._id, 'admin');
+    },
+    get: (input = {}) => {
+      return accounts.roles.list();
+    },
+  },
+}
+```
+
+Here, we create a fictitious [getter](#getters) endpoint `adminGetRoles` which retrieves a list of roles if the logged in user—available via `context.user`—is in the admin role (the getter will only serve the request if the `authorized` function returns `true`).
 
 ## @joystick.js/ui
 
