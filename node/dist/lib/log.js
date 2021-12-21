@@ -28,9 +28,9 @@ ${rainbowRoad()}
 `);
   console.log(`${chalk.grey("---")}
 `);
-  console.log(`${chalk.white("Relevant Documentation:")}
-`);
-  console.log(`${chalk.blue(docs)}
+  console.log(`${chalk.white("Relevant Documentation:")}`);
+  console.log(`
+${chalk.blue(docs)}
 `);
   console.log(`${chalk.white("Stuck? Ask a Question:")}
 `);

@@ -1,3 +1,5 @@
+import fs from 'fs';
+import aws from 'aws-sdk';
 import initExpress from "./initExpress.js";
 import handleProcessErrors from "./handleProcessErrors";
 import registerGetters from "./registerGetters.js";
@@ -10,7 +12,10 @@ import hasLoginTokenExpired from "./accounts/hasLoginTokenExpired.js";
 import { isObject } from "../validation/lib/typeValidators.js";
 import isValidHTTPMethod from "../lib/isValidHTTPMethod.js";
 import supportedHTTPMethods from "../lib/supportedHTTPMethods.js";
+import getAPIURLComponent from './getAPIURLComponent';
+import validateUploaderOptions from "./validateUploaderOptions.js";
 import log from "../lib/log.js";
+import runUploader from './runUploader';
 
 process.setMaxListeners(0); 
 
@@ -27,6 +32,7 @@ export class App {
     this.initAccounts();
     this.initAPI(options?.api);
     this.initRoutes(options?.routes);
+    this.initUploaders(options?.uploaders);
   }
 
   async loadDatabases(callback) {
@@ -310,6 +316,41 @@ export class App {
             errors: [formatAPIError(exception, "server")],
           })
         );
+      }
+    });
+  }
+
+  initUploaders(uploaders = {}) {
+    const { app } = this.express;
+
+    Object.entries(uploaders).forEach(([uploaderName, uploaderOptions]) => {
+      const errors = validateUploaderOptions(uploaderOptions);
+
+      if (errors?.length > 0) {
+        log(errors, {
+          level: 'danger',
+          docs: 'https://github.com/cheatcode/joystick#uploaders',
+        });
+      
+        return;
+      }
+
+      if (errors?.length === 0) {
+        const formattedUploaderName = getAPIURLComponent(uploaderName);
+
+        app.post(`/api/_uploaders/${formattedUploaderName}`, async (req, res) => {
+          const uploads = await runUploader({
+            uploaderName,
+            uploaderOptions,
+            req,
+            res
+          });
+
+          res.status(200).send(JSON.stringify({
+            status: 200,
+            uploads,
+          }));
+        });
       }
     });
   }

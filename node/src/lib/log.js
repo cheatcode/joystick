@@ -19,7 +19,7 @@ export default (message = '', options = {}) => {
     warning: '❱ Warning',
     danger: '❱ Error',
   };
-  
+
   const color = options.level ? colors[options.level] : 'gray';
   const title = options.level ? titles[options.level] : 'Log';
   const docs = options.docs || 'https://github.com/cheatcode/joystick';
@@ -28,8 +28,8 @@ export default (message = '', options = {}) => {
   console.log(`${chalk[color](`${title}:`)}\n`)
   console.log(`${chalk.white(message)}\n`);
   console.log(`${chalk.grey('---')}\n`);
-  console.log(`${chalk.white('Relevant Documentation:')}\n`)
-  console.log(`${chalk.blue(docs)}\n`);
+  console.log(`${chalk.white('Relevant Documentation:')}`)
+  console.log(`\n${chalk.blue(docs)}\n`);
   console.log(`${chalk.white('Stuck? Ask a Question:')}\n`)
   console.log(`${chalk.blue('https://github.com/cheatcode/joystick/discussions')}\n`);
   

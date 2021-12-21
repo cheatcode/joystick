@@ -1,7 +1,7 @@
 {
   "name": "@joystick.js/node",
   "version": "1.0.0-beta.20",
-  "developmentVersion": "1.0.0-beta.168",
+  "developmentVersion": "1.0.0-beta.235",
   "type": "module",
   "description": "A Node.js framework for building web apps.",
   "main": "./dist/index.js",
@@ -16,6 +16,7 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "aws-sdk": "^2.1046.0",
     "bcrypt": "^5.0.1",
     "chalk": "^4.1.2",
     "compression": "^1.7.4",
