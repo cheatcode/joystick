@@ -171,6 +171,7 @@ const startApplicationProcess = () => {
     execArgv: ["--no-warnings", "--experimental-specifier-resolution=node"],
     silent: true,
     env: {
+      FORCE_COLOR: "1",
       NODE_ENV: process.env.NODE_ENV,
       PORT: process.env.PORT,
       JOYSTICK_SETTINGS: process.env.JOYSTICK_SETTINGS,
