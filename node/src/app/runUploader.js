@@ -27,7 +27,7 @@ const uploadToS3 = (uploadOptions = {}, uploaderOptions = {}, req = {}) => {
         });
         
         const s3Upload = new aws.S3.ManagedUpload({
-          partSize: 10 * 1024 * 1024,
+          partSize: 5 * 1024 * 1024,
           params: {
             Bucket: uploaderOptions?.s3?.bucket,
             Key: uploadOptions?.compiledFileName,
@@ -42,6 +42,10 @@ const uploadToS3 = (uploadOptions = {}, uploaderOptions = {}, req = {}) => {
               url: data?.Location
             });
           });
+        });
+
+        s3Upload.on('httpUploadProgress', (progress) => {
+          console.log(progress);
         });
       });
     });

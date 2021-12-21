@@ -10,6 +10,7 @@ const allowedLocalOptions = [
   "path"
 ];
 const allowedS3Options = [
+  "region",
   "accessKeyId",
   "secretAccessKey",
   "bucket",

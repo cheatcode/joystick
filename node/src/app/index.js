@@ -1,5 +1,6 @@
 import fs from 'fs';
 import aws from 'aws-sdk';
+import multer from 'multer';
 import initExpress from "./initExpress.js";
 import handleProcessErrors from "./handleProcessErrors";
 import registerGetters from "./registerGetters.js";
@@ -15,6 +16,7 @@ import supportedHTTPMethods from "../lib/supportedHTTPMethods.js";
 import getAPIURLComponent from './getAPIURLComponent';
 import validateUploaderOptions from "./validateUploaderOptions.js";
 import log from "../lib/log.js";
+import validateUploads from './validateUploads';
 import runUploader from './runUploader';
 
 process.setMaxListeners(0); 
@@ -337,19 +339,43 @@ export class App {
 
       if (errors?.length === 0) {
         const formattedUploaderName = getAPIURLComponent(uploaderName);
+        const upload = multer();
+        const multerMiddleware = upload.array('files', 12);
 
-        app.post(`/api/_uploaders/${formattedUploaderName}`, async (req, res) => {
-          const uploads = await runUploader({
-            uploaderName,
-            uploaderOptions,
-            req,
-            res
-          });
+        app.post(`/api/_uploaders/${formattedUploaderName}`, multerMiddleware, async (req, res) => {
+          validateUploads({ files: req?.files, uploaderName, uploaderOptions })
+            .then((validatedUploads = []) => {
+              console.log('VALIDATED', validatedUploads);
+              // //
+              // const uploads = await Promise.all(() => {
+              //   return runUploader({
+              //     uploaderName,
+              //     uploaderOptions,
+              //     req,
+              //     res
+              //   });
+              // });
 
-          res.status(200).send(JSON.stringify({
-            status: 200,
-            uploads,
-          }));
+              res.status(200).send(JSON.stringify({
+                status: 200,
+                upload: {
+                  id: '',
+                  fileName: '',
+                  fileSize: '',
+                  urls: {
+                    local: 'uploads/blah.png',
+                    s3: 'https://blah.aws.com/uploads/blah.png',
+                  }
+                },
+              }));
+            })
+            .catch((errors) => {
+              res.status(403).send(
+                JSON.stringify({
+                  errors,
+                })
+              );
+            });
         });
       }
     });

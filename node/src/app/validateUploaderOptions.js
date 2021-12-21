@@ -12,6 +12,7 @@ const allowedLocalOptions = [
 ];
 
 const allowedS3Options = [
+  'region',
   'accessKeyId',
   'secretAccessKey',
   'bucket',
