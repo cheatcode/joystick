@@ -43,11 +43,15 @@ const handleCheckUploads = (uploads = []) => {
 const formatUploads = (uploads = [], uploaderName = "", uploaderOptions = {}) => {
   try {
     return uploads.map((upload) => {
+      const fileExtension = upload?.mimeType?.split("/").pop();
       return {
         uploaderName,
+        providers: uploaderOptions?.providers,
+        local: uploaderOptions?.local,
+        s3: uploaderOptions?.s3,
         maxSizeInMegabytes: uploaderOptions?.maxSizeInMegabytes,
         mimeTypes: uploaderOptions?.mimeTypes,
-        fileName: upload?.originalname,
+        fileName: typeof uploaderOptions?.fileName === "function" ? uploaderOptions.fileName({ fileName: upload?.originalname, fileSize: upload?.size, fileExtension, mimeType: upload?.mimetype }) : upload?.originalname,
         fileSize: upload?.size,
         mimeType: upload?.mimetype,
         content: upload?.buffer

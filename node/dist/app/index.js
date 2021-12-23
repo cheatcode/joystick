@@ -262,19 +262,14 @@ class App {
         const upload = multer();
         const multerMiddleware = upload.array("files", 12);
         app.post(`/api/_uploaders/${formattedUploaderName}`, multerMiddleware, async (req, res) => {
-          validateUploads({ files: req?.files, uploaderName, uploaderOptions }).then((validatedUploads = []) => {
-            console.log("VALIDATED", validatedUploads);
+          validateUploads({ files: req?.files, uploaderName, uploaderOptions }).then(async (validatedUploads = []) => {
+            const uploads = await runUploader({
+              uploads: validatedUploads,
+              req
+            });
             res.status(200).send(JSON.stringify({
               status: 200,
-              upload: {
-                id: "",
-                fileName: "",
-                fileSize: "",
-                urls: {
-                  local: "uploads/blah.png",
-                  s3: "https://blah.aws.com/uploads/blah.png"
-                }
-              }
+              uploads
             }));
           }).catch((errors2) => {
             res.status(403).send(JSON.stringify({

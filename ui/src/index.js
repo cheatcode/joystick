@@ -3,6 +3,7 @@ import mount from "./mount";
 import QueueArray from "./utils/queueArray";
 import api from "./api";
 import _accounts from "./accounts";
+import _upload from './upload';
 
 const joystick = {
   _internal: {
@@ -63,5 +64,6 @@ export const component = _component;
 export const get = api.get;
 export const set = api.set;
 export const accounts = _accounts;
+export const upload = _upload;
 
 export default joystick;

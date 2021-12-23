@@ -1,0 +1,1 @@
+var l=(r="",o={})=>new Promise((a,s)=>{let t;o?.files?.length>0&&(t=new FormData,Array.from(o?.files).forEach(n=>{t.append("files",n)}));let e=new XMLHttpRequest;e.onload=()=>{console.log(e.responseText)},e.open("POST",`${window.location.origin}/api/_uploaders/${r}`),e.setRequestHeader("Content-Type","multipart/form-data"),e.send(t)});export{l as default};
