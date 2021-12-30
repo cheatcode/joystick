@@ -16,7 +16,7 @@ const handleCheckUpload = ({
         level: "danger",
         docs: "https://github.com/cheatcode/joystick#uploaders"
       });
-      errors.push(error);
+      errors.push({ message: error });
     }
     if (mimeTypes?.length > 0 && !mimeTypes.includes(mimeType)) {
       const error = `The MIME type for the file ${fileName} is not supported by the uploader ${uploaderName} (only ${mimeTypes?.join(", ")}).`;
@@ -24,7 +24,7 @@ const handleCheckUpload = ({
         level: "danger",
         docs: "https://github.com/cheatcode/joystick#uploaders"
       });
-      errors.push(error);
+      errors.push({ message: error });
     }
     return errors;
   } catch (exception) {

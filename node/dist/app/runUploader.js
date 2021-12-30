@@ -1,6 +1,6 @@
 import fs from "fs";
 import aws from "aws-sdk";
-const uploadToS3 = (upload = {}, req = {}) => {
+const uploadToS3 = (upload = {}, options = {}) => {
   try {
     return new Promise((resolve) => {
       const temporaryFilePath = `.joystick/build/_tmp/${upload?.fileName}`;
@@ -20,10 +20,21 @@ const uploadToS3 = (upload = {}, req = {}) => {
           Body: upload?.content
         }
       });
+      let uploaded = options?.progress;
+      const emitter = joystick?.emitters[options?.req?.headers["x-joystick-upload-id"]];
+      let previous = 0;
+      s3Upload.on("httpUploadProgress", (progress) => {
+        if (emitter) {
+          uploaded += progress?.loaded - previous;
+          previous = progress?.loaded;
+          const percentage = Math.round(uploaded / options?.totalFileSizeAllProviders * 100);
+          emitter.emit("progress", { provider: "s3", progress: percentage });
+        }
+      });
       s3Upload.send((_error, data) => {
         fs.unlink(temporaryFilePath, () => {
           resolve({
-            id: "clientId",
+            id: options?.req?.headers["x-joystick-upload-id"],
             provider: "s3",
             url: data?.Location
           });
@@ -34,7 +45,7 @@ const uploadToS3 = (upload = {}, req = {}) => {
     throw new Error(`[runUploader.uploadToS3] ${exception.message}`);
   }
 };
-const uploadToLocal = (upload = {}, req = {}) => {
+const uploadToLocal = (upload = {}, options = {}) => {
   try {
     return new Promise((resolve) => {
       if (upload?.local?.path) {
@@ -44,7 +55,7 @@ const uploadToLocal = (upload = {}, req = {}) => {
         const filePath = `${upload?.local?.path}/${upload?.fileName}` || `./_uploads/${upload?.fileName}`;
         fs.writeFile(filePath, upload?.content, () => {
           resolve({
-            id: "clientId",
+            id: options?.req?.headers["x-joystick-upload-id"],
             provider: "local",
             url: filePath
           });
@@ -55,15 +66,15 @@ const uploadToLocal = (upload = {}, req = {}) => {
     throw new Error(`[runUploader.uploadToLocal] ${exception.message}`);
   }
 };
-const handleUploads = (uploads = [], req = {}) => {
+const handleUploads = (options = {}) => {
   try {
-    return Promise.all(uploads.flatMap((upload) => {
+    return Promise.all(options?.uploads.flatMap((upload) => {
       const uploaders = [];
       if (upload?.providers.includes("local")) {
-        uploaders.push(uploadToLocal(upload, req));
+        uploaders.push(uploadToLocal(upload, options));
       }
       if (upload?.providers.includes("s3")) {
-        uploaders.push(uploadToS3(upload, req));
+        uploaders.push(uploadToS3(upload, options));
       }
       return uploaders;
     }));
@@ -86,7 +97,7 @@ const validateOptions = (options) => {
 const runUploader = async (options, promise = {}) => {
   try {
     validateOptions(options);
-    const completedUploads = await handleUploads(options?.uploads, options?.req);
+    const completedUploads = await handleUploads(options);
     promise.resolve(completedUploads);
   } catch (exception) {
     promise.reject(exception.message);

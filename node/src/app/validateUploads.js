@@ -22,7 +22,7 @@ const handleCheckUpload = ({
         docs: 'https://github.com/cheatcode/joystick#uploaders',
       });
 
-      errors.push(error);
+      errors.push({ message: error });
     }
 
     if (mimeTypes?.length > 0 && !mimeTypes.includes(mimeType)) {
@@ -33,7 +33,7 @@ const handleCheckUpload = ({
         docs: 'https://github.com/cheatcode/joystick#uploaders',
       });
 
-      errors.push(error);
+      errors.push({ message: error });
     }
 
     return errors;

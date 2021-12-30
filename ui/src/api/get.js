@@ -1,3 +1,5 @@
+import logRequestErrors from "../utils/logRequestErrors";
+
 export default (getterName = "", getterOptions = {}) => {
   if (fetch) {
     return new Promise((resolve, reject) => {
@@ -22,19 +24,7 @@ export default (getterName = "", getterOptions = {}) => {
           const data = await response.json();
 
           if (data && data.errors) {
-            console.log(
-              "%c❌ get request failed with the following errors:",
-              'background-color: #ffcc00; padding: 7px; font-family: "Helvetica Neue", "Helvetica", "Arial", sans-serif; font-size: 13px; line-height: 13px; color: #000;'
-            );
-
-            data.errors.forEach((error) => {
-              console.log(error.message);
-
-              if (error.stack) {
-                console.log(error.stack);
-              }
-            });
-
+            logRequestErrors('get request', data.errors);
             return reject(data);
           }
 
@@ -43,11 +33,7 @@ export default (getterName = "", getterOptions = {}) => {
           return data;
         })
         .catch((error) => {
-          console.log(
-            "%c❌ get request failed with the following network error:",
-            'background-color: #ffcc00; padding: 7px; font-family: "inherit"; font-size: 11px; line-height: 10px; color: #000;'
-          );
-          console.log(error);
+          logRequestErrors('get request', [error]);
           reject(error);
           return error;
         });

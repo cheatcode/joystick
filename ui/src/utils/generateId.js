@@ -1,4 +1,4 @@
-export default (length = "") => {
+export default (length = 16) => {
   let result = [];
   let character = [
     "0",

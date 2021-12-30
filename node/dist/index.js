@@ -13,9 +13,11 @@ const email = {
 };
 const __filename = nodeUrlPolyfills.__filename;
 const __dirname = nodeUrlPolyfills.__dirname;
+const id = generateId;
 const settings = loadSettings();
 global.joystick = {
   id: generateId,
+  emitters: {},
   settings
 };
 var src_default = {
@@ -29,5 +31,6 @@ export {
   src_default as default,
   email,
   get,
+  id,
   set
 };

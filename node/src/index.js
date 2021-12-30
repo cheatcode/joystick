@@ -14,11 +14,13 @@ export const email = {
 };
 export const __filename = nodeUrlPolyfills.__filename;
 export const __dirname = nodeUrlPolyfills.__dirname;
+export const id = generateId;
 
 const settings = loadSettings();
 
 global.joystick = {
   id: generateId,
+  emitters: {},
   settings,
 };
 

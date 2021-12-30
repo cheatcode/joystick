@@ -10,7 +10,7 @@ import diff from "./diff";
 import renderFunctions from "./renderFunctions";
 import joystick from "../index";
 import { JOYSTICK_COMMENT_REGEX } from "./constants";
-import generateId from "./generateId";
+import generateId from "../utils/generateId";
 import getRenderedDOMNode from './getRenderedDOMNode';
 import validateForm from "../validateForm";
 

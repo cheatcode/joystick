@@ -1,5 +1,8 @@
 import fs from 'fs';
 import aws from 'aws-sdk';
+import EventEmitter from 'events';
+import * as WebSocket from "ws";
+import queryString from 'query-string';
 import multer from 'multer';
 import initExpress from "./initExpress.js";
 import handleProcessErrors from "./handleProcessErrors";
@@ -18,6 +21,7 @@ import validateUploaderOptions from "./validateUploaderOptions.js";
 import log from "../lib/log.js";
 import validateUploads from './validateUploads';
 import runUploader from './runUploader';
+import generateId from '../lib/generateId.js';
 
 process.setMaxListeners(0); 
 
@@ -31,10 +35,12 @@ export class App {
   async start(options = {}) {
     this.databases = await this.loadDatabases();
     this.express = initExpress(this.onStartApp, options);
+    this.initWebsockets();
     this.initAccounts();
     this.initAPI(options?.api);
     this.initRoutes(options?.routes);
     this.initUploaders(options?.uploaders);
+    this.initFixtures(options?.fixtures);
   }
 
   async loadDatabases(callback) {
@@ -202,6 +208,60 @@ export class App {
     });
   }
 
+  initWebsockets() {
+    // TODO: Pull in user-defined websockets too.
+
+    const websocketServers = {
+      uploaders: {
+        server: new WebSocket.WebSocketServer({
+          noServer: true,
+          path: "/api/_websockets/uploaders",
+        }),
+        onConnection: (emitter = {}) => {
+          console.log('CONNECTION', emitter);
+        },
+        onMessage: (message = {}) => {
+          console.log('MESSAGE', message);
+        },
+      },
+    };
+
+    this.express.server.on("upgrade", (request, socket, head) => {
+      Object.entries(websocketServers).forEach(([serverName, websocket]) => {
+        websocket.server.on(
+          "connection",
+          function connection(websocketConnection, connectionRequest) {
+            const [_path, params] = connectionRequest?.url?.split("?");
+            const connectionParams = queryString.parse(params);
+            const emitter = new EventEmitter();
+            const emitterId = connectionParams?.id || generateId();
+
+            joystick.emitters[emitterId] = emitter;
+            
+            if (websocket?.onConnection) {
+              websocket.onConnection(joystick.emitters[emitterId]);
+            }
+
+            websocketConnection.on("message", (message) => {
+              const parsedMessage = JSON.parse(message);
+              if (websocket.onMessage) {
+                websocket.onMessage(parsedMessage);
+              }
+            });
+ 
+            emitter.on('progress', (progress = {}) => {
+              websocketConnection.send(JSON.stringify({ type: 'PROGRESS', ...progress }));
+            });
+          }
+        );
+
+        websocket.server.handleUpgrade(request, socket, head, (socket) => {
+          websocket.server.emit("connection", socket, request);
+        });
+      });
+    });
+  }
+
   initAccounts() {
     this.express.app.get("/api/_accounts/authenticated", async (req, res) => {
       const loginTokenHasExpired = await hasLoginTokenExpired(
@@ -342,10 +402,34 @@ export class App {
         const upload = multer();
         const multerMiddleware = upload.array('files', 12);
 
-        app.post(`/api/_uploaders/${formattedUploaderName}`, multerMiddleware, async (req, res) => {
+        app.post(`/api/_uploaders/${formattedUploaderName}`, (req, res, next) => {
+          if (!uploaderOptions?.providers?.includes('local')) {
+            return next();
+          }
+
+          let progress = 0;
+          const fileSize = parseInt(req.headers["content-length"], 10);
+          const totalFileSizeAllProviders = fileSize * (uploaderOptions?.providers?.length);
+          const emitter = joystick?.emitters[req?.headers['x-joystick-upload-id']];
+          
+          req.on("data", (chunk) => {
+            progress += chunk.length;
+            const percentage = Math.round((progress / totalFileSizeAllProviders) * 100);
+
+            if (emitter) {
+              emitter.emit('progress', { provider: 'local', progress: percentage });
+            }
+          });
+
+          next();
+        }, multerMiddleware, async (req, res) => {
           validateUploads({ files: req?.files, uploaderName, uploaderOptions })
             .then(async (validatedUploads = []) => {
+              const fileSize = parseInt(req.headers["content-length"], 10);
+              const totalFileSizeAllProviders = fileSize * (uploaderOptions?.providers?.length);
               const uploads = await runUploader({
+                progress: uploaderOptions?.providers?.includes('local') ? fileSize : 0,
+                totalFileSizeAllProviders,
                 uploads: validatedUploads,
                 req,
               });
@@ -365,6 +449,12 @@ export class App {
         });
       }
     });
+  }
+
+  initFixtures(fixtures = null) {
+    if (fixtures && typeof fixtures === 'function') {
+      fixtures();
+    }
   }
 }
 

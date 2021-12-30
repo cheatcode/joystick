@@ -1,7 +1,7 @@
 {
   "name": "@joystick.js/node",
   "version": "1.0.0-beta.20",
-  "developmentVersion": "1.0.0-beta.280",
+  "developmentVersion": "1.0.0-beta.323",
   "type": "module",
   "description": "A Node.js framework for building web apps.",
   "main": "./dist/index.js",
@@ -35,7 +35,9 @@
     "node-html-parser": "^5.1.0",
     "nodemailer": "^6.7.0",
     "process": "^0.11.10",
-    "serve-favicon": "^2.5.0"
+    "query-string": "^7.0.1",
+    "serve-favicon": "^2.5.0",
+    "ws": "^8.4.0"
   },
   "devDependencies": {
     "@babel/core": "^7.16.0",

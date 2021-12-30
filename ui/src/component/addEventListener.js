@@ -1,5 +1,5 @@
 import throwFrameworkError from "../utils/throwFrameworkError";
-import generateId from "./generateId";
+import generateId from "../utils/generateId";
 
 export default ({
   joystickInstance,
