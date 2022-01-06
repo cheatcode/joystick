@@ -310,9 +310,6 @@ class App {
         const upload = multer();
         const multerMiddleware = upload.array("files", 12);
         app.post(`/api/_uploaders/${formattedUploaderName}`, (req, res, next) => {
-          if (!uploaderOptions?.providers?.includes("local")) {
-            return next();
-          }
           let progress = 0;
           const fileSize = parseInt(req.headers["content-length"], 10);
           const totalFileSizeAllProviders = fileSize * uploaderOptions?.providers?.length;

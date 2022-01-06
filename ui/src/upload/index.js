@@ -15,7 +15,7 @@ export default (uploaderName = '', uploaderOptions = {}) => {
       onMessage: (message = {}) => {
         if (message?.type === 'PROGRESS' && uploaderOptions?.onProgress && lastProgress !== message?.progress) {
           lastProgress = message?.progress;
-          uploaderOptions.onProgress(message?.progress);
+          uploaderOptions.onProgress(message?.progress, message?.provider);
         }
       },
     }, () => {
@@ -35,8 +35,9 @@ export default (uploaderName = '', uploaderOptions = {}) => {
         const response = request.responseText ? JSON.parse(request.responseText) : null;
         if (response && response.errors) {
           logRequestErrors('upload', response.errors);
+          reject(response.errors);
         } else {
-          console.log(response);
+          resolve(response?.uploads);
         }
       };
       
