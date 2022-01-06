@@ -366,7 +366,6 @@ var start_default = async (args = {}, options = {}) => {
     });
     process.exit(0);
   }
-  await killPortProcess(port);
   process.title = "joystick";
   process.env.NODE_ENV = options?.environment || "development";
   process.env.PORT = options?.port ? parseInt(options?.port) : 2600;
