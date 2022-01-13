@@ -26,7 +26,8 @@ const configs = {
     plugins: [
       plugins.generateFileDependencyMap,
       plugins.bootstrapLayoutComponent,
-      plugins.bootstrapPageComponent
+      plugins.bootstrapPageComponent,
+      plugins.ssrId
     ]
   })
 };

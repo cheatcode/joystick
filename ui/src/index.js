@@ -11,11 +11,11 @@ const joystick = {
       attached: [],
       queue: new QueueArray([]),
     },
-    timers: [],
     lifecycle: {
       onBeforeMount: new QueueArray([]),
       onMount: new QueueArray([]),
     },
+    timers: [],
     tree: {},
   },
   component: _component,

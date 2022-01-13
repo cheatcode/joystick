@@ -11,6 +11,7 @@ import registerSetters from "./registerSetters.js";
 import parseDatabasesFromEnvironment from "../lib/parseDatabasesFromEnvironment.js";
 import mongodb from "./databases/mongodb/index.js";
 import accounts from "./accounts";
+import getBrowserSafeUser from "./accounts/getBrowserSafeUser.js";
 import formatAPIError from "../lib/formatAPIError";
 import hasLoginTokenExpired from "./accounts/hasLoginTokenExpired.js";
 import { isObject } from "../validation/lib/typeValidators.js";
@@ -211,6 +212,12 @@ class App {
       const loginTokenHasExpired = await hasLoginTokenExpired(res, req?.cookies?.joystickLoginToken, req?.cookies?.joystickLoginTokenExpiresAt);
       const status = !loginTokenHasExpired ? 200 : 401;
       return res.status(status).send(JSON.stringify({ status, authenticated: !loginTokenHasExpired }));
+    });
+    this.express.app.get("/api/_accounts/user", async (req, res) => {
+      const loginTokenHasExpired = await hasLoginTokenExpired(res, req?.cookies?.joystickLoginToken, req?.cookies?.joystickLoginTokenExpiresAt);
+      const status = !loginTokenHasExpired ? 200 : 401;
+      const user = getBrowserSafeUser(req?.context?.user);
+      return res.status(status).send(JSON.stringify({ status, user }));
     });
     this.express.app.post("/api/_accounts/signup", async (req, res) => {
       try {

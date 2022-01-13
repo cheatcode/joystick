@@ -4,6 +4,7 @@ import ssr from "../../ssr/index.js";
 import { isObject } from "../../validation/lib/typeValidators";
 import settings from "../../settings";
 import generateErrorPage from "../../lib/generateErrorPage.js";
+import getBrowserSafeRequest from "../getBrowserSafeRequest.js";
 const require2 = createRequire(import.meta.url);
 const getUrl = (request = {}) => {
   return {
@@ -71,14 +72,15 @@ var render_default = (req, res, next) => {
     if (layoutPath && fs.existsSync(layoutPath)) {
       props.page = Page;
     }
-    const html = ssr({
+    const html = await ssr({
       Component: Layout || Page,
       props,
       path,
       url,
       translations,
       layout: options.layout,
-      head: options.head
+      head: options.head,
+      req: getBrowserSafeRequest(req)
     });
     return res.status(200).send(html);
   };

@@ -18,7 +18,7 @@ const cleanupCSS = () => {
 };
 
 export default (Component, props = {}, target) => {
-  const component = Component(props);
+  const component = Component({ props });
 
   joystick._internal.tree = {
     id: component.id,

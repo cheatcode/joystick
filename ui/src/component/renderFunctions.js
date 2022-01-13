@@ -15,13 +15,19 @@ const renderFunctionGenerators = {
   component: function () {
     return function componentRenderFunction(Component, props, parent) {
       const joystickInstance = handleGetJoystickInstance();
-      const component = Component(props, parent.url, parent.translations);
+      const component = Component({
+        props,
+        url: parent.url,
+        translations: parent.translations,
+        api: parent.options.api,
+        req: parent.options.req,
+      });
       
       // NOTE: Re-use instance ID to avoid unnecessary re-renders in the DOM.
       if (this.renderedComponent) {
         component.id = this.renderedComponent.id;
       }
-  
+
       // NOTE: this is bound to parent component instance inside of class.js.
       component.parent = parent;
   
@@ -70,6 +76,20 @@ const renderFunctionGenerators = {
   
       // NOTE: If server-side rendering, skip dom creation and CSS attachment.
       if (component.parent && component.parent.ssrTree) {
+        if (component.options.data && parent.dataFunctions) {
+          parent.dataFunctions.push(async () => {
+            const data = await component.options.data(parent.options.api, parent.options.req);
+            component.data = data || {};
+            return {
+              ssrId: component.ssrId,
+              componentId: component.id,
+              data,
+            };
+          });
+      
+          return `{x|{"id":"${component.ssrId}"}|x}`;
+        }
+
         const html = component.renderToHTML(component.parent.ssrTree);
         return html.wrapped;
       }

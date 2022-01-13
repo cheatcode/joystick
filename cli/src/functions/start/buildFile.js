@@ -28,6 +28,7 @@ const configs = {
       plugins.generateFileDependencyMap,
       plugins.bootstrapLayoutComponent,
       plugins.bootstrapPageComponent,
+      plugins.ssrId,
     ],
   }),
 };

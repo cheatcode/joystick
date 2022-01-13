@@ -4,6 +4,7 @@ import ssr from "../../ssr/index.js";
 import { isObject } from "../../validation/lib/typeValidators";
 import settings from "../../settings";
 import generateErrorPage from "../../lib/generateErrorPage.js";
+import getBrowserSafeRequest from "../getBrowserSafeRequest.js";
 
 const require = createRequire(import.meta.url);
 
@@ -98,7 +99,7 @@ export default (req, res, next) => {
       props.page = Page;
     }
 
-    const html = ssr({
+    const html = await ssr({
       Component: Layout || Page,
       props,
       path,
@@ -106,6 +107,7 @@ export default (req, res, next) => {
       translations,
       layout: options.layout,
       head: options.head,
+      req: getBrowserSafeRequest(req),
     });
 
     return res.status(200).send(html);

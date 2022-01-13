@@ -7,7 +7,7 @@ const defaultBaseHTML = fs.readFileSync(defaultBaseHTMLPath, "utf-8");
 
 export default ({ Component, props = {} }) => {
   try {
-    const component = Component(props);
+    const component = Component({ props });
 
     // NOTE: Value passed to renderToHTML() is the initial ssrTree, which is a component
     // tree purpose-built for SSR to aid in extraction of CSS and other component info.

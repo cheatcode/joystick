@@ -62,6 +62,7 @@ The full-stack JavaScript framework.
       - [i18n() and i()](#i18n-and-i)
     - [Props](#props)
     - [State](#state)
+    - [Data](#data)
     - [Lifecycle methods](#lifecycle-methods)
     - [Methods](#methods)
     - [DOM Events](#dom-events)
@@ -1401,6 +1402,58 @@ const Books = ui.component({
 
 export default Books;
 ```
+
+### Data
+
+When rendering Joystick components via `@joystick.js/node`'s `res.render()` function, the `data` option on the component can be used to fetch data on the server from within a component.
+
+This is useful for:
+
+1. Developers that want to keep data fetching close to their components.
+1. Apps that have reusable components that need to fetch the same data over and over (e.g., a navigation component that fetches the logged in user).
+
+While this *can* be done by passing props to a component, `data` simplifies the process significantly.
+
+```javascript
+import ui from "@joystick.js/ui";
+
+const Books = ui.component({
+  data: async (api = {}, req = {}) => {
+    const books = await api.get('books', {
+      input: {
+        category: 'non-fiction',
+      },
+    });
+
+    return {
+      books,
+    };
+  },
+  render: ({ data }) => {
+    return `
+      <div class="books">
+        ${data?.books?.length > 0 ? `
+          <ul>
+            ${each(data.books, (book) => {
+              return `<li>${book}</li>`;
+            })}
+          </ul>
+        ` : ''}
+      </div>
+    `;
+  },
+});
+
+export default Books;
+```
+
+Here, we've added `data` as a function to our `Books` component. Inside of that function, as the first argument we anticipate an object `api` which gives us access to `@joystick.js/node`'s `get()` and `set()` functions and as the second argument, the inbound HTTP request as `req`.
+
+> Note: this function _will only be called when rendering the component on the server_. **The `data` option is completely ignored in the browser.** Joystick automatically hydrates components on the client with the data it retrieves on the server.
+
+Inside, we call to `api.get()` to retrieve the data we need, returning an object from the `data` function. In our `render()` function now (and anywhere the `component` instance is accessible to us), we'll have access to the data we fetched via the `data` property on the component instance.
+
+Here, we treat `data.books` just like we would `state.books` or `props.books` in our `render()`. The difference is that our data is coming from the value returned by the `data` function.
 
 ### Lifecycle methods
 

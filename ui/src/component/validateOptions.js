@@ -114,11 +114,18 @@ const allowed = {
     "props",
     "defaultProps",
     "state",
+    "data",
     "lifecycle",
     "methods",
     "events",
     "css",
     "render",
+    "url",
+    "translations",
+    "ssr",
+    "api",
+    "req",
+    "dataFunctions"
   ],
 };
 

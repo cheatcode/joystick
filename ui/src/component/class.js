@@ -15,9 +15,10 @@ import getRenderedDOMNode from './getRenderedDOMNode';
 import validateForm from "../validateForm";
 
 class Component {
-  constructor(options = {}, url = {}, translations = null) {
+  constructor(options = {}) {
     validateOptions(options);
 
+    this.ssrId = '{x|ssrId|x}';
     this.id = options.id || generateId(8);
     this.dom = {
       virtual: {},
@@ -29,6 +30,7 @@ class Component {
     this.defaultProps = options.defaultProps || {};
     this.props = options.props || {};
     this.state = {};
+    this.data = {};
     this.lifecycle = {
       onBeforeMount: () => null,
       onMount: () => null,
@@ -38,13 +40,18 @@ class Component {
     this.events = {};
     this.css = "";
     this.children = [];
-    this.translations = translations;
+    this.translations = options?.translations;
     this.validateForm = validateForm;
-
+  
     this.handleSetProps();
     this.handleAttachOptionsToInstance();
 
+    if (typeof window !== "undefined" && window.__joystick_data__ && window.__joystick_data__[this.ssrId]) {
+      this.data = window.__joystick_data__[this.ssrId];
+    }
+
     if (typeof window === "undefined") {
+      const url = options?.url || {};
       this.url = {
         ...url,
         isActive: (path) => {
@@ -59,6 +66,7 @@ class Component {
     }
 
     if (typeof window !== "undefined" && window.__joystick_url__) {
+      const url = options?.url || {};
       this.url = {
         ...window.__joystick_url__,
         isActive: (path) => {
@@ -86,6 +94,15 @@ class Component {
     }
 
     return joystick;
+  }
+
+  async handleFetchData(api = {}, req = {}) {
+    if (this.options.data && typeof this.options.data === 'function') {
+      this.data = await this.options.data(api, req);
+      console.log(this);
+    }
+
+    return Promise.resolve();
   }
 
   handleCompileProps() {
@@ -375,6 +392,7 @@ class Component {
         functions[key] = value.bind({
           ...sanitizedThis,
           ssrTree,
+          dataFunctions: this.options.dataFunctions,
           translations: renderTranslations || this.translations || {},
         });
 

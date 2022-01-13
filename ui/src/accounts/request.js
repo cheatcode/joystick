@@ -1,10 +1,14 @@
 const getHTTPMethod = (endpoint = null) => {
- return { authenticated: 'GET' }[endpoint] || 'POST';
+  return {
+    authenticated: 'GET',
+    user: 'GET',
+  }[endpoint] || 'POST';
 };
 
 const getFormattedEndpoint = (endpoint = '') => {
   return {
     authenticated: "authenticated",
+    user: "user",
     signup: "signup",
     login: "login",
     logout: "logout",

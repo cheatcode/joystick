@@ -2,6 +2,7 @@ import fs from "fs";
 import chalk from 'chalk';
 import updateFileMap from "./updateFileMap.js";
 import { JOYSTICK_UI_REGEX, EXPORT_DEFAULT_REGEX } from "../../lib/regexes.js";
+import generateId from "./generateId.js";
 
 export default {
   bootstrapLayoutComponent: {
@@ -151,5 +152,23 @@ export default {
         }
       });
     },
+  },
+  ssrId: {
+    name: "ssrId",
+    setup(build) {
+      build.onLoad({ filter: /\.js$/ }, (args) => {
+        const shouldSetId = ["ui/"].some((bootstrapTarget) => {
+          return args.path.includes(bootstrapTarget);
+        });
+
+        if (shouldSetId) {
+          const code = fs.readFileSync(args.path, "utf-8");
+          return {
+            contents: code.replace(`{x|ssrId|x}`, generateId()),
+            loader: "js",
+          };
+        }
+      });
+    }
   },
 };

@@ -2,42 +2,71 @@ import fs from "fs";
 import getCSSFromTree from "./getCSSFromTree";
 import formatCSS from "./formatCSS";
 import setHeadTagsInHTML from "./setHeadTagsInHTML";
-var ssr_default = ({
+import get from "../api/get";
+import set from "../api/set";
+import findComponentInTree from "./findComponentInTree";
+var ssr_default = async ({
   Component,
   props = {},
   path = "",
   url = {},
   translations = {},
   layout = null,
-  head = null
+  head = null,
+  req = {}
 }) => {
   try {
-    const component = Component(props, url, translations);
+    const api = {
+      get,
+      set
+    };
+    const dataFunctions = [];
+    const component = Component({
+      props,
+      url,
+      translations,
+      ssr: true,
+      api,
+      req,
+      dataFunctions
+    });
     const tree = {
       id: component.id,
       instance: component,
       children: []
     };
+    await component.handleFetchData(api, req);
     const baseHTML = fs.readFileSync(`${process.cwd()}/index.html`, "utf-8");
     const html = component.renderToHTML(tree, translations);
+    const dataFromChildComponents = await Promise.all(dataFunctions.map(async (dataFunction) => {
+      return dataFunction();
+    }));
+    const dataForClient = dataFromChildComponents.reduce((data = {}, dataFromChildComponent) => {
+      if (!data[dataFromChildComponent.ssrId]) {
+        data[dataFromChildComponent.ssrId] = dataFromChildComponent.data;
+      }
+      return data;
+    }, {});
+    dataFromChildComponents.forEach(({ componentId, ssrId }) => {
+      const componentWithData = findComponentInTree(tree, componentId);
+      const componentHTML = componentWithData.instance.renderToHTML(tree, translations);
+      html.wrapped = html.wrapped.replace(`{x|{"id":"${ssrId}"}|x}`, componentHTML.wrapped);
+    });
     const css = formatCSS(getCSSFromTree(tree));
     const baseHTMLWithReplacements = baseHTML.replace("${meta}", "").replace("${css}", css).replace("${scripts}", "").replace('<div id="app"></div>', `
         <div id="app">${html.wrapped}</div>
         <script>
           window.__joystick_ssr__ = true;
+          window.__joystick_data__ = ${JSON.stringify(dataForClient)};
           window.__joystick_ssr_props__ = ${JSON.stringify(props)};
           window.__joystick_i18n__ = ${JSON.stringify(translations)};
           window.__joystick_settings__ = ${JSON.stringify({
       global: joystick?.settings?.global,
       public: joystick?.settings?.public
     })};
-          
           window.__joystick_url__ = ${JSON.stringify(url)};
-
           window.__joystick_layout__ = ${layout ? `"/_joystick/${layout}"` : null};
-
           window.__joystick_layout_page_url__ = ${layout ? `"/_joystick/${path}"` : null};
-
           window.__joystick_layout_page__ = ${layout ? `"${path.split(".")[0]}"` : null};
         <\/script>
         <script type="module" src="/_joystick/utils/process.js"><\/script>

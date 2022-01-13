@@ -5,7 +5,7 @@ const defaultBaseHTMLPath = process.env.NODE_ENV === "test" ? `${process.cwd()}/
 const defaultBaseHTML = fs.readFileSync(defaultBaseHTMLPath, "utf-8");
 var render_default = ({ Component, props = {} }) => {
   try {
-    const component = Component(props);
+    const component = Component({ props });
     const tree = {
       id: component.id,
       instance: component,
