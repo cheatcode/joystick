@@ -112,7 +112,8 @@ class Component {
     });
 
     return props.reduce((compiledProps, propName) => {
-      compiledProps[propName] = this.props[propName] || this.defaultProps[propName] || null;
+      const propIsNotUndefinedOrNull = typeof this.props[propName] !== 'undefined' && this.props[propName] !== null;
+      compiledProps[propName] = propIsNotUndefinedOrNull ? this.props[propName] : (this.defaultProps[propName] || null);
       return compiledProps;
     }, {});
   }
