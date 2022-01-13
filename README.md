@@ -45,6 +45,7 @@ The full-stack JavaScript framework.
    - [accounts.login](#accountslogin)
    - [accounts.logout](#accountslogout)
    - [accounts.authenticated](#accountsauthenticated)
+   - [accounts.user](#accountsuser)
    - [accounts.recoverPassword](#accountsrecoverpassword)
    - [accounts.resetPassword](#accountsresetpassword)
    - [accounts.roles](#accountsroles)
@@ -531,7 +532,7 @@ When you start your app with `joystick start`, Joystick will test this `connecti
 
 Joystick includes a basic email address/password accounts system that you can use to create users in your app.
 
-To facilitate in the management of accounts `@joystick.js/ui` exports an object `accounts` that includes a handful of methods for managing users: `accounts.signup`, `accounts.login`, `accounts.logout`, `accounts.authenticated`, `accounts.recoverPassword`, and `accounts.resetPassword`.
+To facilitate in the management of accounts `@joystick.js/ui` exports an object `accounts` that includes a handful of methods for managing users: `accounts.signup`, `accounts.login`, `accounts.logout`, `accounts.authenticated`, `accounts.user`, `accounts.recoverPassword`, and `accounts.resetPassword`.
 
 ### accounts.signup
 
@@ -769,6 +770,42 @@ export default Navigation;
 ```
 
 Once called, `accounts.authenticated()` will return a `true` or `false` value indicating the user's authentication status.
+
+### accounts.user
+
+If you'd like to retrieve the currently logged in user, call the `accounts.user()` function.
+
+```javascript
+import ui, { accounts } from "@joystick.js/ui";
+
+const Navigation = ui.component({
+  state: {
+    user: null,
+  },
+  lifecycle: {
+    onMount: async (component) => {
+      const user = await accounts.user();
+      component.setState({ user });
+    },
+  },
+  render: ({ state }) => {
+    return `
+      <nav>
+        <ul>
+          <li><a href="/dashboard">Dashboard</a></li>
+          <li><a href="/documents">Documents</a></li>
+          <li><a href="/settings">Settings</a></li>
+          <li>${state?.user?.emailAddress}</li>
+        </ul>
+      </nav>
+    `;
+  },
+});
+
+export default Navigation;
+```
+
+Once called, `accounts.user()` will return a browser-safe copy of the currently logged in user as an object. This object is identical to what's in the database with known-sensitive data removed like the `password` and `sessions`.
 
 ### accounts.recoverPassword
 
