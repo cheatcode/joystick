@@ -784,7 +784,7 @@ const Navigation = ui.component({
   },
   lifecycle: {
     onMount: async (component) => {
-      const user = await accounts.authenticated();
+      const user = await accounts.user();
       component.setState({ user });
     },
   },
