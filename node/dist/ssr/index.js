@@ -78,6 +78,8 @@ var ssr_default = async ({
     if (head) {
       return setHeadTagsInHTML(baseHTMLWithReplacements, head);
     }
+    console.log(css);
+    console.log(baseHTMLWithReplacements);
     return baseHTMLWithReplacements;
   } catch (exception) {
     console.warn(exception);

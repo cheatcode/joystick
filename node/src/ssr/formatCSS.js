@@ -1,5 +1,7 @@
 export default (styles = []) => {
-  const css = styles.join("") || "";
+  // NOTE: Reverse to preserve specificity in the SSR'd CSS. Otherwise you
+  // can run into FOUC in the browser.
+  const css = styles.reverse().join("") || "";
   return `<style js-css-ssr="${Buffer.from(css.trim(), 'base64').toString().substring(
     0,
     8
