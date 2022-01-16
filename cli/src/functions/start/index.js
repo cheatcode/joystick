@@ -489,7 +489,7 @@ export default async (args = {}, options = {}) => {
     process.exit(0);
   }
 
-  // await killPortProcess(port);
+  await killPortProcess(port);
 
   process.title = 'joystick';
   process.env.NODE_ENV = options?.environment || "development";

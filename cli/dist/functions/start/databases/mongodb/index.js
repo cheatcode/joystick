@@ -36,6 +36,7 @@ const startMongoDB = async () => {
   }
   try {
     const mongodbPort = parseInt(process.env.PORT, 10) + 1;
+    await killPortProcess(mongodbPort);
     if (isWindows) {
       const currentPath = process.cwd();
       const mongodbVersions = fs.readdirSync(`C:\\Program Files\\MongoDB\\Server\\`).sort().reverse();
