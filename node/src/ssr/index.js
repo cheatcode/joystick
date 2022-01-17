@@ -78,6 +78,7 @@ export default async ({
         <script>
           window.__joystick_ssr__ = true;
           window.__joystick_data__ = ${JSON.stringify(dataForClient)};
+          window.__joystick_req__ = ${JSON.stringify(req)};
           window.__joystick_ssr_props__ = ${JSON.stringify(props)};
           window.__joystick_i18n__ = ${JSON.stringify(translations)};
           window.__joystick_settings__ = ${JSON.stringify({
