@@ -1,4 +1,5 @@
 import esbuild from "esbuild";
+import svg from 'esbuild-plugin-svg';
 import fs from 'fs';
 import plugins from "./buildPlugins.js";
 import onWarn from "./onWarn.js";
@@ -29,6 +30,7 @@ const configs = {
       plugins.bootstrapLayoutComponent,
       plugins.bootstrapPageComponent,
       plugins.ssrId,
+      svg(),
     ],
   }),
 };

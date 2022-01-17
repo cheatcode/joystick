@@ -64,6 +64,7 @@ The full-stack JavaScript framework.
     - [Props](#props)
     - [State](#state)
     - [Data](#data)
+      - [Refetching Data](#refetching-data)
     - [Lifecycle methods](#lifecycle-methods)
     - [Methods](#methods)
     - [DOM Events](#dom-events)
@@ -1491,6 +1492,55 @@ Here, we've added `data` as a function to our `Books` component. Inside of that 
 Inside, we call to `api.get()` to retrieve the data we need, returning an object from the `data` function. In our `render()` function now (and anywhere the `component` instance is accessible to us), we'll have access to the data we fetched via the `data` property on the component instance.
 
 Here, we treat `data.books` just like we would `state.books` or `props.books` in our `render()`. The difference is that our data is coming from the value returned by the `data` function.
+
+#### Refetching Data
+
+The `data` option is designed to only fetch data once on render. If you're building a dynamic app with Joystick (e.g., an internal dashboard or a social media site with live data), you can refetch data on-demand via the  `data.refetch` function:
+
+```javascript
+import ui from "@joystick.js/ui";
+
+const Books = ui.component({
+  data: async (api = {}, req = {}, input = {}) => {
+    const books = await api.get('books', {
+      input: {
+        category: 'non-fiction',
+        page: input?.page || 1,
+      },
+    });
+
+    return {
+      books,
+    };
+  },
+  events: {
+    'click .refetch': (event, component) => {
+      // NOTE: Here, we're simulating a pagination call saying "go get page 2" of
+      // the books list. The object passed here is available as the the third
+      // argument to the data function on your component when calling data.refetch.
+      component.data.refetch({ page: 2 });
+    },
+  },
+  render: ({ data }) => {
+    return `
+      <div class="books">
+        ${data?.books?.length > 0 ? `
+          <ul>
+            ${each(data.books, (book) => {
+              return `<li>${book}</li>`;
+            })}
+          </ul>
+        ` : ''}
+        <button class="refetch">Get the latest books</button>
+      </div>
+    `;
+  },
+});
+
+export default Books;
+```
+
+Here, we've added a button with the class `refetch` and event listener for that button's `click` event. When clicked, we call to `data.refetch` (here, we're pulling `data` from the component instance passed to event handlers), passing in an object of `input` that we can reference from within our `data` function (helpful for passing new input/params to get different data on the server).
 
 ### Lifecycle methods
 

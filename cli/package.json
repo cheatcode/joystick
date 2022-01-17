@@ -1,7 +1,7 @@
 {
   "name": "@joystick.js/cli",
   "version": "1.0.0-beta.22",
-  "developmentVersion": "1.0.0-beta.394",
+  "developmentVersion": "1.0.0-beta.397",
   "type": "module",
   "description": "CLI for the Joystick JavaScript framework.",
   "main": "development.js",
@@ -27,6 +27,7 @@
     "chokidar": "^3.5.2",
     "command-exists": "^1.2.9",
     "esbuild": "^0.13.9",
+    "esbuild-plugin-svg": "^0.1.0",
     "fs-extra": "^10.0.0",
     "kill-port-process": "^3.0.1",
     "mongo-uri-tool": "^1.0.1",
