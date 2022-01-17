@@ -2,7 +2,7 @@ const buildVDOM = (html = "", id = "") => {
   if (html && typeof html === "string") {
     const dom = document.createElement("div");
     dom.setAttribute("js-c", id);
-    dom.innerHTML = html; // TODO: Make this accept props.
+    dom.innerHTML = html;
     return dom;
   }
 

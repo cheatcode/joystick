@@ -13,6 +13,8 @@ import { JOYSTICK_COMMENT_REGEX } from "./constants";
 import generateId from "../utils/generateId";
 import getRenderedDOMNode from './getRenderedDOMNode';
 import validateForm from "../validateForm";
+import get from '../api/get';
+import set from '../api/set';
 
 class Component {
   constructor(options = {}) {
@@ -47,7 +49,9 @@ class Component {
     this.handleAttachOptionsToInstance();
 
     if (typeof window !== "undefined" && window.__joystick_data__ && window.__joystick_data__[this.ssrId]) {
-      this.data = window.__joystick_data__[this.ssrId];
+      const dataFromWindow = window.__joystick_data__[this.ssrId] || {};
+      const requestFromWindow = window.__joystick_req__ || {};
+      this.data = this.handleCompileData(dataFromWindow, requestFromWindow);
     }
 
     if (typeof window === "undefined") {
@@ -96,10 +100,22 @@ class Component {
     return joystick;
   }
 
-  async handleFetchData(api = {}, req = {}) {
+  handleCompileData(data = {}, requestFromWindow = {}) {
+    return {
+      ...data,
+      refetch: async (input = {}) => {
+        const data = await this.handleFetchData({ get, set }, requestFromWindow, input);
+        this.render();
+        return data;
+      },
+    };
+  }
+
+  async handleFetchData(api = {}, req = {}, input = {}) {
     if (this.options.data && typeof this.options.data === 'function') {
-      this.data = await this.options.data(api, req);
-      console.log(this);
+      const data = await this.options.data(api, req, input);
+      this.data = this.handleCompileData(data, req);
+      return this.data;
     }
 
     return Promise.resolve();
