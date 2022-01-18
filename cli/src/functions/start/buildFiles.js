@@ -30,8 +30,6 @@ const getFilePlatform = (path = "") => {
     platform = "node";
   }
 
-  console.log({ platform, path });
-
   return platform;
 };
 
