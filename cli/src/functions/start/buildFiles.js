@@ -5,15 +5,21 @@ import buildFile from "./buildFile.js";
 const getFilePlatform = (path = "") => {
   let platform = "copy";
 
-  const browserPaths = ["ui/", "lib/", "index.client.js"];
-  const nodePaths = ["api/", "index.server.js"];
+  const browserPaths = ["ui/", "lib/", "lib/browser", "index.client.js"];
+  const browserExclusions = ["lib/node"];
+  const nodePaths = ["api/", "lib/node", "index.server.js"];
+  const nodeExclusions = ["lib/browser"];
 
   const isBrowser = browserPaths.some((browserPath) => {
     return path.includes(browserPath);
+  }) && !browserExclusions.some((browserExclusionPath) => {
+    return path.includes(browserExclusionPath);
   });
 
   const isNode = nodePaths.some((nodePath) => {
     return path.includes(nodePath);
+  }) && !nodeExclusions.some((nodeExclusionPath) => {
+    return path.includes(nodeExclusionPath);
   });
 
   if (isBrowser) {
@@ -23,6 +29,8 @@ const getFilePlatform = (path = "") => {
   if (isNode) {
     platform = "node";
   }
+
+  console.log({ platform, path });
 
   return platform;
 };
