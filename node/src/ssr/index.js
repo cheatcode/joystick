@@ -5,6 +5,7 @@ import setHeadTagsInHTML from "./setHeadTagsInHTML";
 import get from '../api/get';
 import set from '../api/set';
 import findComponentInTree from "./findComponentInTree";
+import getBrowserSafeRequest from "../app/getBrowserSafeRequest";
 
 export default async ({
   Component,
@@ -17,11 +18,31 @@ export default async ({
   req = {},
 }) => {
   try {
+    // NOTE: We have to relay the original SSR req object because if/when these get
+    // and set functions are called on the server, they have no awareness of the original
+    // inbound request (it's technically a brand new request). Passing the cookie here
+    // ensures that the user making the request is "forwarded" along with those requests.
     const api = {
-      get,
-      set,
+      get: (getterName = '', getterOptions = {}) => {
+        return get(getterName, {
+          ...getterOptions,
+          headers: {
+            cookie: req?.headers?.cookie,
+          },
+        });
+      },
+      set: (setterName = '', setterOptions = {}) => {
+        return get(setterName, {
+          ...setterOptions,
+          headers: {
+            cookie: req?.headers?.cookie,
+          },
+        });
+      },
     };
 
+
+    const browserSafeRequest = getBrowserSafeRequest({ ...req });
     const dataFunctions = [];
 
     const component = Component({
@@ -30,7 +51,7 @@ export default async ({
       translations,
       ssr: true,
       api,
-      req,
+      req: browserSafeRequest,
       dataFunctions,
     });
 
@@ -42,7 +63,7 @@ export default async ({
       children: [],
     };
 
-    await component.handleFetchData(api, req);
+    await component.handleFetchData(api, browserSafeRequest);
 
     const baseHTML = fs.readFileSync(`${process.cwd()}/index.html`, "utf-8");
     const html = component.renderToHTML(tree, translations);
@@ -78,7 +99,7 @@ export default async ({
         <script>
           window.__joystick_ssr__ = true;
           window.__joystick_data__ = ${JSON.stringify(dataForClient)};
-          window.__joystick_req__ = ${JSON.stringify(req)};
+          window.__joystick_req__ = ${JSON.stringify(browserSafeRequest)};
           window.__joystick_ssr_props__ = ${JSON.stringify(props)};
           window.__joystick_i18n__ = ${JSON.stringify(translations)};
           window.__joystick_settings__ = ${JSON.stringify({

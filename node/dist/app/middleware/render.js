@@ -80,7 +80,7 @@ var render_default = (req, res, next) => {
       translations,
       layout: options.layout,
       head: options.head,
-      req: getBrowserSafeRequest(req)
+      req
     });
     return res.status(200).send(html);
   };

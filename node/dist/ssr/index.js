@@ -5,6 +5,7 @@ import setHeadTagsInHTML from "./setHeadTagsInHTML";
 import get from "../api/get";
 import set from "../api/set";
 import findComponentInTree from "./findComponentInTree";
+import getBrowserSafeRequest from "../app/getBrowserSafeRequest";
 var ssr_default = async ({
   Component,
   props = {},
@@ -17,9 +18,24 @@ var ssr_default = async ({
 }) => {
   try {
     const api = {
-      get,
-      set
+      get: (getterName = "", getterOptions = {}) => {
+        return get(getterName, {
+          ...getterOptions,
+          headers: {
+            cookie: req?.headers?.cookie
+          }
+        });
+      },
+      set: (setterName = "", setterOptions = {}) => {
+        return get(setterName, {
+          ...setterOptions,
+          headers: {
+            cookie: req?.headers?.cookie
+          }
+        });
+      }
     };
+    const browserSafeRequest = getBrowserSafeRequest({ ...req });
     const dataFunctions = [];
     const component = Component({
       props,
@@ -27,7 +43,7 @@ var ssr_default = async ({
       translations,
       ssr: true,
       api,
-      req,
+      req: browserSafeRequest,
       dataFunctions
     });
     const tree = {
@@ -35,7 +51,7 @@ var ssr_default = async ({
       instance: component,
       children: []
     };
-    await component.handleFetchData(api, req);
+    await component.handleFetchData(api, browserSafeRequest);
     const baseHTML = fs.readFileSync(`${process.cwd()}/index.html`, "utf-8");
     const html = component.renderToHTML(tree, translations);
     const dataFromChildComponents = await Promise.all(dataFunctions.map(async (dataFunction) => {
@@ -58,7 +74,7 @@ var ssr_default = async ({
         <script>
           window.__joystick_ssr__ = true;
           window.__joystick_data__ = ${JSON.stringify(dataForClient)};
-          window.__joystick_req__ = ${JSON.stringify(req)};
+          window.__joystick_req__ = ${JSON.stringify(browserSafeRequest)};
           window.__joystick_ssr_props__ = ${JSON.stringify(props)};
           window.__joystick_i18n__ = ${JSON.stringify(translations)};
           window.__joystick_settings__ = ${JSON.stringify({
