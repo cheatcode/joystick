@@ -23,7 +23,6 @@ const getFilePlatform = (path = "") => {
   if (isNode) {
     platform = "node";
   }
-  console.log({ platform, path });
   return platform;
 };
 const isNotJavaScript = (path = "") => {
