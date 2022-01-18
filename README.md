@@ -220,6 +220,8 @@ This folder contains all of the internationalization or translation files for yo
 
 This folder contains all of these miscellaneous/shared functions and data for your application. For example, a function like `lib/formatEmailAddress.js` or some generic data like `/lib/animals.json`.
 
+> Files located at the root of `/lib` are treated as browser (universal) JavaScript. If you have modules that need to be built specifically for the browser or specifically for Node.js, you can place them in the /lib/browser or /lib/node directory, respectively.
+
 ### /node_modules
 
 All of the currently installed NPM modules for the application.
