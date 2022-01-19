@@ -1,7 +1,7 @@
 {
   "name": "@joystick.js/node",
   "version": "1.0.0-beta.24",
-  "developmentVersion": "1.0.0-beta.380",
+  "developmentVersion": "1.0.0-beta.388",
   "type": "module",
   "description": "A Node.js framework for building web apps.",
   "main": "./dist/index.js",
@@ -51,6 +51,7 @@
     "jest-express": "^1.12.0",
     "jest-mock-req-res": "^1.0.2",
     "kill-port-process": "^3.0.1",
+    "node-port-check": "^2.0.1",
     "ps-node": "^0.1.6"
   }
 }

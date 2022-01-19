@@ -56,12 +56,13 @@ global.joystick = {
 };
 
 const app = (await import('../../index')).default;
+
 let instance;
 
 describe("app/accounts/roles/index.js", () => {
   beforeAll(async () => {
     process.env.PORT = 3600;
-    await startTestDatabase('mongodb');
+    // await startTestDatabase('mongodb');
   });
   
   beforeEach(async () => {
@@ -77,7 +78,7 @@ describe("app/accounts/roles/index.js", () => {
   });
 
   afterAll(async () => {
-    await stopTestDatabase();
+    // await stopTestDatabase();
   });
 
   test('roles.add adds role to roles collection in database', async () => {

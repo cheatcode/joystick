@@ -55,7 +55,6 @@ let instance;
 describe("app/accounts/roles/index.js", () => {
   beforeAll(async () => {
     process.env.PORT = 3600;
-    await startTestDatabase("mongodb");
   });
   beforeEach(async () => {
     instance = await app({});
@@ -67,7 +66,6 @@ describe("app/accounts/roles/index.js", () => {
     await killPortProcess(process.env.PORT);
   });
   afterAll(async () => {
-    await stopTestDatabase();
   });
   test("roles.add adds role to roles collection in database", async () => {
     await roles.add("admin");

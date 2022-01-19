@@ -85,7 +85,10 @@ class App {
       const isObjectBasedRoute = path && callback && typeof callback === "object";
       const isFunctionBasedRoute = path && callback && typeof callback === "function";
       const method = callback?.method?.toLowerCase();
-      const isValidMethod = method && isValidHTTPMethod(method) || false;
+      const methods = callback?.methods?.map((method2) => method2?.toLowerCase());
+      const methodsForRoute = method ? [method] : methods;
+      const invalidMethods = isObjectBasedRoute ? methodsForRoute.filter((method2) => !supportedHTTPMethods.includes(method2)) : [];
+      const isValidMethod = Array.isArray(methodsForRoute) && invalidMethods.length === 0;
       const isValidHandler = isFunctionBasedRoute && typeof callback === "function" || isObjectBasedRoute && callback && callback.handler && typeof callback.handler === "function";
       if (isFunctionBasedRoute && !isValidHandler) {
         log(`Cannot register route ${path}. When defining a route using the function-based pattern, route must be set to a function.`, {
@@ -99,8 +102,32 @@ class App {
           docs: "https://github.com/cheatcode/joystick#defining-routes-for-specific-http-methods"
         });
       }
-      if (isObjectBasedRoute && !method || isObjectBasedRoute && method && !isValidMethod) {
+      if (isObjectBasedRoute && invalidMethods.length > 0) {
+        log(`Cannot register route ${path}. When defining a route using the object-based pattern, you can only set method (single HTTP method as a string) or methods (array of HTTP methods as strings), not both.`, {
+          level: "danger",
+          docs: "https://github.com/cheatcode/joystick#defining-routes-for-specific-http-methods"
+        });
+      }
+      if (isObjectBasedRoute && method && methods) {
+        log(`Cannot register route ${path}. When defining a route using the object-based pattern, you can only set method (single HTTP method as a string) or methods (array of HTTP methods as strings), not both.`, {
+          level: "danger",
+          docs: "https://github.com/cheatcode/joystick#defining-routes-for-specific-http-methods"
+        });
+      }
+      if (isObjectBasedRoute && !method && !methods) {
+        log(`Cannot register route ${path}. When defining a route using the object-based pattern, you must pass a method (single HTTP method as a string) or methods (array of HTTP methods as strings) for the route.`, {
+          level: "danger",
+          docs: "https://github.com/cheatcode/joystick#defining-routes-for-specific-http-methods"
+        });
+      }
+      if (isObjectBasedRoute && method && !isValidMethod) {
         log(`Cannot register route ${path}. When defining a route using the object-based pattern, the method property must be set to a valid HTTP method: ${supportedHTTPMethods.join(", ")}.`, {
+          level: "danger",
+          docs: "https://github.com/cheatcode/joystick#defining-routes-for-specific-http-methods"
+        });
+      }
+      if (isObjectBasedRoute && methods && !isValidMethod) {
+        log(`Cannot register route ${path}. When defining a route using the object-based pattern, the methods property must be set to an array of valid HTTP methods: ${supportedHTTPMethods.join(", ")}.`, {
           level: "danger",
           docs: "https://github.com/cheatcode/joystick#defining-routes-for-specific-http-methods"
         });
@@ -111,30 +138,32 @@ class App {
           docs: "https://github.com/cheatcode/joystick#defining-routes-for-specific-http-methods"
         });
       }
-      if (isObjectBasedRoute && method && isValidMethod && callback && callback.handler) {
-        this.express.app[method](path, async (req, res, next) => {
-          callback.handler(Object.assign(req, {
-            context: {
-              ...req?.context || {},
-              ifLoggedIn: (redirectPath = "", callback2 = null) => {
-                if (!!req?.context?.user && redirectPath) {
-                  return res.redirect(redirectPath);
-                }
-                if (callback2) {
-                  return callback2();
-                }
-              },
-              ifNotLoggedIn: (redirectPath = "", callback2 = null) => {
-                if (!req?.context?.user && redirectPath) {
-                  return res.redirect(redirectPath);
-                }
-                if (callback2) {
-                  return callback2();
-                }
-              },
-              ...process.databases || {}
-            }
-          }), res, next);
+      if (isObjectBasedRoute && methodsForRoute && isValidMethod && callback && callback.handler) {
+        methodsForRoute.forEach((method2) => {
+          this.express.app[method2](path, async (req, res, next) => {
+            callback.handler(Object.assign(req, {
+              context: {
+                ...req?.context || {},
+                ifLoggedIn: (redirectPath = "", callback2 = null) => {
+                  if (!!req?.context?.user && redirectPath) {
+                    return res.redirect(redirectPath);
+                  }
+                  if (callback2) {
+                    return callback2();
+                  }
+                },
+                ifNotLoggedIn: (redirectPath = "", callback2 = null) => {
+                  if (!req?.context?.user && redirectPath) {
+                    return res.redirect(redirectPath);
+                  }
+                  if (callback2) {
+                    return callback2();
+                  }
+                },
+                ...process.databases || {}
+              }
+            }), res, next);
+          });
         });
       }
       if (isFunctionBasedRoute) {
