@@ -2172,7 +2172,7 @@ By default, all routes are defined as HTTP GET requests using the Express `app.g
 
 #### Defining routes for specific HTTP methods
 
-If you want to define routes in your app that use another HTTP method other than GET, your route can be defined as an object with an accompanying `method` field:
+If you want to define routes in your app that use another HTTP method other than GET, your route can be defined as an object with an accompanying `method` (single HTTP method) or `methods` (multiple HTTP methods) field:
 
 ```javascript
 import node from "@joystick.js/node";
@@ -2182,6 +2182,25 @@ node.app({
     "/newsletter": {
       method: "POST",
       handler: (req, res) => {
+        console.log(req.body.emailAddress);
+        res.send("Subscribed!");
+      },
+    },
+  },
+});
+```
+
+If you want to support more than one custom HTTP method:
+
+```javascript
+import node from "@joystick.js/node";
+
+node.app({
+  routes: {
+    "/newsletter": {
+      methods: ["POST", "PUT"],
+      handler: (req, res) => {
+        // Check req.method here to decide which code to run.
         console.log(req.body.emailAddress);
         res.send("Subscribed!");
       },
