@@ -3,6 +3,7 @@ import generateSession from "./generateSession";
 import formatErrorString from "../../lib/formatErrorString";
 import runUserQuery from "./runUserQuery";
 import { isObject } from "../../validation/lib/typeValidators";
+import getOutput from "../getOutput";
 
 const addSessionToUser = (userId = null, session = null) => {
   try {
@@ -101,7 +102,7 @@ const signup = async (options, { resolve, reject }) => {
     return resolve({
       ...session,
       userId,
-      user,
+      user: getOutput(user, options?.output),
     });
   } catch (exception) {
     reject(formatErrorString("signup", exception));

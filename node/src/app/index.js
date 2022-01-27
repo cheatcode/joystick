@@ -23,6 +23,8 @@ import log from "../lib/log.js";
 import validateUploads from './validateUploads';
 import runUploader from './runUploader';
 import generateId from '../lib/generateId.js';
+import getOutput from './getOutput.js';
+import defaultUserOutputFields from './accounts/defaultUserOutputFields.js';
 
 process.setMaxListeners(0); 
 
@@ -317,7 +319,7 @@ export class App {
       );
 
       const status = !loginTokenHasExpired ? 200 : 401;
-      const user = getBrowserSafeUser(req?.context?.user);
+      const user = getOutput(req?.context?.user, req?.body?.output || defaultUserOutputFields);
 
       return res.status(status).send(JSON.stringify({ status, user }));
     });
@@ -328,6 +330,7 @@ export class App {
           emailAddress: req?.body?.emailAddress,
           password: req?.body?.password,
           metadata: req?.body?.metadata,
+          output: req?.body?.output || defaultUserOutputFields,
         });
 
         accounts._setAuthenticationCookie(res, {
@@ -352,6 +355,7 @@ export class App {
           emailAddress: req?.body?.emailAddress,
           username: req?.body?.username,
           password: req?.body?.password,
+          output: req?.body?.output || defaultUserOutputFields,
         });
 
         accounts._setAuthenticationCookie(res, {
@@ -410,6 +414,7 @@ export class App {
         const reset = await accounts.resetPassword({
           token: req?.body?.token,
           password: req?.body?.password,
+          output: req?.body?.output || defaultUserOutputFields,
         });
 
         accounts._setAuthenticationCookie(res, {

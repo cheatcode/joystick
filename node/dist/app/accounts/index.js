@@ -6,6 +6,7 @@ import roles from "./roles";
 import getBrowserSafeUser from "./getBrowserSafeUser";
 import _setAuthenticationCookie from "./setAuthenticationCookie.js";
 import _unsetAuthenticationCookie from "./unsetAuthenticationCookie.js";
+import defaultUserOutputFields from "./defaultUserOutputFields";
 var accounts_default = {
   signup,
   login,
@@ -14,7 +15,8 @@ var accounts_default = {
   roles,
   getBrowserSafeUser,
   _setAuthenticationCookie,
-  _unsetAuthenticationCookie
+  _unsetAuthenticationCookie,
+  defaultUserOutputFields
 };
 export {
   accounts_default as default

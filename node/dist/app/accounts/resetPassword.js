@@ -1,6 +1,7 @@
 import hashString from "./hashString";
 import runUserQuery from "./runUserQuery";
 import generateSession from "./generateSession";
+import getOutput from "../getOutput";
 const removeTokenFromUser = (userId = null, token = null) => {
   try {
     return runUserQuery("removeResetToken", { userId, token });
@@ -49,7 +50,7 @@ const resetPassword = async (options, { resolve, reject }) => {
     });
     await addSessionToUser(updatedUser?._id, session);
     resolve({
-      user: updatedUser,
+      user: getOutput(updatedUser, options?.output),
       ...session
     });
   } catch (exception) {

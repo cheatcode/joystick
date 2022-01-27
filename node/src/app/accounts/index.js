@@ -6,6 +6,7 @@ import roles from "./roles";
 import getBrowserSafeUser from "./getBrowserSafeUser";
 import _setAuthenticationCookie from "./setAuthenticationCookie.js";
 import _unsetAuthenticationCookie from "./unsetAuthenticationCookie.js";
+import defaultUserOutputFields from "./defaultUserOutputFields";
 
 export default {
   signup,
@@ -16,4 +17,5 @@ export default {
   getBrowserSafeUser,
   _setAuthenticationCookie,
   _unsetAuthenticationCookie,
+  defaultUserOutputFields,
 };

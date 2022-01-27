@@ -2,6 +2,7 @@ import bcrypt from "bcrypt";
 import formatErrorString from "../../lib/formatErrorString";
 import runUserQuery from "./runUserQuery";
 import generateSession from "./generateSession";
+import getOutput from "../getOutput";
 const addSessionToUser = (userId = null, session = null) => {
   try {
     return runUserQuery("addSession", { userId, session });
@@ -34,9 +35,9 @@ const login = async (options, { resolve, reject }) => {
     const { password, sessions, ...restOfUser } = user;
     return resolve({
       ...session,
-      user: {
+      user: getOutput({
         ...restOfUser
-      }
+      }, options?.output)
     });
   } catch (error) {
     reject(formatErrorString("login", error));

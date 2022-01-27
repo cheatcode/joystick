@@ -25,6 +25,7 @@ global.joystick = {
 };
 
 export default {
+  id: generateId,
   app,
   settings,
 };

@@ -21,6 +21,7 @@ global.joystick = {
   settings
 };
 var src_default = {
+  id: generateId,
   app,
   settings
 };
