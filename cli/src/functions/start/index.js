@@ -32,6 +32,8 @@ const watchlist = [
   { path: "i18n" },
   { path: "api" },
   { path: "email" },
+  { path: "fixtures" },
+  { path: "routes" },
   { path: "index.client.js" },
   { path: "index.server.js" },
   ...filesToCopy,

@@ -7,7 +7,7 @@ const getFilePlatform = (path = "") => {
 
   const browserPaths = ["ui/", "lib/", "lib/browser", "index.client.js"];
   const browserExclusions = ["lib/node"];
-  const nodePaths = ["api/", "lib/node", "index.server.js"];
+  const nodePaths = ["api/", "routes/", "fixtures/", "lib/node", "index.server.js"];
   const nodeExclusions = ["lib/browser"];
 
   const isBrowser = browserPaths.some((browserPath) => {
