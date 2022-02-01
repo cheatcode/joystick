@@ -2,6 +2,7 @@ import create from "./create/index.js";
 import start from "./start/index.js";
 import build from "./build/index.js";
 import update from "./update/index.js";
+import deploy from "./deploy/index.js";
 const [_node, _bin, ...rawArgs] = process.argv;
 var functions_default = {
   create: {
@@ -64,6 +65,27 @@ var functions_default = {
     args: {},
     options: {},
     function: update
+  },
+  deploy: {
+    set: !!rawArgs.includes("deploy"),
+    description: "Deploy an existing Joystick app.",
+    args: {},
+    options: {
+      token: {
+        flags: {
+          "-t": {
+            set: !!rawArgs.includes("-t"),
+            value: !!rawArgs.includes("-t") && rawArgs[rawArgs.indexOf("-t") + 1]
+          },
+          "--token": {
+            set: !!rawArgs.includes("--token"),
+            value: !!rawArgs.includes("--token") && rawArgs[rawArgs.indexOf("--token") + 1]
+          }
+        },
+        description: "A deployment token from the cheatcode.co/u/deployments/tokens page."
+      }
+    },
+    function: deploy
   }
 };
 export {

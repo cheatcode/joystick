@@ -2277,6 +2277,10 @@ As part of the server-side rendering process, Joystick will automatically build 
 
 As part of Joystick's file structure, you will find a `/ui/layouts` folder. This folder should contain Joystick components that represent layouts for your app. A layout is a "wrapper" component that contains always-visible elements like a navigation bar or footer with a space to render the contents of the current page.
 
+> WARNING: Layouts should only be rendered by the res.render() function's layout option. Though they *can* be nested inside of other Joystick components (e.g., a page), this breaks Joystick's rendering model leading to unwanted bugs.
+>
+> If you need to create a reusable layout that's nestable, it's recommended that you create a component in `/ui/components` that receives a page prop and renders it via the component render function, like this: `${component(props.page, props)}`.
+
 ```javascript
 import node from "@joystick.js/node";
 

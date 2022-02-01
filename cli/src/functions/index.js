@@ -2,7 +2,7 @@ import create from './create/index.js';
 import start from './start/index.js';
 import build from './build/index.js';
 import update from './update/index.js';
-// import deploy from './deploy/index.js';
+import deploy from './deploy/index.js';
 
 const [_node, _bin, ...rawArgs] = process.argv;
 
@@ -68,31 +68,31 @@ export default {
     options: {},
     function: update,
   },
-  // deploy: {
-  //   set: !!rawArgs.includes('deploy'),
-  //   description: 'Deploy an existing Joystick app.',
-  //   args: {
-  //     domain: {
-  //       set: !!rawArgs.includes('deploy') && !!rawArgs[rawArgs.indexOf('deploy') + 1],
-  //       value: !!rawArgs.includes('deploy') && rawArgs[rawArgs.indexOf('deploy') + 1],
-  //       description: 'The domain to deploy the app to.',
-  //     },
-  //   },
-  //   options: {
-  //     token: {
-  //       flags: {
-  //         '-t': {
-  //           set: !!rawArgs.includes('-t'),
-  //           value: !!rawArgs.includes('-t') && rawArgs[rawArgs.indexOf('-t') + 1],
-  //         },
-  //         '--token': {
-  //           set: !!rawArgs.includes('--token'),
-  //           value: !!rawArgs.includes('--token') && rawArgs[rawArgs.indexOf('--token') + 1],
-  //         },
-  //       },
-  //       description: 'Your domain\'s deployment token from the cheatcode.co/apps dashboard.',
-  //     },
-  //   },
-  //   function: deploy,
-  // }
+  deploy: {
+    set: !!rawArgs.includes('deploy'),
+    description: 'Deploy an existing Joystick app.',
+    args: {
+      // domain: {
+      //   set: !!rawArgs.includes('deploy') && !!rawArgs[rawArgs.indexOf('deploy') + 1],
+      //   value: !!rawArgs.includes('deploy') && rawArgs[rawArgs.indexOf('deploy') + 1],
+      //   description: 'The domain to deploy the app to.',
+      // },
+    },
+    options: {
+      token: {
+        flags: {
+          '-t': {
+            set: !!rawArgs.includes('-t'),
+            value: !!rawArgs.includes('-t') && rawArgs[rawArgs.indexOf('-t') + 1],
+          },
+          '--token': {
+            set: !!rawArgs.includes('--token'),
+            value: !!rawArgs.includes('--token') && rawArgs[rawArgs.indexOf('--token') + 1],
+          },
+        },
+        description: 'A deployment token from the cheatcode.co/u/deployments/tokens page.',
+      },
+    },
+    function: deploy,
+  }
 };

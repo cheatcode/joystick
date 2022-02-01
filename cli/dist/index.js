@@ -47,3 +47,10 @@ if (functionsCalled.includes("update")) {
     functions.update.function(args, options);
   }
 }
+if (functionsCalled.includes("deploy")) {
+  const args = getArgs(functions.deploy.args);
+  const options = getOptions(functions.deploy.options);
+  if (functions.deploy.function && typeof functions.deploy.function === "function") {
+    functions.deploy.function(args, options);
+  }
+}

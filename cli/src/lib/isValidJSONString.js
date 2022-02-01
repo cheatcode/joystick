@@ -1,9 +1,8 @@
 export default (JSONString = "") => {
   try {
-    JSON.parse(JSONString);
+    const json = JSON.parse(JSONString);
+    return json;
   } catch (error) {
     return false;
   }
-
-  return true;
 };
