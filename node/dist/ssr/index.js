@@ -51,7 +51,7 @@ var ssr_default = async ({
       instance: component,
       children: []
     };
-    await component.handleFetchData(api, browserSafeRequest);
+    const dataFromParentComponent = await component.handleFetchData(api, browserSafeRequest);
     const baseHTML = fs.readFileSync(`${process.cwd()}/index.html`, "utf-8");
     const html = component.renderToHTML(tree, translations);
     const dataFromChildComponents = await Promise.all(dataFunctions.map(async (dataFunction) => {
@@ -73,7 +73,10 @@ var ssr_default = async ({
         <div id="app">${html.wrapped}</div>
         <script>
           window.__joystick_ssr__ = true;
-          window.__joystick_data__ = ${JSON.stringify(dataForClient)};
+          window.__joystick_data__ = ${JSON.stringify({
+      [component.ssrId]: dataFromParentComponent || {},
+      ...dataForClient || {}
+    })};
           window.__joystick_req__ = ${JSON.stringify(browserSafeRequest)};
           window.__joystick_ssr_props__ = ${JSON.stringify(props)};
           window.__joystick_i18n__ = ${JSON.stringify(translations)};
