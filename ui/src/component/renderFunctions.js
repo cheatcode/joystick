@@ -119,12 +119,16 @@ const component = function component(Component, props) {
   }
 };
 
-const each = function each(items, callback) {
-  return items
-    .map((item, itemIndex) => {
-      return callback(item, itemIndex);
-    })
-    .join("\n");
+const each = function each(items = [], callback) {
+  if (items && Array.isArray(items)) {
+    return items
+      .map((item, itemIndex) => {
+        return callback(item, itemIndex);
+      })
+      .join("\n");
+  }
+
+  return '';
 };
 
 const i18n = function i18n(key = "", replacements = {}) {
