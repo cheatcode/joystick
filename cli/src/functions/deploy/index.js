@@ -1,40 +1,75 @@
 import fs from 'fs';
-import chalk from 'chalk';
+import os from 'os';
+import inquirer from 'inquirer';
 import CLILog from '../../lib/CLILog.js';
 import writeDeploymentTokenToDisk from './writeDeploymentTokenToDisk.js';
 import isValidJSONString from '../../lib/isValidJSONString.js';
+import prompts from './prompts.js';
+import getDeployment from './getDeployment.js';
+import getMachineFingerprint from './getMachineFingerprint.js';
+import getDeploymentCosts from './getDeploymentCosts.js';
 
 export default async (args = {}, options = {}) => {
   const hasJoystickFolder = fs.existsSync('.joystick');
-
+  
   if (!hasJoystickFolder) {
     CLILog('This is not a Joystick project. A .joystick folder could not be found.', {
       level: 'danger',
       docs: 'https://github.com/cheatcode/joystick',
     });
-
+    
     process.exit(0);
   }
-
+  
   const hasDeploymentTokenFile = fs.existsSync('.deploy/token.json');
-
+  let promptToken;
+  
   if (!hasDeploymentTokenFile && !options.token) {
-    CLILog(`In order to deploy, ${chalk.yellowBright('a deployment token must be passed via the -t or --token flag when running joystick deploy, or, via the .deploy/token.json file at the root of your project')} (automatically generated as part of a previous deployment).`, {
-      level: 'danger',
-      docs: 'https://cheatcode.co/docs/deploy/deployment-tokens',
-    });
-
-    process.exit(0);
+    promptToken = await inquirer.prompt(prompts.token()).then((answers) => answers?.token);
   }
 
-  if (options.token) {
-    writeDeploymentTokenToDisk(options.token);
+  if (options.token || promptToken) {
+    writeDeploymentTokenToDisk(options.token || promptToken);
   }
 
   const deploymentTokenFile = hasDeploymentTokenFile ? isValidJSONString(fs.readFileSync('.deploy/token.json')) : null;
-  const deploymentToken = deploymentTokenFile?.deploymentToken || options.token;
+  const deploymentToken = deploymentTokenFile?.deploymentToken || options.token || promptToken;
 
-  console.log({ deploymentTokenFile, deploymentToken });
+  if (!deploymentToken) {
+    CLILog(`Deployment token not found. This is likely a bug with the CLI and not your fault. Please review the documentation at the URL below and contact business@cheatcode.co if the problem persists.`, {
+      level: 'danger',
+      docs: 'https://cheatcode.co/docs/deploy/deployment-tokens',
+    });
+    process.exit(0);
+  }
+
+  let domain = options?.domain;
+
+  if (!options?.domain) {
+    domain = await inquirer.prompt(prompts.domain()).then((answers) => answers?.domain);
+  }
+
+  const fingerprint = await getMachineFingerprint();
+  const deploymentFromServer = await getDeployment(domain, deploymentToken, fingerprint);
+
+  if (deploymentFromServer?.deployment?.status === 'undeployed') {
+    // TODO: Build app.
+    // TODO: Upload built app as a zip to user's provider of choice.
+    // TODO: Trigger server provisioning.
+    // TODO: Prompt user to run SSL provisioning against load balancers.
+    const deploymentToExecute = await inquirer.prompt(prompts.initialDeployment(deploymentFromServer?.user, deploymentToken, fingerprint));
+    const monthlyTotal = await getDeploymentCosts(deploymentToExecute);
+
+    console.log(monthlyTotal);
+
+    const confirmInitialDeployment = await inquirer.prompt(
+      prompts.confirmInitialDeployment(deploymentToExecute, monthlyTotal?.costs)
+    );
+
+    console.log({
+      confirmInitialDeployment,
+    });
+  }
 };
 
 

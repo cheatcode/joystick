@@ -1,14 +1,19 @@
 import fetch from "node-fetch";
 import chalk from "chalk";
 import domains from "./domains.js";
-import checkIfValidJSON from "./checkIfValidJSON.js";
 import CLILog from "../../lib/CLILog.js";
-var getDeployment_default = (deploymentDomain = "", deploymentToken = "", fingerprint = {}) => {
-  return fetch(`${domains?.deploy}/api/deployments/${deploymentDomain}`, {
+import checkIfValidJSON from "./checkIfValidJSON.js";
+var getInstanceSizeRegions_default = (target = "", answers = {}, deploymentToken = "", fingerprint = {}) => {
+  const url = new URL(`${domains.deploy}/api/providers/${answers?.provider}/regions`);
+  const params = new URLSearchParams({
+    size: answers[target]
+  });
+  url.search = params.toString();
+  return fetch(url, {
     method: "POST",
     headers: {
-      "x-deployment-token": deploymentToken,
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
+      "x-deployment-token": deploymentToken
     },
     body: JSON.stringify(fingerprint)
   }).then(async (response) => {
@@ -28,5 +33,5 @@ var getDeployment_default = (deploymentDomain = "", deploymentToken = "", finger
   });
 };
 export {
-  getDeployment_default as default
+  getInstanceSizeRegions_default as default
 };

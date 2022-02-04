@@ -1,7 +1,7 @@
 {
   "name": "@joystick.js/cli",
   "version": "1.0.0-beta.25",
-  "developmentVersion": "1.0.0-beta.425",
+  "developmentVersion": "1.0.0-beta.483",
   "type": "module",
   "description": "CLI for the Joystick JavaScript framework.",
   "main": "development.js",
@@ -23,6 +23,7 @@
   "dependencies": {
     "@babel/code-frame": "^7.15.8",
     "acorn": "^8.5.0",
+    "ascii-table": "^0.0.9",
     "chalk": "^4.1.2",
     "chokidar": "^3.5.2",
     "command-exists": "^1.2.9",
@@ -36,6 +37,7 @@
     "node-fetch": "^3.2.0",
     "node-watch": "^0.7.2",
     "ps-node": "^0.1.6",
+    "systeminformation": "^5.11.0",
     "ws": "^8.2.3"
   }
 }

@@ -1,23 +1,27 @@
 import fetch from "node-fetch";
-import chalk from "chalk";
 import domains from "./domains.js";
 import checkIfValidJSON from "./checkIfValidJSON.js";
 import CLILog from "../../lib/CLILog.js";
-var getDeployment_default = (deploymentDomain = "", deploymentToken = "", fingerprint = {}) => {
-  return fetch(`${domains?.deploy}/api/deployments/${deploymentDomain}`, {
+var getDeploymentCosts_default = (answers = {}) => {
+  return fetch(`${domains.deploy}/api/deployments/cost`, {
     method: "POST",
     headers: {
-      "x-deployment-token": deploymentToken,
       "Content-Type": "application/json"
     },
-    body: JSON.stringify(fingerprint)
+    body: JSON.stringify({
+      provider: answers?.provider,
+      sizes: [
+        { type: "loadBalancers", quantity: answers?.loadBalancerInstances, id: answers?.loadBalancer_size },
+        { type: "instances", quantity: answers?.appInstances, id: answers?.instance_size }
+      ]
+    })
   }).then(async (response) => {
     const text = await response.text();
     const data = checkIfValidJSON(text);
     if (data?.error) {
       CLILog(data.error, {
         level: "danger",
-        docs: "https://cheatcode.co/docs/deploy/deployment-tokens"
+        docs: "https://cheatcode.co/docs/deploy"
       });
       process.exit(0);
     }
@@ -28,5 +32,5 @@ var getDeployment_default = (deploymentDomain = "", deploymentToken = "", finger
   });
 };
 export {
-  getDeployment_default as default
+  getDeploymentCosts_default as default
 };

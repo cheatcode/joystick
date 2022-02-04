@@ -1,20 +1,21 @@
-import fetch from "node-fetch";
-import chalk from "chalk";
+import fetch from 'node-fetch';
+import chalk from 'chalk';
 import domains from "./domains.js";
-import checkIfValidJSON from "./checkIfValidJSON.js";
 import CLILog from "../../lib/CLILog.js";
+import checkIfValidJSON from './checkIfValidJSON.js';
 
-export default (deploymentDomain = '', deploymentToken = '', fingerprint = {}) => {
+export default (answers = {}, deploymentToken = '', fingerprint = {}) => {
+  console.log(`${domains.deploy}/api/providers/${answers?.provider}/sizes`);
   return fetch(
-    `${domains?.deploy}/api/deployments/${deploymentDomain}`,
+    `${domains.deploy}/api/providers/${answers?.provider}/sizes`,
     {
       method: 'POST',
       headers: {
-        'x-deployment-token': deploymentToken,
         'Content-Type': 'application/json',
-      },
+        'x-deployment-token': deploymentToken,
+      },  
       body: JSON.stringify(fingerprint)
-    },
+    }
   ).then(async (response) => {
     const text = await response.text();
     const data = checkIfValidJSON(text);

@@ -71,13 +71,7 @@ export default {
   deploy: {
     set: !!rawArgs.includes('deploy'),
     description: 'Deploy an existing Joystick app.',
-    args: {
-      // domain: {
-      //   set: !!rawArgs.includes('deploy') && !!rawArgs[rawArgs.indexOf('deploy') + 1],
-      //   value: !!rawArgs.includes('deploy') && rawArgs[rawArgs.indexOf('deploy') + 1],
-      //   description: 'The domain to deploy the app to.',
-      // },
-    },
+    args: {},
     options: {
       token: {
         flags: {
@@ -91,6 +85,19 @@ export default {
           },
         },
         description: 'A deployment token from the cheatcode.co/u/deployments/tokens page.',
+      },
+      domain: {
+        flags: {
+          '-d': {
+            set: !!rawArgs.includes('-d'),
+            value: !!rawArgs.includes('-d') && rawArgs[rawArgs.indexOf('-d') + 1],
+          },
+          '--domain': {
+            set: !!rawArgs.includes('--domain'),
+            value: !!rawArgs.includes('--domain') && rawArgs[rawArgs.indexOf('--domain') + 1],
+          },
+        },
+        description: 'The domain name you want to deploy your app to.',
       },
     },
     function: deploy,
