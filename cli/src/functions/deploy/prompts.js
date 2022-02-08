@@ -1,6 +1,7 @@
 import fetch from 'node-fetch';
 import chalk from 'chalk';
 import AsciiTable from 'ascii-table';
+import currencyFormatter from 'currency-formatter';
 import getProvidersWithConnectionStatus from './getProvidersWithConnectionStatus.js';
 import loginToCheatCode from './loginToCheatCode.js';
 import domains from './domains.js';
@@ -8,7 +9,6 @@ import getProvider from './getProvider.js';
 import getProviderInstanceSizes from './getProviderInstanceSizes.js';
 import getInstanceSizeRegions from './getInstanceSizeRegions.js';
 import providers from './providers.js';
-import getDeploymentCosts from './getDeploymentCosts.js';
 
 const table = new AsciiTable();
 
@@ -200,6 +200,8 @@ export default {
       return total;
     }, 0);
 
+    const isAbnormal = totalMonthlyCost > 100;
+
     return [
       {
         name: 'confirmation',
@@ -207,15 +209,16 @@ export default {
         prefix: '',
         message: `\n ${chalk.greenBright('>')} Run this deployment?`,
         suffix: `
-         \n${table
-            .removeBorder()
-            .addRow(chalk.blue('Provider'), `${chalk.greenBright(provider?.name)}\n\n`)
-            .addRow(chalk.blue('Load Balancers'), `${chalk.yellowBright(`(${answers?.loadBalancerInstances}x)`)} ${answers?.loadBalancer_size} ${chalk.gray(`[${answers?.loadBalancer_region}]`)} = ${chalk.greenBright(`$${loadBalancerCosts?.monthly}/mo`)}`)
-            .addRow(chalk.blue('App Instances'), `${chalk.yellowBright(`(${answers?.appInstances}x)`)} ${answers?.instance_size} ${chalk.gray(`[${answers?.instance_region}]`)} = ${chalk.greenBright(`$${instanceCosts?.monthly}/mo`)}\n\n`)
-            .addRow(chalk.magenta('Est. Total Monthly Cost'), chalk.greenBright(`$${totalMonthlyCost}/mo`))
-            .addRow(chalk.magenta('Est. Total Annual Cost'), chalk.greenBright(`$${totalAnnualCost}/yr`))
-            .toString()}
-         \n`,
+        \n${table
+          .removeBorder()
+          .addRow(chalk.blue('Provider'), `${chalk.greenBright(provider?.name)}\n\n`)
+          .addRow(chalk.blue('Load Balancers'), `${chalk.yellowBright(`(${answers?.loadBalancerInstances}x)`)} ${answers?.loadBalancer_size} ${chalk.gray(`[${answers?.loadBalancer_region}]`)} = ${chalk.greenBright(`${currencyFormatter.format(loadBalancerCosts?.monthly, { code: 'USD' })}/mo`)}`)
+          .addRow(chalk.blue('App Instances'), `${chalk.yellowBright(`(${answers?.appInstances}x)`)} ${answers?.instance_size} ${chalk.gray(`[${answers?.instance_region}]`)} = ${chalk.greenBright(`${currencyFormatter.format(instanceCosts?.monthly, { code: 'USD' })}/mo`)}\n\n`)
+          .addRow(chalk.magenta('Est. Total Monthly Cost'), chalk.greenBright(`${currencyFormatter.format(totalMonthlyCost, { code: 'USD' })}/mo`))
+          .addRow(chalk.magenta('Est. Total Annual Cost'), chalk.greenBright(`${currencyFormatter.format(totalAnnualCost, { code: 'USD' })}/yr`))
+          .toString()}
+        ${isAbnormal ? `\n\n  ${chalk.yellowBright(`!!! >>> These costs are ${chalk.magenta('high')}. Be absolutely ${chalk.magenta('CERTAIN')} you want to run this deployment. <<< !!!`)}
+        \n\n ` : '\n\n '}`,
       },
     ];
   },

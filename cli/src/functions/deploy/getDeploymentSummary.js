@@ -3,13 +3,15 @@ import domains from "./domains.js";
 import checkIfValidJSON from "./checkIfValidJSON.js";
 import CLILog from "../../lib/CLILog.js";
 
-export default (answers = {}) => {
-  return fetch(`${domains.deploy}/api/deployments/cost`, {
+export default (answers = {}, deploymentToken = '', fingerprint = '') => {
+  return fetch(`${domains.deploy}/api/deployments/summary`, {
     method: 'POST',
     headers: {
+      'x-deployment-token': deploymentToken,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
+      ...fingerprint,
       provider: answers?.provider,
       sizes: [
         { type: 'loadBalancers', quantity: answers?.loadBalancerInstances, id: answers?.loadBalancer_size },

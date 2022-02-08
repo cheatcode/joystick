@@ -5,21 +5,21 @@ class Loader {
     this.message = options.defaultMessage;
     this.frame = 0;
     this.frames = [
-      chalk.yellowBright(">>-----"),
-      chalk.yellowBright("->>----"),
-      chalk.yellowBright("-->>---"),
-      chalk.yellowBright("--->>--"),
-      chalk.yellowBright("---->>-"),
-      chalk.yellowBright("----->>"),
-      chalk.yellowBright("----<<-"),
-      chalk.yellowBright("---<<--"),
-      chalk.yellowBright("--<<---"),
-      chalk.yellowBright("-<<----"),
-      chalk.yellowBright("<<-----"),
+      chalk.yellowBright((options.padding || '') + ">>-----"),
+      chalk.yellowBright((options.padding || '') + "->>----"),
+      chalk.yellowBright((options.padding || '') + "-->>---"),
+      chalk.yellowBright((options.padding || '') + "--->>--"),
+      chalk.yellowBright((options.padding || '') + "---->>-"),
+      chalk.yellowBright((options.padding || '') + "----->>"),
+      chalk.yellowBright((options.padding || '') + "----<<-"),
+      chalk.yellowBright((options.padding || '') + "---<<--"),
+      chalk.yellowBright((options.padding || '') + "--<<---"),
+      chalk.yellowBright((options.padding || '') + "-<<----"),
+      chalk.yellowBright((options.padding || '') + "<<-----"),
     ];
     this.freezeFrames = {
-      stable: chalk.yellowBright("--->---"),
-      error: chalk.redBright("!!!"),
+      stable: chalk.yellowBright((options.padding || '') + "--->---"),
+      error: chalk.redBright((options.padding || '') + "!!!"),
     };
   }
 
