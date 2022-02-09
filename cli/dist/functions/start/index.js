@@ -275,6 +275,9 @@ const startDatabase = async (database = {}) => {
   if (database.provider && database.provider === "mongodb") {
     await startDatabaseProvider("mongodb", database);
   }
+  if (database.provider && database.provider === "postgresql") {
+    await startDatabaseProvider("postgresql", database);
+  }
   return Promise.resolve();
 };
 const validateDatabases = (databases = []) => {

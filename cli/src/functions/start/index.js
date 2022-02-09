@@ -370,6 +370,10 @@ const startDatabase = async (database = {}) => {
     await startDatabaseProvider("mongodb", database);
   }
 
+  if (database.provider && database.provider === "postgresql") {
+    await startDatabaseProvider("postgresql", database);
+  }
+
   return Promise.resolve();
 };
 
