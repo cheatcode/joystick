@@ -12,12 +12,15 @@ The full-stack JavaScript framework.
 3. [Getting Started](#getting-started)
 4. [Folder and file structure](#folder-and-file-structure)
    - [/api](#api)
+   - [/fixtures](#fixtures)
    - [/email](#email)
    - [/i18n](#i18n)
    - [/lib](#lib)
    - [/node_modules](#node_modules)
    - [/public](#public)
+   - [/private](#private)
    - [/ui](#ui)
+   - [/routes](#routes)
    - [index.client.js](#indexclientjs)
    - [index.css](#indexcss)
    - [index.html](#indexhtml)
@@ -78,7 +81,7 @@ The full-stack JavaScript framework.
     - [Middleware](#middleware)
       - [Configuring built-in middleware](#configuring-built-in-middleware)
       - [Adding custom middleware](#adding-custom-middleware)
-    - [Routes](#routes)
+    - [Routes](#node-routes)
       - [Defining routes](#defining-routes)
       - [Defining routes for specific HTTP methods](#defining-routes-for-specific-http-methods)
       - [req.context.ifLoggedIn()](#reqcontextifloggedin)
@@ -2165,7 +2168,7 @@ node.app({
 
 `middleware` should be passed as an array containing functions which expect to be called receiving the standard Express.js route arguments: `req`, `res`, and `next`. Middleware can be from a third-party package, or, a custom middleware that you implement yourself.
 
-### Routes
+<h3 id="node-routes">Routes</h3>
 
 Routes are the URLs supported by your application. In Joystick, the only routes you will need to define for your app will be on the server here as part of your `node.app()` options (i.e., Joystick does not have a separate client and server router—just one set of routes that rely on the traditional behavior of HTTP).
 
