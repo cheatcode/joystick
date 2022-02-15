@@ -73,7 +73,6 @@ const startMongoDB = async () => {
         '--dbpath',
         './.joystick/data/mongodb',
         '--quiet',
-        isWindows ? '' : '--fork'
       ].filter((command) => !!command),
     );
 

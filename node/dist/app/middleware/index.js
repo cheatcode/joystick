@@ -35,7 +35,6 @@ var middleware_default = (app, port, config = {}) => {
   app.use("/_joystick/utils/process.js", (_req, res) => {
     res.set("Content-Type", "text/javascript");
     const processPolyfill = fs.readFileSync(`${cwd}/node_modules/@joystick.js/node/dist/app/utils/process.js`, "utf-8");
-    console.log(processPolyfill);
     res.send(processPolyfill.replace("${NODE_ENV}", process.env.NODE_ENV));
   });
   app.use("/_joystick/index.client.js", express.static(".joystick/build/index.client.js", {

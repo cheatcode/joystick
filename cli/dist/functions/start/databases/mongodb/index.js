@@ -53,8 +53,7 @@ const startMongoDB = async () => {
       mongodbPort,
       "--dbpath",
       "./.joystick/data/mongodb",
-      "--quiet",
-      isWindows ? "" : "--fork"
+      "--quiet"
     ].filter((command) => !!command));
     return new Promise((resolve) => {
       databaseProcess.stdout.on("data", async (data) => {
