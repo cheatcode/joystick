@@ -6,7 +6,7 @@ import { fileURLToPath } from "url";
 import ps from "ps-node";
 import watch from "node-watch";
 import fs from "fs";
-import { killPortProcess } from 'kill-port-process';
+import { kill as killPortProcess } from 'cross-port-killer';
 import chokidar from 'chokidar';
 import Loader from "../../lib/loader.js";
 import getFilesToBuild from "./getFilesToBuild.js";

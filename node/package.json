@@ -1,7 +1,7 @@
 {
   "name": "@joystick.js/node",
   "version": "1.0.0-beta.27",
-  "developmentVersion": "1.0.0-beta.406",
+  "developmentVersion": "1.0.0-beta.427",
   "type": "module",
   "description": "A Node.js framework for building web apps.",
   "main": "./dist/index.js",
@@ -9,6 +9,7 @@
     "build": "node .build/index.js",
     "development:release": "export NODE_ENV=development && npm run build && node release.js",
     "production:release": "export NODE_ENV=production && npm run build && node release.js",
+    "win:development:release": "SET NODE_ENV=development&& npm run build && node release.js",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
     "test:watch": "node --experimental-vm-modules node_modules/jest/bin/jest.js --watch --detectOpenHandles"
   },
@@ -43,7 +44,7 @@
     "@babel/core": "^7.16.0",
     "@babel/preset-env": "^7.16.0",
     "@jest/globals": "^27.3.1",
-    "@joystick.js/ui": "^1.0.0-beta.234",
+    "@joystick.js/ui": "^1.0.0-beta.452",
     "babel-jest": "^27.3.1",
     "esbuild": "^0.13.9",
     "jest": "^27.3.1",

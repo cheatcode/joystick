@@ -10,7 +10,10 @@ import render from "./render.js";
 import generateErrorPage from "../../lib/generateErrorPage.js";
 import hasLoginTokenExpired from "../accounts/hasLoginTokenExpired.js";
 import runUserQuery from "../accounts/runUserQuery.js";
-const faviconPath = process.env.NODE_ENV === "test" ? `${process.cwd()}/src/tests/mocks/app/public/favicon.ico` : "public/favicon.ico";
+import replaceBackslashesWithForwardSlashes from "../../lib/replaceBackslashesWithForwardSlashes.js";
+import replaceFileProtocol from "../../lib/replaceFileProtocol.js";
+const cwd = replaceFileProtocol(replaceBackslashesWithForwardSlashes(process.cwd()));
+const faviconPath = process.env.NODE_ENV === "test" ? `${cwd}/src/tests/mocks/app/public/favicon.ico` : "public/favicon.ico";
 var middleware_default = (app, port, config = {}) => {
   app.use((_req, res, next) => {
     if (process.BUILD_ERROR) {
@@ -31,7 +34,8 @@ var middleware_default = (app, port, config = {}) => {
   });
   app.use("/_joystick/utils/process.js", (_req, res) => {
     res.set("Content-Type", "text/javascript");
-    const processPolyfill = fs.readFileSync(`${process.cwd()}/node_modules/@joystick.js/node/dist/app/utils/process.js`, "utf-8");
+    const processPolyfill = fs.readFileSync(`${cwd}/node_modules/@joystick.js/node/dist/app/utils/process.js`, "utf-8");
+    console.log(processPolyfill);
     res.send(processPolyfill.replace("${NODE_ENV}", process.env.NODE_ENV));
   });
   app.use("/_joystick/index.client.js", express.static(".joystick/build/index.client.js", {
@@ -42,7 +46,7 @@ var middleware_default = (app, port, config = {}) => {
   app.use("/_joystick/ui", express.static(".joystick/build/ui", { eTag: false, maxAge: "0" }));
   app.use("/_joystick/hmr/client.js", (_req, res) => {
     res.set("Content-Type", "text/javascript");
-    const hmrClient = fs.readFileSync(`${process.cwd()}/node_modules/@joystick.js/node/dist/app/middleware/hmr/client.js`, "utf-8");
+    const hmrClient = fs.readFileSync(`${cwd}/node_modules/@joystick.js/node/dist/app/middleware/hmr/client.js`, "utf-8");
     res.send(hmrClient.replace("${process.env.PORT}", parseInt(process.env.PORT, 10) + 1));
   });
   app.use(favicon(faviconPath));

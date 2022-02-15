@@ -1,12 +1,28 @@
 import fs from "fs-extra";
 import filesToCopy from "./filesToCopy.js";
 import buildFile from "./buildFile.js";
+import getPlatformSafePath from "../../lib/getPlatformSafePath.js";
 const getFilePlatform = (path = "") => {
   let platform = "copy";
-  const browserPaths = ["ui/", "lib/", "lib/browser", "index.client.js"];
-  const browserExclusions = ["lib/node"];
-  const nodePaths = ["api/", "routes/", "fixtures/", "lib/node", "index.server.js"];
-  const nodeExclusions = ["lib/browser"];
+  const browserPaths = [
+    getPlatformSafePath("ui/"),
+    getPlatformSafePath("lib/"),
+    getPlatformSafePath("lib/browser"),
+    "index.client.js"
+  ];
+  const browserExclusions = [
+    getPlatformSafePath("lib/node")
+  ];
+  const nodePaths = [
+    getPlatformSafePath("api/"),
+    getPlatformSafePath("routes/"),
+    getPlatformSafePath("fixtures/"),
+    getPlatformSafePath("lib/node"),
+    "index.server.js"
+  ];
+  const nodeExclusions = [
+    getPlatformSafePath("lib/browser")
+  ];
   const isBrowser = browserPaths.some((browserPath) => {
     return path.includes(browserPath);
   }) && !browserExclusions.some((browserExclusionPath) => {

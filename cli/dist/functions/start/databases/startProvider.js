@@ -4,12 +4,12 @@ var startProvider_default = async (provider = "", settings = {}) => {
   if (provider === "mongodb") {
     process.loader.text("Starting MongoDB...");
     const hasConnection = settings.connection && Object.keys(settings.connection).length > 0;
-    let db = null;
+    let databaseProcessId = null;
     if (hasConnection) {
       await checkMongoDBConnection(settings.connection);
     }
     if (!hasConnection) {
-      db = await mongodb(settings);
+      databaseProcessId = await mongodb(settings);
     }
     const defaultConnection = {
       hosts: [
@@ -23,7 +23,7 @@ var startProvider_default = async (provider = "", settings = {}) => {
       password: ""
     };
     const instance = {
-      pid: db,
+      pid: databaseProcessId,
       connection: hasConnection ? settings.connection : defaultConnection,
       settings
     };

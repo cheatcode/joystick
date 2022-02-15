@@ -4,7 +4,8 @@ import ssr from "../../ssr/index.js";
 import { isObject } from "../../validation/lib/typeValidators";
 import settings from "../../settings";
 import generateErrorPage from "../../lib/generateErrorPage.js";
-import getBrowserSafeRequest from "../getBrowserSafeRequest.js";
+import replaceFileProtocol from "../../lib/replaceFileProtocol.js";
+import replaceBackslashesWithForwardSlashes from "../../lib/replaceBackslashesWithForwardSlashes.js";
 const require2 = createRequire(import.meta.url);
 const getUrl = (request = {}) => {
   return {
@@ -43,7 +44,7 @@ const getTranslations = async (buildPath = "", pagePath = "", user = {}) => {
 };
 var render_default = (req, res, next) => {
   res.render = async function(path = "", options = {}) {
-    const buildPath = `${process.cwd().replace(".joystick/build", "")}/.joystick/build`;
+    const buildPath = replaceFileProtocol(replaceBackslashesWithForwardSlashes(`${process.cwd().replace(".joystick/build", "")}/.joystick/build`));
     const pagePath = `${buildPath}/${path}`;
     const layoutPath = options.layout ? `${buildPath}/${options.layout}` : null;
     if (!fs.existsSync(pagePath)) {
