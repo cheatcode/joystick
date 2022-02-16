@@ -12,12 +12,15 @@ The full-stack JavaScript framework.
 3. [Getting Started](#getting-started)
 4. [Folder and file structure](#folder-and-file-structure)
    - [/api](#api)
+   - [/fixtures](#fixtures)
    - [/email](#email)
    - [/i18n](#i18n)
    - [/lib](#lib)
    - [/node_modules](#node_modules)
    - [/public](#public)
+   - [/private](#private)
    - [/ui](#ui)
+   - [/routes](#routes)
    - [index.client.js](#indexclientjs)
    - [index.css](#indexcss)
    - [index.html](#indexhtml)
@@ -78,7 +81,7 @@ The full-stack JavaScript framework.
     - [Middleware](#middleware)
       - [Configuring built-in middleware](#configuring-built-in-middleware)
       - [Adding custom middleware](#adding-custom-middleware)
-    - [Routes](#routes)
+    - [Routes](#node-routes)
       - [Defining routes](#defining-routes)
       - [Defining routes for specific HTTP methods](#defining-routes-for-specific-http-methods)
       - [req.context.ifLoggedIn()](#reqcontextifloggedin)
@@ -172,11 +175,14 @@ The default structure for a Joystick app consists of the following:
 ```javascript
 ├── /api
 │   ├── index.js
+├── /fixtures
 ├── /email
 │   ├── base.html
 ├── /i18n
 │   ├── en-US.js
 ├── /lib
+│   ├── /browser
+│   ├── /node
 ├── /node_modules
 ├── /public
 │   ├── apple-touch-icon-152x152.png
@@ -184,10 +190,12 @@ The default structure for a Joystick app consists of the following:
 │   ├── manifest.json
 │   ├── service-worker.js
 │   ├── splash-screen-1024x1024.png
+├── /private
 ├── /ui
 │   ├── /components
 │   ├── /layouts
 │   ├── /pages
+├── /routes
 ├── index.client.js
 ├── index.css
 ├── index.html
@@ -207,6 +215,10 @@ Inside of each resource folder, there should be a `getters.js` file and a `sette
 Inside of `/api/index.js`, all of your getters and setters are imported from each resource and added to the main `getters` and `setters` objects on your schema.
 
 Your `/api/index.js` file is then imported in your `index.server.js` file and passed as the `api` property on your call to `node.app()`.
+
+### /fixtures
+
+An optional folder for storing database fixtures. Files here can be imported into `/index.server.js` and called via the `fixtures` function on the options passed to `node.app()`. 
 
 ### /email
 
@@ -230,6 +242,10 @@ All of the currently installed NPM modules for the application.
 
 Any public-facing, static assets for your application like your `favicon.ico` file or your app's logo. All files in this folder are mapped to the root `/` URL in your application (e.g., `/public/favicon.ico` would map to `http://localhost:2600/favicon.ico` in development).
 
+## /private
+
+Any private assets that you _do not_ want to expose to the public (e.g., a `.pem` file). This folder is only accessible on the server.
+
 ### /ui
 
 This folder contains all of the Joystick components for your app. Components are organized into subfolders depending on their role in your UI:
@@ -239,6 +255,10 @@ This folder contains all of the Joystick components for your app. Components are
 - `pages` - Components that are intended to be rendered by your router. A page components consists of some HTML and a composition of _other_ components (e.g., components that live in your `/ui/components` directory).
 
 Regardless of type, components should be organized into their own folders containing an `index.js` file (e.g., `ui/components/toggleSwitch/index.js` or `ui/pages/notifications/index.js`).
+
+### /routes
+
+An optional folder for storing files containing route definitions. Helpful if you're building a large application with several routes and you want to avoid defining them all together in `/index.server.js`.
 
 ### index.client.js
 
@@ -2148,7 +2168,7 @@ node.app({
 
 `middleware` should be passed as an array containing functions which expect to be called receiving the standard Express.js route arguments: `req`, `res`, and `next`. Middleware can be from a third-party package, or, a custom middleware that you implement yourself.
 
-### Routes
+<h3 id="node-routes">Routes</h3>
 
 Routes are the URLs supported by your application. In Joystick, the only routes you will need to define for your app will be on the server here as part of your `node.app()` options (i.e., Joystick does not have a separate client and server router—just one set of routes that rely on the traditional behavior of HTTP).
 

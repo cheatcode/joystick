@@ -1,7 +1,7 @@
 import { execSync } from "child_process";
 import semver from "semver";
 import { createRequire } from "module";
-import fs from 'fs';
+import fs from 'fs'
 
 const setPackageJSONVersions = (originalVersion, version) => {
   packageJSON.version = originalVersion;
@@ -24,6 +24,8 @@ const registry =
   process.env.NODE_ENV === "development"
     ? "--registry http://localhost:4873"
     : "";
+
+console.log({ env: process.env.NODE_ENV, originalVersion, version, force, registry })
 
 try {
   execSync(

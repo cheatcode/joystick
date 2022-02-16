@@ -10,10 +10,14 @@ import render from "./render.js";
 import generateErrorPage from "../../lib/generateErrorPage.js";
 import hasLoginTokenExpired from "../accounts/hasLoginTokenExpired.js";
 import runUserQuery from "../accounts/runUserQuery.js";
+import replaceBackslashesWithForwardSlashes from '../../lib/replaceBackslashesWithForwardSlashes.js';
+import replaceFileProtocol from '../../lib/replaceFileProtocol.js';
 
-const faviconPath = process.env.NODE_ENV === 'test' ? `${process.cwd()}/src/tests/mocks/app/public/favicon.ico` : 'public/favicon.ico'; 
+const cwd = replaceFileProtocol(replaceBackslashesWithForwardSlashes(process.cwd()));
+const faviconPath = process.env.NODE_ENV === 'test' ? `${cwd}/src/tests/mocks/app/public/favicon.ico` : 'public/favicon.ico'; 
 
 export default (app, port, config = {}) => {
+
   app.use((_req, res, next) => {
     if (process.BUILD_ERROR) {
       const error = process.BUILD_ERROR.paths && process.BUILD_ERROR.paths[0];
@@ -41,7 +45,7 @@ export default (app, port, config = {}) => {
     res.set("Content-Type", "text/javascript");
 
     const processPolyfill = fs.readFileSync(
-      `${process.cwd()}/node_modules/@joystick.js/node/dist/app/utils/process.js`,
+      `${cwd}/node_modules/@joystick.js/node/dist/app/utils/process.js`,
       "utf-8"
     );
 
@@ -67,7 +71,7 @@ export default (app, port, config = {}) => {
   app.use("/_joystick/hmr/client.js", (_req, res) => {
     res.set("Content-Type", "text/javascript");
     const hmrClient = fs.readFileSync(
-      `${process.cwd()}/node_modules/@joystick.js/node/dist/app/middleware/hmr/client.js`,
+      `${cwd}/node_modules/@joystick.js/node/dist/app/middleware/hmr/client.js`,
       "utf-8"
     );
     res.send(

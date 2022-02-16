@@ -1,6 +1,6 @@
 {
   "name": "@joystick.js/cli",
-  "version": "1.0.0-beta.25",
+  "version": "1.0.0-beta.29",
   "developmentVersion": "1.0.0-beta.588",
   "type": "module",
   "description": "CLI for the Joystick JavaScript framework.",
@@ -12,12 +12,14 @@
     "build": "node .build/index.js",
     "development:release": "export NODE_ENV=development && npm run build && node release.js",
     "production:release": "export NODE_ENV=production && npm run build && node release.js",
+    "win:development:release": "SET NODE_ENV=development&& npm run build && node release.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "cross-env": "^7.0.3",
     "semver": "^7.3.5"
   },
   "dependencies": {
@@ -27,18 +29,21 @@
     "chalk": "^4.1.2",
     "chokidar": "^3.5.2",
     "command-exists": "^1.2.9",
+    "cross-port-killer": "^1.4.0",
     "currency-formatter": "^1.5.9",
     "esbuild": "^0.13.9",
     "esbuild-plugin-svg": "^0.1.0",
     "fs-extra": "^10.0.0",
     "inquirer": "^8.2.0",
-    "kill-port-process": "^3.0.1",
     "mongo-uri-tool": "^1.0.1",
     "mongodb": "^4.1.3",
+    "netstats": "^0.0.6",
     "node-fetch": "^3.2.0",
     "node-watch": "^0.7.2",
     "pg": "^8.7.3",
+    "port-pid": "^0.0.7",
     "ps-node": "^0.1.6",
+    "selective-whitespace": "^1.0.4",
     "systeminformation": "^5.11.0",
     "ws": "^8.2.3"
   }
