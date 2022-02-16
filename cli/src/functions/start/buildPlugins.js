@@ -3,6 +3,7 @@ import chalk from 'chalk';
 import updateFileMap from "./updateFileMap.js";
 import { JOYSTICK_UI_REGEX, EXPORT_DEFAULT_REGEX } from "../../lib/regexes.js";
 import generateId from "./generateId.js";
+import getPlatformSafePath from '../../lib/getPlatformSafePath.js';
 
 export default {
   bootstrapLayoutComponent: {
@@ -10,12 +11,12 @@ export default {
     setup(build) {
       build.onLoad({ filter: /\.js$/ }, (args) => {
         try {
-          const shouldBootstrap = ["ui/layouts"].some((bootstrapTarget) => {
+          const shouldBootstrap = [getPlatformSafePath("ui/layouts")].some((bootstrapTarget) => {
             return args.path.includes(bootstrapTarget);
           });
   
           if (shouldBootstrap) {
-            const code = fs.readFileSync(args.path, "utf-8");
+            const code = fs.readFileSync(getPlatformSafePath(args.path), "utf-8");
             const joystickUIMatches = code.match(JOYSTICK_UI_REGEX) || [];
             const joystickUIMatch = joystickUIMatches && joystickUIMatches[0];
             const exportDefaultMatches = code.match(EXPORT_DEFAULT_REGEX) || [];
@@ -36,7 +37,7 @@ export default {
             const componentName = matchParts.pop();
   
             if (componentName) {
-              const code = fs.readFileSync(args.path, "utf-8");
+              const code = fs.readFileSync(getPlatformSafePath(args.path), "utf-8");
   
               return {
                 contents: code.replace(
@@ -75,12 +76,12 @@ export default {
     setup(build) {
       build.onLoad({ filter: /\.js$/ }, (args) => {
         try {
-          const shouldBootstrap = ["ui/pages"].some((bootstrapTarget) => {
+          const shouldBootstrap = [getPlatformSafePath("ui/pages")].some((bootstrapTarget) => {
             return args.path.includes(bootstrapTarget);
           });
   
           if (shouldBootstrap) {
-            const code = fs.readFileSync(args.path, "utf-8");
+            const code = fs.readFileSync(getPlatformSafePath(args.path), "utf-8");
             const joystickUIMatches = code.match(JOYSTICK_UI_REGEX) || [];
             const joystickUIMatch = joystickUIMatches && joystickUIMatches[0];
             const exportDefaultMatches = code.match(EXPORT_DEFAULT_REGEX) || [];
@@ -101,7 +102,7 @@ export default {
             const componentName = matchParts.pop();
   
             if (componentName) {
-              const code = fs.readFileSync(args.path, "utf-8");
+              const code = fs.readFileSync(getPlatformSafePath(args.path), "utf-8");
   
               return {
                 contents: code.replace(
@@ -140,12 +141,12 @@ export default {
             "?",
             "commonjsHelpers.js",
           ].some((excludedPath) => {
-            return args.path.includes(excludedPath);
+            return getPlatformSafePath(args.path).includes(excludedPath);
           });
 
           if (canAddToMap) {
-            const code = fs.readFileSync(args.path, "utf-8");
-            updateFileMap(args.path, code);
+            const code = fs.readFileSync(getPlatformSafePath(args.path), "utf-8");
+            updateFileMap(getPlatformSafePath(args.path), code);
           }
         } catch (exception) {
           console.warn(exception);
@@ -157,12 +158,12 @@ export default {
     name: "ssrId",
     setup(build) {
       build.onLoad({ filter: /\.js$/ }, (args) => {
-        const shouldSetId = ["ui/"].some((bootstrapTarget) => {
+        const shouldSetId = [getPlatformSafePath("ui/")].some((bootstrapTarget) => {
           return args.path.includes(bootstrapTarget);
         });
 
         if (shouldSetId) {
-          const code = fs.readFileSync(args.path, "utf-8");
+          const code = fs.readFileSync(getPlatformSafePath(args.path), "utf-8");
           return {
             contents: code.replace(`{x|ssrId|x}`, generateId()),
             loader: "js",
