@@ -6,9 +6,9 @@ import buildConnectionString from "./buildConnectionString";
 export default async (connectionFromSettings = null) => {
   const connection = connectionFromSettings || {
     hosts: [
-      { hostname: "127.0.0.1", port: parseInt(process.env.PORT, 10) + 1 },
+      { hostname: "127.0.0.1", port: parseInt(process.env.PORT, 10) + 10 },
     ],
-    database: "joystick",
+    database: "app",
   };
 
   const connectionString = buildConnectionString(connection);
