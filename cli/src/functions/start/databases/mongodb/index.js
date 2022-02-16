@@ -29,7 +29,7 @@ const checkIfMongoDBExists = () => {
   return commandExists.sync("mongod");
 };
 
-const startMongoDB = async () => {
+const startMongoDB = async (port = 2010) => {
   const mongodbExists = checkIfMongoDBExists();
 
   if (!mongodbExists) {
@@ -45,7 +45,7 @@ const startMongoDB = async () => {
   }
 
   try {
-    const mongodbPort = parseInt(process.env.PORT, 10) + 1;
+    const mongodbPort = port;
     await killPortProcess(mongodbPort);
 
     if (isWindows) {
@@ -92,4 +92,4 @@ const startMongoDB = async () => {
   }
 };
 
-export default async (options = {}) => await startMongoDB(options);
+export default async (port = 2610) => await startMongoDB(port);

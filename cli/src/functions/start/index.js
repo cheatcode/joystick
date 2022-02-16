@@ -365,13 +365,13 @@ const startWatcher = async () => {
   });
 };
 
-const startDatabase = async (database = {}) => {
+const startDatabase = async (database = {}, databasePort = 2610) => {
   if (database.provider && database.provider === "mongodb") {
-    await startDatabaseProvider("mongodb", database);
+    await startDatabaseProvider("mongodb", database, databasePort);
   }
 
   if (database.provider && database.provider === "postgresql") {
-    await startDatabaseProvider("postgresql", database);
+    await startDatabaseProvider("postgresql", database, databasePort);
   }
 
   return Promise.resolve();
@@ -422,7 +422,7 @@ const validateDatabases = (databases = []) => {
   return true;
 };
 
-const startDatabases = async () => {
+const startDatabases = async (databasePortStart = 2610) => {
   try {
     const hasSettings = !!process.env.JOYSTICK_SETTINGS;
     const settings = hasSettings && JSON.parse(process.env.JOYSTICK_SETTINGS);
@@ -430,7 +430,10 @@ const startDatabases = async () => {
 
     if (databases && Array.isArray(databases) && databases.length > 0) {
       validateDatabases(databases);
-      await Promise.all(databases.map((database) => startDatabase(database)));
+
+      // NOTE: Increment each database port using index in the databases array from settings.
+      await Promise.all(databases.map((database, index) => startDatabase(database, databasePortStart + index)));
+
       return Promise.resolve();
     }
 
@@ -485,6 +488,10 @@ export default async (args = {}, options = {}) => {
   process.loader = new Loader({ defaultMessage: "Starting app..." });
 
   const port = options?.port ? parseInt(options?.port) : 2600;
+  
+  // NOTE: Give databases their own port range to avoid collisions.
+  const databasePortStart = port + 10;
+
   const isJoystickProject = checkIfJoystickProject();
 
   if (!isJoystickProject) {
@@ -502,7 +509,7 @@ export default async (args = {}, options = {}) => {
   process.env.PORT = options?.port ? parseInt(options?.port) : 2600;
 
   await loadSettings();
-  await startDatabases();
+  await startDatabases(databasePortStart);
 
   startWatcher();
   handleSignalEvents([]);

@@ -23,7 +23,7 @@ const warnMongoDBMissing = () => {
 const checkIfMongoDBExists = () => {
   return commandExists.sync("mongod");
 };
-const startMongoDB = async () => {
+const startMongoDB = async (port = 2010) => {
   const mongodbExists = checkIfMongoDBExists();
   if (!mongodbExists) {
     process.loader.stop();
@@ -35,7 +35,7 @@ const startMongoDB = async () => {
     fs.mkdirSync(".joystick/data/mongodb", { recursive: true });
   }
   try {
-    const mongodbPort = parseInt(process.env.PORT, 10) + 1;
+    const mongodbPort = port;
     await killPortProcess(mongodbPort);
     if (isWindows) {
       const mongodbVersions = fs.readdirSync(`C:\\Program Files\\MongoDB\\Server\\`).sort().reverse();
@@ -70,7 +70,7 @@ const startMongoDB = async () => {
     process.exit(1);
   }
 };
-var mongodb_default = async (options = {}) => await startMongoDB(options);
+var mongodb_default = async (port = 2610) => await startMongoDB(port);
 export {
   mongodb_default as default
 };

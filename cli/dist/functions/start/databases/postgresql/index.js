@@ -3,7 +3,7 @@ import chalk from "chalk";
 import util from "util";
 import commandExists from "command-exists";
 import child_process, { execSync, spawn, spawnSync } from "child_process";
-import { killPortProcess } from "kill-port-process";
+import { kill as killPortProcess } from "cross-port-killer";
 import isWindows from "../../isWindows.js";
 import CLILog from "../../../../lib/CLILog.js";
 const exec = util.promisify(child_process.exec);
@@ -27,7 +27,7 @@ const checkIfPostgreSQLExists = () => {
 const checkIfPostgreSQLControlExists = () => {
   return commandExists.sync("pg_ctl");
 };
-const startPostgreSQL = async () => {
+const startPostgreSQL = async (port = 2610) => {
   const postgreSQLExists = checkIfPostgreSQLExists();
   if (!postgreSQLExists) {
     process.loader.stop();
@@ -40,7 +40,7 @@ const startPostgreSQL = async () => {
     await exec(`pg_ctl init -D .joystick/data/postgresql`);
   }
   try {
-    const postgreSQLPort = parseInt(process.env.PORT, 10) + 1;
+    const postgreSQLPort = port;
     console.log("BEFORE START");
     const result = await execSync(`pg_ctl -D .joystick/data/postgresql start`, {
       stdio: "inherit"
@@ -52,7 +52,7 @@ const startPostgreSQL = async () => {
     process.exit(1);
   }
 };
-var postgresql_default = async (options = {}) => await startPostgreSQL(options);
+var postgresql_default = async (port = 2610) => await startPostgreSQL(port);
 export {
   postgresql_default as default
 };

@@ -3,7 +3,7 @@ import chalk from "chalk";
 import util from "util";
 import commandExists from "command-exists";
 import child_process, { execSync, spawn, spawnSync } from "child_process";
-import { killPortProcess } from 'kill-port-process';
+import { kill as killPortProcess } from 'cross-port-killer';
 import isWindows from "../../isWindows.js";
 import CLILog from "../../../../lib/CLILog.js";
 
@@ -34,7 +34,7 @@ const checkIfPostgreSQLControlExists = () => {
   return commandExists.sync("pg_ctl");
 };
 
-const startPostgreSQL = async () => {
+const startPostgreSQL = async (port = 2610) => {
   const postgreSQLExists = checkIfPostgreSQLExists();
 
   if (!postgreSQLExists) {
@@ -62,7 +62,7 @@ const startPostgreSQL = async () => {
   }
 
   try {
-    const postgreSQLPort = parseInt(process.env.PORT, 10) + 1;
+    const postgreSQLPort = port;
     // await killPortProcess(postgreSQLPort);
 
     // TODO: Windows.
@@ -89,4 +89,4 @@ const startPostgreSQL = async () => {
   }
 };
 
-export default async (options = {}) => await startPostgreSQL(options);
+export default async (port = 2610) => await startPostgreSQL(port);

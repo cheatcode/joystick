@@ -2,7 +2,7 @@ import mongodb from "./mongodb/index.js";
 import checkMongoDBConnection from "./mongodb/checkConnection.js";
 import checkPostgreSQLConnection from "./postgresql/checkConnection.js";
 import postgresql from "./postgresql/index.js";
-var startProvider_default = async (provider = "", settings = {}) => {
+var startProvider_default = async (provider = "", settings = {}, databasePort = 2610) => {
   if (provider === "mongodb") {
     process.loader.text("Starting MongoDB...");
     const hasConnection = settings.connection && Object.keys(settings.connection).length > 0;
@@ -11,13 +11,13 @@ var startProvider_default = async (provider = "", settings = {}) => {
       await checkMongoDBConnection(settings.connection);
     }
     if (!hasConnection) {
-      databaseProcessId = await mongodb(settings);
+      databaseProcessId = await mongodb(databasePort);
     }
     const defaultConnection = {
       hosts: [
         {
           hostname: "127.0.0.1",
-          port: parseInt(process.env.PORT, 10) + 1
+          port: databasePort
         }
       ],
       database: "app",
@@ -44,13 +44,13 @@ var startProvider_default = async (provider = "", settings = {}) => {
       await checkPostgreSQLConnection(settings.connection);
     }
     if (!hasConnection) {
-      db = await postgresql(settings);
+      db = await postgresql(databasePort);
     }
     const defaultConnection = {
       hosts: [
         {
           hostname: "127.0.0.1",
-          port: parseInt(process.env.PORT, 10) + 1
+          port: databasePort
         }
       ],
       database: "app",
@@ -62,7 +62,6 @@ var startProvider_default = async (provider = "", settings = {}) => {
       connection: hasConnection ? settings.connection : defaultConnection,
       settings
     };
-    console.log(instance);
     process.databases = process.databases ? {
       ...process.databases,
       postgresql: instance
