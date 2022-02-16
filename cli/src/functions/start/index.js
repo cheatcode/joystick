@@ -26,6 +26,14 @@ const isObject = (value) => {
   return !!(value && typeof value === "object" && !Array.isArray(value));
 };
 
+const killProcess = (pid = 0) => {
+  return new Promise((resolve) => {
+    ps.kill(pid, () => {
+      resolve();
+    });
+  });
+};
+
 const watchlist = [
   { path: "ui" },
   { path: "lib" },
@@ -86,27 +94,39 @@ const requiredFileCheck = () => {
   });
 };
 
-const handleCleanup = (processIds = []) => {
-  process.loader.stop();
+const handleCleanup = async (processIds = []) => {
+  process.loader.text('Shutting down...');
 
-  Object.entries(process.databases || {}).forEach(
-    ([_databaseName, databaseInstance]) => {
-      if (databaseInstance?.pid) {
-        ps.kill(databaseInstance.pid);
-      }
+  const databases = Object.entries(process.databases || {});
+
+  for (let i = 0; i < databases?.length; i += 1) {
+    const databaseInstance = databases[i] && databases[i][1];
+
+    if (databaseInstance?.pid) {
+      await killProcess(databaseInstance.pid);
     }
-  );
+  }
 
-  processIds.forEach((processId) => {
-    ps.kill(processId);
-  });
+  for (let i = 0; i < processIds?.length; i += 1) {
+    const processId = processIds[i];
 
+    if (processId) {
+      await killProcess(processId);
+    }
+  }
+
+  process.loader.stop();
   process.exit();
 };
 
 const handleSignalEvents = (processIds = []) => {
-  process.on("SIGINT", () => handleCleanup(processIds));
-  process.on("SIGTERM", () => handleCleanup(processIds));
+  process.on("SIGINT", async () => {
+    await handleCleanup(processIds);
+  });
+
+  process.on("SIGTERM", async () => {
+    await handleCleanup(processIds);
+  });
 };
 
 const handleHMRProcessMessages = () => {
@@ -431,8 +451,10 @@ const startDatabases = async (databasePortStart = 2610) => {
     if (databases && Array.isArray(databases) && databases.length > 0) {
       validateDatabases(databases);
 
-      // NOTE: Increment each database port using index in the databases array from settings.
-      await Promise.all(databases.map((database, index) => startDatabase(database, databasePortStart + index)));
+      for (let i = 0; i < databases?.length; i += 1) {
+        // NOTE: Increment each database port using index in the databases array from settings.
+        await startDatabase(databases[i], databasePortStart + i);
+      }
 
       return Promise.resolve();
     }

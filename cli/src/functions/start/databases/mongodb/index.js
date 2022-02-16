@@ -85,7 +85,7 @@ const startMongoDB = async (port = 2010) => {
           return processId;
         }
       });
-    })
+    });
   } catch (exception) {
     console.warn(exception);
     process.exit(1);

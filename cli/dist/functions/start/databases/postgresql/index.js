@@ -2,24 +2,20 @@ import fs from "fs";
 import chalk from "chalk";
 import util from "util";
 import commandExists from "command-exists";
-import child_process, { execSync, spawn, spawnSync } from "child_process";
+import child_process from "child_process";
 import { kill as killPortProcess } from "cross-port-killer";
-import isWindows from "../../isWindows.js";
+import getProcessIdFromPort from "../../getProcessIdFromPort.js";
 import CLILog from "../../../../lib/CLILog.js";
 const exec = util.promisify(child_process.exec);
-const getPostgreSQLProcessId = (stdout = null) => {
-  const regex = new RegExp(/\[\d+\]/g);
-  const matches = stdout.match(regex);
-  const processId = matches && matches[0] && matches[0].replace("[", "").replace("]", "");
-  return parseInt(processId, 10);
+const getPostgreSQLProcessId = async (port = 2610) => {
+  const pids = await getProcessIdFromPort(port);
+  return pids.tcp && pids.tcp[0];
 };
 const warnPostgreSQLIsMissing = () => {
-  console.warn(`
-  ${chalk.red("PostgreSQL is not installed on this computer.")}
-
-  ${chalk.green("Download PostgreSQL at https://www.postgresql.org/download/")}
-    After you've installed PostgreSQL, run joystick start again, or, remove PostgreSQL from your databases list in your settings.development.json file to skip startup.
-  `);
+  CLILog("PostgreSQL is not installed on this computer. You can download PostgreSQL at https://www.postgresql.org/download. After you've installed PostgreSQL, run joystick start again, or, remove PostgreSQL from your databases list in your settings.development.json file to skip startup.", {
+    level: "danger",
+    docs: "https://cheatcode.co/docs/joystick/cli#databases"
+  });
 };
 const checkIfPostgreSQLExists = () => {
   return commandExists.sync("psql");
@@ -36,17 +32,35 @@ const startPostgreSQL = async (port = 2610) => {
   }
   const dataDirectoryExists = fs.existsSync(".joystick/data/postgresql");
   const postgreSQLControlExists = checkIfPostgreSQLControlExists();
+  if (!postgreSQLControlExists) {
+    CLILog("PostgreSQL is installed on this computer, but pg_ctl (what Joystick uses to start and manage PostgreSQL) is not in your command line's PATH variable. Add pg_ctl to your command line's PATH, restart your command line, and try again.", {
+      level: "danger",
+      docs: "https://cheatcode.co/docs/joystick/postgresql#path"
+    });
+  }
   if (!dataDirectoryExists && postgreSQLControlExists) {
     await exec(`pg_ctl init -D .joystick/data/postgresql`);
   }
   try {
     const postgreSQLPort = port;
-    console.log("BEFORE START");
-    const result = await execSync(`pg_ctl -D .joystick/data/postgresql start`, {
-      stdio: "inherit"
+    await killPortProcess(postgreSQLPort);
+    const databaseProcess = child_process.spawn(`pg_ctl`, [
+      "-o",
+      `"-p ${postgreSQLPort}"`,
+      "-D",
+      ".joystick/data/postgresql",
+      "start"
+    ].filter((command) => !!command));
+    return new Promise((resolve) => {
+      databaseProcess.stdout.on("data", async (data) => {
+        const stdout = data?.toString();
+        if (stdout.includes("database system is ready to accept connections")) {
+          const processId = await getPostgreSQLProcessId(postgreSQLPort);
+          resolve(processId);
+          return processId;
+        }
+      });
     });
-    console.log({ result });
-    return 0;
   } catch (exception) {
     console.warn(exception);
     process.exit(1);
