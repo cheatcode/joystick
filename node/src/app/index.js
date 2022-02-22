@@ -10,6 +10,7 @@ import registerGetters from "./registerGetters.js";
 import registerSetters from "./registerSetters.js";
 import parseDatabasesFromEnvironment from "../lib/parseDatabasesFromEnvironment.js";
 import mongodb from "./databases/mongodb/index.js";
+import postgresql from "./databases/postgresql/index.js";
 import accounts from "./accounts";
 import getBrowserSafeUser from './accounts/getBrowserSafeUser.js';
 import formatAPIError from "../lib/formatAPIError";
@@ -25,6 +26,7 @@ import runUploader from './runUploader';
 import generateId from '../lib/generateId.js';
 import getOutput from './getOutput.js';
 import defaultUserOutputFields from './accounts/defaultUserOutputFields.js';
+import createPostgreSQLAccountsTables from './databases/postgresql/createAccountsTables';
 
 process.setMaxListeners(0); 
 
@@ -70,8 +72,31 @@ export class App {
           };
 
           process.databases = {
+            ...(process.databases || {}),
             [database.name]: connection.db,
           };
+
+          return connection;
+        }
+
+        if (database.name === "postgresql") {
+          const instance = await postgresql(database?.settings?.connection);
+          const connection = {
+            ...database,
+            ...instance,
+          };
+
+          process.databases = {
+            ...(process.databases || {}),
+            [database.name]: {
+              ...connection.pool,
+              query: connection.query,
+            },
+          };
+
+          if (connection.query) {
+            await createPostgreSQLAccountsTables();
+          }
 
           return connection;
         }

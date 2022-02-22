@@ -41,14 +41,14 @@ const resetPassword = async (options, { resolve, reject }) => {
       reject("Sorry, that token is invalid. Please try again.");
       return;
     }
-    const hashedNewPassword = await setNewPasswordOnUser(user?._id, options.password);
-    const updatedUser = await removeTokenFromUser(user?._id, options.token);
+    const hashedNewPassword = await setNewPasswordOnUser(user?._id || user?.user_id, options.password);
+    const updatedUser = await removeTokenFromUser(user?._id || user?.user_id, options.token);
     const session = await generateSession({
-      userId: updatedUser?._id,
-      emailAddress: updatedUser?.emailAddress,
+      userId: updatedUser?._id || updatedUser?.user_id,
+      emailAddress: updatedUser?.emailAddress || updatedUser?.email_address,
       password: hashedNewPassword
     });
-    await addSessionToUser(updatedUser?._id, session);
+    await addSessionToUser(updatedUser?._id || updatedUser?.user_id, session);
     resolve({
       user: getOutput(updatedUser, options?.output),
       ...session
