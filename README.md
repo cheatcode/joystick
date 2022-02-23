@@ -588,14 +588,14 @@ If you do _not_ want Joystick to start a database on your behalf but you _do_ wa
   "config": {
     "databases": [
       {
-        "provider": "mongodb",
+        "provider": "postgresql",
         "options": {},
         "connection": {
           "username": "username",
           "password": "password",
           "hosts": [{
             hostname: "127.0.0.1",
-            port: "27017"
+            port: "5432"
           }],
           "database": "databaseName"
         }
