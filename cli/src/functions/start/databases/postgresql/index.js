@@ -80,6 +80,9 @@ const startPostgreSQL = async (port = 2610) => {
         const stdout = data?.toString();
         if (stdout.includes('database system is ready to accept connections')) {
           const processId = await getPostgreSQLProcessId(postgreSQLPort);
+  
+          child_process.spawnSync(`createdb -h 127.0.0.1 -p ${postgreSQLPort} app`);
+
           resolve(processId);
           return processId;
         }

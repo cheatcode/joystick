@@ -2,11 +2,11 @@ import { WebSocketServer } from "ws";
 import watch from "node-watch";
 import fs from "fs";
 
-export default ((port = 2600) => {
+export default (() => {
   let fileWatchers = [];
 
   const websocketServer = new WebSocketServer({
-    port: parseInt(port, 10) + 1,
+    port: parseInt(process.env.PORT, 10) + 1,
     path: "/_joystick/hmr",
   });
 
@@ -28,9 +28,10 @@ export default ((port = 2600) => {
           "settings.development.json",
           "settings.staging.json",
           "settings.production.json",
+          "i18n",
         ].forEach((fileToWatch) => {
           if (fs.existsSync(`./${fileToWatch}`)) {
-            const watcher = watch(`./.joystick/build/${fileToWatch}`);
+            const watcher = watch(`./.joystick/build/${fileToWatch}`, { recursive: true });
             fileWatchers.push(watcher);
             watcher.on("change", () => {
               websocketConnection.send(
@@ -45,4 +46,4 @@ export default ((port = 2600) => {
       }
     });
   });
-})(process.env.PORT || 2600);
+})();

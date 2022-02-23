@@ -1,3 +1,4 @@
+import os from "os";
 import mongodb from "./mongodb/index.js";
 import checkMongoDBConnection from "./mongodb/checkConnection.js";
 import checkPostgreSQLConnection from "./postgresql/checkConnection.js";
@@ -54,7 +55,7 @@ var startProvider_default = async (provider = "", settings = {}, databasePort = 
         }
       ],
       database: "app",
-      username: "",
+      username: (os.userInfo() || {}).username || "",
       password: ""
     };
     const instance = {

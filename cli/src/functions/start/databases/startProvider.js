@@ -1,3 +1,4 @@
+import os from 'os';
 import mongodb from "./mongodb/index.js";
 import checkMongoDBConnection from "./mongodb/checkConnection.js";
 import checkPostgreSQLConnection from './postgresql/checkConnection.js';
@@ -70,7 +71,8 @@ export default async (provider = "", settings = {}, databasePort = 2610) => {
         },
       ],
       database: "app",
-      username: "",
+      // NOTE: PostgreSQL creates a default superuser based on the OS username.
+      username: (os.userInfo() || {}).username || "",
       password: "",
     };
 
