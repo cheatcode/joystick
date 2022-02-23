@@ -20,7 +20,7 @@ export default async (connectionFromSettings = null) => {
       socketTimeoutMS: 3000,
       useNewUrlParser: true,
       useUnifiedTopology: true,
-      ssl: false,
+      ssl: process.env.NODE_ENV !== 'development',
     });
 
     const db = client.db(parsedURI.db);

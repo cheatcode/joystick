@@ -42,6 +42,7 @@ The full-stack JavaScript framework.
    - [Adding a database](#adding-a-database)
    - [Users database](#users-database)
    - [MongoDB](#mongodb)
+   - [PostgreSQL](#postgresql)
    - [Adding a remote database](#adding-a-remote-database)
 8. [Accounts](#accounts)
    - [accounts.signup](#accountssignup)
@@ -461,11 +462,41 @@ One of the flagship features of Joystick is the ability to run one or more datab
 
 ### Adding a database
 
-Databases are added via the `config.databases` array in your `settings.env.json` file. **As of the current release, MongoDB is the only database supported but support for PostgreSQL and Redis are planned for the 1.0 release**.
+Databases are added via the `config.databases` array in your `settings.env.json` file.
 
 Joystick starts and connects to databases based on the contents of the `config.databases` array. If a database isn't in this array, **it will not be started alongside your app and its driver will not be connected in your app**.
 
-To specify a database:
+The table below showcases which databases Joystick currently supports (and which features each database supports):
+
+<table>
+  <thead>
+    <tr>
+      <th>Database</th>
+      <th>Autostart via CLI</th>
+      <th>User Accounts</th>
+      <th>Node.js Driver</th>
+      <th>Notes</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>MongoDB</td>
+      <td style="text-align:center;">✅</td>
+      <td style="text-align:center;">✅</td>
+      <td style="text-align:center;">✅</td>
+      <td style="text-align:left;"></td>
+    </tr>
+    <tr>
+      <td>PostgreSQL</td>
+      <td style="text-align:center;">✅</td>
+      <td style="text-align:center;">✅</td>
+      <td style="text-align:center;">✅</td>
+      <td style="text-align:left;"><code>metadata</code> field passed to <code>accounts.signup()</code> only supports the <code>language</code> property.</td>
+    </tr>
+  </tbody>
+</table>
+
+To specify databases:
 
 ```javascript
 {
@@ -474,6 +505,10 @@ To specify a database:
       {
         "provider": "mongodb",
         "options": {}
+      },
+      {
+        "provider": "postgresql",
+        "options": {}
       }
     ]
   }
@@ -481,6 +516,8 @@ To specify a database:
 ```
 
 Databases are specified as objects with a minimum of two properties: `provider` set equal to a string containing the lowercase name of one of Joystick's supported database providers and an `options` object which are the options for the official Node.js driver for that database (loaded and wired into your app by Joystick).
+
+In the above example, our app is loading _two_ databases simultaneously: MongoDB and PostgreSQL.
 
 ### Users database
 
@@ -513,15 +550,34 @@ To add support for MongoDB, add an object to the `config.databases` array in you
   "config": {
     "databases": [
       {
-        "provider": "mongodb",
-        "options": {}
+        "provider": "mongodb"
       }
     ]
   }
 }
 ```
 
-Configuration `options` for the MongoDB driver can be found in the [MongoDB Node.js Driver documentation](https://docs.mongodb.com/drivers/node/current/).
+When you run `joystick start`, Joystick will automatically detect the database, start it locally (or warn you if it's not installed on your computer), and then start your app and connect the driver for that database.
+
+### PostgreSQL
+
+> NOTE: In order for PostgreSQL to work, it must be installed on your computer and available via your operating system's PATH variable. For MacOS users, this is automatically set up for you when installing PostgreSQL. For Windows users, [read the instructions here](https://cheatcode.co/tutorials/how-to-use-postgresql-with-node-js#installing-and-configuring-postgresql) for adding PostgreSQL to your PATH variable.
+
+To add support for PostgreSQL, add an object to the `config.databases` array in your settings file with the following properties:
+
+```javascript
+{
+  "config": {
+    "databases": [
+      {
+        "provider": "postgresql"
+      }
+    ]
+  }
+}
+```
+
+When you run `joystick start`, Joystick will automatically detect the database, start it locally (or warn you if it's not installed on your computer), and then start your app and connect the driver for that database.
 
 ### Adding a remote database
 
@@ -679,6 +735,8 @@ export default Signup;
 ```
 
 **Note**: though Joystick checks for the `language` field in the metadata object, _any_ field you'd like to add to your user can be set on this object (e.g., `metadata.firstName`). Any fields you pass here will be added directly to the user object in the database.
+
+> WARNING: Only `metadata.language` is supported by SQL databases (e.g., PostgreSQL). Additional metadata fields should be added independently in your code as part of a separate table in your database.
 
 ### accounts.login
 
