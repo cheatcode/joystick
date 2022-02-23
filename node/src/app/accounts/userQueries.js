@@ -363,9 +363,6 @@ export default {
       return user;
     },
     setNewPassword: async (input = {}) => {
-      console.log('setNewPassword', {
-        input
-      })
       await process.databases.postgresql.query(
         `UPDATE users SET password='${input?.hashedPassword}' WHERE user_id='${input?.userId}';`
       );
@@ -451,7 +448,7 @@ export default {
 
       if (user) {
         await process.databases.postgresql.query(
-          `INSERT INTO users_roles(${objectToSQLKeysString({ user_id: input?.userId, role: input?.role })}) VALUES (${objectToSQLValuesString({ user_id: input?.userId, role: input?.role })});`
+          `INSERT INTO users_roles(${objectToSQLKeysString({ user_id: input?.userId, role: input?.role })}) VALUES (${objectToSQLValuesString({ user_id: input?.userId, role: input?.role })}) ON CONFLICT DO NOTHING;`
         );
 
         const [existingRole] = await process.databases.postgresql.query(
@@ -460,7 +457,7 @@ export default {
 
         if (!existingRole) {
           await process.databases.postgresql.query(
-            `INSERT INTO roles(${objectToSQLKeysString({ role: input?.role })}) VALUES (${objectToSQLValuesString({ role: input?.role })});`
+            `INSERT INTO roles(${objectToSQLKeysString({ role: input?.role })}) VALUES (${objectToSQLValuesString({ role: input?.role })}) ON CONFLICT DO NOTHING;`
           );  
         }
 
@@ -488,7 +485,7 @@ export default {
 
       if (user) {
         await process.databases.postgresql.query(
-          `DELETE FROM users_roles WHERE user_id='${input?.userId}', role='${input?.role}';`
+          `DELETE FROM users_roles WHERE user_id='${input?.userId}' AND role='${input?.role}';`
         );
 
         return {

@@ -27,6 +27,7 @@ import generateId from "../lib/generateId.js";
 import getOutput from "./getOutput.js";
 import defaultUserOutputFields from "./accounts/defaultUserOutputFields.js";
 import createPostgreSQLAccountsTables from "./databases/postgresql/createAccountsTables";
+import createPostgreSQLAccountsIndexes from "./databases/postgresql/createAccountsIndexes";
 process.setMaxListeners(0);
 class App {
   constructor(options = {}) {
@@ -80,6 +81,7 @@ class App {
         };
         if (connection.query) {
           await createPostgreSQLAccountsTables();
+          await createPostgreSQLAccountsIndexes();
         }
         return connection;
       }

@@ -31,7 +31,7 @@ const login = async (options, { resolve, reject }) => {
       return reject("Incorrect password.");
     }
     const session = await generateSession();
-    await addSessionToUser(user._id, session);
+    await addSessionToUser(user?._id || user?.user_id, session);
     const { password, sessions, ...restOfUser } = user;
     return resolve({
       ...session,
