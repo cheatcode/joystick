@@ -95,6 +95,7 @@ The full-stack JavaScript framework.
     - [API](#api-1)
       - [Getters](#getters)
       - [Setters](#setters)
+      - [Accessing getters and setters as HTTP endpoints](#accessing-getters-and-setters-as-http-endpoints)
       - [Validating inputs](#validating-inputs)
       - [Authorization](#authorization)
       - [Schema](#schema)
@@ -2491,6 +2492,8 @@ To simplify the process of defining an API, Joystick includes a thin abstraction
 
 Following this logic, Joystick introduce a concept called "getters" and "setters." The former helps you define HTTP GET endpoints for _reading_ data from your database while the latter helps you define HTTP POST endpoints for _creating, updating, and removing_ data from your database.
 
+Getters are available at `/api/_getters/<getterName>` and setters are available at `/api/_setters/<setterName>`. This means that, if you wish, you can access getters and setters via `fetch()`, curl, or any other HTTP request tool with ease.
+
 #### Getters
 
 A getter is nothing more than a JavaScript object set to a property with the name of the getter you'd like to make accessible on the server.
@@ -2558,6 +2561,20 @@ Here, we define a setter called `createPost` with two properties: `input`, set t
 A setter is intended to create, update, and delete data, and optionally return data. Once inside the body of the `set()` function, you can call to any data source you wish (typically a database, but could also be from a third-party API or a static data file on the server).
 
 Once your data is set, you can optionally return a value from the `set()` function and Joystick will send it back to the originating request as a JSON body.
+
+#### Accessing getters and setters as HTTP endpoints
+
+As hinted above, getters and setters can be accessed as plain HTTP endpoints. While in most cases you'll want to use Joystick's `get()` and `set()` methods for interacting with endpoints, if you're building a separate app (e.g., a mobile app) and using Joystick as a backend, it can be helpful to rely on this access method.
+
+For getters, the inbound request must be an HTTP GET request. Any `input` or `output` parameters must be passed via the _query_ parameters in the URL. For example, if we had a getter called `books` in our app that expected an input value `category`, we could perform a direct URL request like this:
+
+```javascript
+http://localhost:2600/api/_getters/books?input={"category":"non-fiction"}
+```
+
+Similarly, an `output` query parameter can be added to customize the return value from the getter.
+
+For setters, the inbound request must be an HTTP POST request. Any `input` or `output` parameters must be pased via the _body_ of the request. This means that, unlike in the getters example above, if we expected input, we would have to use a tool like cURL or another HTTP library instead of accessing the URL directly in the browser.
 
 #### Validating inputs
 
