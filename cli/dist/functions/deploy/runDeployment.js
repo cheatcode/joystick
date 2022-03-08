@@ -1,6 +1,7 @@
 import fetch from "node-fetch";
 import chalk from "chalk";
 import AsciiTable from "ascii-table";
+import _ from "lodash";
 import Loader from "../../lib/loader.js";
 import domains from "./domains.js";
 import checkIfValidJSON from "./checkIfValidJSON.js";
@@ -99,15 +100,15 @@ const runDeployment = async (options, { resolve, reject }) => {
   ${rainbowRoad()}
 
 `);
-        console.log(chalk.yellowBright(`  ${chalk.magenta(">>>")} Steps below must be completed in order to issue your SSL certificates. ${chalk.magenta("<<<")}
+        console.log(chalk.yellowBright(`  ${chalk.magenta(">>>")} Steps below MUST be completed in order to issue your SSL certificates and make your app live. ${chalk.magenta("<<<")}
 
 `));
         console.log(chalk.white(`  ${chalk.yellowBright("1.")} Add a DNS record type A to the domain you deployed to for each of the Load Balancer IP addresses in the table below.
 `));
         console.log(`  ${chalk.gray("------")}
 `);
-        console.log(`${sslRecordsTable.removeBorder().setHeading(chalk.magenta("DNS Record Type"), chalk.magenta("Domain"), chalk.magenta("IP Address"), chalk.magenta("TTL")).addRowMatrix(loadBalancerInstances.map((loadBalancer) => {
-          return [chalk.blueBright("A"), chalk.yellowBright(options?.deployment?.domain), chalk.greenBright(loadBalancer?.instance?.ip), chalk.white("As Low As Possible (1 minute)")];
+        console.log(`${sslRecordsTable.removeBorder().setHeading(chalk.magenta("#"), chalk.magenta("DNS Record Type"), chalk.magenta("Domain"), chalk.magenta("IP Address"), chalk.magenta("TTL")).addRowMatrix(_.sortBy(loadBalancerInstances, "name").map((loadBalancer, loadBalancerNumber) => {
+          return [chalk.greenBright(loadBalancerNumber + 1), chalk.blueBright("A"), chalk.yellowBright(options?.deployment?.domain), chalk.greenBright(loadBalancer?.instance?.ip), chalk.white("As Low As Possible (1 minute)")];
         })).setAlign(0, AsciiTable.CENTER).setAlign(1, AsciiTable.CENTER).setAlign(2, AsciiTable.CENTER).setAlign(3, AsciiTable.CENTER).toString()}
 
 

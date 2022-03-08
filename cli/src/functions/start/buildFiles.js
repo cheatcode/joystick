@@ -60,7 +60,8 @@ const isNotJavaScript = (path = "") => {
 export default async (filesToBuild = []) => {
   return Promise.all(
     filesToBuild.map(async (fileToBuild) => {
-      const isFileToCopy = isNotJavaScript(fileToBuild) || filesToCopy.some((fileToCopy) => {
+      const platform = getFilePlatform(fileToBuild);
+      const isFileToCopy = platform === 'copy' || isNotJavaScript(fileToBuild) || filesToCopy.some((fileToCopy) => {
         return fileToBuild.includes(fileToCopy.path);
       });
 
@@ -75,7 +76,6 @@ export default async (filesToBuild = []) => {
         });
       }
 
-      const platform = getFilePlatform(fileToBuild);
       return buildFile(fileToBuild, platform);
     })
   );

@@ -34,7 +34,6 @@ export default {
     }
   ],
   initialDeployment: (user = {}, deploymentToken = '', fingerprint = {}) => {
-    console.log(user);
     const providers = getProvidersWithConnectionStatus(user);
     return [
       {
@@ -108,7 +107,6 @@ export default {
         loop: false,
         choices: async (answers = {}) => {
           const sizes = await getProviderInstanceSizes(answers, deploymentToken, fingerprint);
-          console.log(sizes);
           return (sizes || []).map((size) => {
             return {
               name: `${chalk.blue(`[${size?.name}]`)} -- ${chalk.white(`${size?.vcpus} ${size?.vcpus > 1 ? 'VCPUs' : 'VCPU'} + ${size?.memory / 1024}GB RAM + ${size?.disk > 1000 ? `${size?.disk / 1000}TB` : `${size?.disk}GB`} Disk`)} ${chalk.gray('=')} $${chalk.greenBright(`${size?.pricePerMonth}/mo`)}`,
@@ -152,7 +150,6 @@ export default {
         loop: false,
         choices: async (answers = {}) => {
           const sizes = await getProviderInstanceSizes(answers, deploymentToken, fingerprint);
-          console.log(sizes);
           return (sizes || []).map((size) => {
             return {
               name: `${chalk.blue(`[${size?.name}]`)} -- ${chalk.white(`${size?.vcpus} ${size?.vcpus > 1 ? 'VCPUs' : 'VCPU'} + ${size?.memory / 1024}GB RAM + ${size?.disk > 1000 ? `${size?.disk / 1000}TB` : `${size?.disk}GB`} Disk`)} ${chalk.gray('=')} $${chalk.greenBright(`${size?.pricePerMonth}/mo`)}`,
@@ -214,6 +211,7 @@ export default {
           .addRow(chalk.blue('Provider'), `${chalk.greenBright(provider?.name)}\n\n`)
           .addRow(chalk.blue('Load Balancers'), `${chalk.yellowBright(`(${answers?.loadBalancerInstances}x)`)} ${answers?.loadBalancer_size} ${chalk.gray(`[${answers?.loadBalancer_region}]`)} = ${chalk.greenBright(`${currencyFormatter.format(loadBalancerCosts?.monthly, { code: 'USD' })}/mo`)}`)
           .addRow(chalk.blue('App Instances'), `${chalk.yellowBright(`(${answers?.appInstances}x)`)} ${answers?.instance_size} ${chalk.gray(`[${answers?.instance_region}]`)} = ${chalk.greenBright(`${currencyFormatter.format(instanceCosts?.monthly, { code: 'USD' })}/mo`)}\n\n`)
+          .addRow(chalk.blue('Build Storage'), `${chalk.yellowBright(`(1x)`)} ${answers?.storage} ${chalk.gray(`[${answers?.instance_region}]`)} = ${chalk.greenBright(`${currencyFormatter.format(instanceCosts?.monthly, { code: 'USD' })}/mo`)}\n\n`)
           .addRow(chalk.magenta('Est. Total Monthly Cost'), chalk.greenBright(`${currencyFormatter.format(totalMonthlyCost, { code: 'USD' })}/mo`))
           .addRow(chalk.magenta('Est. Total Annual Cost'), chalk.greenBright(`${currencyFormatter.format(totalAnnualCost, { code: 'USD' })}/yr`))
           .toString()}

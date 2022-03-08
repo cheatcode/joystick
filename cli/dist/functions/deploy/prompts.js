@@ -38,7 +38,6 @@ var prompts_default = {
     }
   ],
   initialDeployment: (user = {}, deploymentToken = "", fingerprint = {}) => {
-    console.log(user);
     const providers2 = getProvidersWithConnectionStatus(user);
     return [
       {
@@ -125,7 +124,6 @@ var prompts_default = {
         loop: false,
         choices: async (answers = {}) => {
           const sizes = await getProviderInstanceSizes(answers, deploymentToken, fingerprint);
-          console.log(sizes);
           return (sizes || []).map((size) => {
             return {
               name: `${chalk.blue(`[${size?.name}]`)} -- ${chalk.white(`${size?.vcpus} ${size?.vcpus > 1 ? "VCPUs" : "VCPU"} + ${size?.memory / 1024}GB RAM + ${size?.disk > 1e3 ? `${size?.disk / 1e3}TB` : `${size?.disk}GB`} Disk`)} ${chalk.gray("=")} $${chalk.greenBright(`${size?.pricePerMonth}/mo`)}`,
@@ -174,7 +172,6 @@ var prompts_default = {
         loop: false,
         choices: async (answers = {}) => {
           const sizes = await getProviderInstanceSizes(answers, deploymentToken, fingerprint);
-          console.log(sizes);
           return (sizes || []).map((size) => {
             return {
               name: `${chalk.blue(`[${size?.name}]`)} -- ${chalk.white(`${size?.vcpus} ${size?.vcpus > 1 ? "VCPUs" : "VCPU"} + ${size?.memory / 1024}GB RAM + ${size?.disk > 1e3 ? `${size?.disk / 1e3}TB` : `${size?.disk}GB`} Disk`)} ${chalk.gray("=")} $${chalk.greenBright(`${size?.pricePerMonth}/mo`)}`,

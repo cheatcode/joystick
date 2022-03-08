@@ -47,7 +47,8 @@ const isNotJavaScript = (path = "") => {
 };
 var buildFiles_default = async (filesToBuild = []) => {
   return Promise.all(filesToBuild.map(async (fileToBuild) => {
-    const isFileToCopy = isNotJavaScript(fileToBuild) || filesToCopy.some((fileToCopy) => {
+    const platform = getFilePlatform(fileToBuild);
+    const isFileToCopy = platform === "copy" || isNotJavaScript(fileToBuild) || filesToCopy.some((fileToCopy) => {
       return fileToBuild.includes(fileToCopy.path);
     });
     if (isFileToCopy) {
@@ -56,7 +57,6 @@ var buildFiles_default = async (filesToBuild = []) => {
         resolve();
       });
     }
-    const platform = getFilePlatform(fileToBuild);
     return buildFile(fileToBuild, platform);
   }));
 };

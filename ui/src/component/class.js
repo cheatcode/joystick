@@ -369,14 +369,19 @@ class Component {
 
     if (patch && typeof patch === "function") {
       this.handleDetachEvents();
+      
+      const joystickInstance = this.handleGetJoystickInstance();
+      joystickInstance._internal.lifecycle.onBeforeMount.process();
+
       this.dom.actual = patch(this.getDOMNodeToPatch(this.dom.virtual));
       this.dom.virtual = updatedDOM.virtual;
+
+      joystickInstance._internal.lifecycle.onMount.process();
 
       this.handleSetDOMNode();
       this.handleAttachCSS();
       this.handleAttachEvents();
 
-      const joystickInstance = this.handleGetJoystickInstance();
       joystickInstance._internal.eventListeners.queue.process();
     }
   }
