@@ -11,7 +11,7 @@ function rreaddirSync(dir, allFiles = []) {
 var getFilesToBuild_default = () => {
   const files = rreaddirSync("./");
   const filteredFiles = files.filter((path) => {
-    return !["node_modules", ".joystick"].some((excludedPath) => {
+    return !["node_modules", ".joystick", ".deploy", "storage", "uploads"].some((excludedPath) => {
       return path.includes(excludedPath);
     });
   }).filter((path) => {

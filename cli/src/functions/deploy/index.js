@@ -61,8 +61,6 @@ export default async (args = {}, options = {}) => {
     if (deploymentFromServer?.deployment?.status === 'undeployed') {
       // TODO: Build app.
       // TODO: Upload built app as a zip to user's provider of choice.
-      // TODO: Trigger server provisioning.
-      // TODO: Prompt user to run SSL provisioning against load balancers.
       const deploymentToExecute = await inquirer.prompt(prompts.initialDeployment(deploymentFromServer?.user, deploymentToken, fingerprint));
 
       console.log("\n");

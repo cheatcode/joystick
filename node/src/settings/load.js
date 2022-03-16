@@ -12,8 +12,9 @@ const defaultSettings = {
 export default () => {
   try {
     const settingsExist = !!process.env.JOYSTICK_SETTINGS;
+    const settings = `${process.env.JOYSTICK_SETTINGS}`.replace(/\\/g, '');
     const settingsAreValid =
-      settingsExist && isValidJSONString(process.env.JOYSTICK_SETTINGS);
+      settingsExist && isValidJSONString(settings);
 
     if (!settingsExist) {
       return defaultSettings;
@@ -26,9 +27,9 @@ export default () => {
       return defaultSettings;
     }
 
-    const settings = JSON.parse(process.env.JOYSTICK_SETTINGS);
+    const parsedSettings = JSON.parse(settings);
 
-    return settings || defaultSettings;
+    return parsedSettings || defaultSettings;
   } catch (exception) {
     console.warn(exception);
   }

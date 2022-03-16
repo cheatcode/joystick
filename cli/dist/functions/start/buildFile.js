@@ -5,21 +5,24 @@ import plugins from "./buildPlugins.js";
 import onWarn from "./onWarn.js";
 import getCodeFrame from "../../lib/getCodeFrame.js";
 const configs = {
-  node: (inputPath) => ({
+  node: (inputPath, outputPath = null) => ({
     entryPoints: [inputPath],
     bundle: false,
-    outfile: `./.joystick/build/${inputPath}`,
+    outfile: `${outputPath || "./.joystick/build/"}${inputPath}`,
     platform: "node",
     format: "esm",
     minify: process.env.NODE_ENV !== "development",
     logLevel: "silent",
-    plugins: [plugins.generateFileDependencyMap]
+    plugins: [plugins.generateFileDependencyMap],
+    loader: {
+      ".ttf": "file"
+    }
   }),
-  browser: (inputPath) => ({
+  browser: (inputPath, outputPath = null) => ({
     target: "es2020",
     entryPoints: [inputPath],
     bundle: true,
-    outfile: `./.joystick/build/${inputPath}`,
+    outfile: `${outputPath || "./.joystick/build/"}${inputPath}`,
     platform: "browser",
     format: "esm",
     minify: process.env.NODE_ENV !== "development",
@@ -30,12 +33,15 @@ const configs = {
       plugins.bootstrapPageComponent,
       plugins.ssrId,
       svg()
-    ]
+    ],
+    loader: {
+      ".ttf": "file"
+    }
   })
 };
-var buildFile_default = async (file = "", platform = "") => {
+var buildFile_default = async (file = "", platform = "", outputPath = "") => {
   return new Promise(async (resolve) => {
-    const config = configs[platform] && configs[platform](file);
+    const config = configs[platform] && configs[platform](file, outputPath);
     if (config) {
       try {
         await esbuild.build(config);

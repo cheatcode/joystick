@@ -2,11 +2,15 @@ import fetch from "node-fetch";
 import chalk from "chalk";
 import AsciiTable from "ascii-table";
 import _ from "lodash";
+import fs from "fs";
+import child_process from "child_process";
+import FormData from "form-data";
 import Loader from "../../lib/loader.js";
 import domains from "./domains.js";
 import checkIfValidJSON from "./checkIfValidJSON.js";
 import CLILog from "../../lib/CLILog.js";
 import rainbowRoad from "../../lib/rainbowRoad.js";
+import build from "../build/index.js";
 let checkDeploymentInterval;
 const sslRecordsTable = new AsciiTable();
 const checkDeploymentStatus = (deploymentId = "", deploymentToken = "", fingerprint = {}) => {
@@ -37,7 +41,18 @@ const checkDeploymentStatus = (deploymentId = "", deploymentToken = "", fingerpr
     throw new Error(`[actionName.checkDeploymentStatus] ${exception.message}`);
   }
 };
-const startDeployment = (deploymentToken = "", deployment = {}, fingerprint = {}) => {
+const getAppSettings = () => {
+  try {
+    if (fs.existsSync("settings.production.json")) {
+      const file = fs.readFileSync("settings.production.json", "utf-8");
+      return JSON.parse(file);
+    }
+    return "{}";
+  } catch (exception) {
+    throw new Error(`[actionName.getAppSettings] ${exception.message}`);
+  }
+};
+const startDeployment = (deploymentToken = "", deployment = {}, fingerprint = {}, deploymentTimestamp = "") => {
   try {
     return fetch(`${domains?.deploy}/api/deployments`, {
       method: "POST",
@@ -47,7 +62,9 @@ const startDeployment = (deploymentToken = "", deployment = {}, fingerprint = {}
       },
       body: JSON.stringify({
         ...fingerprint,
-        ...deployment
+        ...deployment,
+        deploymentTimestamp,
+        settings: getAppSettings()
       })
     }).then(async (response) => {
       const text = await response.text();
@@ -66,6 +83,41 @@ const startDeployment = (deploymentToken = "", deployment = {}, fingerprint = {}
     });
   } catch (exception) {
     throw new Error(`[runDeployment.startDeployment] ${exception.message}`);
+  }
+};
+const uploadBuildToObjectStorage = (timestamp = "", deploymentOptions = {}) => {
+  try {
+    const formData = new FormData();
+    formData.append("build_tar", fs.readFileSync(`.deploy/${timestamp}.tar.xz`), `${timestamp}.tar.xz`);
+    formData.append("deployment", JSON.stringify(deploymentOptions?.deployment || {}));
+    formData.append("fingerprint", JSON.stringify(deploymentOptions?.fingerprint || {}));
+    return fetch(`${domains?.deploy}/api/deployments/upload`, {
+      method: "POST",
+      headers: {
+        ...formData.getHeaders(),
+        "x-deployment-token": deploymentOptions?.deploymentToken
+      },
+      body: formData
+    }).then(async (response) => {
+      const data = await response.json();
+      return data;
+    });
+  } catch (exception) {
+    throw new Error(`[runDeployment.uploadBuildToObjectStorage] ${exception.message}`);
+  }
+};
+const tarBuild = (timestamp = new Date().toISOString()) => {
+  try {
+    child_process.execSync(`tar -cf .deploy/${timestamp}.tar.xz --use-compress-program='xz -9' --exclude={".deploy/build/.deploy",".deploy/build/.git",".deploy/build/uploads",".deploy/build/storage",".deploy/build/.DS_Store",".deploy/build/*.tar",".deploy/build/*.tar.gz",".deploy/build/*.tar.xz"} .deploy/build`);
+  } catch (exception) {
+    throw new Error(`[runDeployment.tarBuild] ${exception.message}`);
+  }
+};
+const buildApp = () => {
+  try {
+    return build({ isDeploy: true, outputPath: "./.deploy/build/" });
+  } catch (exception) {
+    throw new Error(`[runDeployment.buildApp] ${exception.message}`);
   }
 };
 const validateOptions = (options) => {
@@ -88,7 +140,22 @@ const runDeployment = async (options, { resolve, reject }) => {
     console.log("");
     const loader = new Loader({ padding: "  ", defaultMessage: "Deploying app..." });
     loader.text("Deploying app...");
-    await startDeployment(options?.deploymentToken, options.deployment, options.fingerprint);
+    const deploymentTimestamp = new Date().toISOString();
+    await buildApp();
+    loader.text("Compressing build...");
+    await tarBuild(deploymentTimestamp);
+    loader.text("Uploading built app to version control...");
+    const uploadReponse = await uploadBuildToObjectStorage(deploymentTimestamp, options);
+    if (uploadReponse?.error) {
+      loader.stop();
+      CLILog(uploadReponse?.error, {
+        padding: "  ",
+        level: "danger",
+        docs: "https://cheatcode.co/docs/deploy/hosting-providers"
+      });
+    }
+    loader.text("Starting deployment...");
+    await startDeployment(options?.deploymentToken, options.deployment, options.fingerprint, deploymentTimestamp);
     checkDeploymentInterval = setInterval(async () => {
       const deploymentStatus = await checkDeploymentStatus(options?.deployment?.deploymentId, options?.deploymentToken, options?.fingerprint);
       loader.text(deploymentStatus?.log?.message);

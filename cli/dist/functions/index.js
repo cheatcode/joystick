@@ -71,19 +71,6 @@ var functions_default = {
     description: "Deploy an existing Joystick app.",
     args: {},
     options: {
-      token: {
-        flags: {
-          "-t": {
-            set: !!rawArgs.includes("-t"),
-            value: !!rawArgs.includes("-t") && rawArgs[rawArgs.indexOf("-t") + 1]
-          },
-          "--token": {
-            set: !!rawArgs.includes("--token"),
-            value: !!rawArgs.includes("--token") && rawArgs[rawArgs.indexOf("--token") + 1]
-          }
-        },
-        description: "A deployment token from the cheatcode.co/u/deployments/tokens page."
-      },
       domain: {
         flags: {
           "-d": {
@@ -96,6 +83,32 @@ var functions_default = {
           }
         },
         description: "The domain name you want to deploy your app to."
+      },
+      environment: {
+        flags: {
+          "-e": {
+            set: !!rawArgs.includes("-e"),
+            value: !!rawArgs.includes("-e") && rawArgs[rawArgs.indexOf("-e") + 1]
+          },
+          "--environment": {
+            set: !!rawArgs.includes("--environment"),
+            value: !!rawArgs.includes("--environment") && rawArgs[rawArgs.indexOf("--environment") + 1]
+          }
+        },
+        description: "The value you want to use for NODE_ENV in the deployed app (e.g., staging or production). Default is production."
+      },
+      token: {
+        flags: {
+          "-t": {
+            set: !!rawArgs.includes("-t"),
+            value: !!rawArgs.includes("-t") && rawArgs[rawArgs.indexOf("-t") + 1]
+          },
+          "--token": {
+            set: !!rawArgs.includes("--token"),
+            value: !!rawArgs.includes("--token") && rawArgs[rawArgs.indexOf("--token") + 1]
+          }
+        },
+        description: "A deployment token from the cheatcode.co/u/deployments/tokens page."
       }
     },
     function: deploy
