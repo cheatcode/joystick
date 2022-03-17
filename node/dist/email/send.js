@@ -6,6 +6,7 @@ import juice from "juice";
 import settings from "../settings";
 import validateSMTPSettings from "./validateSMTPSettings";
 import render from "./render";
+import getBuildPath from "../lib/getBuildPath";
 var send_default = async ({ template: templateName, props, ...restOfOptions }) => {
   const validSMTPSettings = validateSMTPSettings(settings?.config?.email?.smtp);
   if (!validSMTPSettings) {
@@ -21,7 +22,7 @@ var send_default = async ({ template: templateName, props, ...restOfOptions }) =
       pass: settings?.config?.email?.smtp?.password
     }
   }) : null;
-  let templatePath = process.env.NODE_ENV === "test" ? `${process.cwd()}/src/email/templates/reset-password.js` : `${process.cwd()}/.joystick/build/email/${templateName}.js`;
+  let templatePath = process.env.NODE_ENV === "test" ? `${process.cwd()}/src/email/templates/reset-password.js` : `${process.cwd()}/${getBuildPath()}/email/${templateName}.js`;
   const templateExists = templateName && !fs.existsSync(templatePath);
   const options = {
     from: settings?.config?.email?.from,

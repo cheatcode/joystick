@@ -6,6 +6,7 @@ import settings from "../../settings";
 import generateErrorPage from "../../lib/generateErrorPage.js";
 import replaceFileProtocol from "../../lib/replaceFileProtocol.js";
 import replaceBackslashesWithForwardSlashes from "../../lib/replaceBackslashesWithForwardSlashes.js";
+import getBuildPath from "../../lib/getBuildPath.js";
 const require2 = createRequire(import.meta.url);
 const getUrl = (request = {}) => {
   return {
@@ -44,9 +45,10 @@ const getTranslations = async (buildPath = "", pagePath = "", user = {}) => {
 };
 var render_default = (req, res, next) => {
   res.render = async function(path = "", options = {}) {
-    const buildPath = replaceFileProtocol(replaceBackslashesWithForwardSlashes(`${process.cwd().replace(".joystick/build", "")}/.joystick/build`));
-    const pagePath = `${buildPath}/${path}`;
-    const layoutPath = options.layout ? `${buildPath}/${options.layout}` : null;
+    const buildPathForEnvironment = getBuildPath();
+    const buildPath = replaceFileProtocol(replaceBackslashesWithForwardSlashes(`${process.cwd().replace(buildPathForEnvironment, "")}/${buildPathForEnvironment}`));
+    const pagePath = `${buildPath}${path}`;
+    const layoutPath = options.layout ? `${buildPath}${options.layout}` : null;
     if (!fs.existsSync(pagePath)) {
       return res.status(404).send(generateErrorPage({
         type: "pageNotFound",
