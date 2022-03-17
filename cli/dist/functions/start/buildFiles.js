@@ -53,7 +53,7 @@ var buildFiles_default = async (filesToBuild = [], outputPath = null) => {
     });
     if (isFileToCopy) {
       return new Promise((resolve) => {
-        fs.outputFileSync(`${outputPath || "./.joystick/build/"}${fileToBuild}`, fs.readFileSync(fileToBuild));
+        fs.outputFileSync(`${outputPath || "./.joystick/build"}/${fileToBuild}`, fs.readFileSync(fileToBuild));
         resolve();
       });
     }

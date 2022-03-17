@@ -111,7 +111,7 @@ const uploadBuildToObjectStorage = (timestamp = '', deploymentOptions = {}) => {
   try {
     const formData = new FormData();
 
-    formData.append('build_tar', fs.readFileSync(`.deploy/${timestamp}.tar.xz`), `${timestamp}.tar.xz`);
+    formData.append('build_tar', fs.readFileSync(`.deploy/build.tar.xz`), `${timestamp}.tar.xz`);
     formData.append('deployment', JSON.stringify(deploymentOptions?.deployment || {}));
     formData.append('fingerprint', JSON.stringify(deploymentOptions?.fingerprint || {}));
 
@@ -131,17 +131,9 @@ const uploadBuildToObjectStorage = (timestamp = '', deploymentOptions = {}) => {
   }
 };
 
-const tarBuild = (timestamp = new Date().toISOString()) => {
-  try {
-    child_process.execSync(`tar -cf .deploy/${timestamp}.tar.xz --use-compress-program='xz -9' --exclude={".deploy/build/.deploy",".deploy/build/.git",".deploy/build/uploads",".deploy/build/storage",".deploy/build/.DS_Store",".deploy/build/*.tar",".deploy/build/*.tar.gz",".deploy/build/*.tar.xz"} .deploy/build`);
-  } catch (exception) {
-    throw new Error(`[runDeployment.tarBuild] ${exception.message}`);
-  }
-};
-
 const buildApp = () => {
   try {
-    return build({ isDeploy: true, outputPath: './.deploy/build/' });
+    return build({}, { isDeploy: true, type: 'tar', outputPath: './.deploy/' });
   } catch (exception) {
     throw new Error(`[runDeployment.buildApp] ${exception.message}`);
   }
@@ -175,8 +167,6 @@ const runDeployment = async (options, { resolve, reject }) => {
     const deploymentTimestamp = new Date().toISOString();
 
     await buildApp();
-    loader.text("Compressing build...");
-    await tarBuild(deploymentTimestamp);
     
     loader.text("Uploading built app to version control...");
     const uploadReponse = await uploadBuildToObjectStorage(deploymentTimestamp, options);

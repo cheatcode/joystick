@@ -7,6 +7,40 @@ import deploy from './deploy/index.js';
 const [_node, _bin, ...rawArgs] = process.argv;
 
 export default {
+  build: {
+    set: !!rawArgs.includes('build'),
+    description: 'Build an existing Joystick app.',
+    args: {},
+    options: {
+      type: {
+        flags: {
+          '-t': {
+            set: !!rawArgs.includes('-t'),
+            value: !!rawArgs.includes('-t') && rawArgs[rawArgs.indexOf('-t') + 1],
+          },
+          '--type': {
+            set: !!rawArgs.includes('--type'),
+            value: !!rawArgs.includes('--type') && rawArgs[rawArgs.indexOf('--type') + 1],
+          },
+        },
+        description: 'The type of build you want to generate (tar or folder).',
+      },
+      outputPath: {
+        flags: {
+          '-o': {
+            set: !!rawArgs.includes('-o'),
+            value: !!rawArgs.includes('-o') && rawArgs[rawArgs.indexOf('-o') + 1],
+          },
+          '--outputPath': {
+            set: !!rawArgs.includes('--outputPath'),
+            value: !!rawArgs.includes('--outputPath') && rawArgs[rawArgs.indexOf('--outputPath') + 1],
+          },
+        },
+        description: 'The path you want to build the output to.',
+      },
+    },
+    function: build,
+  },
   create: {
     set: !!rawArgs.includes('create'),
     description: 'Create a new Joystick app.',
@@ -19,54 +53,6 @@ export default {
     },
     options: {},
     function: create,
-  },
-  start: {
-    set: !!rawArgs.includes('start'),
-    description: 'Start an existing Joystick app.',
-    args: {},
-    options: {
-      environment: {
-        flags: {
-          '-e': {
-            set: !!rawArgs.includes('-e'),
-            value: !!rawArgs.includes('-e') && rawArgs[rawArgs.indexOf('-e') + 1],
-          },
-          '--environment': {
-            set: !!rawArgs.includes('--environment'),
-            value: !!rawArgs.includes('--environment') && rawArgs[rawArgs.indexOf('--environment') + 1],
-          },
-        },
-        description: 'Environment to set for process.env.NODE_ENV.',
-      },
-      port: {
-        flags: {
-          '-p': {
-            set: !!rawArgs.includes('-p'),
-            value: !!rawArgs.includes('-p') && parseInt(rawArgs[rawArgs.indexOf('-p') + 1], 10),
-          },
-          '--port': {
-            set: !!rawArgs.includes('--port'),
-            value: !!rawArgs.includes('--port') && parseInt(rawArgs[rawArgs.indexOf('--port') + 1], 10),
-          },
-        },
-        description: 'Port number to run the app on.',
-      }
-    },
-    function: start,
-  },
-  build: {
-    set: !!rawArgs.includes('build'),
-    description: 'Build an existing Joystick app.',
-    args: {},
-    options: {},
-    function: build,
-  },
-  update: {
-    set: !!rawArgs.includes('update'),
-    description: 'Update all Joystick packages to their latest version.',
-    args: {},
-    options: {},
-    function: update,
   },
   deploy: {
     set: !!rawArgs.includes('deploy'),
@@ -114,5 +100,46 @@ export default {
       },
     },
     function: deploy,
-  }
+  },
+  start: {
+    set: !!rawArgs.includes('start'),
+    description: 'Start an existing Joystick app.',
+    args: {},
+    options: {
+      environment: {
+        flags: {
+          '-e': {
+            set: !!rawArgs.includes('-e'),
+            value: !!rawArgs.includes('-e') && rawArgs[rawArgs.indexOf('-e') + 1],
+          },
+          '--environment': {
+            set: !!rawArgs.includes('--environment'),
+            value: !!rawArgs.includes('--environment') && rawArgs[rawArgs.indexOf('--environment') + 1],
+          },
+        },
+        description: 'Environment to set for process.env.NODE_ENV.',
+      },
+      port: {
+        flags: {
+          '-p': {
+            set: !!rawArgs.includes('-p'),
+            value: !!rawArgs.includes('-p') && parseInt(rawArgs[rawArgs.indexOf('-p') + 1], 10),
+          },
+          '--port': {
+            set: !!rawArgs.includes('--port'),
+            value: !!rawArgs.includes('--port') && parseInt(rawArgs[rawArgs.indexOf('--port') + 1], 10),
+          },
+        },
+        description: 'Port number to run the app on.',
+      }
+    },
+    function: start,
+  },
+  update: {
+    set: !!rawArgs.includes('update'),
+    description: 'Update all Joystick packages to their latest version.',
+    args: {},
+    options: {},
+    function: update,
+  },
 };

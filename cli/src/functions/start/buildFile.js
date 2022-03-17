@@ -9,7 +9,7 @@ const configs = {
   node: (inputPath, outputPath = null) => ({
     entryPoints: [inputPath],
     bundle: false,
-    outfile: `${outputPath || './.joystick/build/'}${inputPath}`,
+    outfile: `${outputPath || './.joystick/build'}/${inputPath}`,
     platform: "node",
     format: "esm",
     minify: process.env.NODE_ENV !== "development",
@@ -20,7 +20,7 @@ const configs = {
     target: "es2020",
     entryPoints: [inputPath],
     bundle: true,
-    outfile: `${outputPath || './.joystick/build/'}${inputPath}`,
+    outfile: `${outputPath || './.joystick/build'}/${inputPath}`,
     platform: "browser",
     format: "esm",
     minify: process.env.NODE_ENV !== "development",

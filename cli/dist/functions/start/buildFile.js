@@ -8,21 +8,18 @@ const configs = {
   node: (inputPath, outputPath = null) => ({
     entryPoints: [inputPath],
     bundle: false,
-    outfile: `${outputPath || "./.joystick/build/"}${inputPath}`,
+    outfile: `${outputPath || "./.joystick/build"}/${inputPath}`,
     platform: "node",
     format: "esm",
     minify: process.env.NODE_ENV !== "development",
     logLevel: "silent",
-    plugins: [plugins.generateFileDependencyMap],
-    loader: {
-      ".ttf": "file"
-    }
+    plugins: [plugins.generateFileDependencyMap]
   }),
   browser: (inputPath, outputPath = null) => ({
     target: "es2020",
     entryPoints: [inputPath],
     bundle: true,
-    outfile: `${outputPath || "./.joystick/build/"}${inputPath}`,
+    outfile: `${outputPath || "./.joystick/build"}/${inputPath}`,
     platform: "browser",
     format: "esm",
     minify: process.env.NODE_ENV !== "development",
@@ -33,10 +30,7 @@ const configs = {
       plugins.bootstrapPageComponent,
       plugins.ssrId,
       svg()
-    ],
-    loader: {
-      ".ttf": "file"
-    }
+    ]
   })
 };
 var buildFile_default = async (file = "", platform = "", outputPath = "") => {
