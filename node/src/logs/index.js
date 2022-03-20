@@ -16,8 +16,7 @@ export default () => {
   process.stdout.write = (data) => {
     appLog.write(`{ "error": false, "timestamp": "${new Date().toISOString()}", "data": ${JSON.stringify(data.replace('\n', ''))} }\n`);
   };
-  
-  // process.stderr.write = appLog.write.bind(appLog);
+
   process.stderr.write = (data) => {
     appLog.write(`{ "error": true, "timestamp": "${new Date().toISOString()}", "data": ${JSON.stringify(data.replace('\n', ''))} }\n`);
   };
