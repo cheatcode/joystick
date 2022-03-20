@@ -4,7 +4,6 @@ import domains from "./domains.js";
 import CLILog from "../../lib/CLILog.js";
 import checkIfValidJSON from "./checkIfValidJSON.js";
 var getProviderInstanceSizes_default = (answers = {}, deploymentToken = "", fingerprint = {}) => {
-  console.log(`${domains.deploy}/api/providers/${answers?.provider}/sizes`);
   return fetch(`${domains.deploy}/api/providers/${answers?.provider}/sizes`, {
     method: "POST",
     headers: {
