@@ -5,6 +5,10 @@ import sendEmail from "./email/send";
 import loadSettings from "./settings/load";
 import generateId from "./lib/generateId.js";
 import app from "./app/index.js";
+import logs from "./logs/index.js";
+if (process.env.NODE_ENV !== "development") {
+  logs();
+}
 const accounts = _accounts;
 const get = api.get;
 const set = api.set;
