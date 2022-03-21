@@ -131,7 +131,7 @@ export default async ({
             ? `<script type="module" src="/_joystick/${layout}"></script>`
             : ""
         }
-        <script type="module" src="/_joystick/hmr/client.js"></script>
+        ${process.env.NODE_ENV === 'development' ? `<script type="module" src="/_joystick/hmr/client.js"></script>` : ''}
         `
       );
 
