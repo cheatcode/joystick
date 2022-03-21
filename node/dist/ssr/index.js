@@ -93,7 +93,7 @@ var ssr_default = async ({
         <script type="module" src="/_joystick/index.client.js"><\/script>
         ${path ? `<script type="module" src="/_joystick/${path}"><\/script>` : ""}
         ${layout ? `<script type="module" src="/_joystick/${layout}"><\/script>` : ""}
-        <script type="module" src="/_joystick/hmr/client.js"><\/script>
+        ${process.env.NODE_ENV === "development" ? `<script type="module" src="/_joystick/hmr/client.js"><\/script>` : ""}
         `);
     if (head) {
       return setHeadTagsInHTML(baseHTMLWithReplacements, head);
