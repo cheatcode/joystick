@@ -1,8 +1,8 @@
 import fetch from 'node-fetch';
 import chalk from 'chalk';
-import domains from "./domains.js";
+import domains from "../../lib/domains.js";
 import CLILog from "../../lib/CLILog.js";
-import checkIfValidJSON from './checkIfValidJSON.js';
+import checkIfValidJSON from '../../lib/checkIfValidJSON.js';
 
 export default (answers = {}, deploymentToken = '', fingerprint = {}) => {
   return fetch(

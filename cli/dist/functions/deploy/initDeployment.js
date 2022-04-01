@@ -6,8 +6,8 @@ import fs from "fs";
 import child_process from "child_process";
 import FormData from "form-data";
 import Loader from "../../lib/loader.js";
-import domains from "./domains.js";
-import checkIfValidJSON from "./checkIfValidJSON.js";
+import domains from "../../lib/domains.js";
+import checkIfValidJSON from "../../lib/checkIfValidJSON.js";
 import CLILog from "../../lib/CLILog.js";
 import rainbowRoad from "../../lib/rainbowRoad.js";
 import build from "../build/index.js";
@@ -38,7 +38,7 @@ const checkDeploymentStatus = (deploymentId = "", deploymentToken = "", fingerpr
       return data;
     });
   } catch (exception) {
-    throw new Error(`[runDeployment.checkDeploymentStatus] ${exception.message}`);
+    throw new Error(`[initDeployment.checkDeploymentStatus] ${exception.message}`);
   }
 };
 const getAppSettings = () => {
@@ -49,7 +49,7 @@ const getAppSettings = () => {
     }
     return "{}";
   } catch (exception) {
-    throw new Error(`[runDeployment.getAppSettings] ${exception.message}`);
+    throw new Error(`[initDeployment.getAppSettings] ${exception.message}`);
   }
 };
 const startDeployment = (deploymentToken = "", deployment = {}, fingerprint = {}, deploymentTimestamp = "") => {
@@ -64,6 +64,9 @@ const startDeployment = (deploymentToken = "", deployment = {}, fingerprint = {}
         ...fingerprint,
         ...deployment,
         deploymentTimestamp,
+        flags: {
+          isInitialDeployment: true
+        },
         settings: getAppSettings()
       })
     }).then(async (response) => {
@@ -82,13 +85,14 @@ const startDeployment = (deploymentToken = "", deployment = {}, fingerprint = {}
       return data;
     });
   } catch (exception) {
-    throw new Error(`[runDeployment.startDeployment] ${exception.message}`);
+    throw new Error(`[initDeployment.startDeployment] ${exception.message}`);
   }
 };
 const uploadBuildToObjectStorage = (timestamp = "", deploymentOptions = {}) => {
   try {
     const formData = new FormData();
     formData.append("build_tar", fs.readFileSync(`.build/build.tar.xz`), `${timestamp}.tar.xz`);
+    formData.append("flags", JSON.stringify({ isInitialDeployment: true }));
     formData.append("deployment", JSON.stringify(deploymentOptions?.deployment || {}));
     formData.append("fingerprint", JSON.stringify(deploymentOptions?.fingerprint || {}));
     return fetch(`${domains?.deploy}/api/deployments/upload`, {
@@ -103,14 +107,14 @@ const uploadBuildToObjectStorage = (timestamp = "", deploymentOptions = {}) => {
       return data;
     });
   } catch (exception) {
-    throw new Error(`[runDeployment.uploadBuildToObjectStorage] ${exception.message}`);
+    throw new Error(`[initDeployment.uploadBuildToObjectStorage] ${exception.message}`);
   }
 };
 const buildApp = () => {
   try {
     return build({}, { isDeploy: true, type: "tar" });
   } catch (exception) {
-    throw new Error(`[runDeployment.buildApp] ${exception.message}`);
+    throw new Error(`[initDeployment.buildApp] ${exception.message}`);
   }
 };
 const validateOptions = (options) => {
@@ -124,10 +128,10 @@ const validateOptions = (options) => {
     if (!options.fingerprint)
       throw new Error("options.fingerprint is required.");
   } catch (exception) {
-    throw new Error(`[runDeployment.validateOptions] ${exception.message}`);
+    throw new Error(`[initDeployment.validateOptions] ${exception.message}`);
   }
 };
-const runDeployment = async (options, { resolve, reject }) => {
+const initDeployment = async (options, { resolve, reject }) => {
   try {
     validateOptions(options);
     console.log("");
@@ -185,12 +189,12 @@ const runDeployment = async (options, { resolve, reject }) => {
     }, 3e3);
   } catch (exception) {
     console.warn(exception);
-    reject(`[runDeployment] ${exception.message}`);
+    reject(`[initDeployment] ${exception.message}`);
   }
 };
-var runDeployment_default = (options) => new Promise((resolve, reject) => {
-  runDeployment(options, { resolve, reject });
+var initDeployment_default = (options) => new Promise((resolve, reject) => {
+  initDeployment(options, { resolve, reject });
 });
 export {
-  runDeployment_default as default
+  initDeployment_default as default
 };

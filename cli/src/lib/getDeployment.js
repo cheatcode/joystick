@@ -2,7 +2,7 @@ import fetch from "node-fetch";
 import chalk from "chalk";
 import domains from "./domains.js";
 import checkIfValidJSON from "./checkIfValidJSON.js";
-import CLILog from "../../lib/CLILog.js";
+import CLILog from "./CLILog.js";
 
 export default (deploymentDomain = '', deploymentToken = '', fingerprint = {}) => {
   return fetch(

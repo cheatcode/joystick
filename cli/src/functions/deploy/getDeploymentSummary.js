@@ -1,6 +1,6 @@
 import fetch from "node-fetch";
-import domains from "./domains.js";
-import checkIfValidJSON from "./checkIfValidJSON.js";
+import domains from "../../lib/domains.js";
+import checkIfValidJSON from "../../lib/checkIfValidJSON.js";
 import CLILog from "../../lib/CLILog.js";
 
 export default (answers = {}, deploymentToken = '', fingerprint = '') => {

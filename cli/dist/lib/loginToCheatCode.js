@@ -1,9 +1,8 @@
 import fetch from "node-fetch";
 import chalk from "chalk";
-import domains from "../../lib/domains.js";
-import checkIfValidJSON from "../../lib/checkIfValidJSON.js";
+import domains from "./domains.js";
+import checkIfValidJSON from "./checkIfValidJSON.js";
 import parseCookiesFromLogin from "./parseCookiesFromLogin.js";
-import writeLoginTokenToDisk from "./writeLoginTokenToDisk.js";
 var loginToCheatCode_default = async (emailAddress = "", password = "") => {
   return fetch(`${domains?.site}/api/_accounts/login`, {
     method: "POST",
@@ -30,7 +29,6 @@ var loginToCheatCode_default = async (emailAddress = "", password = "") => {
     if (!error) {
       const cookies = parseCookiesFromLogin(response);
       if (cookies.joystickLoginToken && cookies.joystickLoginTokenExpiresAt) {
-        writeLoginTokenToDisk(cookies);
         console.log(chalk.greenBright(`
  Logged in as ${data?.emailAddress}!`));
         return {

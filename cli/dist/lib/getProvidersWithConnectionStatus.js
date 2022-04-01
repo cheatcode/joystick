@@ -1,4 +1,4 @@
-import providers from "../../lib/providers.js";
+import providers from "./providers.js";
 var getProvidersWithConnectionStatus_default = (user = {}) => {
   return providers.map((provider) => {
     return {

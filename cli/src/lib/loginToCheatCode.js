@@ -3,7 +3,6 @@ import chalk from 'chalk';
 import domains from './domains.js';
 import checkIfValidJSON from './checkIfValidJSON.js';
 import parseCookiesFromLogin from './parseCookiesFromLogin.js';
-import writeLoginTokenToDisk from './writeLoginTokenToDisk.js';
 
 export default async (emailAddress = '', password = '') => {
   return fetch(`${domains?.site}/api/_accounts/login`, {
@@ -36,7 +35,6 @@ export default async (emailAddress = '', password = '') => {
       const cookies = parseCookiesFromLogin(response);
     
       if (cookies.joystickLoginToken && cookies.joystickLoginTokenExpiresAt) {
-        writeLoginTokenToDisk(cookies);
         console.log(chalk.greenBright(`\n Logged in as ${data?.emailAddress}!`));
 
         return {

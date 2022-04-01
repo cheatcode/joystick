@@ -70,3 +70,12 @@ if (functionsCalled.includes('deploy')) {
     functions.deploy.function(args, options);
   }
 }
+
+if (functionsCalled.includes('deployment')) {
+  const args = getArgs(functions.deployment.args);
+  const options = getOptions(functions.deployment.options);
+
+  if (functions.deployment.function && typeof functions.deployment.function === 'function') {
+    functions.deployment.function(args, options);
+  }
+}

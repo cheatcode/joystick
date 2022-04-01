@@ -3,7 +3,7 @@ var getOptions_default = (options = {}) => {
     if (optionData && optionData.flags) {
       Object.entries(optionData.flags).forEach(([_flagName, flag]) => {
         if (flag && flag.value) {
-          values[optionName] = flag.value && !`${flag.value}`.includes("-") ? flag.value : null;
+          values[optionName] = flag.value && ![`${flag.value}`.substring(0, 1)].includes("-") ? flag.value : null;
         }
       });
     }

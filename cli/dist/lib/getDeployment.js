@@ -1,14 +1,14 @@
 import fetch from "node-fetch";
 import chalk from "chalk";
-import domains from "../../lib/domains.js";
-import CLILog from "../../lib/CLILog.js";
-import checkIfValidJSON from "../../lib/checkIfValidJSON.js";
-var getProviderInstanceSizes_default = (answers = {}, deploymentToken = "", fingerprint = {}) => {
-  return fetch(`${domains.deploy}/api/providers/${answers?.provider}/sizes`, {
+import domains from "./domains.js";
+import checkIfValidJSON from "./checkIfValidJSON.js";
+import CLILog from "./CLILog.js";
+var getDeployment_default = (deploymentDomain = "", deploymentToken = "", fingerprint = {}) => {
+  return fetch(`${domains?.deploy}/api/deployments/${deploymentDomain}`, {
     method: "POST",
     headers: {
-      "Content-Type": "application/json",
-      "x-deployment-token": deploymentToken
+      "x-deployment-token": deploymentToken,
+      "Content-Type": "application/json"
     },
     body: JSON.stringify(fingerprint)
   }).then(async (response) => {
@@ -28,5 +28,5 @@ var getProviderInstanceSizes_default = (answers = {}, deploymentToken = "", fing
   });
 };
 export {
-  getProviderInstanceSizes_default as default
+  getDeployment_default as default
 };

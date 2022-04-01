@@ -1,6 +1,6 @@
 import fetch from "node-fetch";
-import domains from "./domains.js";
-import checkIfValidJSON from "./checkIfValidJSON.js";
+import domains from "../../lib/domains.js";
+import checkIfValidJSON from "../../lib/checkIfValidJSON.js";
 import CLILog from "../../lib/CLILog.js";
 var getDeploymentSummary_default = (answers = {}, deploymentToken = "", fingerprint = "") => {
   return fetch(`${domains.deploy}/api/deployments/summary`, {

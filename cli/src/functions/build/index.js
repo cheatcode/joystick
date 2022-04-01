@@ -13,31 +13,20 @@ export default (args = {}, options = {}) => {
     process.exit(0);
   }
 
-  if (!options?.outputPath) {
-    CLILog('Must pass an output path for your build.', {
-      level: 'danger',
-      docs: 'https://cheatcode.co/docs/joystick/cli#build',
-    });
-    process.exit(0);
-  }
-
   console.log("");
   const loader = new Loader({ padding: options?.isDeploy ? '  ' : '', defaultMessage: "Building app..." });
   loader.text("Building app...");
 
   const filesToBuild = getFilesToBuild();
+  const outputPath = '.build';
 
-  // NOTE: Remove any trailing slashes as we force them in the final build output path.
-  const lastCharacter = options?.outputPath?.split('')?.pop();
-  const sanitizedOutputPath = lastCharacter === '/' ? options?.outputPath?.split('').slice(0, options?.outputPath?.length - 1).join('') : null;
-
-  return buildFiles(filesToBuild, options?.type === 'tar' ? `${sanitizedOutputPath}/.tar` : sanitizedOutputPath).then((response) => {
+  return buildFiles(filesToBuild, options?.type === 'tar' ? `${outputPath}/.tar` : outputPath).then((response) => {
     if (options?.type === 'tar') {
-      child_process.execSync(`tar -cf ${sanitizedOutputPath}/build.tar.xz --use-compress-program='xz -9' --exclude={"${sanitizedOutputPath}/.tar/.deploy","${sanitizedOutputPath}/.tar/.git","${sanitizedOutputPath}/.tar/uploads","${sanitizedOutputPath}/.tar/storage","${sanitizedOutputPath}/.tar/.DS_Store","${sanitizedOutputPath}/.tar/*.tar","${sanitizedOutputPath}/.tar/*.tar.gz","${sanitizedOutputPath}/.tar/*.tar.xz"} ${sanitizedOutputPath}/.tar`);
-      child_process.execSync(`cd ${sanitizedOutputPath} && rm -rf .tar`);
+      child_process.execSync(`cd ${outputPath}/.tar && tar -cf ../build.tar.xz --use-compress-program='xz -9' --exclude={".deploy",".git","uploads","storage",".DS_Store","*.tar","*.tar.gz","*.tar.xz"} .`);
+      child_process.execSync(`cd ${outputPath} && rm -rf .tar`);
     }
   
-    loader.pause(`App built as ${options?.type} to ${sanitizedOutputPath}!\n`);
+    loader.pause(`App built as ${options?.type === 'tar' ? '.tar file' : 'folder'} to ${outputPath}!\n`);
     console.log("");
   }).catch((error) => {
     console.warn(error);

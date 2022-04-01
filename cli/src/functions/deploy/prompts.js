@@ -2,13 +2,13 @@ import fetch from 'node-fetch';
 import chalk from 'chalk';
 import AsciiTable from 'ascii-table';
 import currencyFormatter from 'currency-formatter';
-import getProvidersWithConnectionStatus from './getProvidersWithConnectionStatus.js';
-import loginToCheatCode from './loginToCheatCode.js';
-import domains from './domains.js';
-import getProvider from './getProvider.js';
+import getProvidersWithConnectionStatus from '../../lib/getProvidersWithConnectionStatus.js';
+import loginToCheatCode from '../../lib/loginToCheatCode.js';
+import domains from '../../lib/domains.js';
+import getProvider from '../../lib/getProvider.js';
 import getProviderInstanceSizes from './getProviderInstanceSizes.js';
 import getInstanceSizeRegions from './getInstanceSizeRegions.js';
-import providers from './providers.js';
+import providers from '../../lib/providers.js';
 
 const table = new AsciiTable();
 

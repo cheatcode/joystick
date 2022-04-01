@@ -8,8 +8,8 @@ import fs from 'fs';
 import child_process from 'child_process';
 import FormData from 'form-data';
 import Loader from '../../lib/loader.js';
-import domains from './domains.js';
-import checkIfValidJSON from './checkIfValidJSON.js';
+import domains from '../../lib/domains.js';
+import checkIfValidJSON from '../../lib/checkIfValidJSON.js';
 import CLILog from '../../lib/CLILog.js';
 import rainbowRoad from '../../lib/rainbowRoad.js';
 import build from '../build/index.js';
@@ -49,7 +49,7 @@ const checkDeploymentStatus = (deploymentId = '', deploymentToken = '', fingerpr
       return data;
     });
   } catch (exception) {
-    throw new Error(`[runDeployment.checkDeploymentStatus] ${exception.message}`);
+    throw new Error(`[updateDeployment.checkDeploymentStatus] ${exception.message}`);
   }
 };
 
@@ -62,7 +62,7 @@ const getAppSettings = () => {
 
     return "{}";
   } catch (exception) {
-    throw new Error(`[runDeployment.getAppSettings] ${exception.message}`);
+    throw new Error(`[updateDeployment.getAppSettings] ${exception.message}`);
   }
 };
 
@@ -78,6 +78,9 @@ const startDeployment = (deploymentToken = '', deployment = {}, fingerprint = {}
         ...fingerprint,
         ...deployment,
         deploymentTimestamp,
+        flags: {
+          isInitialDeployment: false,
+        },
         settings: getAppSettings(),
       })
     }).then(async (response) => {
@@ -103,7 +106,7 @@ const startDeployment = (deploymentToken = '', deployment = {}, fingerprint = {}
       return data;
     });
   } catch (exception) {
-    throw new Error(`[runDeployment.startDeployment] ${exception.message}`);
+    throw new Error(`[updateDeployment.startDeployment] ${exception.message}`);
   }
 };
 
@@ -112,6 +115,7 @@ const uploadBuildToObjectStorage = (timestamp = '', deploymentOptions = {}) => {
     const formData = new FormData();
 
     formData.append('build_tar', fs.readFileSync(`.build/build.tar.xz`), `${timestamp}.tar.xz`);
+    formData.append('flags', JSON.stringify({ isInitialDeployment: false }));
     formData.append('deployment', JSON.stringify(deploymentOptions?.deployment || {}));
     formData.append('fingerprint', JSON.stringify(deploymentOptions?.fingerprint || {}));
 
@@ -127,7 +131,7 @@ const uploadBuildToObjectStorage = (timestamp = '', deploymentOptions = {}) => {
       return data;
     });
   } catch (exception) {
-    throw new Error(`[runDeployment.uploadBuildToObjectStorage] ${exception.message}`);
+    throw new Error(`[updateDeployment.uploadBuildToObjectStorage] ${exception.message}`);
   }
 };
 
@@ -135,7 +139,7 @@ const buildApp = () => {
   try {
     return build({}, { isDeploy: true, type: 'tar' });
   } catch (exception) {
-    throw new Error(`[runDeployment.buildApp] ${exception.message}`);
+    throw new Error(`[updateDeployment.buildApp] ${exception.message}`);
   }
 };
 
@@ -146,20 +150,14 @@ const validateOptions = (options) => {
     if (!options.deployment) throw new Error('options.deployment is required.');
     if (!options.fingerprint) throw new Error('options.fingerprint is required.');
   } catch (exception) {
-    throw new Error(`[runDeployment.validateOptions] ${exception.message}`);
+    throw new Error(`[updateDeployment.validateOptions] ${exception.message}`);
   }
 };
 
-const runDeployment = async (options, { resolve, reject }) => {
+const updateDeployment = async (options, { resolve, reject }) => {
   try {
     validateOptions(options);
 
-    // Only reason it was screwing up was out of sync data in the DB
-    // and the existing conditionals to route deployment down another path
-    // depending on the status/existing server count. May need to revisit this
-    // and consider an easy means for resetting for admins (do a simple admin panel
-    // for deploy.cheatcode.co that has a "reset" button).
-    
     console.log("");
     const loader = new Loader({ padding: '  ', defaultMessage: "Deploying app..." });
     loader.text("Deploying app...");
@@ -202,48 +200,20 @@ const runDeployment = async (options, { resolve, reject }) => {
       loader.text(deploymentStatus?.log?.message);
 
       if (deploymentStatus?.deployment?.status === 'deployed') {
-        const loadBalancerInstances = deploymentStatus?.deployment?.instances?.filter((instance) => instance.type === 'loadBalancer');
-
-        loader.stop();
         clearInterval(checkDeploymentInterval);
 
-        console.log(`  \n  ${rainbowRoad()}\n\n`);
-        console.log(chalk.yellowBright(`  ${chalk.magenta('>>>')} Steps below MUST be completed in order to issue your SSL certificates and make your app live. ${chalk.magenta('<<<')}\n\n`));
-        console.log(chalk.white(`  ${chalk.yellowBright('1.')} Add a DNS record type A to the domain you deployed to for each of the Load Balancer IP addresses in the table below.\n`));
-
-        console.log(`  ${chalk.gray('------')}\n`);
-        
-        console.log(`${sslRecordsTable
-          .removeBorder()
-          .setHeading(chalk.magenta('#'), chalk.magenta('DNS Record Type'), chalk.magenta('Domain'), chalk.magenta('IP Address'), chalk.magenta('TTL'))
-          .addRowMatrix(
-            _.sortBy(loadBalancerInstances, 'name').map((loadBalancer, loadBalancerNumber) => {
-              return [chalk.greenBright(loadBalancerNumber + 1), chalk.blueBright('A'), chalk.yellowBright(options?.deployment?.domain), chalk.greenBright(loadBalancer?.instance?.ip), chalk.white('As Low As Possible (1 minute)')]
-            })
-          )
-          .setAlign(0, AsciiTable.CENTER)
-          .setAlign(1, AsciiTable.CENTER)
-          .setAlign(2, AsciiTable.CENTER)
-          .setAlign(3, AsciiTable.CENTER)
-          .toString()}\n\n
-  ${chalk.yellowBright(`Learn more about creating DNS records here: ${chalk.blueBright('https://cheatcode.co/docs/deploy/ssl')}`)}
-        `);
-
-        console.log(`  ${chalk.gray('------')}\n`);
-
-        console.log(chalk.white(`  ${chalk.yellowBright('2.')} Visit ${chalk.blueBright(`https://cheatcode.co/u/deployments/${options?.deployment?.domain}`)} and click the "Provision SSL Certificate" button.\n`));
-        console.log(chalk.white(`  ${chalk.yellowBright('3.')} If Step #2 fails, wait 5 minutes and try again until your certificate is provisioned.\n`));
-        console.log(chalk.white(`  ${chalk.yellowBright('4.')} If SSL fails to provision after multiple attempts, double-check your DNS configuration and try again.\n`));
+        loader.stable(`${deploymentStatus?.deployment?.domain} updated!`);
+        loader.stop();
         console.log('\n');
       }
     }, 3000);
   } catch (exception) {
     console.warn(exception);
-    reject(`[runDeployment] ${exception.message}`);
+    reject(`[updateDeployment] ${exception.message}`);
   }
 };
 
 export default (options) =>
   new Promise((resolve, reject) => {
-    runDeployment(options, { resolve, reject });
+    updateDeployment(options, { resolve, reject });
   });
