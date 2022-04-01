@@ -69,7 +69,7 @@ var render_default = (req, res, next) => {
     const Page = pageFile;
     const layoutFile = layoutPath ? await getFile(layoutPath) : null;
     const Layout = layoutFile;
-    const translations = await getTranslations(buildPath, path, req.user);
+    const translations = await getTranslations(buildPath, path, req?.context?.user);
     const url = getUrl(req);
     const props = { ...options?.props || {} };
     if (layoutPath && fs.existsSync(layoutPath)) {
