@@ -1,7 +1,7 @@
 {
   "name": "@joystick.js/cli",
-  "version": "1.0.0-beta.705",
-  "developmentVersion": "1.0.0-beta.790",
+  "version": "1.0.0-beta.793",
+  "developmentVersion": "1.0.0-beta.793",
   "type": "module",
   "description": "CLI for the Joystick JavaScript framework.",
   "main": "development.js",
@@ -32,7 +32,7 @@
     "command-exists": "^1.2.9",
     "cross-port-killer": "^1.4.0",
     "currency-formatter": "^1.5.9",
-    "esbuild": "^0.13.9",
+    "esbuild": "^0.14.29",
     "esbuild-plugin-svg": "^0.1.0",
     "form-data": "^4.0.0",
     "fs-extra": "^10.0.0",

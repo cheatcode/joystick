@@ -170,7 +170,7 @@ const runDeployment = async (options, { resolve, reject }) => {
         })).setAlign(0, AsciiTable.CENTER).setAlign(1, AsciiTable.CENTER).setAlign(2, AsciiTable.CENTER).setAlign(3, AsciiTable.CENTER).toString()}
 
 
-  ${chalk.yellowBright(`Learn more about creating DNS records here: ${chalk.blueBright("https://cheatcode.co/docs/deploy/dns")}`)}
+  ${chalk.yellowBright(`Learn more about creating DNS records here: ${chalk.blueBright("https://cheatcode.co/docs/deploy/ssl")}`)}
         `);
         console.log(`  ${chalk.gray("------")}
 `);
