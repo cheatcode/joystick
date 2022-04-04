@@ -582,6 +582,8 @@ When you run `joystick start`, Joystick will automatically detect the database, 
 
 ### Adding a remote database
 
+> NOTE: When running Joystick in a production environment (not on your own computer), a remote database is **required**. Joystick does *not* start up a database for you in production.
+
 If you do _not_ want Joystick to start a database on your behalf but you _do_ want Joystick to connect the driver for your database to a remote database (running on your computer or in the cloud), pass a `connection` object with your database:
 
 ```javascript
