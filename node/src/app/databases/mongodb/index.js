@@ -3,7 +3,7 @@ import chalk from "chalk";
 import mongoUri from "mongo-uri-tool";
 import buildConnectionString from "./buildConnectionString";
 
-export default async (connectionFromSettings = null) => {
+export default async (connectionFromSettings = null, driverOptions = {}) => {
   const connection = connectionFromSettings || {
     hosts: [
       { hostname: "127.0.0.1", port: parseInt(process.env.PORT, 10) + 10 },
@@ -21,6 +21,7 @@ export default async (connectionFromSettings = null) => {
       useNewUrlParser: true,
       useUnifiedTopology: true,
       ssl: process.env.NODE_ENV !== 'development',
+      ...(driverOptions || {})
     });
 
     const db = client.db(parsedURI.db);

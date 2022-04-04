@@ -2,7 +2,7 @@ import { MongoClient } from "mongodb";
 import chalk from "chalk";
 import mongoUri from "mongo-uri-tool";
 import buildConnectionString from "./buildConnectionString";
-var mongodb_default = async (connectionFromSettings = null) => {
+var mongodb_default = async (connectionFromSettings = null, driverOptions = {}) => {
   const connection = connectionFromSettings || {
     hosts: [
       { hostname: "127.0.0.1", port: parseInt(process.env.PORT, 10) + 10 }
@@ -17,7 +17,8 @@ var mongodb_default = async (connectionFromSettings = null) => {
       socketTimeoutMS: 3e3,
       useNewUrlParser: true,
       useUnifiedTopology: true,
-      ssl: process.env.NODE_ENV !== "development"
+      ssl: process.env.NODE_ENV !== "development",
+      ...driverOptions || {}
     });
     const db = client.db(parsedURI.db);
     return {

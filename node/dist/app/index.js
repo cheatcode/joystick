@@ -54,8 +54,8 @@ class App {
       };
     });
     await Promise.all(databases.map(async (database) => {
-      if (database.name === "mongodb") {
-        const instance = await mongodb(database?.settings?.connection);
+      if (database.name === "mongodb" && database?.settings?.connection) {
+        const instance = await mongodb(database?.settings?.connection, database?.settings?.settings?.options);
         const connection = {
           ...database,
           ...instance
@@ -66,8 +66,8 @@ class App {
         };
         return connection;
       }
-      if (database.name === "postgresql") {
-        const instance = await postgresql(database?.settings?.connection);
+      if (database.name === "postgresql" && database?.settings?.connection) {
+        const instance = await postgresql(database?.settings?.connection, database?.settings?.settings?.options);
         const connection = {
           ...database,
           ...instance

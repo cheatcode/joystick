@@ -3,7 +3,7 @@ import chalk from "chalk";
 
 const { Pool } = postgresql;
 
-export default async (connectionFromSettings = null) => {
+export default async (connectionFromSettings = null, driverOptions = {}) => {
   const connection = connectionFromSettings || {
     hosts: [
       { hostname: "127.0.0.1", port: parseInt(process.env.PORT, 10) + 10 },
@@ -19,6 +19,7 @@ export default async (connectionFromSettings = null) => {
       password: connection?.password || '',
       host: host?.hostname,
       port: host?.port,
+      ...(driverOptions || {})
     });
   
     return {
