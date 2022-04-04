@@ -34,11 +34,10 @@ export default async (connectionFromSettings = null, driverOptions = {}) => {
       }
     };
   } catch (exception) {
-    console.warn(exception);
     console.warn(
       chalk.yellowBright(
-        `\nFailed to connect to PostgreSQL. Please double-check connection settings and try again.`
-      )
+        `\nFailed to connect to PostgreSQL. Please double-check connection settings and try again.\n\nError from PostgreSQL:\n\n${chalk.redBright(exception?.message)}`
+      ),
     );
   }
 };

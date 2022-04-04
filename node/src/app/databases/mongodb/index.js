@@ -33,8 +33,8 @@ export default async (connectionFromSettings = null, driverOptions = {}) => {
   } catch (exception) {
     console.warn(
       chalk.yellowBright(
-        `\nFailed to connect to MongoDB. Please double-check connection settings and try again.`
-      )
+        `\nFailed to connect to MongoDB. Please double-check connection settings and try again.\n\nError from MongoDB:\n\n${chalk.redBright(exception?.message)}`
+      ),
     );
   }
 };

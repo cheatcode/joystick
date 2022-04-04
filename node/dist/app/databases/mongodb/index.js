@@ -27,7 +27,11 @@ var mongodb_default = async (connectionFromSettings = null, driverOptions = {}) 
     };
   } catch (exception) {
     console.warn(chalk.yellowBright(`
-Failed to connect to MongoDB. Please double-check connection settings and try again.`));
+Failed to connect to MongoDB. Please double-check connection settings and try again.
+
+Error from MongoDB:
+
+${chalk.redBright(exception?.message)}`));
   }
 };
 export {
