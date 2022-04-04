@@ -60,7 +60,7 @@ const getAppSettings = () => {
       return JSON.parse(file);
     }
 
-    return "{}";
+    return {};
   } catch (exception) {
     throw new Error(`[initDeployment.getAppSettings] ${exception.message}`);
   }

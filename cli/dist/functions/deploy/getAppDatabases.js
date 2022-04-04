@@ -3,17 +3,17 @@ var getAppDatabases_default = (settings = {}) => {
   const databases = settings?.config?.databases;
   if (databases && Array.isArray(databases) && databases.length > 0) {
     validateDatabasesFromSettings(databases);
-    return databases.map((database) => {
-      return {
-        [database?.provider]: {
-          pid: null,
-          connection: database?.connection || null,
-          settings: database
-        }
+    const appDatabases = {};
+    databases.forEach((database) => {
+      appDatabases[database?.provider] = {
+        pid: null,
+        connection: database?.connection || null,
+        settings: database
       };
     });
+    return appDatabases;
   }
-  return [];
+  return {};
 };
 export {
   getAppDatabases_default as default
