@@ -3,7 +3,6 @@ import chalk from "chalk";
 import AsciiTable from "ascii-table";
 import _ from "lodash";
 import fs from "fs";
-import child_process from "child_process";
 import FormData from "form-data";
 import Loader from "../../lib/loader.js";
 import domains from "../../lib/domains.js";
@@ -11,6 +10,7 @@ import checkIfValidJSON from "../../lib/checkIfValidJSON.js";
 import CLILog from "../../lib/CLILog.js";
 import rainbowRoad from "../../lib/rainbowRoad.js";
 import build from "../build/index.js";
+import getAppDatabases from "./getAppDatabases.js";
 let checkDeploymentInterval;
 const sslRecordsTable = new AsciiTable();
 const checkDeploymentStatus = (deploymentId = "", deploymentToken = "", fingerprint = {}) => {
@@ -54,6 +54,7 @@ const getAppSettings = () => {
 };
 const startDeployment = (deploymentToken = "", deployment = {}, fingerprint = {}, deploymentTimestamp = "") => {
   try {
+    const appSettings = getAppSettings();
     return fetch(`${domains?.deploy}/api/deployments`, {
       method: "POST",
       headers: {
@@ -67,7 +68,8 @@ const startDeployment = (deploymentToken = "", deployment = {}, fingerprint = {}
         flags: {
           isInitialDeployment: true
         },
-        settings: getAppSettings()
+        settings: appSettings,
+        databases: getAppDatabases(appSettings)
       })
     }).then(async (response) => {
       const text = await response.text();

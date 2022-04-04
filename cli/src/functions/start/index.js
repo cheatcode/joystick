@@ -18,13 +18,10 @@ import isValidJSONString from "../../lib/isValidJSONString.js";
 import startDatabaseProvider from "./databases/startProvider.js";
 import CLILog from "../../lib/CLILog.js";
 import removeDeletedDependenciesFromMap from './removeDeletedDependenciesFromMap.js';
+import validateDatabasesFromSettings from "../../lib/validateDatabasesFromSettings.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-
-const isObject = (value) => {
-  return !!(value && typeof value === "object" && !Array.isArray(value));
-};
 
 const killProcess = (pid = 0) => {
   return new Promise((resolve) => {
@@ -397,51 +394,6 @@ const startDatabase = async (database = {}, databasePort = 2610) => {
   return Promise.resolve();
 };
 
-const validateDatabases = (databases = []) => {
-  const databasesNotAsObjects = databases.filter(
-    (database) => !isObject(database)
-  );
-  const userDatabases = databases.filter((database) => !!database.users);
-  const databasesWithDuplicateNames = databases
-    .flatMap((database, index) => {
-      return databases.map((currentDatabase, currentIndex) => {
-        if (index === currentIndex) return null;
-        if (currentDatabase.provider === database.provider) {
-          return database;
-        }
-      });
-    })
-    .filter((database) => !!database);
-
-  if (databasesNotAsObjects && databasesNotAsObjects.length > 0) {
-    CLILog(`Please ensure that each database in the config.databases array in your settings.${process.env.NODE_ENV}.json is an object. Correct the array and restart your app.`, {
-      level: 'danger',
-      docs: 'https://github.com/cheatcode/joystick#databases',
-    });
-    process.exit(1);
-  }
-
-  if (userDatabases && userDatabases.length > 1) {
-    CLILog(`Please select a single database for your user accounts and restart your app.`, {
-      level: 'danger',
-      docs: 'https://github.com/cheatcode/joystick#users-database',
-    });
-    process.exit(1);
-  }
-
-  if (databasesWithDuplicateNames && databasesWithDuplicateNames.length > 1) {
-    CLILog(
-      `Please only specify a database provider once. Remove any duplicates from the config.databases array in your settings.${process.env.NODE_ENV}.json and restart your app.`, {
-        level: 'danger',
-        docs: 'https://github.com/cheatcode/joystick#databases',
-      }
-    );
-    process.exit(1);
-  }
-
-  return true;
-};
-
 const startDatabases = async (databasePortStart = 2610) => {
   try {
     const hasSettings = !!process.env.JOYSTICK_SETTINGS;
@@ -449,7 +401,7 @@ const startDatabases = async (databasePortStart = 2610) => {
     const databases = settings?.config?.databases || [];
 
     if (databases && Array.isArray(databases) && databases.length > 0) {
-      validateDatabases(databases);
+      validateDatabasesFromSettings(databases);
 
       for (let i = 0; i < databases?.length; i += 1) {
         // NOTE: Increment each database port using index in the databases array from settings.
