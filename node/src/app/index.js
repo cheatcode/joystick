@@ -65,6 +65,7 @@ export class App {
 
     await Promise.all(
       databases.map(async (database) => {
+        console.log(JSON.stringify(database || {}, null, 2));
         if (database.name === "mongodb" && database?.settings?.connection) {
           const instance = await mongodb(database?.settings?.connection, database?.settings?.settings?.options);
           const connection = {
