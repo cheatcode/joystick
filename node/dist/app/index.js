@@ -85,6 +85,7 @@ class App {
         }
         return connection;
       }
+      return Promise.resolve();
     }));
     return process.databases;
   }

@@ -102,6 +102,8 @@ export class App {
 
           return connection;
         }
+
+        return Promise.resolve();
       })
     );
 
