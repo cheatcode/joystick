@@ -1,5 +1,5 @@
 export default (req, res, next) => {
-  if (!req.secure) {
+  if (req.get('x-forwarded-proto') !== 'https') {
     res.setHeader('Content-Type', 'text/html');
 
     return res.status(403).send(`
