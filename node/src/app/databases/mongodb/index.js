@@ -1,6 +1,7 @@
 import { MongoClient } from "mongodb";
 import chalk from "chalk";
 import mongoUri from "mongo-uri-tool";
+import fs from 'fs';
 import buildConnectionString from "./buildConnectionString";
 
 export default async (connectionFromSettings = null, driverOptions = {}) => {
@@ -15,15 +16,20 @@ export default async (connectionFromSettings = null, driverOptions = {}) => {
   const parsedURI = mongoUri.parseUri(connectionString);
 
   try {
-    const client = await MongoClient.connect(connectionString, {
+    const connectionOptions = {
       connectTimeoutMS: 3000,
       socketTimeoutMS: 3000,
       useNewUrlParser: true,
       useUnifiedTopology: true,
       ssl: process.env.NODE_ENV !== 'development',
       ...(driverOptions || {})
-    });
+    };
 
+    if (driverOptions?.ca) {
+      connectionOptions.ca = fs.readFileSync(driverOptions?.ca);
+    }
+
+    const client = await MongoClient.connect(connectionString, connectionOptions);
     const db = client.db(parsedURI.db);
 
     return {
