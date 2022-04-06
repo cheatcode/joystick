@@ -6,7 +6,7 @@ var get_default = (getterName = "", getterOptions = {}) => {
     return new Promise((resolve, reject) => {
       const url = new URL(`${getOrigin()}/api/_getters/${getterName}`);
       const input = getterOptions.input ? JSON.stringify(getterOptions.input) : null;
-      const output = getterOptions.output ? JSON.stringify(getterOptions.output) : null;
+      const output = getterOptions.output ? JSON.stringify(getterOptions.output)`` : null;
       const params = new URLSearchParams({
         input,
         output

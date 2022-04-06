@@ -3,6 +3,7 @@ import compression from "compression";
 import cookieParser from "cookie-parser";
 import favicon from "serve-favicon";
 import fs from "fs";
+import insecure from "./insecure.js";
 import requestMethods from "./requestMethods.js";
 import bodyParser from "./bodyParser.js";
 import cors from "./cors.js";
@@ -18,6 +19,10 @@ const cwd = replaceFileProtocol(replaceBackslashesWithForwardSlashes(process.cwd
 const faviconPath = process.env.NODE_ENV === 'test' ? `${cwd}/src/tests/mocks/app/public/favicon.ico` : 'public/favicon.ico'; 
 
 export default (app, port, config = {}) => {
+  if (process.env.NODE_ENV === 'production') {
+    app.use(insecure);
+  }
+
   const buildPath = getBuildPath();
 
   app.use((_req, res, next) => {
