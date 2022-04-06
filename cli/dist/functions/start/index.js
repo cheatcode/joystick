@@ -80,7 +80,10 @@ const requiredFileCheck = () => {
     resolve();
   });
 };
-const handleCleanup = async (processIds = []) => {
+const handleCleanup = async (processIds = [
+  process?.serverProcess?.pid,
+  process?.hmrProcess?.pid
+]) => {
   process.loader.text("Shutting down...");
   const databases = Object.entries(process.databases || {});
   for (let i = 0; i < databases?.length; i += 1) {

@@ -91,7 +91,10 @@ const requiredFileCheck = () => {
   });
 };
 
-const handleCleanup = async (processIds = []) => {
+const handleCleanup = async (processIds = [
+  process?.serverProcess?.pid,
+  process?.hmrProcess?.pid,
+]) => {
   process.loader.text('Shutting down...');
 
   const databases = Object.entries(process.databases || {});
@@ -485,6 +488,7 @@ export default async (args = {}, options = {}) => {
   await loadSettings();
   await startDatabases(databasePortStart);
 
+  
   startWatcher();
   handleSignalEvents([]);
 };

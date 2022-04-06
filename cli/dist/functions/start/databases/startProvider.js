@@ -9,7 +9,7 @@ var startProvider_default = async (provider = "", settings = {}, databasePort = 
     const hasConnection = settings.connection && Object.keys(settings.connection).length > 0;
     let databaseProcessId = null;
     if (hasConnection) {
-      await checkMongoDBConnection(settings.connection);
+      await checkMongoDBConnection(settings.connection, settings.options);
     }
     if (!hasConnection) {
       databaseProcessId = await mongodb(databasePort);

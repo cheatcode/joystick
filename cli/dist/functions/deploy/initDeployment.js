@@ -47,7 +47,7 @@ const getAppSettings = () => {
       const file = fs.readFileSync("settings.production.json", "utf-8");
       return JSON.parse(file);
     }
-    return "{}";
+    return {};
   } catch (exception) {
     throw new Error(`[initDeployment.getAppSettings] ${exception.message}`);
   }
