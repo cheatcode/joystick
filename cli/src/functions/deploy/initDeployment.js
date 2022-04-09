@@ -208,7 +208,7 @@ const initDeployment = async (options, { resolve, reject }) => {
       loader.text(deploymentStatus?.log?.message);
 
       if (deploymentStatus?.deployment?.status === 'deployed') {
-        const loadBalancerInstances = deploymentStatus?.deployment?.instances?.filter((instance) => instance.type === 'loadBalancer');
+        const loadBalancerInstances = deploymentStatus?.instances?.filter((instance) => instance.type === 'loadBalancer');
 
         loader.stop();
         clearInterval(checkDeploymentInterval);
