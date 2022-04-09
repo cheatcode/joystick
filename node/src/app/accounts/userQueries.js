@@ -512,7 +512,7 @@ export default {
 
       if (user) {
         const [existingRole] = await process.databases.postgresql.query(
-          `SELECT * FROM users_roles WHERE user_id='${input?.userId}', role='${input?.role}';`
+          `SELECT * FROM users_roles WHERE user_id='${input?.userId}' AND role='${input?.role}';`
         );
 
         return !!existingRole;
