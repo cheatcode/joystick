@@ -238,7 +238,7 @@ const initDeployment = async (options, { resolve, reject }) => {
         console.log(`  ${chalk.gray('------')}\n`);
 
         console.log(chalk.white(`  ${chalk.yellowBright('2.')} Visit ${chalk.blueBright(`https://cheatcode.co/u/deployments/${options?.deployment?.domain}/deployment`)} and click the "Provision Certificate" button.\n`));
-        console.log(chalk.white(`  ${chalk.yellowBright('3.')} If Step #2 fails, wait 5 minutes and try again until your certificate is provisioned.\n`));
+        console.log(chalk.white(`  ${chalk.yellowBright('3.')} If Step #2 fails, wait 5 minutes and try again.\n`));
         console.log(chalk.white(`  ${chalk.yellowBright('4.')} If SSL fails to provision after multiple attempts, double-check your DNS configuration and try again.\n`));
         console.log('\n');
       }

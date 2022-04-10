@@ -157,7 +157,7 @@ const initDeployment = async (options, { resolve, reject }) => {
       const deploymentStatus = await checkDeploymentStatus(options?.deployment?.deploymentId, options?.deploymentToken, options?.fingerprint);
       loader.text(deploymentStatus?.log?.message);
       if (deploymentStatus?.deployment?.status === "deployed") {
-        const loadBalancerInstances = deploymentStatus?.deployment?.instances?.filter((instance) => instance.type === "loadBalancer");
+        const loadBalancerInstances = deploymentStatus?.instances?.filter((instance) => instance.type === "loadBalancer");
         loader.stop();
         clearInterval(checkDeploymentInterval);
         console.log(`  
@@ -182,7 +182,7 @@ const initDeployment = async (options, { resolve, reject }) => {
 `);
         console.log(chalk.white(`  ${chalk.yellowBright("2.")} Visit ${chalk.blueBright(`https://cheatcode.co/u/deployments/${options?.deployment?.domain}/deployment`)} and click the "Provision Certificate" button.
 `));
-        console.log(chalk.white(`  ${chalk.yellowBright("3.")} If Step #2 fails, wait 5 minutes and try again until your certificate is provisioned.
+        console.log(chalk.white(`  ${chalk.yellowBright("3.")} If Step #2 fails, wait 5 minutes and try again.
 `));
         console.log(chalk.white(`  ${chalk.yellowBright("4.")} If SSL fails to provision after multiple attempts, double-check your DNS configuration and try again.
 `));
