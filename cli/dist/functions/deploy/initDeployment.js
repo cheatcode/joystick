@@ -164,29 +164,15 @@ const initDeployment = async (options, { resolve, reject }) => {
   ${rainbowRoad()}
 
 `);
-        console.log(chalk.yellowBright(`  ${chalk.magenta(">>>")} Steps below MUST be completed in order to issue your SSL certificates and make your app live. ${chalk.magenta("<<<")}
-
-`));
-        console.log(chalk.white(`  ${chalk.yellowBright("1.")} Add a DNS record type A to the domain you deployed to for each of the Load Balancer IP addresses in the table below.
-`));
-        console.log(`  ${chalk.gray("------")}
+        console.log(`  ${chalk.greenBright("Servers provisioned!")}
 `);
-        console.log(`${sslRecordsTable.removeBorder().setHeading(chalk.magenta("#"), chalk.magenta("DNS Record Type"), chalk.magenta("Domain"), chalk.magenta("IP Address"), chalk.magenta("TTL")).addRowMatrix(_.sortBy(loadBalancerInstances, "name").map((loadBalancer, loadBalancerNumber) => {
-          return [chalk.greenBright(loadBalancerNumber + 1), chalk.blueBright("A"), chalk.yellowBright(options?.deployment?.domain), chalk.greenBright(loadBalancer?.instance?.ip), chalk.white("As Low As Possible (1 minute)")];
-        })).setAlign(0, AsciiTable.CENTER).setAlign(1, AsciiTable.CENTER).setAlign(2, AsciiTable.CENTER).setAlign(3, AsciiTable.CENTER).toString()}
-
-
-  ${chalk.yellowBright(`Learn more about creating DNS records here: ${chalk.blueBright("https://cheatcode.co/docs/deploy/ssl")}`)}
-        `);
-        console.log(`  ${chalk.gray("------")}
+        console.log(`  ${chalk.whiteBright(`We're bootstrapping your servers now (nerd-speak for installing dependencies, tweaking settings, and uploading your app code).`)}
 `);
-        console.log(chalk.white(`  ${chalk.yellowBright("2.")} Visit ${chalk.blueBright(`https://cheatcode.co/u/deployments/${options?.deployment?.domain}/deployment`)} and click the "Provision Certificate" button.
-`));
-        console.log(chalk.white(`  ${chalk.yellowBright("3.")} If Step #2 fails, wait 5 minutes and try again.
-`));
-        console.log(chalk.white(`  ${chalk.yellowBright("4.")} If SSL fails to provision after multiple attempts, double-check your DNS configuration and try again.
-`));
-        console.log("\n");
+        console.log(`  ${chalk.yellowBright(`To keep an eye on progress and finish getting your app live, head over to:`)}
+`);
+        console.log(`  ${chalk.blueBright(`https://cheatcode.co/u/deployments/${options?.deployment?.domain}/deployment`)}
+
+`);
       }
     }, 3e3);
   } catch (exception) {

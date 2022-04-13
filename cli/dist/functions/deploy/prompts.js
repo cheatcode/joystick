@@ -94,19 +94,21 @@ var prompts_default = {
       },
       {
         name: "loadBalancerInstances",
+        default: 1,
         type: "number",
         prefix: "",
         message: `
  ${chalk.greenBright(">")} How many load balancer instances do you want to start with?`,
-        suffix: ` -- (press enter to use default of 1)`
+        suffix: ` -- (press enter to use recommendation of 1)`
       },
       {
         name: "appInstances",
         type: "number",
+        default: 2,
         prefix: "",
         message: `
  ${chalk.greenBright(">")} How many app instances do you want to start with?`,
-        suffix: ` -- (press enter to use default of 2)`
+        suffix: ` -- (press enter to use recommendation of 2)`
       },
       {
         name: "loadBalancer_size",
@@ -210,11 +212,17 @@ var prompts_default = {
     const provider = providers?.find(({ value }) => value === answers?.provider);
     const loadBalancerCosts = costs?.find(({ type }) => type === "loadBalancers");
     const instanceCosts = costs?.find(({ type }) => type === "instances");
-    const totalMonthlyCost = costs?.reduce((total = 0, cost = {}) => {
+    const totalMonthlyCost = [
+      ...costs || [],
+      { type: "objectStorage", monthly: 5, annually: 60 }
+    ].reduce((total = 0, cost = {}) => {
       total += cost.monthly;
       return total;
     }, 0);
-    const totalAnnualCost = costs?.reduce((total = 0, cost = {}) => {
+    const totalAnnualCost = [
+      ...costs || [],
+      { type: "objectStorage", monthly: 5, annually: 60 }
+    ].reduce((total = 0, cost = {}) => {
       total += cost.annually;
       return total;
     }, 0);
@@ -232,7 +240,7 @@ ${table.removeBorder().addRow(chalk.blue("Provider"), `${chalk.greenBright(provi
 
 `).addRow(chalk.blue("Load Balancers"), `${chalk.yellowBright(`(${answers?.loadBalancerInstances}x)`)} ${answers?.loadBalancer_size} ${chalk.gray(`[${answers?.loadBalancer_region}]`)} = ${chalk.greenBright(`${currencyFormatter.format(loadBalancerCosts?.monthly, { code: "USD" })}/mo`)}`).addRow(chalk.blue("App Instances"), `${chalk.yellowBright(`(${answers?.appInstances}x)`)} ${answers?.instance_size} ${chalk.gray(`[${answers?.instance_region}]`)} = ${chalk.greenBright(`${currencyFormatter.format(instanceCosts?.monthly, { code: "USD" })}/mo`)}
 
-`).addRow(chalk.blue("Build Storage"), `${chalk.yellowBright(`(1x)`)} ${answers?.storage} ${chalk.gray(`[${answers?.instance_region}]`)} = ${chalk.greenBright(`${currencyFormatter.format(instanceCosts?.monthly, { code: "USD" })}/mo`)}
+`).addRow(chalk.blue("Build Storage"), `${chalk.greenBright(`${currencyFormatter.format(5, { code: "USD" })}/mo`)}
 
 `).addRow(chalk.magenta("Est. Total Monthly Cost"), chalk.greenBright(`${currencyFormatter.format(totalMonthlyCost, { code: "USD" })}/mo`)).addRow(chalk.magenta("Est. Total Annual Cost"), chalk.greenBright(`${currencyFormatter.format(totalAnnualCost, { code: "USD" })}/yr`)).toString()}
         ${isAbnormal ? `

@@ -23,14 +23,19 @@ const handleInitialDeployment = async ({
   try {
     const loader = new Loader({ padding: " ", defaultMessage: "" });
     const deploymentToExecute = await inquirer.prompt(prompts.initialDeployment(deploymentFromServer?.user, deploymentToken, fingerprint));
+    const deploymentToExecuteWithDefaults = {
+      ...deploymentToExecute,
+      loadBalancerInstances: deploymentToExecute?.loadBalancerInstances || 1,
+      appInstances: deploymentToExecute?.appInstances || 2
+    };
     console.log("\n");
     loader.text("Building deployment summary...");
-    const deploymentSummary = await getDeploymentSummary(deploymentToExecute, deploymentToken, fingerprint);
+    const deploymentSummary = await getDeploymentSummary(deploymentToExecuteWithDefaults, deploymentToken, fingerprint);
     loader.stop();
-    const totalInstancesRequested = deploymentToExecute?.loadBalancerInstances + deploymentToExecute?.appInstances;
+    const totalInstancesRequested = deploymentToExecuteWithDefaults?.loadBalancerInstances + deploymentToExecuteWithDefaults?.appInstances;
     const deploymentFeasible = totalInstancesRequested <= deploymentSummary?.limits?.available;
     if (!deploymentFeasible) {
-      CLILog(`${chalk.yellowBright(`Cannot deploy with this configuration as it would exceed the limits set by your selected provider (${providerMap[deploymentToExecute?.provider]}).`)} Your account there is limited to ${deploymentSummary?.limits?.account} instances (currently using ${deploymentSummary?.limits?.existing}).
+      CLILog(`${chalk.yellowBright(`Cannot deploy with this configuration as it would exceed the limits set by your selected provider (${providerMap[deploymentToExecuteWithDefaults?.provider]}).`)} Your account there is limited to ${deploymentSummary?.limits?.account} instances (currently using ${deploymentSummary?.limits?.existing}).
 
  You requested ${totalInstancesRequested} instances which would go over your account limit. Please adjust your configuration (or request an increase from your provider) and try again.`, {
         padding: " ",
@@ -39,14 +44,14 @@ const handleInitialDeployment = async ({
       });
       process.exit(0);
     }
-    const { confirmation } = await inquirer.prompt(prompts.confirmInitialDeployment(deploymentToExecute, deploymentSummary?.costs));
+    const { confirmation } = await inquirer.prompt(prompts.confirmInitialDeployment(deploymentToExecuteWithDefaults, deploymentSummary?.costs));
     if (confirmation) {
       await initDeployment({
         deploymentToken,
         deployment: {
           deploymentId: deploymentFromServer?.deployment?._id,
           domain,
-          ...deploymentToExecute
+          ...deploymentToExecuteWithDefaults
         },
         fingerprint
       });
