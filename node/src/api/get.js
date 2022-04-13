@@ -10,7 +10,7 @@ export default (getterName = "", getterOptions = {}) => {
         ? JSON.stringify(getterOptions.input)
         : null;
       const output = getterOptions.output
-        ? JSON.stringify(getterOptions.output)``
+        ? JSON.stringify(getterOptions.output)
         : null;
 
       const params = new URLSearchParams({

@@ -17,8 +17,6 @@ export default async (connectionFromSettings = null, driverOptions = {}) => {
 
   try {
     const connectionOptions = {
-      connectTimeoutMS: 3000,
-      socketTimeoutMS: 3000,
       useNewUrlParser: true,
       useUnifiedTopology: true,
       ssl: process.env.NODE_ENV !== 'development',

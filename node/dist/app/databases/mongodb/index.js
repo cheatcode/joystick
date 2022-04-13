@@ -14,8 +14,6 @@ var mongodb_default = async (connectionFromSettings = null, driverOptions = {}) 
   const parsedURI = mongoUri.parseUri(connectionString);
   try {
     const connectionOptions = {
-      connectTimeoutMS: 3e3,
-      socketTimeoutMS: 3e3,
       useNewUrlParser: true,
       useUnifiedTopology: true,
       ssl: process.env.NODE_ENV !== "development",
