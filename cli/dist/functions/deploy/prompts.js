@@ -238,9 +238,13 @@ var prompts_default = {
         
 ${table.removeBorder().addRow(chalk.blue("Provider"), `${chalk.greenBright(provider?.name)}
 
+`).addRow(chalk.white("---"), `
+
 `).addRow(chalk.blue("Load Balancers"), `${chalk.yellowBright(`(${answers?.loadBalancerInstances}x)`)} ${answers?.loadBalancer_size} ${chalk.gray(`[${answers?.loadBalancer_region}]`)} = ${chalk.greenBright(`${currencyFormatter.format(loadBalancerCosts?.monthly, { code: "USD" })}/mo`)}`).addRow(chalk.blue("App Instances"), `${chalk.yellowBright(`(${answers?.appInstances}x)`)} ${answers?.instance_size} ${chalk.gray(`[${answers?.instance_region}]`)} = ${chalk.greenBright(`${currencyFormatter.format(instanceCosts?.monthly, { code: "USD" })}/mo`)}
 
 `).addRow(chalk.blue("Build Storage"), `${chalk.greenBright(`${currencyFormatter.format(5, { code: "USD" })}/mo`)}
+
+`).addRow(chalk.white("---"), `
 
 `).addRow(chalk.magenta("Est. Total Monthly Cost"), chalk.greenBright(`${currencyFormatter.format(totalMonthlyCost, { code: "USD" })}/mo`)).addRow(chalk.magenta("Est. Total Annual Cost"), chalk.greenBright(`${currencyFormatter.format(totalAnnualCost, { code: "USD" })}/yr`)).toString()}
         ${isAbnormal ? `

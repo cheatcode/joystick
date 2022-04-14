@@ -207,7 +207,7 @@ const initDeployment = async (options, { resolve, reject }) => {
 
       loader.text(deploymentStatus?.log?.message);
 
-      if (deploymentStatus?.deployment?.status === 'deployed') {
+      if (deploymentStatus?.deployment?.status === 'bootstrapping') {
         const loadBalancerInstances = deploymentStatus?.instances?.filter((instance) => instance.type === 'loadBalancer');
 
         loader.stop();

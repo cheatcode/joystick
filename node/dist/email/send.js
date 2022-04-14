@@ -22,22 +22,26 @@ var send_default = async ({ template: templateName, props, ...restOfOptions }) =
       pass: settings?.config?.email?.smtp?.password
     }
   }) : null;
-  let templatePath = process.env.NODE_ENV === "test" ? `${process.cwd()}/src/email/templates/reset-password.js` : `${process.cwd()}/${getBuildPath()}/email/${templateName}.js`;
-  const templateExists = templateName && !fs.existsSync(templatePath);
+  let templatePath = process.env.NODE_ENV === "test" ? `${process.cwd()}/src/email/templates/reset-password.js` : `${process.cwd()}/${getBuildPath()}email/${templateName}.js`;
+  const templateExists = templateName && fs.existsSync(templatePath);
   const options = {
     from: settings?.config?.email?.from,
     ...restOfOptions
   };
-  const template = (await (templateExists ? import(templatePath) : import("./templates/reset-password.js"))).default;
-  const html = render({
-    Component: template,
-    props
-  });
-  const text = htmlToText(html);
-  const htmlWithStylesInlined = juice(html);
-  options.html = htmlWithStylesInlined;
-  options.text = text;
-  return smtp.sendMail(options);
+  if (templateExists) {
+    const template = (await import(templatePath)).default;
+    const html = render({
+      Component: template,
+      props
+    });
+    const text = htmlToText(html);
+    const htmlWithStylesInlined = juice(html);
+    options.html = htmlWithStylesInlined;
+    options.text = text;
+    return smtp.sendMail(options);
+  }
+  console.warn(`Template ${templateName} could not be found in /email. Double-check the template exists and try again.`);
+  return Promise.resolve();
 };
 export {
   send_default as default
