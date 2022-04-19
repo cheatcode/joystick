@@ -36,37 +36,41 @@ var ssr_default = async ({
       }
     };
     const browserSafeRequest = getBrowserSafeRequest({ ...req });
-    const dataFunctions = [];
     const component = Component({
       props,
       url,
       translations,
-      ssr: true,
       api,
-      req: browserSafeRequest,
-      dataFunctions
+      req: browserSafeRequest
     });
     const tree = {
       id: component.id,
       instance: component,
-      children: []
+      children: [],
+      dataFunctions: []
     };
     const dataFromParentComponent = await component.handleFetchData(api, browserSafeRequest);
     const baseHTML = fs.readFileSync(`${process.cwd()}/index.html`, "utf-8");
-    const html = component.renderToHTML(tree, translations);
-    const dataFromChildComponents = await Promise.all(dataFunctions.map(async (dataFunction) => {
+    component.renderToHTML({
+      ssrTree: tree,
+      translations,
+      walkingTreeForSSR: true,
+      dataFromSSR: []
+    });
+    const dataFromTree = await Promise.all(tree.dataFunctions.map(async (dataFunction) => {
       return dataFunction();
     }));
-    const dataForClient = dataFromChildComponents.reduce((data = {}, dataFromChildComponent) => {
+    const dataForClient = dataFromTree.reduce((data = {}, dataFromChildComponent) => {
       if (!data[dataFromChildComponent.ssrId]) {
         data[dataFromChildComponent.ssrId] = dataFromChildComponent.data;
       }
       return data;
     }, {});
-    dataFromChildComponents.forEach(({ componentId, ssrId }) => {
-      const componentWithData = findComponentInTree(tree, componentId);
-      const componentHTML = componentWithData.instance.renderToHTML(tree, translations);
-      html.wrapped = html.wrapped.replace(`{x|{"id":"${ssrId}"}|x}`, componentHTML.wrapped);
+    const html = component.renderToHTML({
+      ssrTree: tree,
+      translations,
+      walkingTreeForSSR: false,
+      dataFromSSR: dataFromTree
     });
     const css = formatCSS(getCSSFromTree(tree));
     const baseHTMLWithReplacements = baseHTML.replace("${meta}", "").replace("${css}", css).replace("${scripts}", "").replace('<div id="app"></div>', `

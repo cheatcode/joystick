@@ -91,7 +91,7 @@ export default (req, res, next) => {
         })
       );
     }
-
+  
     const pageFile = await getFile(pagePath);
     const Page = pageFile;
     const layoutFile = layoutPath ? await getFile(layoutPath) : null;

@@ -20,7 +20,9 @@ export default ({ Component, props = {} }) => {
     const customBaseHTML = fs.existsSync(`${process.cwd()}/email/base.html`)
       ? fs.readFileSync(`${process.cwd()}/email/base.html`, "utf-8")
       : null;
-    const html = component.renderToHTML(tree);
+    const html = component.renderToHTML({
+      ssrTree: tree,
+    });
     const css = formatCSS(getCSSFromTree(tree));
 
     return (customBaseHTML || defaultBaseHTML)

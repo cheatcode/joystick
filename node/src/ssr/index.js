@@ -43,16 +43,12 @@ export default async ({
 
 
     const browserSafeRequest = getBrowserSafeRequest({ ...req });
-    const dataFunctions = [];
-
     const component = Component({
       props,
       url,
       translations,
-      ssr: true,
       api,
       req: browserSafeRequest,
-      dataFunctions,
     });
 
     // NOTE: Value passed to renderToHTML() is the initial ssrTree, which is a component
@@ -61,17 +57,28 @@ export default async ({
       id: component.id,
       instance: component,
       children: [],
+      dataFunctions: [],
     };
 
     const dataFromParentComponent = await component.handleFetchData(api, browserSafeRequest);
     const baseHTML = fs.readFileSync(`${process.cwd()}/index.html`, "utf-8");
-    const html = component.renderToHTML(tree, translations);
+
+    // NOTE: Do a first-pass to collect data from the tree and store in tree.dataFunctions array.
+    component.renderToHTML({
+      ssrTree: tree,
+      translations,
+      walkingTreeForSSR: true,
+      dataFromSSR: [],
+    });
     
-    const dataFromChildComponents = await Promise.all(dataFunctions.map(async (dataFunction) => {
+    // NOTE: Take all of the found data functions and call them to get their data.
+    const dataFromTree = await Promise.all(tree.dataFunctions.map(async (dataFunction) => {
       return dataFunction();
     }));
 
-    const dataForClient = dataFromChildComponents.reduce((data = {}, dataFromChildComponent) => {
+    // NOTE: Map the data functions into an object we can pass to the client via window.__joystick_data__
+    // global below.
+    const dataForClient = dataFromTree.reduce((data = {}, dataFromChildComponent) => {
       if (!data[dataFromChildComponent.ssrId]) {
         data[dataFromChildComponent.ssrId] = dataFromChildComponent.data;
       }
@@ -79,10 +86,12 @@ export default async ({
       return data;
     }, {});
 
-    dataFromChildComponents.forEach(({ componentId, ssrId }) => {
-      const componentWithData = findComponentInTree(tree, componentId);
-      const componentHTML = componentWithData.instance.renderToHTML(tree, translations);
-      html.wrapped = html.wrapped.replace(`{x|{"id":"${ssrId}"}|x}`, componentHTML.wrapped);
+    // NOTE: Perform actual render of HTML for the SSR, passing in fetched data.
+    const html = component.renderToHTML({
+      ssrTree: tree,
+      translations,
+      walkingTreeForSSR: false,
+      dataFromSSR: dataFromTree,
     });
 
     const css = formatCSS(getCSSFromTree(tree));

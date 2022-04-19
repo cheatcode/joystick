@@ -9,8 +9,8 @@ export default (componentOptions = {}) => {
       translations: renderOptions?.translations,
       api: renderOptions?.api,
       req: renderOptions?.req,
-      dataFunctions: renderOptions?.dataFunctions,
     });
+
     return component;
   };
 };

@@ -109,6 +109,12 @@ const allowed = {
   ],
   lifecycle: ["onBeforeMount", "onMount", "onBeforeUnmount"],
   options: [
+    // NOTE: Internal methods passed automatically via Joystick during SSR.
+    "_ssrId",
+    "dataFromSSR",
+    "api",
+    "req",
+    // NOTE: User-defined or standard methods.
     "id",
     "name",
     "props",
@@ -122,10 +128,6 @@ const allowed = {
     "render",
     "url",
     "translations",
-    "ssr",
-    "api",
-    "req",
-    "dataFunctions"
   ],
 };
 

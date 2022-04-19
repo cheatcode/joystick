@@ -15,12 +15,13 @@ import getRenderedDOMNode from './getRenderedDOMNode';
 import validateForm from "../validateForm";
 import get from '../api/get';
 import set from '../api/set';
+import getDataFromSSR from "./getDataFromSSR";
 
 class Component {
   constructor(options = {}) {
     validateOptions(options);
 
-    this.ssrId = '{x|ssrId|x}';
+    this.ssrId = options._ssrId || null;
     this.id = options.id || generateId(8);
     this.dom = {
       virtual: {},
@@ -32,7 +33,7 @@ class Component {
     this.defaultProps = options.defaultProps || {};
     this.props = options.props || {};
     this.state = {};
-    this.data = {};
+    this.data = getDataFromSSR(options.dataFromSSR, options._ssrId) || {};
     this.lifecycle = {
       onBeforeMount: () => null,
       onMount: () => null,
@@ -343,7 +344,7 @@ class Component {
   }
 
   handleWrapHTMLForRender(html = "") {
-    return `<div js-c="${this.id}">${html}</div>`;
+    return `<div js-ssrId="${this.ssrId}" js-c="${this.id}">${html}</div>`;
   }
 
   getDOMNodeToPatch = (vDOMNode = {}) => {
@@ -406,29 +407,42 @@ class Component {
     return component;
   }
 
-  renderToHTML(ssrTree = null, renderTranslations = null) {
+  renderToHTML(options = {}) {
+    if (options?.dataFromSSR) {
+      this.data = getDataFromSSR(options.dataFromSSR, this.ssrId) || {};
+    }
+
     const sanitizedThis = this.handleGetSanitizedThis();
+    // NOTE: For SSR, we have to call this no matter what in order to "discover" the children in the tree. When
+    // we call render here, we're simultaneously saying "call the component() render function for each child" component
+    // you're rendering. In effect, this allows us to scoop up data for the full tree in a first-pass scenario and then
+    // to get the compiled HTML in a second-pass scenario.
     const html = this.options.render({
       ...sanitizedThis,
       ...Object.entries(renderFunctions).reduce((functions, [key, value]) => {
         functions[key] = value.bind({
           ...sanitizedThis,
-          ssrTree,
-          dataFunctions: this.options.dataFunctions,
-          translations: renderTranslations || this.translations || {},
+          ssrTree: options?.ssrTree,
+          translations: options?.translations || this.translations || {},
+          walkingTreeForSSR: options?.walkingTreeForSSR,
+          dataFromSSR: options?.dataFromSSR,
         });
 
         return functions;
       }, {}),
     });
 
-    const sanitizedHTML = this.handleSanitizeHTML(html);
-    const wrappedHTML = this.handleWrapHTMLForRender(sanitizedHTML);
-
-    return {
-      unwrapped: sanitizedHTML,
-      wrapped: wrappedHTML,
-    };
+    // NOTE: SSR has a two-pass process. First, collect data and _then_ render HTML. Here, we're preventing
+    // unnecessary work if we're doing tree/data collection.
+    if (!options?.walkingTreeForSSR) {
+      const sanitizedHTML = this.handleSanitizeHTML(html);
+      const wrappedHTML = this.handleWrapHTMLForRender(sanitizedHTML);
+  
+      return {
+        unwrapped: sanitizedHTML,
+        wrapped: wrappedHTML,
+      };
+    }
   }
 
   renderToDOM(options = {}) {

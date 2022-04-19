@@ -15,23 +15,26 @@ const configs = {
     logLevel: "silent",
     plugins: [plugins.generateFileDependencyMap]
   }),
-  browser: (inputPath, outputPath = null) => ({
-    target: "es2020",
-    entryPoints: [inputPath],
-    bundle: true,
-    outfile: `${outputPath || "./.joystick/build"}/${inputPath}`,
-    platform: "browser",
-    format: "esm",
-    minify: process.env.NODE_ENV !== "development",
-    logLevel: "silent",
-    plugins: [
-      plugins.generateFileDependencyMap,
-      plugins.bootstrapLayoutComponent,
-      plugins.bootstrapPageComponent,
-      plugins.ssrId,
-      svg()
-    ]
-  })
+  browser: (inputPath, outputPath = null) => {
+    if (inputPath?.includes("pages")) {
+      console.log(inputPath);
+    }
+    return {
+      target: "es2020",
+      entryPoints: [inputPath],
+      bundle: true,
+      outfile: `${outputPath || "./.joystick/build"}/${inputPath}`,
+      platform: "browser",
+      format: "esm",
+      minify: process.env.NODE_ENV !== "development",
+      logLevel: "silent",
+      plugins: [
+        plugins.generateFileDependencyMap,
+        plugins.bootstrapComponent,
+        svg()
+      ]
+    };
+  }
 };
 var buildFile_default = async (file = "", platform = "", outputPath = "") => {
   return new Promise(async (resolve) => {
