@@ -17,10 +17,6 @@ const configs = {
     plugins: [plugins.generateFileDependencyMap],
   }),
   browser: (inputPath, outputPath = null) => {
-    if (inputPath?.includes('pages')) {
-      console.log(inputPath);
-    }
-
     return {
       target: "es2020",
       entryPoints: [inputPath],
@@ -33,9 +29,6 @@ const configs = {
       plugins: [
         plugins.generateFileDependencyMap,
         plugins.bootstrapComponent,
-        // plugins.ssrId,
-        // plugins.bootstrapLayoutComponent,
-        // plugins.bootstrapPageComponent,
         svg(),
       ],
     };
