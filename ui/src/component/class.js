@@ -434,15 +434,13 @@ class Component {
 
     // NOTE: SSR has a two-pass process. First, collect data and _then_ render HTML. Here, we're preventing
     // unnecessary work if we're doing tree/data collection.
-    if (!options?.walkingTreeForSSR) {
-      const sanitizedHTML = this.handleSanitizeHTML(html);
-      const wrappedHTML = this.handleWrapHTMLForRender(sanitizedHTML);
-  
-      return {
-        unwrapped: sanitizedHTML,
-        wrapped: wrappedHTML,
-      };
-    }
+    const sanitizedHTML = this.handleSanitizeHTML(html);
+    const wrappedHTML = this.handleWrapHTMLForRender(sanitizedHTML);
+
+    return {
+      unwrapped: sanitizedHTML,
+      wrapped: wrappedHTML,
+    };
   }
 
   renderToDOM(options = {}) {

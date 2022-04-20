@@ -74,7 +74,6 @@ const renderFunctionGenerators = {
         });
       }
   
-      // NOTE: If server-side rendering, skip dom creation and CSS attachment.
       // NOTE: If this is true, we're doing a first-pass for SSR so we can collection all of the
       // components/data functions into the tree. No expectation of rendering HTML so we can scoop and return.
       if (component.options.data && component.parent.walkingTreeForSSR && component.parent.ssrTree.dataFunctions) {
@@ -91,9 +90,9 @@ const renderFunctionGenerators = {
         // NOTE: Call rest of tree for this component but signal that we're only collecting data,
         // not rendering any HTML.
         return component.renderToHTML({
-          ssrTree: component.parent.ssrTree,
-          translations: component.parent.translations, // TODO: Is this correct?
-          walkingTreeForSSR: true,
+          ssrTree: component?.parent?.ssrTree,
+          translations: component?.parent?.translations, // TODO: Is this correct?
+          walkingTreeForSSR: component?.parent?.walkingTreeForSSR,
           dataFromSSR: component?.parent?.dataFromSSR,
         });
       }
@@ -102,13 +101,15 @@ const renderFunctionGenerators = {
         const html = component.renderToHTML({
           ssrTree: component.parent.ssrTree,
           translations: component.parent.translations, // TODO: Is this correct?
-          walkingTreeForSSR: false,
+          walkingTreeForSSR: component?.parent?.walkingTreeForSSR,
           dataFromSSR: parent?.dataFromSSR,
         });
 
         return html.wrapped;
       }
-  
+
+      // NOTE: Above, if server-side rendering, skip dom creation and CSS attachment.
+
       const dom = component.renderToDOM({ includeActual: true });
 
       component.dom = dom;
