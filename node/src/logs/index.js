@@ -1,7 +1,9 @@
 import fs from 'fs';
 
 export default () => {
-  const logsPath = process.env.NODE_ENV === 'development' ? './logs' : '/logs';
+  const developmentLogsPath = process.env.LOGS_PATH || './logs';
+  const productionLogsPath = process.env.LOGS_PATH || '/logs';
+  const logsPath = process.env.NODE_ENV === 'development' ? developmentLogsPath : productionLogsPath;
 
   if (!fs.existsSync(logsPath)) {
     fs.mkdirSync(logsPath);
