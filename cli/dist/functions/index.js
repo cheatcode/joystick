@@ -158,6 +158,19 @@ var functions_default = {
         },
         description: "Environment to set for process.env.NODE_ENV."
       },
+      logs: {
+        flags: {
+          "-l": {
+            set: !!rawArgs.includes("-l"),
+            value: !!rawArgs.includes("-l") && rawArgs[rawArgs.indexOf("-l") + 1]
+          },
+          "--logs": {
+            set: !!rawArgs.includes("--logs"),
+            value: !!rawArgs.includes("--logs") && rawArgs[rawArgs.indexOf("--logs") + 1]
+          }
+        },
+        description: "Path for storing logs."
+      },
       port: {
         flags: {
           "-p": {

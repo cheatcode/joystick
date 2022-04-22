@@ -192,6 +192,7 @@ const startApplicationProcess = () => {
     silent: true,
     env: {
       FORCE_COLOR: "1",
+      LOGS_PATH: process.env.LOGS_PATH,
       NODE_ENV: process.env.NODE_ENV,
       PORT: process.env.PORT,
       JOYSTICK_SETTINGS: process.env.JOYSTICK_SETTINGS,
@@ -359,6 +360,7 @@ var start_default = async (args = {}, options = {}) => {
   }
   await killPortProcess(port);
   process.title = "joystick";
+  process.env.LOGS_PATH = options?.logs || null;
   process.env.NODE_ENV = options?.environment || "development";
   process.env.PORT = options?.port ? parseInt(options?.port) : 2600;
   await loadSettings();
