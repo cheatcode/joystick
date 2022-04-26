@@ -4,6 +4,10 @@
 
 The full-stack JavaScript framework.
 
+[Join the Discord](https://discord.gg/UTy4Fpy)
+
+---
+
 #### Table of Contents
 
 0. ⚠️ [Beta Warning](#beta-warning)
@@ -165,6 +169,8 @@ cd <app> && joystick start
 ```
 
 This will build your app and start it at `http://localhost:2600`.
+
+> Questions about Joystick? [Join the Discord](https://discord.gg/UTy4Fpy).
 
 ## Folder and file structure
 
