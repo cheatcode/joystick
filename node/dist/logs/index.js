@@ -1,8 +1,41 @@
 import fs from "fs";
-var logs_default = () => {
-  const developmentLogsPath = process.env.LOGS_PATH || "./logs";
-  const productionLogsPath = process.env.LOGS_PATH || "/logs";
-  const logsPath = process.env.NODE_ENV === "development" ? developmentLogsPath : productionLogsPath;
+import SQLite from "better-sqlite3";
+const captureLog = (callback = null) => {
+  process.stdout.write = (data) => {
+    if (callback) {
+      callback("stdout", data);
+    }
+  };
+  process.stderr.write = (data) => {
+    if (callback) {
+      callback("stderr", data);
+    }
+  };
+  process.on("uncaughtException", (error) => {
+    if (callback) {
+      callback("uncaughtException", error);
+    }
+  });
+};
+const writeLogsToSQLite = () => {
+  const sqlite = new SQLite("./logs.db");
+  sqlite.prepare("CREATE TABLE IF NOT EXISTS logs (timestamp text, error integer, message text)").run();
+  captureLog((source = "", data = "") => {
+    const statement = sqlite.prepare("INSERT INTO logs VALUES (?, ?, ?)");
+    switch (source) {
+      case "stdout":
+        statement.run(new Date().toISOString(), 0, data);
+      case "stderr":
+      case "uncaughtException":
+        statement.run(new Date().toISOString(), 1, data);
+      default:
+        return;
+    }
+  });
+};
+const writeLogsToDisk = () => {
+  const validLogsPath = process.env.LOGS_PATH && process.env.LOGS_PATH !== "null";
+  const logsPath = validLogsPath ? process.env.LOGS_PATH : "./logs";
   if (!fs.existsSync(logsPath)) {
     fs.mkdirSync(logsPath);
   }
@@ -10,18 +43,30 @@ var logs_default = () => {
     fs.writeFileSync(`${logsPath}/app.log`, "");
   }
   const appLog = fs.createWriteStream(`${logsPath}/app.log`);
-  process.stdout.write = (data) => {
-    appLog.write(`{ "error": false, "timestamp": "${new Date().toISOString()}", "data": ${JSON.stringify(data.replace("\n", ""))} }
+  captureLog((source = "", data = "") => {
+    switch (source) {
+      case "stdout":
+        return appLog.write(`{ "error": false, "timestamp": "${new Date().toISOString()}", "data": ${JSON.stringify(data.replace("\n", ""))} }
 `);
-  };
-  process.stderr.write = (data) => {
-    appLog.write(`{ "error": true, "timestamp": "${new Date().toISOString()}", "data": ${JSON.stringify(data.replace("\n", ""))} }
+      case "stderr":
+        return appLog.write(`{ "error": true, "timestamp": "${new Date().toISOString()}", "data": ${JSON.stringify(data.replace("\n", ""))} }
 `);
-  };
-  process.on("uncaughtException", function(error) {
-    console.error(`{ "error": true, "timestamp": "${new Date().toISOString()}", "data": ${JSON.stringify(error && error.stack ? error.stack : error)} }
+      case "uncaughtException":
+        return console.error(`{ "error": true, "timestamp": "${new Date().toISOString()}", "data": ${JSON.stringify(data && data.stack ? data.stack : data)} }
 `);
+      default:
+        return;
+    }
   });
+};
+var logs_default = () => {
+  if (process.env.NODE_ENV !== "production") {
+    return false;
+  }
+  if (process.env.IS_JOYSTICK_DEPLOY !== "true") {
+    return writeLogsToDisk();
+  }
+  return writeLogsToSQLite();
 };
 export {
   logs_default as default
