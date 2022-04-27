@@ -24,10 +24,10 @@ const writeLogsToSQLite = () => {
     const statement = sqlite.prepare("INSERT INTO logs VALUES (?, ?, ?)");
     switch (source) {
       case "stdout":
-        statement.run(new Date().toISOString(), 0, data);
+        return statement.run(new Date().toISOString(), 0, data);
       case "stderr":
       case "uncaughtException":
-        statement.run(new Date().toISOString(), 1, data);
+        return statement.run(new Date().toISOString(), 1, data);
       default:
         return;
     }
