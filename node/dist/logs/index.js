@@ -18,7 +18,7 @@ const captureLog = (callback = null) => {
   });
 };
 const writeLogsToSQLite = () => {
-  const sqlite = new SQLite("./logs.db");
+  const sqlite = new SQLite("/root/logs.db");
   sqlite.prepare("CREATE TABLE IF NOT EXISTS logs (timestamp text, error integer, message text)").run();
   captureLog((source = "", data = "") => {
     const statement = sqlite.prepare("INSERT INTO logs VALUES (?, ?, ?)");
