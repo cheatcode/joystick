@@ -1,5 +1,5 @@
 import fs from 'fs';
-import SQLite from 'better-sqlite3';
+import SQLite3 from 'sqlite3';
 
 const captureLog = (callback = null) => {
   process.stdout.write = (data) => {
@@ -22,11 +22,19 @@ const captureLog = (callback = null) => {
 };
 
 const writeLogsToSQLite = () => {
-  const sqlite = new SQLite('/root/logs.db');
-  sqlite.prepare("CREATE TABLE IF NOT EXISTS logs (timestamp text, error integer, message text)").run();
+  const sqlite3 = SQLite3.verbose();
+  const db = new sqlite3.Database({
+    development: 'logs.db',
+    production: '/root/logs.db', // NOTE: Assume we're writing to .db file in root of machine in production.
+  }[process.env.NODE_ENV || 'development']);
+
+  // const sqlite = new SQLite('/root/logs.db');
+  const createTable = db.prepare("CREATE TABLE IF NOT EXISTS logs (timestamp text, error integer, message text)");
+  createTable.run();
+  createTable.finalize();
 
   captureLog((source = '', data = '') => {
-    const statement = sqlite.prepare("INSERT INTO logs VALUES (?, ?, ?)");
+    const statement = db.prepare("INSERT INTO logs VALUES (?, ?, ?)");
 
     switch(source) {
       case 'stdout':
