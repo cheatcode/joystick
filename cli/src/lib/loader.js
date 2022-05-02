@@ -1,4 +1,5 @@
 import chalk from "chalk";
+import readline from 'readline';
 
 class Loader {
   constructor(options = {}) {
@@ -40,21 +41,21 @@ class Loader {
 
     this.interval = setInterval(() => {
       const frameToRender = this.getFrame();
-      process.stdout.cursorTo(0);
+      readline.cursorTo(process.stdout, 0);
       process.stdout.write(`${this.frames[frameToRender]} ${this.message}`);
     }, 80);
   }
 
   stop() {
     clearInterval(this.interval);
-    process.stdout.cursorTo(0);
-    process.stdout.clearLine();
+    readline.cursorTo(process.stdout, 0);
+    readline.clearLine(process.stdout);
     this.message = "";
     this.interval = null;
   }
 
   text(message = "") {
-    process.stdout.clearLine();
+    readline.clearLine(process.stdout);
 
     if (message) {
       this.message = message;
@@ -66,7 +67,7 @@ class Loader {
   }
 
   pause(message = "", frame = "stable") {
-    process.stdout.clearLine();
+    readline.clearLine(process.stdout);
 
     if (message) {
       this.message = message;
@@ -75,7 +76,7 @@ class Loader {
     clearInterval(this.interval);
     this.interval = null;
     const freezeFrame = this.freezeFrames[frame];
-    process.stdout.cursorTo(0);
+    readline.cursorTo(process.stdout, 0);
     process.stdout.write(
       `${freezeFrame ? `${freezeFrame} ` : ""}${this.message}`
     );

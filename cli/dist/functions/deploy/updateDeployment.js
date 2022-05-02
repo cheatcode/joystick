@@ -133,7 +133,6 @@ const validateOptions = (options) => {
 const updateDeployment = async (options, { resolve, reject }) => {
   try {
     validateOptions(options);
-    console.log("");
     const loader = new Loader({ padding: "  ", defaultMessage: "Deploying app..." });
     loader.text("Deploying app...");
     const deploymentTimestamp = new Date().toISOString();
@@ -148,16 +147,16 @@ const updateDeployment = async (options, { resolve, reject }) => {
         docs: "https://cheatcode.co/docs/deploy/hosting-providers"
       });
     }
-    loader.text("Starting deployment...");
+    loader.text("Pushing version to instances...");
     await startDeployment(options?.deploymentToken, options.deployment, options.fingerprint, deploymentTimestamp);
     checkDeploymentInterval = setInterval(async () => {
       const deploymentStatus = await checkDeploymentStatus(options?.deployment?.deploymentId, options?.deploymentToken, options?.fingerprint);
       loader.text(deploymentStatus?.log?.message);
       if (deploymentStatus?.deployment?.status === "deployed") {
         clearInterval(checkDeploymentInterval);
-        loader.stable(`${deploymentStatus?.deployment?.domain} updated!`);
         loader.stop();
-        console.log("\n");
+        console.log(chalk.green(`  App deployed!
+`));
       }
     }, 3e3);
   } catch (exception) {

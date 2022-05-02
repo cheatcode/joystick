@@ -159,7 +159,6 @@ const updateDeployment = async (options, { resolve, reject }) => {
   try {
     validateOptions(options);
 
-    console.log("");
     const loader = new Loader({ padding: '  ', defaultMessage: "Deploying app..." });
     loader.text("Deploying app...");
     
@@ -183,7 +182,7 @@ const updateDeployment = async (options, { resolve, reject }) => {
       );
     }
 
-    loader.text("Starting deployment...");
+    loader.text("Pushing version to instances...");
     await startDeployment(
       options?.deploymentToken,
       options.deployment,
@@ -203,9 +202,8 @@ const updateDeployment = async (options, { resolve, reject }) => {
       if (deploymentStatus?.deployment?.status === 'deployed') {
         clearInterval(checkDeploymentInterval);
 
-        loader.stable(`${deploymentStatus?.deployment?.domain} updated!`);
         loader.stop();
-        console.log('\n');
+        console.log(chalk.green(`  App deployed!\n`));
       }
     }, 3000);
   } catch (exception) {
