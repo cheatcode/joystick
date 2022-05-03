@@ -239,13 +239,7 @@ class Component {
 
   handleDetachEvents() {
     const joystickInstance = this.handleGetJoystickInstance();
-    const eventListeners =
-      joystickInstance._internal.eventListeners.attached.filter(
-        ({ id, parentId }) => {
-          return id === this.id || parentId === this.id;
-        }
-      );
-
+    const eventListeners = joystickInstance._internal.eventListeners.attached;
     const eventIds = eventListeners.map(({ eventId }) => eventId);
     removeEventListeners(eventListeners);
     joystickInstance._internal.eventListeners.attached =
