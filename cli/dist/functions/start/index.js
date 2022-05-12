@@ -85,7 +85,7 @@ const handleCleanup = async (processIds = [
   process?.hmrProcess?.pid
 ]) => {
   process.loader.text("Shutting down...");
-  const databases = Object.entries(process.databases || {});
+  const databases = Object.entries(process.env.DATABASES || {});
   for (let i = 0; i < databases?.length; i += 1) {
     const databaseInstance = databases[i] && databases[i][1];
     if (databaseInstance?.pid) {
@@ -195,8 +195,7 @@ const startApplicationProcess = () => {
       LOGS_PATH: process.env.LOGS_PATH,
       NODE_ENV: process.env.NODE_ENV,
       PORT: process.env.PORT,
-      JOYSTICK_SETTINGS: process.env.JOYSTICK_SETTINGS,
-      databases: JSON.stringify(process.databases)
+      JOYSTICK_SETTINGS: process.env.JOYSTICK_SETTINGS
     }
   });
   process.serverProcess = serverProcess;
@@ -291,12 +290,10 @@ const startWatcher = async () => {
   });
 };
 const startDatabase = async (database = {}, databasePort = 2610) => {
-  if (database.provider && database.provider === "mongodb") {
-    await startDatabaseProvider("mongodb", database, databasePort);
-  }
-  if (database.provider && database.provider === "postgresql") {
-    await startDatabaseProvider("postgresql", database, databasePort);
-  }
+  process.env.DATABASES = {
+    ...process.env.DATABASES || {},
+    [database.provider]: await startDatabaseProvider(database, databasePort)
+  };
   return Promise.resolve();
 };
 const startDatabases = async (databasePortStart = 2610) => {
