@@ -8,9 +8,8 @@ import initExpress from "./initExpress.js";
 import handleProcessErrors from "./handleProcessErrors";
 import registerGetters from "./registerGetters.js";
 import registerSetters from "./registerSetters.js";
-import parseDatabasesFromEnvironment from "../lib/parseDatabasesFromEnvironment.js";
-import mongodb from "./databases/mongodb/index.js";
-import postgresql from "./databases/postgresql/index.js";
+import connectMongoDB from "./databases/mongodb/index.js";
+import connectPostgreSQL from "./databases/postgresql/index.js";
 import accounts from "./accounts";
 import getBrowserSafeUser from './accounts/getBrowserSafeUser.js';
 import formatAPIError from "../lib/formatAPIError";
@@ -28,6 +27,7 @@ import getOutput from './getOutput.js';
 import defaultUserOutputFields from './accounts/defaultUserOutputFields.js';
 import createPostgreSQLAccountsTables from './databases/postgresql/createAccountsTables';
 import createPostgreSQLAccountsIndexes from './databases/postgresql/createAccountsIndexes';
+import loadSettings from '../settings/load.js';
 
 process.setMaxListeners(0); 
 
@@ -50,62 +50,43 @@ export class App {
   }
 
   async loadDatabases(callback) {
-    const databasesFromEnvironment = parseDatabasesFromEnvironment(
-      process.env.databases
-    );
-
-    const databases = Object.entries(databasesFromEnvironment).map(
-      ([databaseName, databaseSettings]) => {
+    const settings = loadSettings();
+    const databases = settings?.config?.databases?.map(
+      (database) => {
         return {
-          name: databaseName,
-          settings: databaseSettings,
+          name: database?.provider,
+          settings: database,
         };
       }
     );
 
-    await Promise.all(
-      databases.map(async (database) => {
-        if (database.name === "mongodb" && database?.settings?.connection) {
-          const instance = await mongodb(database?.settings?.connection, database?.settings?.settings?.options);
-          const connection = {
-            ...database,
-            ...instance,
-          };
+    for (let databaseIndex = 0; databaseIndex < databases?.length; databaseIndex += 1) {
+      const database = databases[databaseIndex];
 
-          process.databases = {
-            ...(process.databases || {}),
-            [database.name]: connection.db,
-          };
+      if (database?.name === 'mongodb') {
+        const mongodb = await connectMongoDB(database?.settings, databaseIndex);
+        process.databases = {
+          ...(process.databases || {}),
+          mongodb,
+        };
+      }
 
-          return connection;
+      if (database?.name === 'postgresql') {
+        const postgresql = await connectPostgreSQL(database?.settings, databaseIndex);
+        process.databases = {
+          ...(process.databases || {}),
+          postgresql: {
+            ...postgresql?.pool,
+            query: postgresql?.query,
+          },
+        };
+
+        if (postgresql?.query) {
+          await createPostgreSQLAccountsTables();
+          await createPostgreSQLAccountsIndexes();
         }
-
-        if (database.name === "postgresql" && database?.settings?.connection) {
-          const instance = await postgresql(database?.settings?.connection, database?.settings?.settings?.options);
-          const connection = {
-            ...database,
-            ...instance,
-          };
-
-          process.databases = {
-            ...(process.databases || {}),
-            [database.name]: {
-              ...connection.pool,
-              query: connection.query,
-            },
-          };
-
-          if (connection.query) {
-            await createPostgreSQLAccountsTables();
-            await createPostgreSQLAccountsIndexes();
-          }
-
-          return connection;
-        }
-
-        return Promise.resolve();
-      })
-    );
+      }
+    }
 
     return process.databases;
   }

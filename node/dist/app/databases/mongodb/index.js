@@ -3,10 +3,10 @@ import chalk from "chalk";
 import mongoUri from "mongo-uri-tool";
 import fs from "fs";
 import buildConnectionString from "./buildConnectionString";
-var mongodb_default = async (connectionFromSettings = null, driverOptions = {}) => {
-  const connection = connectionFromSettings || {
+var mongodb_default = async (settings = {}, databasePortBaseIndex = 0) => {
+  const connection = settings?.connection || {
     hosts: [
-      { hostname: "127.0.0.1", port: parseInt(process.env.PORT, 10) + 10 }
+      { hostname: "127.0.0.1", port: parseInt(process.env.PORT, 10) + 10 + databasePortBaseIndex }
     ],
     database: "app"
   };
@@ -17,17 +17,14 @@ var mongodb_default = async (connectionFromSettings = null, driverOptions = {}) 
       useNewUrlParser: true,
       useUnifiedTopology: true,
       ssl: process.env.NODE_ENV !== "development",
-      ...driverOptions || {}
+      ...settings?.options || {}
     };
-    if (driverOptions?.ca) {
-      connectionOptions.ca = fs.readFileSync(driverOptions?.ca);
+    if (settings?.options?.ca) {
+      connectionOptions.ca = fs.readFileSync(settings?.options?.ca);
     }
     const client = await MongoClient.connect(connectionString, connectionOptions);
     const db = client.db(parsedURI.db);
-    return {
-      client,
-      db
-    };
+    return db;
   } catch (exception) {
     console.warn(chalk.yellowBright(`
 Failed to connect to MongoDB. Please double-check connection settings and try again.

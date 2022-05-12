@@ -1,12 +1,15 @@
 import postgresql from "pg";
 import chalk from "chalk";
+import os from "os";
 const { Pool } = postgresql;
-var postgresql_default = async (connectionFromSettings = null, driverOptions = {}) => {
-  const connection = connectionFromSettings || {
+var postgresql_default = async (settings = {}, databasePortBaseIndex = 0) => {
+  const connection = settings?.connection || {
     hosts: [
-      { hostname: "127.0.0.1", port: parseInt(process.env.PORT, 10) + 10 }
+      { hostname: "127.0.0.1", port: parseInt(process.env.PORT, 10) + 10 + databasePortBaseIndex }
     ],
-    database: "app"
+    database: "app",
+    username: (os.userInfo() || {}).username || "",
+    password: ""
   };
   try {
     const host = connection.hosts && connection.hosts[0];
@@ -16,7 +19,7 @@ var postgresql_default = async (connectionFromSettings = null, driverOptions = {
       password: connection?.password || "",
       host: host?.hostname,
       port: host?.port,
-      ...driverOptions || {}
+      ...settings?.options || {}
     });
     return {
       pool,

@@ -1,14 +1,18 @@
 import postgresql from 'pg';
 import chalk from "chalk";
+import os from 'os';
 
 const { Pool } = postgresql;
 
-export default async (connectionFromSettings = null, driverOptions = {}) => {
-  const connection = connectionFromSettings || {
+export default async (settings = {}, databasePortBaseIndex = 0) => {
+  const connection = settings?.connection || {
     hosts: [
-      { hostname: "127.0.0.1", port: parseInt(process.env.PORT, 10) + 10 },
+      { hostname: "127.0.0.1", port: parseInt(process.env.PORT, 10) + 10 + databasePortBaseIndex },
     ],
     database: "app",
+    // NOTE: PostgreSQL creates a default superuser based on the OS username.
+    username: (os.userInfo() || {}).username || "",
+    password: "",
   };
 
   try {
@@ -19,7 +23,7 @@ export default async (connectionFromSettings = null, driverOptions = {}) => {
       password: connection?.password || '',
       host: host?.hostname,
       port: host?.port,
-      ...(driverOptions || {})
+      ...(settings?.options || {})
     });
   
     return {
