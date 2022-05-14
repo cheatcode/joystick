@@ -117,7 +117,7 @@ export class App {
         return res.status(403).send('Sorry, you must pass a valid instance token to access this endpoint.');
       });
   
-      this.express.app.get('/api/_deploy/metrics', (req, res) => {
+      this.express.app.get('/api/_deploy/metrics', async (req, res) => {
         const deployToken = fs.readFileSync('/root/token.txt', 'utf-8');
         if (req?.headers['x-instance-token'] === deployToken) {
           const metrics = await getMetrics();
