@@ -1,7 +1,7 @@
 import SQLite3 from "sqlite3";
 const sqlite3 = SQLite3.verbose();
-const db = new sqlite3.Database("/root/logs.db");
 const run = (method, command) => {
+  const db = new sqlite3.Database("/root/logs.db");
   return new Promise((resolve, reject) => {
     db[method](command, (error, result) => {
       if (error) {
