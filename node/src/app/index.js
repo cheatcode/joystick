@@ -28,6 +28,8 @@ import defaultUserOutputFields from './accounts/defaultUserOutputFields.js';
 import createPostgreSQLAccountsTables from './databases/postgresql/createAccountsTables';
 import createPostgreSQLAccountsIndexes from './databases/postgresql/createAccountsIndexes';
 import loadSettings from '../settings/load.js';
+import getLogs from './deploy/getLogs.js';
+import getMetrics from './deploy/getMetrics.js';
 
 process.setMaxListeners(0); 
 
@@ -43,6 +45,7 @@ export class App {
     this.express = initExpress(this.onStartApp, options);
     this.initWebsockets();
     this.initAccounts();
+    this.initDeploy();
     this.initAPI(options?.api);
     this.initRoutes(options?.routes);
     this.initUploaders(options?.uploaders);
@@ -100,6 +103,30 @@ export class App {
     });
 
     console.log(`App running at: http://localhost:${express.port}`);
+  }
+
+  initDeploy() {
+    if (process.env.NODE_ENV === 'production') {
+      this.express.app.get('/api/_deploy/logs', async (req, res) => {
+        const deployToken = fs.readFileSync('/root/token.txt', 'utf-8');
+        if (req?.headers['x-instance-token'] === deployToken) {
+          const logs = await getLogs(req?.query);
+          return res.status(200).send(logs);
+        }
+
+        return res.status(403).send('Sorry, you must pass a valid instance token to access this endpoint.');
+      });
+  
+      this.express.app.get('/api/_deploy/metrics', (req, res) => {
+        const deployToken = fs.readFileSync('/root/token.txt', 'utf-8');
+        if (req?.headers['x-instance-token'] === deployToken) {
+          const metrics = await getMetrics();
+          return res.status(200).send(metrics);
+        }
+
+        return res.status(403).send('Sorry, you must pass a valid instance token to access this endpoint.');
+      });
+    }
   }
 
   initAPI(api = {}) {

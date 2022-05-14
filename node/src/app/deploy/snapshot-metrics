@@ -1,0 +1,4 @@
+#!/bin/sh
+free -m | awk 'NR==2{printf "{ \"memory\": \"%.2f%%\",", $3*100/$2 }'
+top -bn1 | grep load | awk '{printf "\"cpu\": \"%.2f%\",", $(NF-2)}'
+df -h | awk '$NF=="/"{printf "\"disk\": \"%s\" }", $5}'
