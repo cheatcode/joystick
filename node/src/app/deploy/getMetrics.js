@@ -7,5 +7,5 @@ export default () => {
   const __dirname = dirname(__filename);
   // NOTE: Use __dirname so that we get the path to this file from within the @joystick.js/node package and
   // note the default application root. Replace /root in second command as it's already being run from the /root directory.
-  return execSync(`chmod +x ${__dirname}/snapshot-metrics && .${__dirname?.replace('/root', '.')}/snapshot-metrics`);
+  return execSync(`chmod +x ${__dirname}/snapshot-metrics && ${__dirname?.replace('/root', '.')}/snapshot-metrics`);
 };
