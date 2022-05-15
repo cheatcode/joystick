@@ -92,7 +92,6 @@ class App {
     if (process.env.NODE_ENV === "production") {
       this.express.app.get("/api/_deploy/logs", async (req, res) => {
         const instanceToken = fs.readFileSync("/root/token.txt", "utf-8");
-        console.log({ thing: "logs", instanceToken, header: req?.headers["x-instance-token"] });
         if (req?.headers["x-instance-token"] === instanceToken?.replace("\n", "")) {
           const logs = await getLogs(req?.query);
           return res.status(200).send(logs);
@@ -101,7 +100,6 @@ class App {
       });
       this.express.app.get("/api/_deploy/metrics", async (req, res) => {
         const instanceToken = fs.readFileSync("/root/token.txt", "utf-8");
-        console.log({ thing: "metrics", instanceToken, header: req?.headers["x-instance-token"] });
         if (req?.headers["x-instance-token"] === instanceToken?.replace("\n", "")) {
           const metrics = await getMetrics();
           return res.status(200).send(metrics);
