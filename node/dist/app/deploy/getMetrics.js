@@ -4,11 +4,7 @@ import { dirname } from "path";
 var getMetrics_default = () => {
   const __filename = fileURLToPath(import.meta.url);
   const __dirname = dirname(__filename);
-  console.log({
-    __filename,
-    __dirname
-  });
-  return execSync(`chmod +x ${__dirname}/snapshot-metrics && ./${__dirname}/snapshot-metrics`);
+  return execSync(`chmod +x ${__dirname}/snapshot-metrics && .${__dirname}/snapshot-metrics`);
 };
 export {
   getMetrics_default as default
