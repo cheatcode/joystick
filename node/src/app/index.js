@@ -117,7 +117,7 @@ export class App {
       this.express.app.get('/api/_deploy/metrics', async (req, res) => {
         const instanceToken = fs.readFileSync('/root/token.txt', 'utf-8');
         if (req?.headers['x-instance-token'] === instanceToken?.replace('\n', '')) {
-          const command = `export NODE_ENV=production && instance metrics`;
+          let command = `export NODE_ENV=production && instance metrics`;
 
           if (req?.query?.before) {
             command += ` --before ${req?.query?.before}`;
