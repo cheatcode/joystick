@@ -12,7 +12,6 @@ import checkIfValidJSON from '../../lib/checkIfValidJSON.js';
 import CLILog from '../../lib/CLILog.js';
 import rainbowRoad from '../../lib/rainbowRoad.js';
 import build from '../build/index.js';
-import getAppDatabases from './getAppDatabases.js';
 
 let checkDeploymentInterval;
 const sslRecordsTable = new AsciiTable();
@@ -83,7 +82,6 @@ const startDeployment = (deploymentToken = '', deployment = {}, fingerprint = {}
           isInitialDeployment: true,
         },
         settings: appSettings,
-        databases: getAppDatabases(appSettings),
       })
     }).then(async (response) => {
       const text = await response.text();

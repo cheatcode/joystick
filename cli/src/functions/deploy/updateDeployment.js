@@ -10,7 +10,6 @@ import domains from '../../lib/domains.js';
 import checkIfValidJSON from '../../lib/checkIfValidJSON.js';
 import CLILog from '../../lib/CLILog.js';
 import build from '../build/index.js';
-import getAppDatabases from './getAppDatabases.js';
 
 let checkDeploymentInterval;
 
@@ -81,8 +80,6 @@ const startDeployment = (deploymentToken = '', deployment = {}, fingerprint = {}
           isInitialDeployment: false,
         },
         settings: appSettings,
-        databases: getAppDatabases(appSettings),
-
       })
     }).then(async (response) => {
       const text = await response.text();
