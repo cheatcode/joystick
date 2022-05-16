@@ -4,6 +4,7 @@ import EventEmitter from "events";
 import * as WebSocket from "ws";
 import queryString from "query-string";
 import multer from "multer";
+import { execSync } from "child_process";
 import initExpress from "./initExpress.js";
 import handleProcessErrors from "./handleProcessErrors";
 import registerGetters from "./registerGetters.js";
@@ -11,11 +12,9 @@ import registerSetters from "./registerSetters.js";
 import connectMongoDB from "./databases/mongodb/index.js";
 import connectPostgreSQL from "./databases/postgresql/index.js";
 import accounts from "./accounts";
-import getBrowserSafeUser from "./accounts/getBrowserSafeUser.js";
 import formatAPIError from "../lib/formatAPIError";
 import hasLoginTokenExpired from "./accounts/hasLoginTokenExpired.js";
 import { isObject } from "../validation/lib/typeValidators.js";
-import isValidHTTPMethod from "../lib/isValidHTTPMethod.js";
 import supportedHTTPMethods from "../lib/supportedHTTPMethods.js";
 import getAPIURLComponent from "./getAPIURLComponent";
 import validateUploaderOptions from "./validateUploaderOptions.js";
@@ -28,8 +27,6 @@ import defaultUserOutputFields from "./accounts/defaultUserOutputFields.js";
 import createPostgreSQLAccountsTables from "./databases/postgresql/createAccountsTables";
 import createPostgreSQLAccountsIndexes from "./databases/postgresql/createAccountsIndexes";
 import loadSettings from "../settings/load.js";
-import getLogs from "./deploy/getLogs.js";
-import getMetrics from "./deploy/getMetrics.js";
 process.setMaxListeners(0);
 class App {
   constructor(options = {}) {
@@ -93,7 +90,7 @@ class App {
       this.express.app.get("/api/_deploy/logs", async (req, res) => {
         const instanceToken = fs.readFileSync("/root/token.txt", "utf-8");
         if (req?.headers["x-instance-token"] === instanceToken?.replace("\n", "")) {
-          const logs = await getLogs(req?.query);
+          const logs = execSync(`export NODE_ENV=production && instance logs`);
           return res.status(200).send(logs);
         }
         return res.status(403).send("Sorry, you must pass a valid instance token to access this endpoint.");
@@ -101,7 +98,14 @@ class App {
       this.express.app.get("/api/_deploy/metrics", async (req, res) => {
         const instanceToken = fs.readFileSync("/root/token.txt", "utf-8");
         if (req?.headers["x-instance-token"] === instanceToken?.replace("\n", "")) {
-          const metrics = await getMetrics();
+          const command = `export NODE_ENV=production && instance metrics`;
+          if (req?.query?.before) {
+            command += ` --before ${req?.query?.before}`;
+          }
+          if (req?.query?.after) {
+            command += ` --after ${req?.query?.after}`;
+          }
+          const metrics = execSync(command);
           return res.status(200).send(metrics);
         }
         return res.status(403).send("Sorry, you must pass a valid instance token to access this endpoint.");
