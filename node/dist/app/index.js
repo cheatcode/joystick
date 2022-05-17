@@ -47,7 +47,6 @@ class App {
   }
   async loadDatabases(callback) {
     const settings = loadSettings();
-    console.log("SETTINGS", JSON.stringify(settings, null, 2));
     const databases = settings?.config?.databases?.map((database) => {
       return {
         provider: database?.provider,
@@ -64,7 +63,6 @@ class App {
         };
       }
       if (database?.provider === "postgresql") {
-        console.log(JSON.stringify({ databases, database }, null, 2));
         const postgresql = await connectPostgreSQL(database?.settings, databaseIndex);
         process.databases = {
           ...process.databases || {},
@@ -88,7 +86,7 @@ class App {
     console.log(`App running at: http://localhost:${express.port}`);
   }
   initDeploy() {
-    if (process.env.NODE_ENV === "production" && process.env.IS_JOYSTICK_DEPLOY) {
+    if (process.env.NODE_ENV === "production") {
       this.express.app.get("/api/_deploy/logs", async (req, res) => {
         const instanceToken = fs.readFileSync("/root/token.txt", "utf-8");
         if (req?.headers["x-instance-token"] === instanceToken?.replace("\n", "")) {
