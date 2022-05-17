@@ -7,7 +7,7 @@ import generateId from "./lib/generateId.js";
 import app from "./app/index.js";
 import logs from "./logs/index.js";
 
-if (process.env.NODE_ENV !== 'development') {
+if (process.env.NODE_ENV !== 'development' && process.env.IS_JOYSTICK_DEPLOY) {
   logs();
 }
 
