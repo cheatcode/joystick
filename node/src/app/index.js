@@ -51,6 +51,7 @@ export class App {
 
   async loadDatabases(callback) {
     const settings = loadSettings();
+    console.log(JSON.stringify(settings, null, 2));
     const databases = settings?.config?.databases?.map(
       (database) => {
         return {
