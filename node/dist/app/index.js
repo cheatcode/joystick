@@ -49,20 +49,21 @@ class App {
     const settings = loadSettings();
     const databases = settings?.config?.databases?.map((database) => {
       return {
-        name: database?.provider,
+        provider: database?.provider,
         settings: database
       };
     });
     for (let databaseIndex = 0; databaseIndex < databases?.length; databaseIndex += 1) {
       const database = databases[databaseIndex];
-      if (database?.name === "mongodb") {
+      if (database?.provider === "mongodb") {
         const mongodb = await connectMongoDB(database?.settings, databaseIndex);
         process.databases = {
           ...process.databases || {},
           mongodb
         };
       }
-      if (database?.name === "postgresql") {
+      if (database?.provider === "postgresql") {
+        console.log(JSON.stringify({ databases, database }, null, 2));
         const postgresql = await connectPostgreSQL(database?.settings, databaseIndex);
         process.databases = {
           ...process.databases || {},
