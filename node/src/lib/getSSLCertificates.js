@@ -1,15 +1,19 @@
 import fs from 'fs';
 
-export default () => {
-  const certExists = fs.existsSync('/lib/deploy/certs/cert.pem');
-  const keyExists = fs.existsSync('/lib/deploy/certs/key.pem');
+export default (ssl = {}) => {
+  const deployCertificatePath = '/lib/deploy/certs/cert.pem';
+  const deployKeyPath = '/lib/deploy/certs/key.pem';
+  const certPath = process.env.IS_JOYSTICK_DEPLOY ? deployCertificatePath : ssl?.cert;
+  const keyPath = process.env.IS_JOYSTICK_DEPLOY ? deployKeyPath : ssl?.key;
+  const certExists = fs.existsSync(certPath);
+  const keyExists = fs.existsSync(keyPath);
 
-  if (process.env.NODE_ENV !== 'production' || !certExists || !keyExists) {
+  if (process.env.NODE_ENV === 'development' || !certExists || !keyExists) {
     return null;
   }
 
   return {
-    cert: fs.readFileSync('/lib/deploy/certs/cert.pem'),
-    key: fs.readFileSync('/lib/deploy/certs/key.pem'),
+    cert: fs.readFileSync(certPath),
+    key: fs.readFileSync(keyPath),
   };
 };

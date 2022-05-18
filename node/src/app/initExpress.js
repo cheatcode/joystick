@@ -5,10 +5,10 @@ import getSSLCertificates from "../lib/getSSLCertificates.js";
 
 export default (onInit = () => {}, options = {}) => {
   try {
-    const ssl = getSSLCertificates();
+    const ssl = getSSLCertificates(options?.ssl);
     const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 2600;
 
-    // NOTE: Reassing process.env in case we fell back to default port.
+    // NOTE: Reassign process.env in case we fell back to default port.
     process.env.PORT = port;
 
     const app = express();
