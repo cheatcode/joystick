@@ -5,7 +5,7 @@ import getSSLCertificates from "../lib/getSSLCertificates.js";
 var initExpress_default = (onInit = () => {
 }, options = {}) => {
   try {
-    const ssl = getSSLCertificates();
+    const ssl = getSSLCertificates(options?.ssl);
     const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 2600;
     process.env.PORT = port;
     const app = express();
