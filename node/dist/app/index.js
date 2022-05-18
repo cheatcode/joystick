@@ -86,7 +86,14 @@ class App {
     console.log(`App running at: http://localhost:${express.port}`);
   }
   initDeploy() {
-    if (process.env.NODE_ENV === "production") {
+    if (process.env.NODE_ENV === "production" && process.env.IS_JOYSTICK_DEPLOY) {
+      this.express.app.get("/api/_deploy/health", async (req, res) => {
+        const instanceToken = fs.readFileSync("/root/token.txt", "utf-8");
+        if (req?.headers["x-instance-token"] === instanceToken?.replace("\n", "")) {
+          res.status(200).send("ok");
+        }
+        return res.status(403).send("Sorry, you must pass a valid instance token to access this endpoint.");
+      });
       this.express.app.get("/api/_deploy/logs", async (req, res) => {
         const instanceToken = fs.readFileSync("/root/token.txt", "utf-8");
         if (req?.headers["x-instance-token"] === instanceToken?.replace("\n", "")) {
