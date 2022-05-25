@@ -33,6 +33,7 @@ class App {
     handleProcessErrors(options?.events);
     this.databases = [];
     this.express = {};
+    this.options = options || {};
   }
   async start(options = {}) {
     this.databases = await this.loadDatabases();
@@ -87,6 +88,17 @@ class App {
   }
   initDeploy() {
     if (process.env.NODE_ENV === "production" && process.env.IS_JOYSTICK_DEPLOY) {
+      this.express.app.get("/api/_deploy/pre-version", async (req, res) => {
+        const instanceToken = fs.readFileSync("/root/token.txt", "utf-8");
+        if (req?.headers["x-instance-token"] === instanceToken?.replace("\n", "")) {
+          if (this.options?.events?.onBeforeDeployment && typeof this.options?.events?.onBeforeDeployment === "function") {
+            await this.options.events.onBeforeDeployment(req?.params?.instance || "", req?.params?.version);
+            return res.status(200).send("ok");
+          }
+          return res.status(200).send("ok");
+        }
+        return res.status(403).send("Sorry, you must pass a valid instance token to access this endpoint.");
+      });
       this.express.app.get("/api/_deploy/health", async (req, res) => {
         const instanceToken = fs.readFileSync("/root/token.txt", "utf-8");
         if (req?.headers["x-instance-token"] === instanceToken?.replace("\n", "")) {
