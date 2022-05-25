@@ -128,7 +128,7 @@ export class App {
         const instanceToken = fs.readFileSync('/root/token.txt', 'utf-8');
 
         if (req?.headers['x-instance-token'] === instanceToken?.replace('\n', '')) {
-          res.status(200).send('ok');
+          return res.status(200).send('ok');
         }
 
         return res.status(403).send('Sorry, you must pass a valid instance token to access this endpoint.');
