@@ -92,7 +92,7 @@ class App {
         const instanceToken = fs.readFileSync("/root/token.txt", "utf-8");
         if (req?.headers["x-instance-token"] === instanceToken?.replace("\n", "")) {
           if (this.options?.events?.onBeforeDeployment && typeof this.options?.events?.onBeforeDeployment === "function") {
-            await this.options.events.onBeforeDeployment(req?.params?.instance || "", req?.params?.version);
+            await this.options.events.onBeforeDeployment(req?.query?.instance || "", req?.query?.version);
             return res.status(200).send("ok");
           }
           return res.status(200).send("ok");
