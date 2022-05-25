@@ -1,4 +1,5 @@
 import fs from "fs";
+import child_process from 'child_process';
 import path from "path";
 import esbuild from "esbuild";
 import getFilesToBuild from "./getFilesToBuild.js";
@@ -58,6 +59,10 @@ const files = filesToBuild.map((path) => {
     target,
   };
 });
+
+if (fs.existsSync('dist')) {
+  child_process.execSync('rm -rf ./dist');
+}
 
 copyFiles(files.filter(({ target }) => target === "copy"));
 buildFiles(files.filter(({ target }) => target !== "copy"));
