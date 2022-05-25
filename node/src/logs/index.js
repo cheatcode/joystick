@@ -36,8 +36,6 @@ const writeLogsToSQLite = () => {
   captureLog((source = '', data = '') => {
     const statement = db.prepare("INSERT INTO logs VALUES (?, ?, ?)");
 
-    console.log({ source, data });
-
     switch(source) {
       case 'stdout':
         return statement.run(new Date().toISOString(), 0, JSON.stringify(data));
