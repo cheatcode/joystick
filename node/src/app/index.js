@@ -111,8 +111,8 @@ export class App {
         if (req?.headers['x-instance-token'] === instanceToken?.replace('\n', '')) {
           if (this.options?.events?.onBeforeDeployment && typeof this.options?.events?.onBeforeDeployment === 'function') {
             await this.options.events.onBeforeDeployment(
-              req?.params?.instance || '',
-              req?.params?.version,
+              req?.query?.instance || '',
+              req?.query?.version,
             );
 
             return res.status(200).send('ok');
