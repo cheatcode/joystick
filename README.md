@@ -250,7 +250,7 @@ All of the currently installed NPM modules for the application.
 
 Any public-facing, static assets for your application like your `favicon.ico` file or your app's logo. All files in this folder are mapped to the root `/` URL in your application (e.g., `/public/favicon.ico` would map to `http://localhost:2600/favicon.ico` in development).
 
-## /private
+### /private
 
 Any private assets that you _do not_ want to expose to the public (e.g., a `.pem` file). This folder is only accessible on the server.
 
