@@ -52,9 +52,15 @@ const handleCheckUploads = (uploads = []) => {
   }
 };
 
-const formatUploads = (uploads = [], uploaderName = '', uploaderOptions = {}) => {
+const formatUploads = ({
+  files: uploads = [],
+  uploaderName = '',
+  uploaderOptions = {},
+  input = {},
+}) => {
   try {
     return uploads.map((upload) => {
+      // TODO: This isn't working when passed to file name?
       const fileExtension = upload?.mimeType?.split('/').pop();
 
       return {
@@ -65,7 +71,7 @@ const formatUploads = (uploads = [], uploaderName = '', uploaderOptions = {}) =>
         maxSizeInMegabytes: uploaderOptions?.maxSizeInMegabytes,
         mimeTypes: uploaderOptions?.mimeTypes,
         fileName: typeof uploaderOptions?.fileName === 'function' ?
-          uploaderOptions.fileName({ fileName: upload?.originalname, fileSize: upload?.size, fileExtension, mimeType: upload?.mimetype }) :
+          uploaderOptions.fileName({ input, fileName: upload?.originalname, fileSize: upload?.size, fileExtension, mimeType: upload?.mimetype }) :
           upload?.originalname,
         fileSize: upload?.size,
         mimeType: upload?.mimetype,
@@ -92,7 +98,7 @@ const validateUploads = (options, promise = {}) => {
   try {
     validateOptions(options);
 
-    const formattedUploads = formatUploads(options?.files, options?.uploaderName, options?.uploaderOptions);
+    const formattedUploads = formatUploads(options);
     const errors = handleCheckUploads(formattedUploads);
 
     if (errors?.length > 0) {

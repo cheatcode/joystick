@@ -327,12 +327,6 @@ export class App {
           noServer: true,
           path: "/api/_websockets/uploaders",
         }),
-        onConnection: (emitter = {}) => {
-          console.log('CONNECTION', emitter);
-        },
-        onMessage: (message = {}) => {
-          console.log('MESSAGE', message);
-        },
       },
     };
 
@@ -529,9 +523,9 @@ export class App {
         const multerMiddleware = upload.array('files', 12);
 
         app.post(`/api/_uploaders/${formattedUploaderName}`, (req, res, next) => {
-          // if (!uploaderOptions?.providers?.includes('local')) {
-          //   return next();
-          // }
+          if (!uploaderOptions?.providers?.includes('local')) {
+            return next();
+          }
 
           let progress = 0;
           const fileSize = parseInt(req.headers["content-length"], 10);
@@ -549,7 +543,8 @@ export class App {
 
           next();
         }, multerMiddleware, async (req, res) => {
-          validateUploads({ files: req?.files, uploaderName, uploaderOptions })
+          const input = req?.headers['x-joystick-upload-input'] ? JSON.parse(req?.headers['x-joystick-upload-input']) : {};
+          validateUploads({ files: req?.files, input, uploaderName, uploaderOptions })
             .then(async (validatedUploads = []) => {
               const fileSize = parseInt(req.headers["content-length"], 10);
               const totalFileSizeAllProviders = fileSize * (uploaderOptions?.providers?.length);
@@ -557,6 +552,7 @@ export class App {
                 progress: uploaderOptions?.providers?.includes('local') ? fileSize : 0,
                 totalFileSizeAllProviders,
                 uploads: validatedUploads,
+                input,
                 req,
               });
 

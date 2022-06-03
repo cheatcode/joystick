@@ -40,7 +40,12 @@ const handleCheckUploads = (uploads = []) => {
     throw new Error(`[validateUploads.handleCheckUploads] ${exception.message}`);
   }
 };
-const formatUploads = (uploads = [], uploaderName = "", uploaderOptions = {}) => {
+const formatUploads = ({
+  files: uploads = [],
+  uploaderName = "",
+  uploaderOptions = {},
+  input = {}
+}) => {
   try {
     return uploads.map((upload) => {
       const fileExtension = upload?.mimeType?.split("/").pop();
@@ -51,7 +56,7 @@ const formatUploads = (uploads = [], uploaderName = "", uploaderOptions = {}) =>
         s3: uploaderOptions?.s3,
         maxSizeInMegabytes: uploaderOptions?.maxSizeInMegabytes,
         mimeTypes: uploaderOptions?.mimeTypes,
-        fileName: typeof uploaderOptions?.fileName === "function" ? uploaderOptions.fileName({ fileName: upload?.originalname, fileSize: upload?.size, fileExtension, mimeType: upload?.mimetype }) : upload?.originalname,
+        fileName: typeof uploaderOptions?.fileName === "function" ? uploaderOptions.fileName({ input, fileName: upload?.originalname, fileSize: upload?.size, fileExtension, mimeType: upload?.mimetype }) : upload?.originalname,
         fileSize: upload?.size,
         mimeType: upload?.mimetype,
         content: upload?.buffer
@@ -78,7 +83,7 @@ const validateOptions = (options) => {
 const validateUploads = (options, promise = {}) => {
   try {
     validateOptions(options);
-    const formattedUploads = formatUploads(options?.files, options?.uploaderName, options?.uploaderOptions);
+    const formattedUploads = formatUploads(options);
     const errors = handleCheckUploads(formattedUploads);
     if (errors?.length > 0) {
       return promise.reject(errors);

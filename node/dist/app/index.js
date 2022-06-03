@@ -262,13 +262,7 @@ class App {
         server: new WebSocket.WebSocketServer({
           noServer: true,
           path: "/api/_websockets/uploaders"
-        }),
-        onConnection: (emitter = {}) => {
-          console.log("CONNECTION", emitter);
-        },
-        onMessage: (message = {}) => {
-          console.log("MESSAGE", message);
-        }
+        })
       }
     };
     this.express.server.on("upgrade", (request, socket, head) => {
@@ -411,6 +405,9 @@ class App {
         const upload = multer();
         const multerMiddleware = upload.array("files", 12);
         app.post(`/api/_uploaders/${formattedUploaderName}`, (req, res, next) => {
+          if (!uploaderOptions?.providers?.includes("local")) {
+            return next();
+          }
           let progress = 0;
           const fileSize = parseInt(req.headers["content-length"], 10);
           const totalFileSizeAllProviders = fileSize * uploaderOptions?.providers?.length;
@@ -424,13 +421,15 @@ class App {
           });
           next();
         }, multerMiddleware, async (req, res) => {
-          validateUploads({ files: req?.files, uploaderName, uploaderOptions }).then(async (validatedUploads = []) => {
+          const input = req?.headers["x-joystick-upload-input"] ? JSON.parse(req?.headers["x-joystick-upload-input"]) : {};
+          validateUploads({ files: req?.files, input, uploaderName, uploaderOptions }).then(async (validatedUploads = []) => {
             const fileSize = parseInt(req.headers["content-length"], 10);
             const totalFileSizeAllProviders = fileSize * uploaderOptions?.providers?.length;
             const uploads = await runUploader({
               progress: uploaderOptions?.providers?.includes("local") ? fileSize : 0,
               totalFileSizeAllProviders,
               uploads: validatedUploads,
+              input,
               req
             });
             res.status(200).send(JSON.stringify({

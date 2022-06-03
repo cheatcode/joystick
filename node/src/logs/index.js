@@ -1,6 +1,12 @@
 import fs from 'fs';
 import SQLite3 from 'sqlite3';
 
+/*
+  TODO:
+
+  - This is where the buffer/data log is coming from but not sure why. Some sort of erroneous log.
+*/
+
 const captureLog = (callback = null) => {
   process.stdout.write = (data) => {
     if (callback) {
