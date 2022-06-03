@@ -13,7 +13,7 @@ export default (uploaderName = '', uploaderOptions = {}) => {
         id: uploadId,
       },
       onMessage: (message = {}) => {
-        if (message?.type === 'PROGRESS' && uploaderOptions?.onProgress && lastProgress !== message?.progress) {
+        if (message?.type === 'PROGRESS' && uploaderOptions?.onProgress && lastProgress < 100 && lastProgress !== message?.progress) {
           lastProgress = message?.progress;
           uploaderOptions.onProgress(message?.progress, message?.provider);
         }
@@ -43,6 +43,7 @@ export default (uploaderName = '', uploaderOptions = {}) => {
       
       request.open('POST', `${window.location.origin}/api/_uploaders/${uploaderName}`);
       request.setRequestHeader('x-joystick-upload-id', uploadId);
+      request.setRequestHeader('x-joystick-upload-input', JSON.stringify(uploaderOptions?.input || {}));
 
       request.send(formData);
     });

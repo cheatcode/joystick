@@ -371,7 +371,7 @@ class Component {
       this.dom.actual = patch(this.getDOMNodeToPatch(this.dom.virtual));
       this.dom.virtual = updatedDOM.virtual;
 
-      joystickInstance._internal.lifecycle.onMount.process();
+      // joystickInstance._internal.lifecycle.onMount.process();
 
       this.handleSetDOMNode();
       this.handleAttachCSS();
