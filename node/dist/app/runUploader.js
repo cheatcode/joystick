@@ -1,5 +1,13 @@
 import fs from "fs";
 import aws from "aws-sdk";
+import path from "path";
+function writeFile(path2, contents, cb) {
+  fs.mkdir(getDirName(path2), { recursive: true }, function(err) {
+    if (err)
+      return cb(err);
+    fs.writeFile(path2, contents, cb);
+  });
+}
 const uploadToS3 = (upload = {}, options = {}) => {
   try {
     return new Promise((resolve) => {
@@ -12,13 +20,17 @@ const uploadToS3 = (upload = {}, options = {}) => {
         secretAccessKey: upload?.s3?.secretAccessKey,
         region: upload?.s3?.region
       });
+      const uploadParams = {
+        Bucket: upload?.s3?.bucket,
+        Key: upload?.fileName,
+        Body: upload?.content
+      };
+      if (upload?.s3?.acl) {
+        uploadParams.ACL = upload?.s3?.acl;
+      }
       const s3Upload = new aws.S3.ManagedUpload({
         partSize: 5 * 1024 * 1024,
-        params: {
-          Bucket: upload?.s3?.bucket,
-          Key: upload?.fileName,
-          Body: upload?.content
-        }
+        params: uploadParams
       });
       let uploaded = options?.progress;
       const emitter = joystick?.emitters[options?.req?.headers["x-joystick-upload-id"]];
@@ -31,13 +43,20 @@ const uploadToS3 = (upload = {}, options = {}) => {
           emitter.emit("progress", { provider: "s3", progress: percentage });
         }
       });
-      s3Upload.send((_error, data) => {
+      s3Upload.send((error, data) => {
+        if (error) {
+          console.warn(error);
+        }
         fs.unlink(temporaryFilePath, () => {
-          resolve({
+          const response = {
             id: options?.req?.headers["x-joystick-upload-id"],
             provider: "s3",
             url: data?.Location
-          });
+          };
+          if (error) {
+            response.error = error?.message || "There was an error uploading your file to Amazon S3. Check the server logs for more information.";
+          }
+          resolve(response);
         });
       });
     });
@@ -51,6 +70,10 @@ const uploadToLocal = (upload = {}, options = {}) => {
       if (upload?.local?.path) {
         if (!fs.existsSync(upload?.local?.path)) {
           fs.mkdirSync(upload?.local?.path, { recursive: true });
+        }
+        const directoryPath = path.dirname(`${upload?.local?.path}/${upload?.fileName}`);
+        if (!fs.existsSync(directoryPath)) {
+          fs.mkdirSync(directoryPath, { recursive: true });
         }
         const filePath = `${upload?.local?.path}/${upload?.fileName}` || `./_uploads/${upload?.fileName}`;
         fs.writeFile(filePath, upload?.content, () => {
