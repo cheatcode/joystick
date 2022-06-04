@@ -2,7 +2,6 @@
 
 import fetch from 'node-fetch';
 import chalk from 'chalk';
-import AsciiTable from 'ascii-table';
 import _ from 'lodash';
 import fs from 'fs';
 import FormData from 'form-data';
@@ -14,7 +13,6 @@ import rainbowRoad from '../../lib/rainbowRoad.js';
 import build from '../build/index.js';
 
 let checkDeploymentInterval;
-const sslRecordsTable = new AsciiTable();
 
 const checkDeploymentStatus = (deploymentId = '', deploymentToken = '', fingerprint = {}) => {
   try {
@@ -65,9 +63,14 @@ const getAppSettings = () => {
   }
 };
 
-const startDeployment = (deploymentToken = '', deployment = {}, fingerprint = {}, deploymentTimestamp = '') => {
+const startDeployment = (
+  deploymentToken = '',
+  deployment = {},
+  fingerprint = {},
+  deploymentTimestamp = '',
+  appSettings = '',
+) => {
   try {
-    const appSettings = getAppSettings();
     return fetch(`${domains?.deploy}/api/deployments`, {
       method: 'POST',
       headers: {
@@ -110,14 +113,16 @@ const startDeployment = (deploymentToken = '', deployment = {}, fingerprint = {}
   }
 };
 
-const uploadBuildToObjectStorage = (timestamp = '', deploymentOptions = {}) => {
+const uploadBuildToObjectStorage = (timestamp = '', deploymentOptions = {}, appSettings = {}) => {
   try {
     const formData = new FormData();
 
     formData.append('build_tar', fs.readFileSync(`.build/build.tar.xz`), `${timestamp}.tar.xz`);
     formData.append('flags', JSON.stringify({ isInitialDeployment: true }));
+    formData.append('version', timestamp);
     formData.append('deployment', JSON.stringify(deploymentOptions?.deployment || {}));
     formData.append('fingerprint', JSON.stringify(deploymentOptions?.fingerprint || {}));
+    formData.append('settings', JSON.stringify(appSettings || {}));
 
     return fetch(`${domains?.deploy}/api/deployments/upload`, {
       method: 'POST',
@@ -173,7 +178,9 @@ const initDeployment = async (options, { resolve, reject }) => {
     await buildApp();
     
     loader.text("Uploading built app to version control...");
-    const uploadReponse = await uploadBuildToObjectStorage(deploymentTimestamp, options);
+
+    const appSettings = getAppSettings();
+    const uploadReponse = await uploadBuildToObjectStorage(deploymentTimestamp, options, appSettings);
 
     if (uploadReponse?.error) {
       loader.stop();
@@ -194,6 +201,7 @@ const initDeployment = async (options, { resolve, reject }) => {
       options.deployment,
       options.fingerprint,
       deploymentTimestamp,
+      appSettings,
     );
 
     checkDeploymentInterval = setInterval(async () => {
@@ -206,8 +214,6 @@ const initDeployment = async (options, { resolve, reject }) => {
       loader.text(deploymentStatus?.log?.message);
 
       if (deploymentStatus?.deployment?.status === 'bootstrapping') {
-        const loadBalancerInstances = deploymentStatus?.instances?.filter((instance) => instance.type === 'loadBalancer');
-
         loader.stop();
         clearInterval(checkDeploymentInterval);
 
@@ -216,34 +222,6 @@ const initDeployment = async (options, { resolve, reject }) => {
         console.log(`  ${chalk.whiteBright(`We're bootstrapping your servers now (nerd-speak for installing dependencies, tweaking settings, and uploading your app code).`)}\n`);
         console.log(`  ${chalk.yellowBright(`To keep an eye on progress and finish getting your app live, head over to:`)}\n`);
         console.log(`  ${chalk.blueBright(`https://cheatcode.co/u/deployments/${options?.deployment?.domain}/deployment`)}\n\n`);
-
-  //       console.log(chalk.yellowBright(`  ${chalk.magenta('>>>')} Steps below MUST be completed in order to issue your SSL certificates and make your app live. ${chalk.magenta('<<<')}\n\n`));
-  //       console.log(chalk.white(`  ${chalk.yellowBright('1.')} Add a DNS record type A to the domain you deployed to for each of the Load Balancer IP addresses in the table below.\n`));
-
-  //       console.log(`  ${chalk.gray('------')}\n`);
-        
-  //       console.log(`${sslRecordsTable
-  //         .removeBorder()
-  //         .setHeading(chalk.magenta('#'), chalk.magenta('DNS Record Type'), chalk.magenta('Domain'), chalk.magenta('IP Address'), chalk.magenta('TTL'))
-  //         .addRowMatrix(
-  //           _.sortBy(loadBalancerInstances, 'name').map((loadBalancer, loadBalancerNumber) => {
-  //             return [chalk.greenBright(loadBalancerNumber + 1), chalk.blueBright('A'), chalk.yellowBright(options?.deployment?.domain), chalk.greenBright(loadBalancer?.instance?.ip), chalk.white('As Low As Possible (1 minute)')]
-  //           })
-  //         )
-  //         .setAlign(0, AsciiTable.CENTER)
-  //         .setAlign(1, AsciiTable.CENTER)
-  //         .setAlign(2, AsciiTable.CENTER)
-  //         .setAlign(3, AsciiTable.CENTER)
-  //         .toString()}\n\n
-  // ${chalk.yellowBright(`Learn more about creating DNS records here: ${chalk.blueBright('https://cheatcode.co/docs/deploy/ssl')}`)}
-  //       `);
-
-  //       console.log(`  ${chalk.gray('------')}\n`);
-
-  //       console.log(chalk.white(`  ${chalk.yellowBright('2.')} Visit ${chalk.blueBright(`https://cheatcode.co/u/deployments/${options?.deployment?.domain}/deployment`)} and click the "Provision Certificate" button.\n`));
-  //       console.log(chalk.white(`  ${chalk.yellowBright('3.')} If Step #2 fails, wait 5 minutes and try again.\n`));
-  //       console.log(chalk.white(`  ${chalk.yellowBright('4.')} If SSL fails to provision after multiple attempts, double-check your DNS configuration and try again.\n`));
-  //       console.log('\n');
       }
     }, 3000);
   } catch (exception) {
