@@ -3,7 +3,7 @@ const handleCheckUpload = ({
   uploaderName,
   maxSizeInMegabytes,
   mimeTypes,
-  fileName,
+  originalFileName,
   fileSize,
   mimeType
 }) => {
@@ -11,7 +11,7 @@ const handleCheckUpload = ({
     const maxSizeInBytes = maxSizeInMegabytes * 1024 * 1024;
     const errors = [];
     if (maxSizeInBytes && !isNaN(maxSizeInBytes) && fileSize && fileSize > maxSizeInBytes) {
-      const error = `The file ${fileName} is too big. Max file size for the uploader ${uploaderName} is ${maxSizeInMegabytes}MB.`;
+      const error = `The file ${originalFileName} is too big. Max file size for the uploader ${uploaderName} is ${maxSizeInMegabytes}MB.`;
       log(error, {
         level: "danger",
         docs: "https://github.com/cheatcode/joystick#uploaders"
@@ -19,7 +19,7 @@ const handleCheckUpload = ({
       errors.push({ message: error });
     }
     if (mimeTypes?.length > 0 && !mimeTypes.includes(mimeType)) {
-      const error = `The MIME type for the file ${fileName} is not supported by the uploader ${uploaderName} (only ${mimeTypes?.join(", ")}).`;
+      const error = `The MIME type for the file ${originalFileName} is not supported by the uploader ${uploaderName} (only ${mimeTypes?.join(", ")}).`;
       log(error, {
         level: "danger",
         docs: "https://github.com/cheatcode/joystick#uploaders"
@@ -57,6 +57,7 @@ const formatUploads = ({
         maxSizeInMegabytes: uploaderOptions?.maxSizeInMegabytes,
         mimeTypes: uploaderOptions?.mimeTypes,
         fileName: typeof uploaderOptions?.fileName === "function" ? uploaderOptions.fileName({ input, fileName: upload?.originalname, fileSize: upload?.size, fileExtension, mimeType: upload?.mimetype }) : upload?.originalname,
+        originalFileName: upload?.originalname,
         fileSize: upload?.size,
         mimeType: upload?.mimetype,
         content: upload?.buffer
