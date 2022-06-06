@@ -379,6 +379,12 @@ class Component {
 
       joystickInstance._internal.eventListeners.queue.process();
     }
+
+    // NOTE: Prevent a callback passed to setState() being called before or at the same time as
+    // the initial render triggered by a setState() call.
+    if (options?.afterSetStateRender && typeof options?.afterSetStateRender === 'function') {
+      options.afterSetStateRender();
+    }
   }
 
   handleSanitizeHTML(html = "") {
@@ -451,11 +457,13 @@ class Component {
 
   setState(state = {}, callback = null) {
     this.state = Object.assign(this.state, state);
-    this.render();
-
-    if (callback && typeof callback === "function") {
-      callback();
-    }
+    this.render({
+      afterSetStateRender: () => {
+        if (callback && typeof callback === "function") {
+          callback();
+        }
+      },
+    });
   }
 }
 
