@@ -29,6 +29,7 @@ class Component {
     };
 
     this.options = options || {};
+    this.wrapper = options?.wrapper || {};
     this.name = "";
     this.defaultProps = options.defaultProps || {};
     this.props = options.props || {};
@@ -338,7 +339,7 @@ class Component {
   }
 
   handleWrapHTMLForRender(html = "") {
-    return `<div js-ssrId="${this.ssrId}" js-c="${this.id}">${html}</div>`;
+    return `<div ${this.wrapper?.id ? `id="${this.wrapper.id}" ` : ''}${this.wrapper?.classList ? `class="${this.wrapper.classList?.join(' ')}" ` : ''}js-ssrId="${this.ssrId}" js-c="${this.id}">${html}</div>`;
   }
 
   getDOMNodeToPatch = (vDOMNode = {}) => {
@@ -445,7 +446,7 @@ class Component {
 
   renderToDOM(options = {}) {
     const html = this.renderToHTML(); // NOTE: This is the wrapped HTML.
-    const virtual = buildVDOMTree(buildVDOM(html.unwrapped, this.id));
+    const virtual = buildVDOMTree(buildVDOM(html.unwrapped, this.id, this.wrapper));
     const actual = options.includeActual ? render(virtual) : null;
 
     return {

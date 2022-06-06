@@ -116,6 +116,7 @@ const allowed = {
     "req",
     // NOTE: User-defined or standard methods.
     "id",
+    "wrapper",
     "name",
     "props",
     "defaultProps",
@@ -139,6 +140,25 @@ const optionValueValidators = {
   name: (value) => {
     if (typeof value !== "string") {
       throwFrameworkError("options.name must be a string.");
+    }
+  },
+  wrapper: (value) => {
+    if (!(value instanceof Object)) {
+      throwFrameworkError("options.wrapper must be an object.");
+    }
+
+    for (const [methodKey, methodValue] of Object.entries(value)) {
+      if (methodKey === 'id' && typeof methodValue !== "string") {
+        throwFrameworkError(
+          `options.wrapper.${methodKey} must be assigned a string.`
+        );
+      }
+
+      if (methodKey === 'classList' && !Array.isArray(methodValue)) {
+        throwFrameworkError(
+          `options.wrapper.${methodKey} must be assigned an array of strings.`
+        );
+      }
     }
   },
   lifecycle: (value) => {
