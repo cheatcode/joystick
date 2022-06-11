@@ -6,16 +6,18 @@ import removeEventListeners from "./removeEventListeners";
 import buildVDOMTree from "./buildVDOMTree";
 import buildVDOM from "./buildVDOM";
 import render from "./render";
-import diff from "./diff";
+import diffVirtualDOMNodes from "./diff/index.js";
 import renderFunctions from "./renderFunctions";
 import joystick from "../index";
-import { JOYSTICK_COMMENT_REGEX } from "./constants";
+import { JOYSTICK_COMMENT_REGEX, NEWLINE_REGEX } from "./constants";
 import generateId from "../utils/generateId";
 import getRenderedDOMNode from './getRenderedDOMNode';
 import validateForm from "../validateForm";
 import get from '../api/get';
 import set from '../api/set';
 import getDataFromSSR from "./getDataFromSSR";
+import findComponentInTree from './findComponentInTree';
+import findComponentInTreeBySSRId from "./findComponentInTreeBySSRId";
 
 class Component {
   constructor(options = {}) {
@@ -141,7 +143,7 @@ class Component {
   }
 
   handleAttachOptionsToInstance() {
-    this.handleAttachState(this.options?.state);
+    this.handleAttachState(this.options?.existingState || this.options?.state);
     this.handleAttachLifecycleMethods(this.options?.lifecycle);
     this.handleAttachMethods(this.options?.methods);
   }
@@ -238,11 +240,35 @@ class Component {
     });
   }
 
+  handleGetRelatedEventIds(componentInTree = {}) {
+    if (componentInTree?.children?.length > 0) {
+      return componentInTree?.children?.flatMap((child) => {
+        return child?.children?.length > 0 ?
+          [child?.id].concat(this.handleGetRelatedEventIds(child)) :
+          [child.id];
+      })
+    }
+
+    return [];
+  }
+
   handleDetachEvents() {
     const joystickInstance = this.handleGetJoystickInstance();
-    const eventListeners = joystickInstance._internal.eventListeners.attached;
+    const componentInTree = findComponentInTree(joystickInstance._internal.tree, this.id);
+
+    // NOTE: Go find all of the component IDs that are children of the component being re-rendered. Use these to filter
+    // the event listeners that we'll need to remove so that the re-render doesn't create duplicate listeners.
+    const eventIdsRelatedToComponent = componentInTree ? [this.id].concat(this.handleGetRelatedEventIds(componentInTree)) : [this.id];
+    const eventListeners = joystickInstance._internal.eventListeners.attached.filter((listener) => {
+      // NOTE: Do any of the IDs we scooped up from the tree match the current id of the listener
+      // being iterated over?
+      return eventIdsRelatedToComponent?.includes(listener.id);
+    });
+
     const eventIds = eventListeners.map(({ eventId }) => eventId);
+  
     removeEventListeners(eventListeners);
+
     joystickInstance._internal.eventListeners.attached =
       joystickInstance._internal.eventListeners.attached.filter(
         ({ eventId }) => {
@@ -353,48 +379,14 @@ class Component {
     return null;
   };
 
-  render(options = {}) {
-    if (options && options.mounting) {
-      const updatedDOM = this.renderToDOM({ includeActual: true });
-      this.dom = updatedDOM;
-      return updatedDOM.actual;
-    }
-
-    const updatedDOM = this.renderToDOM({ includeActual: true });
-    const patch = diff(this.dom.virtual, updatedDOM.virtual);
-
-    if (patch && typeof patch === "function") {
-      this.handleDetachEvents();
-      
-      const joystickInstance = this.handleGetJoystickInstance();
-      joystickInstance._internal.lifecycle.onBeforeMount.process();
-
-      this.dom.actual = patch(this.getDOMNodeToPatch(this.dom.virtual));
-      this.dom.virtual = updatedDOM.virtual;
-
-      joystickInstance._internal.lifecycle.onMount.process();
-
-      this.handleSetDOMNode();
-      this.handleAttachCSS();
-      this.handleAttachEvents();
-
-      joystickInstance._internal.eventListeners.queue.process();
-    }
-
-    // NOTE: Prevent a callback passed to setState() being called before or at the same time as
-    // the initial render triggered by a setState() call.
-    if (options?.afterSetStateRender && typeof options?.afterSetStateRender === 'function') {
-      options.afterSetStateRender();
-    }
-  }
-
   handleSanitizeHTML(html = "") {
     let sanitizedHTML = `${html}`;
     const toFilter = sanitizedHTML.match(JOYSTICK_COMMENT_REGEX) || [];
     toFilter.forEach((filter) => {
       sanitizedHTML = sanitizedHTML.replace(filter, "");
     });
-    return sanitizedHTML;
+
+    return sanitizedHTML.replace(NEWLINE_REGEX, '');
   }
 
   handleGetSanitizedThis() {
@@ -408,11 +400,24 @@ class Component {
     return component;
   }
 
+  handleGetExistingStateMap() {
+    const joystickInstance = this.handleGetJoystickInstance();
+    const componentInTree = findComponentInTreeBySSRId(joystickInstance?._internal?.tree, this.ssrId);
+    return componentInTree?.children?.reduce((map = {}, childComponent) => {
+      if (!map[childComponent?.instance?.ssrId]) {
+        map[childComponent?.instance?.ssrId] = childComponent?.instance?.state;
+      }
+
+      return map;
+    }, {});
+  }
+
   renderToHTML(options = {}) {
     if (options?.dataFromSSR) {
       this.data = getDataFromSSR(options.dataFromSSR, this.ssrId) || {};
     }
 
+    const existingStateMap = this.handleGetExistingStateMap();
     const sanitizedThis = this.handleGetSanitizedThis();
     // NOTE: For SSR, we have to call this no matter what in order to "discover" the children in the tree. When
     // we call render here, we're simultaneously saying "call the component() render function for each child" component
@@ -420,9 +425,11 @@ class Component {
     // to get the compiled HTML in a second-pass scenario.
     const html = this.options.render({
       ...sanitizedThis,
+      setState: this.setState.bind(this),
       ...Object.entries(renderFunctions).reduce((functions, [key, value]) => {
         functions[key] = value.bind({
           ...sanitizedThis,
+          existingStateMap,
           ssrTree: options?.ssrTree,
           translations: options?.translations || this.translations || {},
           walkingTreeForSSR: options?.walkingTreeForSSR,
@@ -446,7 +453,7 @@ class Component {
 
   renderToDOM(options = {}) {
     const html = this.renderToHTML(); // NOTE: This is the wrapped HTML.
-    const virtual = buildVDOMTree(buildVDOM(html.unwrapped, this.id, this.wrapper));
+    const virtual = buildVDOMTree(buildVDOM(html.unwrapped, this.id));
     const actual = options.includeActual ? render(virtual) : null;
 
     return {
@@ -456,8 +463,53 @@ class Component {
     };
   }
 
+  render(options = {}) {
+    if (options?.mounting) {
+      const updatedDOM = this.renderToDOM({ includeActual: true });
+      this.dom = updatedDOM;
+      return updatedDOM.actual;
+    }
+
+    const updatedDOM = this.renderToDOM({ includeActual: true });
+    const patchDOMNodes = diffVirtualDOMNodes(this.dom.virtual, updatedDOM.virtual);
+
+    if (patchDOMNodes && typeof patchDOMNodes === "function") {
+      this.handleDetachEvents();
+      
+      const joystickInstance = this.handleGetJoystickInstance();
+      joystickInstance._internal.lifecycle.onBeforeMount.process();
+      
+      this.dom.actual = patchDOMNodes(this.getDOMNodeToPatch(this.dom.virtual));
+      this.dom.virtual = updatedDOM.virtual;
+      
+      this.handleSetDOMNode();
+      this.handleAttachCSS();
+      this.handleAttachEvents();
+
+      joystickInstance._internal.eventListeners.queue.process();
+    }
+
+    // NOTE: Prevent a callback passed to setState() being called before or at the same time as
+    // the initial render triggered by a setState() call.
+    if (options?.afterSetStateRender && typeof options?.afterSetStateRender === 'function') {
+      options.afterSetStateRender();
+    }
+  }
+
+  handleUpdateChildOnRender(options = {}) {
+    Object.entries(options).forEach(([key, value]) => {
+      this[key] = value;
+    });
+
+    this.render();
+  }
+
   setState(state = {}, callback = null) {
-    this.state = Object.assign(this.state, state);
+    this.state = {
+      ...(this.state || {}),
+      ...(state || {}),
+    };
+
     this.render({
       afterSetStateRender: () => {
         if (callback && typeof callback === "function") {

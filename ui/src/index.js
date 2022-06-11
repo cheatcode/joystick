@@ -27,8 +27,15 @@ const joystick = {
 
 if (typeof window !== "undefined") {
   window.joystick = window.joystick
-    ? { ...window.joystick, settings: window.__joystick_settings__ }
-    : { settings: window.__joystick_settings__ };
+    ? {
+        ...window.joystick,
+        settings: window.__joystick_settings__,
+        ...joystick,
+      }
+    : {
+        settings: window.__joystick_settings__,
+        ...joystick,
+      };
 }
 
 if (typeof window !== "undefined") {

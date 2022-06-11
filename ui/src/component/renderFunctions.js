@@ -1,5 +1,6 @@
 import joystick from "../index";
 import findComponentInTree from "./findComponentInTree";
+import findComponentInTreeBySSRId from "./findComponentInTreeBySSRId";
 
 const handleGetJoystickInstance = () => {
   if (typeof window !== "undefined") {
@@ -17,21 +18,19 @@ const renderFunctionGenerators = {
       const joystickInstance = handleGetJoystickInstance();
       const component = Component({
         props,
+        // NOTE: To prevent a parent re-render wiping out the state of a child, pass the existingStateMap
+        // so the component can check for itself and load any existing state as necessary.
+        existingStateMap: !parent.walkingTreeForSSR && parent?.existingStateMap,
         url: parent.url,
         translations: parent.translations,
         api: parent.options.api,
         req: parent.options.req,
-        dataFromSSR: parent?.dataFromSSR,
-      });
-
-      // NOTE: Re-use instance ID to avoid unnecessary re-renders in the DOM.
-      if (this.renderedComponent) {
-        component.id = this.renderedComponent.id;
-      }
+        dataFromSSR: parent?.dataFromSSR, 
+      })
 
       // NOTE: this is bound to parent component instance inside of class.js.
       component.parent = parent;
-  
+      
       // NOTE: Do this to ensure component is rendered in DOM before trying to set its
       // DOMNode back onto its instance AND that the node is available on this before we
       // assign any lifecycle methods, etc.
@@ -41,7 +40,7 @@ const renderFunctionGenerators = {
         },
       });
   
-      if (component.options && component.options.lifecycle) {
+      if (!this.renderedComponent && component.options && component.options.lifecycle) {
         if (component.options.lifecycle.onBeforeMount) {
           joystickInstance._internal.lifecycle.onBeforeMount.array.push({
             callback: () => {
@@ -50,7 +49,7 @@ const renderFunctionGenerators = {
           });
         }
   
-        if (component.options.lifecycle.onMount) {
+        if (!this.renderedComponent && component.options.lifecycle.onMount) {
           joystickInstance._internal.lifecycle.onMount.array.push({
             callback: () => {
               component.options.lifecycle.onMount(component);
@@ -65,8 +64,8 @@ const renderFunctionGenerators = {
         component.parent.ssrTree || joystickInstance._internal.tree,
         component.parent.id
       );
-  
-      if (parentInTree && parentInTree.children) {
+
+      if (parentInTree?.children) {
         parentInTree.children.push({
           id: component.id,
           instance: component,
@@ -91,7 +90,7 @@ const renderFunctionGenerators = {
         // not rendering any HTML.
         return component.renderToHTML({
           ssrTree: component?.parent?.ssrTree,
-          translations: component?.parent?.translations, // TODO: Is this correct?
+          translations: component?.parent?.translations,
           walkingTreeForSSR: component?.parent?.walkingTreeForSSR,
           dataFromSSR: component?.parent?.dataFromSSR,
         });
@@ -100,7 +99,7 @@ const renderFunctionGenerators = {
       if (component.parent && component.parent.ssrTree) {
         const html = component.renderToHTML({
           ssrTree: component.parent.ssrTree,
-          translations: component.parent.translations, // TODO: Is this correct?
+          translations: component.parent.translations,
           walkingTreeForSSR: component?.parent?.walkingTreeForSSR,
           dataFromSSR: parent?.dataFromSSR,
         });
@@ -144,7 +143,7 @@ const each = function each(items = [], callback) {
       .map((item, itemIndex) => {
         return callback(item, itemIndex);
       })
-      .join("\n");
+      .join("");
   }
 
   return '';

@@ -10,11 +10,11 @@ const parseAttributeMap = (attributeMap = {}) => {
 
 const buildVDOMTree = (element = null) => {
   if (element) {
-    const tagName =
-      (element.tagName && element.tagName.toLowerCase()) || "text";
+    const tagName = (element.tagName && element.tagName.toLowerCase()) || "text";
+
     let vnode = {
       tagName,
-      attributes: parseAttributeMap(element.attributes), // TODO:
+      attributes: parseAttributeMap(element.attributes),
       children: [].map.call(element.childNodes, (child) => {
         return buildVDOMTree(child);
       }),

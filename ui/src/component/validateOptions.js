@@ -129,6 +129,7 @@ const allowed = {
     "render",
     "url",
     "translations",
+    "existingState"
   ],
 };
 

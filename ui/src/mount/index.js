@@ -49,6 +49,7 @@ export default (Component, props = {}, target) => {
   // actual DOM nodes to render (as opposed to an object).
   const dom = component.render({ mounting: true });
   joystick._internal.lifecycle.onBeforeMount.process();
+
   mount(dom, target);
 
   component.handleSetDOMNode();
