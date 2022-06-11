@@ -236,7 +236,7 @@ class Component {
                   Object.defineProperty(DOMEvent, "target", {
                     value: DOMEvent.composedPath()[0],
                   });
-                  event.handler(DOMEvent, component.handleGetComponentInstance());
+                  event.handler(DOMEvent, component);
                 },
               });
             });
