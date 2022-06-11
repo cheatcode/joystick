@@ -113,8 +113,14 @@ const renderFunctionGenerators = {
 
       component.dom = dom;
   
+      joystickInstance._internal.domNodes.array.push({
+        callback: () => {
+          component.handleSetDOMNode();
+          component.handleAttachEvents(component.parent);
+        },
+      });
+
       component.handleAttachCSS();
-      component.handleAttachEvents(component.parent);
   
       this.renderedComponent = component;
   

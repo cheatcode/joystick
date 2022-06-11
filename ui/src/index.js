@@ -7,6 +7,7 @@ import _upload from './upload';
 
 const joystick = {
   _internal: {
+    domNodes: new QueueArray([]),
     eventListeners: {
       attached: [],
       queue: new QueueArray([]),

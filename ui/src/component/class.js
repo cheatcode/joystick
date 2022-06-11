@@ -104,6 +104,12 @@ class Component {
     return joystick;
   }
 
+  handleGetComponentInstance() {
+    // NOTE: Allows us to get the latest copy of the component instance dynamically.
+    // This ensures any event listeners, methods, etc. have the latest copy at call time.
+    return this;
+  }
+
   handleCompileData(data = {}, requestFromWindow = {}) {
     return {
       ...data,
@@ -169,7 +175,7 @@ class Component {
     this.lifecycle = Object.entries(lifecycle).reduce(
       (lifecycle = {}, [methodName, methodFunction]) => {
         lifecycle[methodName] = () => {
-          return methodFunction(this);
+          return methodFunction(this.handleGetComponentInstance());
         };
         return lifecycle;
       },
@@ -181,7 +187,7 @@ class Component {
     this.methods = Object.entries(methods).reduce(
       (methods = {}, [methodName, methodFunction]) => {
         methods[methodName] = (...args) => {
-          return methodFunction(...args, this);
+          return methodFunction(...args, this.handleGetComponentInstance());
         };
         return methods;
       },
@@ -199,7 +205,7 @@ class Component {
       typeof this.lifecycle.onBeforeUnmount === "function"
     ) {
       const onBeforeUnmount = function () {
-        component.lifecycle.onBeforeUnmount(component);
+        component.lifecycle.onBeforeUnmount(component.handleGetComponentInstance());
       };
       window.removeEventListener("beforeunload", onBeforeUnmount);
       window.addEventListener("beforeunload", onBeforeUnmount);
@@ -230,7 +236,7 @@ class Component {
                   Object.defineProperty(DOMEvent, "target", {
                     value: DOMEvent.composedPath()[0],
                   });
-                  event.handler(DOMEvent, component);
+                  event.handler(DOMEvent, component.handleGetComponentInstance());
                 },
               });
             });
@@ -486,6 +492,7 @@ class Component {
       this.handleAttachCSS();
       this.handleAttachEvents();
 
+      joystickInstance._internal.domNodes.process();
       joystickInstance._internal.eventListeners.queue.process();
     }
 
