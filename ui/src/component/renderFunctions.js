@@ -1,6 +1,5 @@
 import joystick from "../index";
 import findComponentInTree from "./findComponentInTree";
-import findComponentInTreeBySSRId from "./findComponentInTreeBySSRId";
 
 const handleGetJoystickInstance = () => {
   if (typeof window !== "undefined") {
