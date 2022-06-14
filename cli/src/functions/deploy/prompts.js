@@ -43,7 +43,7 @@ export default {
         message: `\n ${chalk.greenBright('>')} Where do you want to host the initial deployment?`,
         loop: false,
         suffix: `
-        \n ${chalk.yellowBright(`What does this mean?`)}\n Select the hosting provider where your deployment's load balancers and app instances will be created.\n This can be scaled to include additional providers later. \r ${chalk.yellowBright(`Documentation:`)}\n ${chalk.blue('https://cheatcode.co/docs/deploy/hosting-providers')}
+        \n ${chalk.yellowBright(`What does this mean?`)}\n Select the hosting provider where your deployment's load balancers and app instances will be created.\n This can be scaled to include additional providers later.\n\n ${chalk.yellowBright(`Documentation:`)}\n ${chalk.blue('https://cheatcode.co/docs/deploy/hosting-providers')}
         \n`,
         choices: providers.map((provider) => {
           return {
@@ -104,7 +104,7 @@ export default {
         prefix: '',
         message: `\n ${chalk.greenBright('>')} Select a Size for Your Load Balancer Instances`,
         suffix: `
-          \n ${chalk.yellowBright(`What is this?`)}\n Load balancers distribute inbound internet traffic to your app instances. \r ${chalk.yellowBright(`Recommendations:`)}\n ${chalk.blue('https://cheatcode.co/docs/deploy/scaling#load-balancer-instances')}
+          \n ${chalk.yellowBright(`What is this?`)}\n Load balancers distribute inbound internet traffic to your app instances. \n\n ${chalk.yellowBright(`Recommendations:`)}\n ${chalk.blue('https://cheatcode.co/docs/deploy/scaling#load-balancer-instances')}
           \n`,
         loop: false,
         choices: async (answers = {}) => {
@@ -123,7 +123,7 @@ export default {
         prefix: '',
         message: `\n ${chalk.greenBright('>')} Select a Region for Your Load Balancer Instances`,
         suffix: `
-          \n ${chalk.yellowBright(`What is this?`)}\n The location of the data center where your load balancer instances will live. \r ${chalk.yellowBright(`Recommendations:`)}\n ${chalk.blue('https://cheatcode.co/docs/deploy/scaling#regions')}
+          \n ${chalk.yellowBright(`What is this?`)}\n The location of the data center where your load balancer instances will live. \n\n ${chalk.yellowBright(`Recommendations:`)}\n ${chalk.blue('https://cheatcode.co/docs/deploy/scaling#regions')}
           \n`,
         loop: false,
         choices: async (answers = {}) => {
@@ -147,7 +147,7 @@ export default {
         prefix: '',
         message: `\n ${chalk.greenBright('>')} Select a Size for Your App Instances`,
         suffix: `
-          \n ${chalk.yellowBright(`What is this?`)}\n App instances are running copies of your app. \r ${chalk.yellowBright(`Recommendations:`)}\n ${chalk.blue('https://cheatcode.co/docs/deploy/scaling#app-instances')}
+          \n ${chalk.yellowBright(`What is this?`)}\n App instances are running copies of your app. \n\n ${chalk.yellowBright(`Recommendations:`)}\n ${chalk.blue('https://cheatcode.co/docs/deploy/scaling#app-instances')}
           \n`,
         loop: false,
         choices: async (answers = {}) => {
@@ -166,7 +166,7 @@ export default {
         prefix: '',
         message: `\n ${chalk.greenBright('>')} Select a Region for Your App Instances`,
         suffix: `
-          \n ${chalk.yellowBright(`What is this?`)}\n The location of the data center where your app instances will live. \r ${chalk.yellowBright(`Recommendations:`)}\n ${chalk.blue('https://cheatcode.co/docs/deploy/scaling#regions')}
+          \n ${chalk.yellowBright(`What is this?`)}\n The location of the data center where your app instances will live. \n\n ${chalk.yellowBright(`Recommendations:`)}\n ${chalk.blue('https://cheatcode.co/docs/deploy/scaling#regions')}
           \n`,
         loop: false,
         choices: async (answers = {}) => {
@@ -216,17 +216,17 @@ export default {
         suffix: `
         \n${table
           .removeBorder()
-          .addRow(chalk.blue('Provider'), `${chalk.greenBright(provider?.name)}\n\n`)
-          .addRow(chalk.white('---'), `\n\n`)
+          .addRow(chalk.blue('Provider'), `${chalk.greenBright(provider?.name)}\n`)
+          .addRow(chalk.white('---'), `\n`)
           .addRow(chalk.blue('Load Balancers'), `${chalk.yellowBright(`(${answers?.loadBalancerInstances}x)`)} ${answers?.loadBalancer_size} ${chalk.gray(`[${answers?.loadBalancer_region}]`)} = ${chalk.greenBright(`${currencyFormatter.format(loadBalancerCosts?.monthly, { code: 'USD' })}/mo`)}`)
-          .addRow(chalk.blue('App Instances'), `${chalk.yellowBright(`(${answers?.appInstances}x)`)} ${answers?.instance_size} ${chalk.gray(`[${answers?.instance_region}]`)} = ${chalk.greenBright(`${currencyFormatter.format(instanceCosts?.monthly, { code: 'USD' })}/mo`)}\n\n`)
-          .addRow(chalk.blue('Build Storage'), `${chalk.greenBright(`${currencyFormatter.format(5, { code: 'USD' })}/mo`)}\n\n`)
-          .addRow(chalk.white('---'), `\n\n`)
+          .addRow(chalk.blue('App Instances'), `${chalk.yellowBright(`(${answers?.appInstances}x)`)} ${answers?.instance_size} ${chalk.gray(`[${answers?.instance_region}]`)} = ${chalk.greenBright(`${currencyFormatter.format(instanceCosts?.monthly, { code: 'USD' })}/mo`)}\n`)
+          .addRow(chalk.blue('Build Storage'), `${chalk.greenBright(`${currencyFormatter.format(5, { code: 'USD' })}/mo`)}\n`)
+          .addRow(chalk.white('---'), `\n`)
           .addRow(chalk.magenta('Est. Total Monthly Cost'), chalk.greenBright(`${currencyFormatter.format(totalMonthlyCost, { code: 'USD' })}/mo`))
           .addRow(chalk.magenta('Est. Total Annual Cost'), chalk.greenBright(`${currencyFormatter.format(totalAnnualCost, { code: 'USD' })}/yr`))
           .toString()}
         ${isAbnormal ? `\n\n  ${chalk.yellowBright(`!!! >>> These costs are ${chalk.magenta('high')}. Be absolutely ${chalk.magenta('CERTAIN')} you want to run this deployment. <<< !!!`)}
-        \n\n ` : '\n\n '}`,
+        \n ` : '\n'}`,
       },
     ];
   },
