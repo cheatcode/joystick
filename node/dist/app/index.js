@@ -30,6 +30,7 @@ import loadSettings from "../settings/load.js";
 process.setMaxListeners(0);
 class App {
   constructor(options = {}) {
+    this.setJoystickProcessId();
     handleProcessErrors(options?.events);
     this.databases = [];
     this.express = {};
@@ -85,6 +86,14 @@ class App {
       process.BUILD_ERROR = JSON.parse(message);
     });
     console.log(`App running at: http://localhost:${express.port}`);
+  }
+  setJoystickProcessId() {
+    if (!fs.existsSync("./.joystick")) {
+      fs.mkdirSync("./.joystick");
+    }
+    if (!fs.existsSync("./.joystick/PROCESS_ID")) {
+      fs.writeFileSync("./.joystick/PROCESS_ID", `${generateId(32)}`);
+    }
   }
   initDeploy() {
     if (process.env.NODE_ENV === "production" && process.env.IS_JOYSTICK_DEPLOY) {

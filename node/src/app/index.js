@@ -32,7 +32,9 @@ process.setMaxListeners(0);
 
 export class App {
   constructor(options = {}) {
+    this.setJoystickProcessId();
     handleProcessErrors(options?.events);
+
     this.databases = [];
     this.express = {};
     this.options = options || {};
@@ -101,6 +103,19 @@ export class App {
     });
 
     console.log(`App running at: http://localhost:${express.port}`);
+  }
+
+  setJoystickProcessId() {
+    // NOTE: Taint machine with a unique ID that can be used to identify a single running
+    // process/instance of Joystick (helpful when running in cluster mode or multiple servers).
+
+    if (!fs.existsSync('./.joystick')) {
+      fs.mkdirSync('./.joystick');
+    }
+
+    if (!fs.existsSync('./.joystick/PROCESS_ID')) {
+      fs.writeFileSync('./.joystick/PROCESS_ID', `${generateId(32)}`);
+    }
   }
 
   initDeploy() {
