@@ -123,7 +123,7 @@ export default {
         prefix: '',
         message: `\n ${chalk.greenBright('>')} Select a Region for Your Load Balancer Instances`,
         suffix: `
-          \n ${chalk.yellowBright(`What is this?`)}\n The location of the data center where your load balancer instances will live. \n\n ${chalk.yellowBright(`Recommendations:`)}\n ${chalk.blue('https://cheatcode.co/docs/deploy/scaling#regions')}
+          \n ${chalk.yellowBright(`What is this?`)}\n The location of the data center where your load balancer instances will live. The continent where your choosen region is located will determine the regions available for your app instances. \n\n ${chalk.yellowBright(`Recommendations:`)}\n ${chalk.blue('https://cheatcode.co/docs/deploy/scaling#regions')}
           \n`,
         loop: false,
         choices: async (answers = {}) => {
@@ -133,9 +133,10 @@ export default {
             deploymentToken,
             fingerprint
           );
+
           return (regions || []).map((region) => {
             return {
-              name: `${chalk.blue(`[${region?.id}]`)} -- ${region?.name}`,
+              name: `${chalk.blue(`[${region?.id}]`)} -- ${region?.name} ${chalk.magentaBright(`(${region?.continent?.name})`)}`,
               value: region?.id,
             };
           });
@@ -178,7 +179,7 @@ export default {
           );
           return (regions || []).map((region) => {
             return {
-              name: `${chalk.blue(`[${region?.id}]`)} -- ${region?.name}`,
+              name: `${chalk.blue(`[${region?.id}]`)} -- ${region?.name} ${chalk.magentaBright(`(${region?.continent?.name})`)}`,
               value: region?.id,
             };
           });

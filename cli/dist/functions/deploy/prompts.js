@@ -147,7 +147,7 @@ var prompts_default = {
         suffix: `
           
  ${chalk.yellowBright(`What is this?`)}
- The location of the data center where your load balancer instances will live. 
+ The location of the data center where your load balancer instances will live. The continent where your choosen region is located will determine the regions available for your app instances. 
 
  ${chalk.yellowBright(`Recommendations:`)}
  ${chalk.blue("https://cheatcode.co/docs/deploy/scaling#regions")}
@@ -158,7 +158,7 @@ var prompts_default = {
           const regions = await getInstanceSizeRegions("loadBalancer_size", answers, deploymentToken, fingerprint);
           return (regions || []).map((region) => {
             return {
-              name: `${chalk.blue(`[${region?.id}]`)} -- ${region?.name}`,
+              name: `${chalk.blue(`[${region?.id}]`)} -- ${region?.name} ${chalk.magentaBright(`(${region?.continent?.name})`)}`,
               value: region?.id
             };
           });
@@ -210,7 +210,7 @@ var prompts_default = {
           const regions = await getInstanceSizeRegions("instance_size", answers, deploymentToken, fingerprint);
           return (regions || []).map((region) => {
             return {
-              name: `${chalk.blue(`[${region?.id}]`)} -- ${region?.name}`,
+              name: `${chalk.blue(`[${region?.id}]`)} -- ${region?.name} ${chalk.magentaBright(`(${region?.continent?.name})`)}`,
               value: region?.id
             };
           });

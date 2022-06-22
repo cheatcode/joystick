@@ -6,7 +6,8 @@ import checkIfValidJSON from "../../lib/checkIfValidJSON.js";
 var getInstanceSizeRegions_default = (target = "", answers = {}, deploymentToken = "", fingerprint = {}) => {
   const url = new URL(`${domains.deploy}/api/providers/${answers?.provider}/regions`);
   const params = new URLSearchParams({
-    size: answers[target]
+    size: answers[target],
+    loadBalancerRegion: answers?.loadBalancer_region
   });
   url.search = params.toString();
   return fetch(url, {
