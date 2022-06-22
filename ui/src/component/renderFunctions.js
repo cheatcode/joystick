@@ -1,3 +1,4 @@
+import { diff as diffObjects } from 'nested-object-diff';
 import joystick from "../index";
 import findComponentInTree from "./findComponentInTree";
 
@@ -30,6 +31,18 @@ const renderFunctionGenerators = {
       // NOTE: this is bound to parent component instance inside of class.js.
       component.parent = parent;
       
+      if (!parent.walkingTreeForSSR && component?.options?.lifecycle?.onUpdateProps) {
+        const propChanges = diffObjects(parent?.existingPropsMap, props);
+
+        if (propChanges?.length > 0) {
+          joystickInstance._internal.lifecycle.onUpdateProps.array.push({
+            callback: () => {
+              component.options.lifecycle.onUpdateProps(parent?.existingPropsMap[component.ssrId] || {}, props, component);
+            },
+          });
+        }
+      }
+
       // NOTE: Do this to ensure component is rendered in DOM before trying to set its
       // DOMNode back onto its instance AND that the node is available on this before we
       // assign any lifecycle methods, etc.

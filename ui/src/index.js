@@ -15,6 +15,7 @@ const joystick = {
     lifecycle: {
       onBeforeMount: new QueueArray([]),
       onMount: new QueueArray([]),
+      onUpdateProps: new QueueArray([]),
     },
     timers: [],
     tree: {},

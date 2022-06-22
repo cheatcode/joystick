@@ -406,6 +406,18 @@ class Component {
     return component;
   }
 
+  handleGetExistingPropsMap() {
+    const joystickInstance = this.handleGetJoystickInstance();
+    const componentInTree = findComponentInTreeBySSRId(joystickInstance?._internal?.tree, this.ssrId);
+    return componentInTree?.children?.reduce((map = {}, childComponent) => {
+      if (!map[childComponent?.instance?.ssrId]) {
+        map[childComponent?.instance?.ssrId] = childComponent?.instance?.props;
+      }
+
+      return map;
+    }, {});
+  }
+
   handleGetExistingStateMap() {
     const joystickInstance = this.handleGetJoystickInstance();
     const componentInTree = findComponentInTreeBySSRId(joystickInstance?._internal?.tree, this.ssrId);
@@ -423,6 +435,7 @@ class Component {
       this.data = getDataFromSSR(options.dataFromSSR, this.ssrId) || {};
     }
 
+    const existingPropsMap = this.handleGetExistingPropsMap();
     const existingStateMap = this.handleGetExistingStateMap();
     const sanitizedThis = this.handleGetSanitizedThis();
     // NOTE: For SSR, we have to call this no matter what in order to "discover" the children in the tree. When
@@ -435,6 +448,7 @@ class Component {
       ...Object.entries(renderFunctions).reduce((functions, [key, value]) => {
         functions[key] = value.bind({
           ...sanitizedThis,
+          existingPropsMap,
           existingStateMap,
           ssrTree: options?.ssrTree,
           translations: options?.translations || this.translations || {},
@@ -494,6 +508,7 @@ class Component {
 
       joystickInstance._internal.domNodes.process();
       joystickInstance._internal.eventListeners.queue.process();
+      joystickInstance._internal.lifecycle.onUpdateProps.process();
     }
 
     // NOTE: Prevent a callback passed to setState() being called before or at the same time as

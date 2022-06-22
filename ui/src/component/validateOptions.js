@@ -107,7 +107,7 @@ const allowed = {
     "paste",
     "pointerrawupdate",
   ],
-  lifecycle: ["onBeforeMount", "onMount", "onBeforeUnmount"],
+  lifecycle: ["onBeforeMount", "onMount", "onUpdateProps", "onBeforeUnmount"],
   options: [
     // NOTE: Internal methods passed automatically via Joystick during SSR.
     "_ssrId",
@@ -129,6 +129,7 @@ const allowed = {
     "render",
     "url",
     "translations",
+    "existingProps",
     "existingState"
   ],
 };
