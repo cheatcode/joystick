@@ -45,7 +45,7 @@ const addToValidationQueue = (queue = [], schema = {}, input = {}, parentPath = 
   if (queue && !Array.isArray(queue)) {
     throw new Error("queue must be an array");
   }
-  const rulesOnlySchema = !!schema.type;
+  const rulesOnlySchema = !!(schema.type && constants.types.includes(schema.type));
   if (!rulesOnlySchema) {
     Object.entries(schema).forEach(([field, rules]) => {
       const path = `${parentPath ? `${parentPath}.${field}` : field}`;

@@ -69,7 +69,9 @@ export const addToValidationQueue = (
 
   // NOTE: If schema.type is present, we're forcing the schema for an array
   // item that's not an object (see element rule in /lib/constants.js).
-  const rulesOnlySchema = !!schema.type;
+  // const rulesOnlySchema = !!schema.type; // if schema.type is present, this is true.
+  
+  const rulesOnlySchema = !!(schema.type && constants.types.includes(schema.type));
 
   if (!rulesOnlySchema) {
     Object.entries(schema).forEach(([field, rules]) => {
@@ -119,9 +121,9 @@ const validateInputWithSchema = async (
 
   await Promise.all(queue.flatMap((validationTask) => {
     return Object.entries(validationTask.rules).flatMap(
-      async ([ruleName, ruleValue]) => {
+      async ([ruleName, ruleValue]) => {        
         const validator = constants.rules[ruleName];
-
+        
         if (validator && !validationTask.path.includes(".$.")) {
           const result = await validator(
             ruleValue,
