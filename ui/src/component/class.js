@@ -115,6 +115,9 @@ class Component {
       ...data,
       refetch: async (input = {}) => {
         const data = await this.handleFetchData({ get, set }, requestFromWindow, input);
+        // NOTE: Keep data on window up to date so if a parent re-renders a child that's refetched it's data since
+        // mount, the data rendered isn't stale.
+        window.__joystick_data__[this.ssrId] = data;
         this.render();
         return data;
       },
@@ -375,11 +378,12 @@ class Component {
   }
 
   getDOMNodeToPatch = (vDOMNode = {}) => {
-    if (vDOMNode) {
-      const node = document.querySelector(
-        `[js-c="${vDOMNode?.attributes["js-c"]}"]`
-      );
-      return node;
+    if (this.DOMNode) {
+      return this.DOMNode;
+      // const node = document.querySelector(
+      //   `[js-c="${vDOMNode?.attributes["js-c"]}"]`
+      // );
+      // return node;
     }
 
     return null;

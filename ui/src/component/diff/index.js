@@ -17,7 +17,10 @@ const getReplaceNodePatch = (newVirtualNode) => {
 
 const getRemoveNodePatch = () => {
   return (node) => {
-    node.remove();
+    if (node) {
+      node.remove();
+    }
+    
     return undefined;
   };
 };
