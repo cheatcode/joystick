@@ -10,7 +10,7 @@ import diffVirtualDOMNodes from "./diff/index.js";
 import renderFunctions from "./renderFunctions";
 import joystick from "../index";
 import { JOYSTICK_COMMENT_REGEX, NEWLINE_REGEX } from "./constants";
-import generateId from "../utils/generateId";
+import generateId from "../lib/generateId";
 import getRenderedDOMNode from './getRenderedDOMNode';
 import validateForm from "../validateForm";
 import get from '../api/get';

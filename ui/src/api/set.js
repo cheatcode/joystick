@@ -1,35 +1,62 @@
-import logRequestErrors from "../utils/logRequestErrors";
+import logRequestErrors from "../lib/logRequestErrors";
+import parseJSON from "../lib/parseJSON";
+import throwFrameworkError from "../lib/throwFrameworkError";
+
+const handleParseResponse = async (response = {}) => {
+  try {
+    // NOTE: Parse as text and then pass to parseJSON so Joystick can explicitly handle
+    // invalid JSON errors.
+    const responseAsText = await response.text();
+    const dataFromResponse = parseJSON(responseAsText);
+    return dataFromResponse;
+  } catch (exception) {
+    throwFrameworkError('api.set.handleParseResponse', exception);
+  }
+};
+
+const getBody = (setterOptions = {}) => {
+  try {
+    return JSON.stringify(setterOptions);
+  } catch (exception) {
+    throwFrameworkError('api.set.getBody', exception);
+  }
+};
 
 export default (setterName = "", setterOptions = {}) => {
-  if (fetch) {
-    return new Promise((resolve, reject) => {
-      return fetch(`${window.location.origin}/api/_setters/${setterName}`, {
-        method: "POST",
-        mode: "cors",
-        headers: {
-          ...(setterOptions?.headers || {}),
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(setterOptions),
-        credentials: "include",
-      })
-        .then(async (response) => {
-          const data = await response.json();
+  try {
+    if (typeof window.fetch !== 'undefined') {
+      // NOTE: Wrap fetch() with another Promise so we can control routing of errors
+      // received in the response (by default they don't go to catch() which is where
+      // set() should return errors).
+      return new Promise((resolve, reject) => {
+        const url = `${window.location.origin}/api/_setters/${setterName}`;
+        const body = getBody(setterOptions);
 
-          if (data && data.errors) {
-            logRequestErrors('set request', data.errors);
-            return reject(data);
+        return fetch(url, {
+          method: 'POST',
+          mode: "cors",
+          headers: {
+            ...(setterOptions?.headers || {}),
+            "Content-Type": "application/json",
+          },
+          body,
+          credentials: "include",
+        }).then(async (response) => {
+          const dataFromResponse = await handleParseResponse(response);
+  
+          if (dataFromResponse?.errors) {
+            logRequestErrors(`set request`, dataFromResponse.errors);
+            return reject(dataFromResponse);
           }
-
-          resolve(data);
-
-          return data;
-        })
-        .catch((error) => {
-          logRequestErrors('set request', [error]);
-          reject(error);
-          return error;
+      
+          return resolve(dataFromResponse);
+        }).catch((error) => {
+          logRequestErrors(`set request`, [error]);
+          return reject({ errors: [error] });
         });
-    });
+      });
+    }
+  } catch (exception) {
+    throwFrameworkError(`set request`, exception);
   }
 };

@@ -1,5 +1,10 @@
 import request from "./request";
+import throwFrameworkError from '../lib/throwFrameworkError';
 
 export default () => {
-  return request("logout");
+  try {
+    return request("logout");
+  } catch (exception) {
+    throwFrameworkError('accounts.logout', exception);
+  }
 };

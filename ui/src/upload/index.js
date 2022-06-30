@@ -1,4 +1,4 @@
-import generateId from "../utils/generateId";
+import generateId from "../lib/generateId";
 import logRequestErrors from "../utils/logRequestErrors";
 import websocketClient from "../websockets/client";
 
