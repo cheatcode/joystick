@@ -5,8 +5,11 @@ import api from "./api";
 import _accounts from "./accounts";
 import _upload from './upload';
 
+const css = new QueueArray([]);
+
 const joystick = {
   _internal: {
+    css,
     domNodes: new QueueArray([]),
     eventListeners: {
       attached: [],
@@ -17,8 +20,34 @@ const joystick = {
       onMount: new QueueArray([]),
       onUpdateProps: new QueueArray([]),
     },
+    render: new QueueArray([], (queue) => {
+      queue.process();
+    }),
     timers: [],
     tree: {},
+    onRender: () => {
+      css.array.push({
+        callback: () => {
+          const renderedComponentIds = [].map.call(document.querySelectorAll('[js-c]'), (target) => {
+            return target?.getAttribute('js-c');
+          });
+          const componentStyleTagIds = [].map.call(document.querySelectorAll('style[js-c-id]'), (target) => {
+            return target?.getAttribute('js-c-id');
+          });
+          const extraStyleIds = componentStyleTagIds?.filter((id) => !renderedComponentIds?.includes(id));
+    
+          for (let i = 0; i < extraStyleIds?.length; i += 1) {
+            const unnecesaryId = extraStyleIds[i];
+            const existingStyleForComponent = document.head.querySelector(`[js-c-id="${unnecesaryId}"]`);
+            if (existingStyleForComponent) {
+              document.head.removeChild(existingStyleForComponent);
+            }
+          }
+        },
+      });
+
+      css.process();
+    },
   },
   component: _component,
   mount,

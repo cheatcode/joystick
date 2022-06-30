@@ -18,6 +18,8 @@ import set from '../api/set';
 import getDataFromSSR from "./getDataFromSSR";
 import findComponentInTree from './findComponentInTree';
 import findComponentInTreeBySSRId from "./findComponentInTreeBySSRId";
+import { isObject } from "../validateForm/validators/types";
+import updateComponentInTree from "./updateComponentInTree";
 
 class Component {
   constructor(options = {}) {
@@ -118,7 +120,7 @@ class Component {
         // NOTE: Keep data on window up to date so if a parent re-renders a child that's refetched it's data since
         // mount, the data rendered isn't stale.
         window.__joystick_data__[this.ssrId] = data;
-        this.render();
+        this.queueRender();
         return data;
       },
     };
@@ -290,7 +292,7 @@ class Component {
     const css = this.handleCompileCSS();
 
     if (css) {
-      const styleHash = btoa(css.trim()).substring(0, 8);
+      const styleHash = btoa(`${css.trim()}`).substring(0, 8);
       const existingStyleForComponent = document.head.querySelector(
         `[js-c-id="${this.id}"]`
       );
@@ -316,6 +318,32 @@ class Component {
         document.head.appendChild(style);
       }
     }
+  }
+
+  handleGetComponentIdsFromTree(treeToWalk = {}, ids = []) {
+    const isTree = treeToWalk && treeToWalk.id;
+
+    if (isObject(treeToWalk) && isTree) {
+      const entries = Object.entries(treeToWalk);
+  
+      for (let i = 0; i < entries.length; i += 1) {
+        const [treeKey, treeValue] = entries[i];
+  
+        if (treeKey === "id") {
+          
+          ids.push(treeToWalk?.id);
+        }
+  
+        if (treeKey === "children" && Array.isArray(treeValue)) {
+          for (let c = 0; c < treeValue.length; c += 1) {
+            const childTree = treeValue[c];
+            this.handleGetComponentIdsFromTree(childTree, ids);
+          }
+        }
+      }
+    }
+  
+    return ids;
   }
 
   handleCompileCSS() {
@@ -439,9 +467,11 @@ class Component {
       this.data = getDataFromSSR(options.dataFromSSR, this.ssrId) || {};
     }
 
+    const joystickInstance = this.handleGetJoystickInstance();
     const existingPropsMap = this.handleGetExistingPropsMap();
     const existingStateMap = this.handleGetExistingStateMap();
     const sanitizedThis = this.handleGetSanitizedThis();
+
     // NOTE: For SSR, we have to call this no matter what in order to "discover" the children in the tree. When
     // we call render here, we're simultaneously saying "call the component() render function for each child" component
     // you're rendering. In effect, this allows us to scoop up data for the full tree in a first-pass scenario and then
@@ -487,6 +517,17 @@ class Component {
     };
   }
 
+  handleGetExistingChildIDs(joystickInstance = {}) {
+    let existingChildIds = [];
+
+    if (typeof window !== 'undefined' && joystickInstance?._internal?.tree) {
+      const componentInTree = findComponentInTree(joystickInstance._internal.tree, this.id);
+      existingChildIds = componentInTree?.children?.map(({ id }) => id);
+    }
+
+    return existingChildIds;
+  }
+  
   render(options = {}) {
     if (options?.mounting) {
       const updatedDOM = this.renderToDOM({ includeActual: true });
@@ -494,13 +535,15 @@ class Component {
       return updatedDOM.actual;
     }
 
+    const joystickInstance = this.handleGetJoystickInstance();
+    const existingChildIds = this.handleGetExistingChildIDs(joystickInstance);
+    
     const updatedDOM = this.renderToDOM({ includeActual: true });
     const patchDOMNodes = diffVirtualDOMNodes(this.dom.virtual, updatedDOM.virtual);
 
     if (patchDOMNodes && typeof patchDOMNodes === "function") {
       this.handleDetachEvents();
       
-      const joystickInstance = this.handleGetJoystickInstance();
       joystickInstance._internal.lifecycle.onBeforeMount.process();
       
       this.dom.actual = patchDOMNodes(this.getDOMNodeToPatch(this.dom.virtual));
@@ -513,6 +556,12 @@ class Component {
       joystickInstance._internal.domNodes.process();
       joystickInstance._internal.eventListeners.queue.process();
       joystickInstance._internal.lifecycle.onUpdateProps.process();
+
+      const componentInTree = findComponentInTree(joystickInstance._internal.tree, this.id);
+      
+      updateComponentInTree(this.id, joystickInstance._internal.tree, 'children', componentInTree?.children?.filter((child) => {
+        return !existingChildIds?.includes(child?.id);
+      }));
     }
 
     // NOTE: Prevent a callback passed to setState() being called before or at the same time as
@@ -520,14 +569,10 @@ class Component {
     if (options?.afterSetStateRender && typeof options?.afterSetStateRender === 'function') {
       options.afterSetStateRender();
     }
-  }
 
-  handleUpdateChildOnRender(options = {}) {
-    Object.entries(options).forEach(([key, value]) => {
-      this[key] = value;
-    });
-
-    this.render();
+    if (typeof window !== 'undefined') {
+      window.joystick._internal.onRender();
+    }
   }
 
   setState(state = {}, callback = null) {
@@ -536,13 +581,34 @@ class Component {
       ...(state || {}),
     };
 
-    this.render({
+    this.queueRender({
       afterSetStateRender: () => {
         if (callback && typeof callback === "function") {
           callback();
         }
       },
     });
+
+    // this.render({
+    //   afterSetStateRender: () => {
+    //     if (callback && typeof callback === "function") {
+    //       callback();
+    //     }
+    //   },
+    // });
+  }
+
+  queueRender(options = {}) {
+    if (typeof window !== 'undefined') {
+      const joystickInstance = this.handleGetJoystickInstance();
+      joystickInstance._internal.render.array.push({
+        callback: () => {
+          this.render(options);
+        },
+      });
+    } else {
+      this.render(options);
+    }
   }
 }
 

@@ -37,7 +37,8 @@ const renderFunctionGenerators = {
         if (propChanges?.length > 0) {
           joystickInstance._internal.lifecycle.onUpdateProps.array.push({
             callback: () => {
-              component.options.lifecycle.onUpdateProps(parent?.existingPropsMap[component.ssrId] || {}, props, component);
+              const existingProps = parent?.existingPropsMap && parent?.existingPropsMap[component.ssrId];
+              component.options.lifecycle.onUpdateProps(existingProps || {}, props, component);
             },
           });
         }
@@ -125,12 +126,13 @@ const renderFunctionGenerators = {
 
       component.dom = dom;
   
-      joystickInstance._internal.domNodes.array.push({
-        callback: () => {
-          component.handleSetDOMNode();
-        },
-      });
-      
+      // joystickInstance._internal.domNodes.array.push({
+      //   callback: () => {
+      //     component.handleSetDOMNode();
+      //   },
+      // });
+  
+      component.handleSetDOMNode();
       component.handleAttachEvents(component.parent);
       component.handleAttachCSS();
   
