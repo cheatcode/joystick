@@ -1,7 +1,7 @@
 import URLPattern from "url-pattern";
 import validateOptions from "./validateOptions";
 import serializeEvents from "../utils/serializeEvents";
-import addEventListener from "./addEventListener";
+import addEventListener from "./class/events/addListener";
 import removeEventListeners from "./removeEventListeners";
 import buildVDOMTree from "./buildVDOMTree";
 import buildVDOM from "./buildVDOM";
@@ -19,7 +19,7 @@ import getDataFromSSR from "./getDataFromSSR";
 import findComponentInTree from './findComponentInTree';
 import findComponentInTreeBySSRId from "./findComponentInTreeBySSRId";
 import { isObject } from "../validateForm/validators/types";
-import updateComponentInTree from "./updateComponentInTree";
+import updateComponentInTree from "./class/updateComponentInTree";
 
 class Component {
   constructor(options = {}) {
@@ -363,11 +363,11 @@ class Component {
     const parsedRules = Object.entries(rawRules).map(([_key, value]) => value);
 
     const prefixedRules = parsedRules.map((rule) => {
-      if (rule.type === 1) {
+      if (rule.constructor.name === 'CSSStyleRule') {
         return `[js-c="${id}"] ${rule.cssText}`;
       }
 
-      if (rule.type === 4) {
+      if (rule.constructor.name === 'CSSMediaRule') {
         return `
           @media ${rule.conditionText} {
             ${Object.entries(rule.cssRules)

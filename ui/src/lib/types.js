@@ -25,6 +25,14 @@ export const isNull = (value) => {
   }
 };
 
+export const isDOM = (value) => {
+  try {
+    return value instanceof Element;
+  } catch (exception) {
+    throwFrameworkError('types.isDOM', exception);
+  }
+}
+
 export const isArray = (value) => {
   try {
     return !!Array.isArray(value);
