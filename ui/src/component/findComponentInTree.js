@@ -17,8 +17,8 @@ const findComponentInTree = (tree = {}, componentId = "", callback = null) => {
         }
   
         if (treeKey === "children" && Array.isArray(treeValue)) {
-          for (let child = 0; child < treeValue.length; child += 1) {
-            const childTree = treeValue[child];
+          for (let childIndex = 0; childIndex < treeValue.length; childIndex += 1) {
+            const childTree = treeValue[childIndex];
             const child = findComponentInTree(childTree, componentId, callback);
             if (child !== null) {
               return child;

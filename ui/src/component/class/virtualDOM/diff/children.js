@@ -1,6 +1,6 @@
 import mapPatchFunctionsToNodes from './mapPatchFunctionsToNodes.js';
 import diffVirtualDOMNodes from './index.js';
-import render from '../render.js';
+import render from '../renderTreeToDOM';
 
 const appendNewChildren = (newChildrenFunctions = [], parentNode) => {
   newChildrenFunctions.forEach((patchFunction) => {

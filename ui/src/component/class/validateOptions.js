@@ -1,4 +1,4 @@
-import throwFrameworkError from "../utils/throwFrameworkError";
+import throwFrameworkError from "../../lib/throwFrameworkError";
 import hasAllRequiredOptions from "./hasAllRequiredOptions";
 import allowedComponentOptions from './allowedComponentOptions';
 import optionValidators from "./optionValidators";

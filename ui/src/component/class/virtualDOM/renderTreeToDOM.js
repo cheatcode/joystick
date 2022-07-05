@@ -1,7 +1,9 @@
 import { isString } from "../../../lib/types";
+import throwFrameworkError from "../../../lib/throwFrameworkError";
 
 const renderElement = (virtualDOMNode = {}) => {
   try {
+
     const element = document.createElement(virtualDOMNode.tagName);
     const attributes = Object.entries(virtualDOMNode.attributes);
 
@@ -12,8 +14,11 @@ const renderElement = (virtualDOMNode = {}) => {
   
     for (let i = 0; i < virtualDOMNode?.children?.length; i += 1) {
       const childVirtualDOMNode = virtualDOMNode?.children[i];
-      const childDOMNode = renderTreeToDOM(childVirtualDOMNode);
-      element.appendChild(childDOMNode);
+
+      if (childVirtualDOMNode) {
+        const childDOMNode = renderTreeToDOM(childVirtualDOMNode);
+        element.appendChild(childDOMNode);
+      }
     }
 
     return element;

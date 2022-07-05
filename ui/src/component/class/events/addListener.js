@@ -1,4 +1,4 @@
-import throwFrameworkError from "../utils/throwFrameworkError";
+import throwFrameworkError from "../../../lib/throwFrameworkError";
 import generateId from "../../../lib/generateId";
 import { isDOM, isFunction } from "../../../lib/types";
 

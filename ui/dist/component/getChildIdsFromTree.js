@@ -1,0 +1,1 @@
+var h=(e="",r={})=>{throw new Error(`[joystick${e?`.${e}`:""}] ${r.message||r.reason||r}`)};var i=(e={},r=[],m="")=>{try{let o=Object.keys(e);for(let n=0;n<o.length;n+=1){let t=o[n],c=e[t];if(t==="id"&&c!==m&&r.push(c),t==="children"){let l=e[t];for(let s=0;s<l?.length;s+=1){let a=l[s]||{};i(a,r)}}}return r}catch(o){h("component.getChildIdsFromTree",o)}},w=i;export{w as default};

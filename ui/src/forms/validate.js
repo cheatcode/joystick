@@ -1,4 +1,4 @@
-import throttle from "../utils/throttle";
+import throttle from "../lib/throttle";
 import validators from "./validators";
 
 class ValidateForm {

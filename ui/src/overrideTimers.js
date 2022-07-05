@@ -13,7 +13,7 @@ const overrideSetInterval = (interval = null) => {
 
     window.setInterval._tainted = true;
   } catch (exception) {
-    throw new Error(`[timers.overrideSetInterval] ${exception.message}`);
+    throwFrameworkError('overrideTimers.overrideSetInterval', exception);
   }
 };
 

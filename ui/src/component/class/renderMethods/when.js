@@ -1,9 +1,15 @@
 import throwFrameworkError from "../../../lib/throwFrameworkError";
 
-export default () => {
+const when = function when(test = false, htmlToRender = '') {
   try {
-    // Do it to it, Lars.
+    if (test) {
+      return htmlToRender;
+    }
+
+    return '';
   } catch (exception) {
     throwFrameworkError('component.renderMethods.when', exception);
   }
 };
+
+export default when;

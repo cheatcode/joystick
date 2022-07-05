@@ -1,0 +1,1 @@
+var e=(r="",t={})=>{throw new Error(`[joystick${r?`.${r}`:""}] ${t.message||t.reason||t}`)};var s=r=>{try{return typeof r=="function"}catch(t){e("types.isFunction",t)}};var u=async(r={},t={},c={},o={})=>{try{return o?.data&&s(o.data)?await o.data(r,t,c):Promise.resolve()}catch(n){e("component.data.fetch",n)}};export{u as default};

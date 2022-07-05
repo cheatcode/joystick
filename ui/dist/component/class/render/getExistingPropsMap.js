@@ -1,0 +1,1 @@
+var o=(e="",r={})=>{throw new Error(`[joystick${e?`.${e}`:""}] ${r.message||r.reason||r}`)};var a=(e={})=>{try{return e?.componentInTree?.children?.reduce((r={},t)=>(r[t?.instance?.ssrId]||(r[t?.instance?.ssrId]=t?.instance?.props),r),{})}catch(r){o("component.render.getExistingPropsMap",r)}};export{a as default};

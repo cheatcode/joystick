@@ -1,4 +1,4 @@
-import throwFrameworkError from "../utils/throwFrameworkError";
+import throwFrameworkError from "../lib/throwFrameworkError";
 
 const allowed = {
   events: [

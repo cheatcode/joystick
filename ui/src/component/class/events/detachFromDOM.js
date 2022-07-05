@@ -1,11 +1,12 @@
 import throwFrameworkError from "../../../lib/throwFrameworkError";
 import getChildIdsFromTree from "../../getChildIdsFromTree";
+import removeEventListeners from "./removeListeners";
 
 export default (componentInTree = {}, componentInstance = {}) => {
   try {
     const childComponentIds = getChildIdsFromTree(componentInTree, [], componentInstance?.id);
     const componentIds = [componentInstance?.id, ...childComponentIds];
-    const eventListenersToDetach = window.joystick._internal.eventListeners.attached.filter((listener) => {
+    const eventListenersToDetach = window.joystick._internal.eventListeners.filter((listener) => {
       return componentIds?.includes(listener.componentId);
     });
     

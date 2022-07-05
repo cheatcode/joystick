@@ -7,11 +7,12 @@ import compileCSS from './css/compile';
 import compileState from './state/compile';
 import compileLifecycle from './lifecycle/compile';
 import compileMethods from "./methods/compile";
+import compileUrl from "./url/compile";
 import windowIsUndefined from "../../lib/windowIsUndefined";
 
 export default (componentInstance = {}, componentOptions = {}) => {
   try {
-    componentInstance.options = options || {};
+    componentInstance.options = componentOptions || {};
     componentInstance.id = componentOptions?.id || generateId(8);
     componentInstance.ssrId = componentOptions?._ssrId || null;
     componentInstance.props = compileProps(componentOptions?.props, componentOptions?.defaultProps);

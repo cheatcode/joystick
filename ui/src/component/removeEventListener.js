@@ -1,4 +1,4 @@
-import throwFrameworkError from "../utils/throwFrameworkError";
+import throwFrameworkError from "../lib/throwFrameworkError";
 
 export default (element, eventType, eventListener) => {
   if (!element) {

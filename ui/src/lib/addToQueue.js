@@ -15,7 +15,7 @@ export default (queueName = '', callback = null) => {
   try {
     if (!windowIsUndefined()) {
       const queue = getQueue(queueName) || {};
-      queue.array.push(callback);
+      queue.array.push({ callback });
     }
   } catch (exception) {
     throwFrameworkError('addToQueue', exception);

@@ -1,0 +1,1 @@
+var n=(e="",r={})=>{throw new Error(`[joystick${e?`.${e}`:""}] ${r.message||r.reason||r}`)};var a=(e={})=>{try{return e?.componentInTree?.children?.reduce((r={},t)=>(r[t?.instance?.ssrId]||(r[t?.instance?.ssrId]=t?.instance?.state),r),{})}catch(r){n("component.render.getExistingStateMap",r)}};export{a as default};

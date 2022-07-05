@@ -1,4 +1,4 @@
-import render from '../render';
+import render from '../renderTreeToDOM';
 import elementPatchFunctions from './elementPatchFunctions';
 import diffAttributes from './attributes';
 import diffChildren from './children';

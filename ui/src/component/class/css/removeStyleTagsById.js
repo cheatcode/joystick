@@ -2,7 +2,9 @@ import throwFrameworkError from "../../../lib/throwFrameworkError";
 
 const getStyleTagSelector = (componentIds = []) => {
   try {
-    const selector = '';
+    let selector = '';
+
+    console.log({ componentIds });
 
     for (let i = 0; i < componentIds?.length; i += 1) {
       const componentId = componentIds[i];
@@ -18,6 +20,7 @@ const getStyleTagSelector = (componentIds = []) => {
 export default (componentIds = []) => {
   try {
     const selector = getStyleTagSelector(componentIds);
+    console.log(selector);
     const styleTags = document.head.querySelectorAll(selector);
     
     for (let i = 0; i < styleTags?.length; i += 1) {

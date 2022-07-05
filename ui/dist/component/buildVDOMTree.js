@@ -1,1 +1,0 @@
-var u=(t={})=>Object.entries(t).reduce((e={},[a,r])=>(e[r.name]=r.value,e),{}),n=(t=null)=>{if(t){let e=t.tagName&&t.tagName.toLowerCase()||"text",a={tagName:e,attributes:u(t.attributes),children:[].map.call(t.childNodes,r=>n(r))};return e==="text"&&(a=t.textContent),a}},o=n;export{o as default};

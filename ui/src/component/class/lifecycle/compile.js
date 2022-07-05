@@ -7,7 +7,10 @@ export default (componentInstance = {}, lifecycle = {}) => {
       return defaultLifecycleMethods;
     }
 
-    return Object.entries(lifecycle)
+    return Object.entries({
+      ...defaultLifecycleMethods,
+      ...(lifecycle || {}),
+    })
       .reduce((compiledLifecycle = {}, [lifecycleMethodName, lifecycleMethodFunction]) => {
         compiledLifecycle[lifecycleMethodName] = () => {
           return lifecycleMethodFunction(componentInstance);

@@ -1,4 +1,5 @@
 import throwFrameworkError from "../../../lib/throwFrameworkError";
+import findComponentDataFromSSR from "../data/findComponentDataFromSSR";
 import compileRenderMethods from "../renderMethods/compile";
 import getExistingPropsMap from "./getExistingPropsMap";
 import getExistingStateMap from "./getExistingStateMap";
@@ -7,9 +8,14 @@ import wrapHTML from "./wrapHTML";
 
 export default (componentInstance = {}, options = {}) => {
   try {
+    if (options?.dataFromSSR) {
+      componentInstance.data = findComponentDataFromSSR(options.dataFromSSR, componentInstance.ssrId) || {};
+    }
+
     const existingPropsMap = getExistingPropsMap(componentInstance);
     const existingStateMap = getExistingStateMap(componentInstance);
     const renderMethods = compileRenderMethods({
+      ...componentInstance,
       existingPropsMap,
       existingStateMap,
       ssrTree: options?.ssrTree,
@@ -19,10 +25,12 @@ export default (componentInstance = {}, options = {}) => {
     });
 
     const html = componentInstance.options.render({
+      ...(componentInstance || {}),
       setState: componentInstance.setState.bind(componentInstance),
       ...(renderMethods || {}),
     });
 
+    
     const sanitizedHTML = sanitizeHTML(html);
     const wrappedHTML = wrapHTML(componentInstance, sanitizedHTML);
 

@@ -1,5 +1,5 @@
 import generateId from "../lib/generateId";
-import logRequestErrors from "../utils/logRequestErrors";
+import logRequestErrors from "../lib/logRequestErrors";
 import websocketClient from "../websockets/client";
 
 export default (uploaderName = '', uploaderOptions = {}) => {

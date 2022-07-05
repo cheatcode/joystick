@@ -1,16 +1,22 @@
 import validateOptions from "./validateOptions";
 import registerOptions from "./registerOptions";
+import loadDataFromWindow from './loadDataFromWindow';
 import appendCSSToHead from "./css/appendToHead";
 import attachEventsToDOM from "./events/attachToDOM";
+import fetchData from "./data/fetch";
 import windowIsUndefined from "../../lib/windowIsUndefined";
 import getChildIdsFromTree from '../getChildIdsFromTree';
-import removeStyleTagsById from './css/removeStyleTagsById';
-import findComponentInTree from "../findComponentInTree";
 import renderForMount from "./render/forMount";
 import getUpdatedDOM from "./render/getUpdatedDOM";
-import { isFunction } from "../../lib/types";
+import diffVirtualDOMNodes from './virtualDOM/diff';
+import detachEventsFromDOM from './events/detachFromDOM';
 import processQueue from "../../lib/processQueue";
+import toHTML from './render/toHTML';
+import removeStyleTagsById from './css/removeStyleTagsById';
+import findComponentInTree from "../findComponentInTree";
 import updateComponentInTree from "./updateComponentInTree";
+import { isFunction } from "../../lib/types";
+import compileState from "./state/compile";
 
 /*
   TODO:
@@ -23,7 +29,7 @@ class Component {
   constructor(options = {}) {
     validateOptions(options);
     registerOptions(this, options);
-    loadDataFromWindow(this);
+    this.data = loadDataFromWindow(this);
   }
 
   setDOMNodeOnInstance() {
@@ -38,10 +44,18 @@ class Component {
     attachEventsToDOM(this);
   }
 
+  async handleFetchData(api = {}, req = {}, input = {}) {
+    const data =  await fetchData(api, req, input, this);
+    this.data = data;
+  }
+
   onBeforeRender() {
     if (!windowIsUndefined()) {
-      // window.joystick._internal.tree instead of this.componentInTree?
-      const childIdsBeforeRender = getChildIdsFromTree(this.componentInTree, this.id, []);
+      if (!this.componentInTree) {
+        this.componentInTree = findComponentInTree(window.joystick._internal.tree, this.id);
+      }
+
+      const childIdsBeforeRender = getChildIdsFromTree(this.componentInTree, [], this.id);
 
       return {
         childIdsBeforeRender,
@@ -50,8 +64,6 @@ class Component {
   }
 
   render(options = {}) {
-    // TODO: Pass renderFunctions to all component instances (was only passed to render).
-
     if (options?.mounting) {
       return renderForMount(this);
     }
@@ -92,7 +104,7 @@ class Component {
       this.componentInTree = findComponentInTree(window.joystick._internal.tree, this.id);
       
       updateComponentInTree(this.id, window.joystick._internal.tree, 'children', this.componentInTree?.children?.filter((child) => {
-        return !existingChildIds?.includes(child?.id);
+        return !onBeforeRenderData?.childIdsBeforeRender?.includes(child?.id);
       }));
 
       // NOTE: Prevent a callback passed to setState() being called before or at the same time as
@@ -103,7 +115,18 @@ class Component {
 
       // TODO: Decide if onRender hook is necessary.
     }
-  }  
+  }
+
+  setState(state = {}, callback = null) {
+    this.state = compileState(this, state);
+    this.render({
+      afterSetStateRender: () => {
+        if (callback && isFunction(callback)) {
+          callback();
+        }
+      },
+    });
+  }
 }
 
 export default Component;

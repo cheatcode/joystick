@@ -1,4 +1,5 @@
 import compileCSS from "./compile";
+import prefixCSS from "./prefix";
 import throwFrameworkError from "../../../lib/throwFrameworkError";
 
 export default (componentInstance = {}) => {
@@ -17,10 +18,10 @@ export default (componentInstance = {}) => {
     if (!existingStyleTag || !existingStyleForHash) {
       const style = document.createElement("style");
 
-      style.innerHTML = this.handlePrefixCSS(css, componentInstance?.id);
+      style.innerHTML = prefixCSS(css, componentInstance?.id);
       style.setAttribute("js-c", componentInstance?.id);
       style.setAttribute("js-c-parent", componentInstance?.parent?.id);
-      style.setAttribute("js-css", styleHash);
+      style.setAttribute("js-css", cssHash);
 
       document.head.appendChild(style);
     }

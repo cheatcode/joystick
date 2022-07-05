@@ -1,6 +1,5 @@
 import throwFrameworkError from "../../../lib/throwFrameworkError";
 import { isFunction } from "../../../lib/types";
-import compile from "./compile";
 
 export default async (api = {}, req = {}, input = {}, componentInstance = {}) => {
   try {

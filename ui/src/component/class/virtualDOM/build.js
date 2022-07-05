@@ -1,5 +1,5 @@
 import throwFrameworkError from "../../../lib/throwFrameworkError";
-import { isDOM, isString } from "../../../lib/types";
+import { isString } from "../../../lib/types";
 
 const parseAttributeMap = (attributeMap = {}) => {
   try {
@@ -15,23 +15,21 @@ const parseAttributeMap = (attributeMap = {}) => {
 
 const buildVirtualDOMTree = (element = '') => {
   try {
-    if (element && isDOM(element)) {
-      const tagName = (element.tagName && element.tagName.toLowerCase()) || "text";
+    const tagName = (element.tagName && element.tagName.toLowerCase()) || "text";
   
-      let virtualDOMNode = {
-        tagName,
-        attributes: parseAttributeMap(element.attributes),
-        children: [].map.call(element.childNodes, (child) => {
-          return buildVirtualDOMTree(child);
-        }),
-      };
-  
-      if (tagName === "text") {
-        virtualDOMNode = element.textContent;
-      }
-  
-      return virtualDOMNode;
+    let virtualDOMNode = {
+      tagName,
+      attributes: parseAttributeMap(element.attributes),
+      children: [].map.call(element.childNodes, (child) => {
+        return buildVirtualDOMTree(child);
+      }),
+    };
+
+    if (tagName === "text") {
+      virtualDOMNode = element.textContent;
     }
+
+    return virtualDOMNode;
   } catch (exception) {
     throwFrameworkError('component.virtualDOM.build.buildVirtualDOMTree', exception);
   }

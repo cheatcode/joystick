@@ -1,7 +1,9 @@
 import { isDOM, isFunction, isObject } from "../lib/types";
+import throwFrameworkError from "../lib/throwFrameworkError";
+import initializeJoystickComponentTree from './initializeJoystickComponentTree';
 import processQueue from "../lib/processQueue";
 import appendToTarget from "./appendToTarget";
-import throwFrameworkError from "../lib/throwFrameworkError";
+
 
 export default (Component = null, props = {}, target = null) => {
   try {
@@ -24,14 +26,15 @@ export default (Component = null, props = {}, target = null) => {
     // NOTE: Run onBeforeMount for mounted component and all of its children.
     component.lifecycle.onBeforeMount();
     processQueue('lifecycle.onBeforeMount');
-  
-    appendToTarget(componentAsDOM, target);
+
+    appendToTarget(target, componentAsDOM);
   
     component.setDOMNodeOnInstance();
     component.appendCSSToHead(component);
     component.attachEventsToDOM(component);
 
     // NOTE: Run onMount for mounted component and all of its children.
+    processQueue('eventListeners');
     component.lifecycle.onMount();
     processQueue('lifecycle.onMount');
   } catch (exception) {

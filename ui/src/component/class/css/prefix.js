@@ -14,21 +14,21 @@ const getCSSRules = (css = '') => {
   }
 };
 
-export default (css = '') => {
+export default (css = '', componentId = '') => {
   try {
     const rawRules = getCSSRules(css);
     const parsedRules = Object.entries(rawRules).map(([_key, value]) => value);
 
     const prefixedRules = parsedRules.map((rule) => {
       if (rule.constructor.name === 'CSSStyleRule') {
-        return `[js-c="${id}"] ${rule.cssText}`;
+        return `[js-c="${componentId}"] ${rule.cssText}`;
       }
 
       if (rule.constructor.name === 'CSSMediaRule') {
         return `
           @media ${rule.conditionText} {
             ${Object.entries(rule.cssRules)
-              .map(([_key, mediaRule]) => `[js-c="${id}"] ${mediaRule.cssText}`)
+              .map(([_key, mediaRule]) => `[js-c="${componentId}"] ${mediaRule.cssText}`)
               .join("\n")}
           }
         `;
