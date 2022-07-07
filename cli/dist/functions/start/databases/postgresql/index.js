@@ -56,8 +56,17 @@ const startPostgreSQL = async (port = 2610) => {
         const stdout = data?.toString();
         if (stdout.includes("database system is ready to accept connections")) {
           const processId = await getPostgreSQLProcessId(postgreSQLPort);
-          child_process.spawnSync(`createdb -h 127.0.0.1 -p ${postgreSQLPort} app`);
-          resolve(processId);
+          const createAppDatabaseProcess = child_process.exec(`createdb -h 127.0.0.1 -p ${postgreSQLPort} app`);
+          createAppDatabaseProcess.stderr.on("data", (error) => {
+            if (error && error.includes('database "app" already exists')) {
+              resolve(processId);
+            } else {
+              console.log(error);
+            }
+          });
+          createAppDatabaseProcess.stdout.on("data", () => {
+            resolve(processId);
+          });
           return processId;
         }
       });

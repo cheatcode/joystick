@@ -80,10 +80,22 @@ const startPostgreSQL = async (port = 2610) => {
         const stdout = data?.toString();
         if (stdout.includes('database system is ready to accept connections')) {
           const processId = await getPostgreSQLProcessId(postgreSQLPort);
-  
-          child_process.spawnSync(`createdb -h 127.0.0.1 -p ${postgreSQLPort} app`);
+          const createAppDatabaseProcess = child_process.exec(`createdb -h 127.0.0.1 -p ${postgreSQLPort} app`);
 
-          resolve(processId);
+          createAppDatabaseProcess.stderr.on('data', (error) => {
+            // NOTE: PostgreSQL does not have a clean way to create database if it doesn't exist. Use this as a hack
+            // to get around the "already exists" error (if the database exists, it's not an issue).
+            if (error && error.includes('database "app" already exists')) {
+              resolve(processId);
+            } else {
+              console.log(error);
+            }
+          });
+
+          createAppDatabaseProcess.stdout.on('data', () => {
+            resolve(processId);
+          });
+
           return processId;
         }
       });
