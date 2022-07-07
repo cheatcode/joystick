@@ -3,8 +3,8 @@ import { isFunction } from "../../../lib/types";
 
 export default async (api = {}, req = {}, input = {}, componentInstance = {}) => {
   try {
-    if (componentInstance?.data && isFunction(componentInstance.data)) {
-      const data = await componentInstance.data(api, req, input);
+    if (componentInstance?.options?.data && isFunction(componentInstance.options.data)) {
+      const data = await componentInstance.options.data(api, req, input);
       return data;
     }
 

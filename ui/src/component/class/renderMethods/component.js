@@ -142,6 +142,7 @@ const generateComponentFunction = function() {
     // DOMNode back onto its instance AND that the node is available on this before we
     // assign any lifecycle methods, etc.
     addToQueue('lifecycle.onMount', () => {
+      console.log('ON MOUNT LIFECYCLE');
       component.setDOMNodeOnInstance();
     });
 

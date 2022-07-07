@@ -33,7 +33,7 @@ class Component {
   }
 
   setDOMNodeOnInstance() {
-    this.DOMNode = document.querySelector(`[js-c="${this.id}"]`);
+    this.DOMNode = document.querySelector(`body [js-c="${this.id}"]`);
   }
 
   appendCSSToHead() {
@@ -82,7 +82,10 @@ class Component {
       this.dom.virtual = updatedDOM.virtual;
     }
 
-    this.onAfterRender(onBeforeRenderData, options);
+    processQueue('lifecycle.onMount', () => {
+      console.log({ onBeforeRenderData, node: this.DOMNode });
+      this.onAfterRender(onBeforeRenderData, options);
+    });
   }
 
   renderToHTML(options = {}) {
@@ -94,6 +97,7 @@ class Component {
       this.setDOMNodeOnInstance();
       this.appendCSSToHead();
       this.attachEventsToDOM();
+
 
       processQueue('domNodes');
       processQueue('eventListeners');

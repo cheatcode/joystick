@@ -11,11 +11,11 @@ const getQueue = (queueName = '') => {
   }
 };
 
-export default (queueName = '') => {
+export default (queueName = '', callback = null) => {
   try {
     if (!windowIsUndefined()) {
       const queue = getQueue(queueName) || {};
-      queue.process();
+      queue.process(callback);
     }
   } catch (exception) {
     throwFrameworkError('processQueue', exception);
