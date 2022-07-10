@@ -1,4 +1,5 @@
 import throwFrameworkError from "../../../lib/throwFrameworkError";
+import windowIsUndefined from "../../../lib/windowIsUndefined";
 import findComponentDataFromSSR from "../data/findComponentDataFromSSR";
 import compileRenderMethods from "../renderMethods/compile";
 import getExistingPropsMap from "./getExistingPropsMap";
@@ -12,12 +13,10 @@ export default (componentInstance = {}, options = {}) => {
       componentInstance.data = findComponentDataFromSSR(options.dataFromSSR, componentInstance.ssrId) || {};
     }
 
-    const existingPropsMap = getExistingPropsMap(componentInstance);
-    const existingStateMap = getExistingStateMap(componentInstance);
     const renderMethods = compileRenderMethods({
       ...componentInstance,
-      existingPropsMap,
-      existingStateMap,
+      existingPropsMap: !windowIsUndefined() ? getExistingPropsMap(componentInstance) : {},
+      existingStateMap: !windowIsUndefined() ? getExistingStateMap(componentInstance) : {},
       ssrTree: options?.ssrTree,
       translations: options?.translations || componentInstance.translations || {},
       walkingTreeForSSR: options?.walkingTreeForSSR,
@@ -30,7 +29,6 @@ export default (componentInstance = {}, options = {}) => {
       ...(renderMethods || {}),
     });
 
-    
     const sanitizedHTML = sanitizeHTML(html);
     const wrappedHTML = wrapHTML(componentInstance, sanitizedHTML);
 

@@ -1,1 +1,1 @@
-var e=(r="",o={})=>{throw new Error(`[joystick${r?`.${r}`:""}] ${o.message||o.reason||o}`)};var n=(r={})=>{try{window.joystick._internal.tree={id:r?.id||null,instance:r,children:[]}}catch(o){e("mount.initializeJoystickComponentTree",o)}};export{n as default};
+var t=(r="",e={})=>{throw new Error(`[joystick${r?`.${r}`:""}] ${e.message||e.reason||e}`)};var n=(r={})=>{try{window.joystick._internal.tree={id:r?.id||null,instanceId:r?.instanceId||null,instance:r,children:[]}}catch(e){t("mount.initializeJoystickComponentTree",e)}};export{n as default};

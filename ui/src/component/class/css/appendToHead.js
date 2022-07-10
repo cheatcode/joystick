@@ -5,25 +5,23 @@ import throwFrameworkError from "../../../lib/throwFrameworkError";
 export default (componentInstance = {}) => {
   try {
     const css = componentInstance?.options?.css;
-    const compiledCSS = compileCSS(componentInstance, css);
+    const compiledCSS = compileCSS(css, componentInstance);
     const cssHash = btoa(`${compiledCSS.trim()}`).substring(0, 8);
     const existingStyleTag = document.head.querySelector(`style[js-c="${componentInstance.id}"]`);
-    const existingStyleForHash = document.head.querySelector(`[js-css="${cssHash}"]`);
-    const componentStylesAreChanging = existingStyleTag && !existingStyleForHash;
 
-    if (componentStylesAreChanging) {
-      document.head.removeChild(existingStyleTag);
-    }
-
-    if (!existingStyleTag || !existingStyleForHash) {
+    if (!existingStyleTag) {
       const style = document.createElement("style");
 
-      style.innerHTML = prefixCSS(css, componentInstance?.id);
       style.setAttribute("js-c", componentInstance?.id);
-      style.setAttribute("js-c-parent", componentInstance?.parent?.id);
       style.setAttribute("js-css", cssHash);
 
+      style.innerHTML = prefixCSS(compiledCSS, componentInstance?.id);
+
       document.head.appendChild(style);
+    }
+
+    if (existingStyleTag && cssHash !== existingStyleTag.getAttribute('js-css')) {
+      existingStyleTag.innerHTML = prefixCSS(compiledCSS, componentInstance?.id);
     }
   } catch (exception) {
     throwFrameworkError('component.css.appendToHead', exception);

@@ -8,6 +8,10 @@ export default (listeners = []) => {
           listener.eventType,
           listener.eventListener
         );
+        
+        listener.element._joystick_event_selectors_ = listener.element._joystick_event_selectors_?.filter((selector) => {
+          return selector !== listener.selector;
+        });
       }
     }
   } catch (exception) {

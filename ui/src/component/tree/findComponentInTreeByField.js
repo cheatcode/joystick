@@ -1,7 +1,7 @@
-import throwFrameworkError from "../lib/throwFrameworkError";
-import { isObject } from "../lib/types";
+import throwFrameworkError from "../../lib/throwFrameworkError";
+import { isObject } from "../../lib/types";
 
-const findComponentInTree = (tree = {}, fieldValue = "", fieldName = 'id') => {
+const findComponentInTreeByField = (tree = {}, fieldValue = "", fieldName = 'id') => {
   try {
     const isTree = tree && tree.id;
 
@@ -19,7 +19,7 @@ const findComponentInTree = (tree = {}, fieldValue = "", fieldName = 'id') => {
         if (treeKey === "children" && Array.isArray(treeValue)) {
           for (let childIndex = 0; childIndex < treeValue.length; childIndex += 1) {
             const childTree = treeValue[childIndex];
-            const child = findComponentInTree(childTree, fieldValue, fieldName);
+            const child = findComponentInTreeByField(childTree, fieldValue, fieldName);
             if (child !== null) {
               return child;
             }
@@ -30,8 +30,8 @@ const findComponentInTree = (tree = {}, fieldValue = "", fieldName = 'id') => {
   
     return null;
   } catch (exception) {
-    throwFrameworkError('component.findComponentInTree', exception);
+    throwFrameworkError('component.findComponentInTreeByField', exception);
   }
 };
 
-export default findComponentInTree;
+export default findComponentInTreeByField;

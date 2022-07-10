@@ -4,7 +4,9 @@ import { isDOM, isFunction } from "../../../lib/types";
 
 export default ({
   componentId = '',
+  instanceId = '',
   parentId = '',
+  selector = '',
   element = null,
   eventType = null,
   eventListener = null,
@@ -12,10 +14,12 @@ export default ({
   try {
     if (element && isDOM(element) && eventType && eventListener && isFunction(eventListener)) {
       element.addEventListener(eventType, eventListener);
-  
+
       window.joystick._internal.eventListeners.push({
         eventId: generateId(8),
+        selector,
         componentId,
+        instanceId,
         parentId,
         element,
         eventType,

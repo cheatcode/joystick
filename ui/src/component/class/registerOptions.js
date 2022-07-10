@@ -12,18 +12,22 @@ import windowIsUndefined from "../../lib/windowIsUndefined";
 
 export default (componentInstance = {}, componentOptions = {}) => {
   try {
-    componentInstance.options = componentOptions || {};
-    componentInstance.id = componentOptions?.id || generateId(8);
-    componentInstance.ssrId = componentOptions?._ssrId || null;
-    componentInstance.props = compileProps(componentOptions?.props, componentOptions?.defaultProps);
+    if (componentOptions?.props?.hasOwnProperty('isScaleUp')) {
+      console.log('REGISTER', componentOptions.props);
+    }
 
+    componentInstance.options = componentOptions || {};
+    componentInstance.id = componentOptions?._componentId || null;
+    componentInstance.instanceId = generateId(8);
+    componentInstance.ssrId = componentOptions?._ssrId || null;
     componentInstance.css = compileCSS();
     componentInstance.data = findComponentDataFromSSR(componentOptions?.dataFromSSR, componentOptions?._ssrId);
     componentInstance.defaultProps = componentOptions?.defaultProps || {};
+    componentInstance.props = compileProps(componentOptions?.defaultProps, componentOptions?.existingProps || componentOptions?.props);
+    componentInstance.state = compileState(componentInstance, componentOptions?.existingState || componentOptions?.state);
     componentInstance.events = componentOptions?.events || {};
     componentInstance.lifecycle = compileLifecycle(componentInstance, componentOptions?.lifecycle);
     componentInstance.methods = compileMethods(componentInstance, componentOptions?.methods);
-    componentInstance.state = compileState(componentInstance, componentOptions?.state);
     componentInstance.wrapper = componentOptions?.wrapper || {};
 
     componentInstance.translations = componentOptions?.translations || {};

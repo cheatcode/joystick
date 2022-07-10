@@ -1,7 +1,7 @@
 import throwFrameworkError from "../../../lib/throwFrameworkError";
 import { isUndefined, isNull } from "../../../lib/types";
 
-export default (propsFromOptions = {}, defaultPropsFromOptions = {}) => {
+export default (defaultPropsFromOptions = {}, propsFromOptions = {}) => {
   try {
     // NOTE: Combine props and defaultProps key names and filter to uniques only.
     const props = [...Object.keys(propsFromOptions), ...Object.keys(defaultPropsFromOptions)]

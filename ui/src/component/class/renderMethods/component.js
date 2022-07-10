@@ -3,6 +3,7 @@ import throwFrameworkError from "../../../lib/throwFrameworkError";
 import addToQueue from "../../../lib/addToQueue";
 import findComponentInTree from '../../findComponentInTree';
 import getUpdatedDOM from '../render/getUpdatedDOM';
+import addChildToParent from '../../tree/addChildToParent';
 
 const renderForClient = (component = {}, componentMethodInstance = {}) => {
   try {
@@ -10,7 +11,7 @@ const renderForClient = (component = {}, componentMethodInstance = {}) => {
 
     component.dom = dom;
     component.setDOMNodeOnInstance();
-    component.attachEventsToDOM();
+    // component.attachEventsToDOM();
     component.appendCSSToHead();
 
     componentMethodInstance.renderedComponent = component;
@@ -65,18 +66,19 @@ const handleAddComponentToParent = (component = {}) => {
   try {
     // NOTE: When using joystick.ssr(), a separate tree is generated which is passed
     // in to the render functions via the renderToHTML function on the main component class.
-    const parentInTree = findComponentInTree(
-      component.parent.ssrTree || window.joystick._internal.tree,
-      component.parent.id
-    );
 
-    if (parentInTree?.children) {
-      parentInTree.children.push({
-        id: component.id,
-        instance: component,
-        children: [],
-      });
-    }
+    const virtualDOMNode = {
+      id: component.id,
+      instanceId: component.instanceId,
+      instance: component,
+      children: [],
+    };
+
+    addChildToParent(
+      component.parent.instanceId,
+      virtualDOMNode,
+      component.parent && component.parent.ssrTree || null
+    );
   } catch (exception) {
     throwFrameworkError('component.renderMethods.component.handleAddComponentToParent', exception);
   }
@@ -109,7 +111,7 @@ const handleOnChangeProps = (component = {}, parent = {}, props = {}) => {
 
       if (propChanges?.length > 0) {
         addToQueue('lifecycle.onUpdateProps', () => {
-          const existingProps = parent?.existingPropsMap && parent?.existingPropsMap[component.ssrId];
+          const existingProps = parent?.existingPropsMap && parent?.existingPropsMap[component.id];
           component.options.lifecycle.onUpdateProps(existingProps || {}, props, component);
         });
       }
@@ -142,7 +144,6 @@ const generateComponentFunction = function() {
     // DOMNode back onto its instance AND that the node is available on this before we
     // assign any lifecycle methods, etc.
     addToQueue('lifecycle.onMount', () => {
-      console.log('ON MOUNT LIFECYCLE');
       component.setDOMNodeOnInstance();
     });
 

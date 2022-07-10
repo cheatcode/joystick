@@ -1,15 +1,17 @@
 import throwFrameworkError from "../../../lib/throwFrameworkError";
+import findComponentInTree from "../../findComponentInTree";
 import getChildIdsFromTree from "../../getChildIdsFromTree";
 import removeEventListeners from "./removeListeners";
 
-export default (componentInTree = {}, componentInstance = {}) => {
+export default (componentInstance = {}) => {
   try {
-    const childComponentIds = getChildIdsFromTree(componentInTree, [], componentInstance?.id);
-    const componentIds = [componentInstance?.id, ...childComponentIds];
+    // const componentInTree = findComponentInTree(window.joystick._internal.tree, componentInstance.instanceId, 'instanceId');
+    const childComponentIds = getChildIdsFromTree(componentInTree, [], 'id', componentInstance?.id);
+    const componentInstanceIds = [componentInstance?.id, ...childComponentIds];
     const eventListenersToDetach = window.joystick._internal.eventListeners.filter((listener) => {
-      return componentIds?.includes(listener.componentId);
+      return componentInstanceIds?.includes(listener.componentId);
     });
-    
+
     removeEventListeners(eventListenersToDetach);
 
     const eventIds = eventListenersToDetach.map(({ eventId }) => eventId);

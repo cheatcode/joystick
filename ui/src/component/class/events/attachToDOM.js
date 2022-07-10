@@ -4,14 +4,17 @@ import { isFunction } from "../../../lib/types";
 import serializeEvents from "./serialize";
 import addEventListener from "./addListener";
 
-const attachEventListener = (elements = [], event = {}, componentInstance = {}) => {
+const attachEventListener = (selector = '', elements = [], event = {}, componentInstance = {}) => {
   try {
-    elements.forEach((element) => {
+    for (let i = 0; i < elements.length; i += 1) {
+      const element = elements[i];
       // NOTE: Pass this.id because we need a way to uniquely identify listeners
       // in joystick._internal.eventListeners.attached when removing listeners.
       addEventListener({
-        componentId: componentInstance.id,
-        parentId: componentInstance?.parent?.id,
+        componentId: componentInstance?.id,
+        instanceId: componentInstance.instanceId,
+        parentId: componentInstance?.parent?.instanceId,
+        selector,
         element,
         eventType: event.type,
         eventListener: function listener(DOMEvent) {
@@ -21,7 +24,7 @@ const attachEventListener = (elements = [], event = {}, componentInstance = {}) 
           event.handler(DOMEvent, componentInstance);
         },
       });
-    });
+    }
   } catch (exception) {
     throwFrameworkError('component.events.attachToDOM.attachEventListener', exception);
   }
@@ -31,14 +34,16 @@ const queueEventListeners = (events = [], componentInstance = {}) => {
   try {
     events.forEach((event) => {
       addToQueue('eventListeners', () => {
-        const elements = [
-          ...document.querySelectorAll(
-            `[js-c="${componentInstance.id}"] ${event.selector}`
-          )
-        ];
+        const selector = `body [js-c="${componentInstance.id}"] ${event.selector}`;
+        const elements = document.querySelectorAll(selector);
     
         if (elements && elements.length > 0) {
-          attachEventListener(elements, event, componentInstance);
+          attachEventListener(
+            selector,
+            elements,
+            event,
+            componentInstance
+          );
         }
       });
     });

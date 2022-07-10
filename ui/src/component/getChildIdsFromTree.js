@@ -1,7 +1,7 @@
 import throwFrameworkError from "../lib/throwFrameworkError";
 import { isObject } from "../lib/types";
 
-const getChildIdsFromTree = (tree = {}, childIds = [], componentId = '') => {
+const getChildIdsFromTree = (tree = {}, childIds = [], fieldName = 'id', idToMatch = '') => {
   try {
     if (tree && isObject(tree)) {
       const treeKeys = Object.keys(tree);
@@ -10,7 +10,7 @@ const getChildIdsFromTree = (tree = {}, childIds = [], componentId = '') => {
         const treeKey = treeKeys[key];
         const treeValue = tree[treeKey];
   
-        if (treeKey === 'id' && treeValue !== componentId) {
+        if (treeKey === fieldName && treeValue !== idToMatch) {
           childIds.push(treeValue);
         }
   
@@ -18,7 +18,7 @@ const getChildIdsFromTree = (tree = {}, childIds = [], componentId = '') => {
           const children = tree[treeKey];
           for (let child = 0; child < children?.length; child += 1) {
             const childTree = children[child] || {};
-            getChildIdsFromTree(childTree, childIds);
+            getChildIdsFromTree(childTree, childIds, fieldName);
           }
         } 
       }

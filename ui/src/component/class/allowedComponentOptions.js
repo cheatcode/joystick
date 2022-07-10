@@ -1,6 +1,8 @@
 export default [
   // NOTE: Internal methods passed automatically via Joystick.
+  "_componentId",
   "_ssrId",
+  "instanceId",
   "dataFromSSR",
   "api",
   "req",

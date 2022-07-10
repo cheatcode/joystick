@@ -3,6 +3,7 @@ import throwFrameworkError from "../lib/throwFrameworkError";
 import initializeJoystickComponentTree from './initializeJoystickComponentTree';
 import processQueue from "../lib/processQueue";
 import appendToTarget from "./appendToTarget";
+import registerEventListeners from "../component/class/events/registerListeners";
 
 
 export default (Component = null, props = {}, target = null) => {
@@ -30,13 +31,17 @@ export default (Component = null, props = {}, target = null) => {
     appendToTarget(target, componentAsDOM);
   
     component.setDOMNodeOnInstance();
-    component.appendCSSToHead(component);
-    component.attachEventsToDOM(component);
+    component.appendCSSToHead();
+    // component.queueEventListeners();
 
+    
     // NOTE: Run onMount for mounted component and all of its children.
-    processQueue('eventListeners');
     component.lifecycle.onMount();
     processQueue('lifecycle.onMount');
+  
+    // NOTE: Run event listener attachment last to make sure everything is mounted.
+    // processQueue('eventListeners');
+    registerEventListeners();
   } catch (exception) {
     throwFrameworkError('mount', exception);
   }

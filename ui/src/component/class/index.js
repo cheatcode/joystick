@@ -2,28 +2,19 @@ import validateOptions from "./validateOptions";
 import registerOptions from "./registerOptions";
 import loadDataFromWindow from './loadDataFromWindow';
 import appendCSSToHead from "./css/appendToHead";
-import attachEventsToDOM from "./events/attachToDOM";
 import fetchData from "./data/fetch";
 import windowIsUndefined from "../../lib/windowIsUndefined";
-import getChildIdsFromTree from '../getChildIdsFromTree';
 import renderForMount from "./render/forMount";
 import getUpdatedDOM from "./render/getUpdatedDOM";
 import diffVirtualDOMNodes from './virtualDOM/diff';
-import detachEventsFromDOM from './events/detachFromDOM';
 import processQueue from "../../lib/processQueue";
 import toHTML from './render/toHTML';
-import removeStyleTagsById from './css/removeStyleTagsById';
-import findComponentInTree from "../findComponentInTree";
-import updateComponentInTree from "./updateComponentInTree";
 import { isFunction } from "../../lib/types";
 import compileState from "./state/compile";
-
-/*
-  TODO:
-
-  Only put methods on this class if they need to be called externally, otherwise,
-  put them into their own file as a function to import.
-*/
+import clearChildrenOnParent from "../tree/clearChildrenOnParent";
+import updateParentInstanceInTree from "../tree/updateParentInstanceInTree";
+import unregisterListeners from "./events/unregisterListeners";
+import registerListeners from "./events/registerListeners";
 
 class Component {
   constructor(options = {}) {
@@ -40,25 +31,20 @@ class Component {
     appendCSSToHead(this);
   }
 
-  attachEventsToDOM() {
-    attachEventsToDOM(this);
-  }
-
   async handleFetchData(api = {}, req = {}, input = {}) {
     const data =  await fetchData(api, req, input, this);
     this.data = data;
   }
 
+  handleGetInstance() {
+    return this;
+  }
+
   onBeforeRender() {
     if (!windowIsUndefined()) {
-      if (!this.componentInTree) {
-        this.componentInTree = findComponentInTree(window.joystick._internal.tree, this.id);
-      }
-
-      const childIdsBeforeRender = getChildIdsFromTree(this.componentInTree, [], this.id);
 
       return {
-        childIdsBeforeRender,
+        instanceId: this.instanceId,
       };
     }
   }
@@ -69,21 +55,22 @@ class Component {
     }
     
     const onBeforeRenderData = this.onBeforeRender();
+
+    unregisterListeners();
+    clearChildrenOnParent(this.instanceId);
+
     const updatedDOM = getUpdatedDOM(this);
     const patchDOMNodes = diffVirtualDOMNodes(this.dom.virtual, updatedDOM.virtual);
 
     if (patchDOMNodes && isFunction(patchDOMNodes)) {
-      detachEventsFromDOM(this.componentInTree, this);
-      processQueue('lifecycle.onBeforeMount');
-
-      const patchedDOM = patchDOMNodes(this.DOMNode);
-
-      this.dom.actual = patchedDOM;
-      this.dom.virtual = updatedDOM.virtual;
+      processQueue('lifecycle.onBeforeMount', () => {
+        const patchedDOM = patchDOMNodes(this.DOMNode);
+        this.dom.actual = patchedDOM;
+        this.dom.virtual = updatedDOM.virtual;
+      });
     }
 
     processQueue('lifecycle.onMount', () => {
-      console.log({ onBeforeRenderData, node: this.DOMNode });
       this.onAfterRender(onBeforeRenderData, options);
     });
   }
@@ -95,21 +82,12 @@ class Component {
   onAfterRender(onBeforeRenderData = {}, renderOptions = {}) {
     if (!windowIsUndefined()) {
       this.setDOMNodeOnInstance();
+
+      updateParentInstanceInTree(onBeforeRenderData.instanceId, this);
+
       this.appendCSSToHead();
-      this.attachEventsToDOM();
-
-
       processQueue('domNodes');
-      processQueue('eventListeners');
       processQueue('lifecycle.onUpdateProps');
-
-      removeStyleTagsById(onBeforeRenderData?.childIdsBeforeRender);
-      
-      this.componentInTree = findComponentInTree(window.joystick._internal.tree, this.id);
-      
-      updateComponentInTree(this.id, window.joystick._internal.tree, 'children', this.componentInTree?.children?.filter((child) => {
-        return !onBeforeRenderData?.childIdsBeforeRender?.includes(child?.id);
-      }));
 
       // NOTE: Prevent a callback passed to setState() being called before or at the same time as
       // the initial render triggered by a setState() call.
@@ -117,12 +95,16 @@ class Component {
         renderOptions.afterSetStateRender();
       }
 
-      // TODO: Decide if onRender hook is necessary.
+      registerListeners();
     }
   }
 
   setState(state = {}, callback = null) {
-    this.state = compileState(this, state);
+    this.state = compileState(this, {
+      ...(this.state || {}),
+      ...state,
+    });
+
     this.render({
       afterSetStateRender: () => {
         if (callback && isFunction(callback)) {
