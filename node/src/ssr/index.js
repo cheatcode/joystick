@@ -55,6 +55,7 @@ export default async ({
     // tree purpose-built for SSR to aid in extraction of CSS and other component info.
     const tree = {
       id: component.id,
+      instanceId: component.instanceId,
       instance: component,
       children: [],
       dataFunctions: [],

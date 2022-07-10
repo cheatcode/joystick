@@ -1,8 +1,31 @@
 import serializeEvents from "./serialize";
+import throwFrameworkError from "../../../lib/throwFrameworkError";
+import { isFunction } from "../../../lib/types";
+
+const attachOnBeforeUnmount = (componentInstance = {}) => {
+  try {
+    if (
+      componentInstance.lifecycle &&
+      componentInstance.lifecycle.onBeforeUnmount &&
+      isFunction(componentInstance.lifecycle.onBeforeUnmount)
+    ) {
+      const onBeforeUnmount = function () {
+        componentInstance.lifecycle.onBeforeUnmount(componentInstance);
+      };
+
+      window.removeEventListener("beforeunload", onBeforeUnmount);
+      window.addEventListener("beforeunload", onBeforeUnmount);
+    }
+  } catch (exception) {
+    throwFrameworkError('component.events.registerListeners.attachOnBeforeUnmount', exception);
+  }
+};
 
 const serializeEventsFromInstances = (tree = {}, events = []) => {
   const eventsToAttach = tree.instance.options.events || {};
   const hasEventsToAttach = Object.keys(eventsToAttach).length > 0;
+
+  attachOnBeforeUnmount(tree.instance);
 
   if (hasEventsToAttach) {
     events.push({

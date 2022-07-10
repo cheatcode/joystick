@@ -13,8 +13,8 @@ import { isFunction } from "../../lib/types";
 import compileState from "./state/compile";
 import clearChildrenOnParent from "../tree/clearChildrenOnParent";
 import updateParentInstanceInTree from "../tree/updateParentInstanceInTree";
-import unregisterListeners from "./events/unregisterListeners";
-import registerListeners from "./events/registerListeners";
+import unregisterEventListeners from "./events/unregisterListeners";
+import registerEventListeners from "./events/registerListeners";
 
 class Component {
   constructor(options = {}) {
@@ -28,7 +28,7 @@ class Component {
   }
 
   appendCSSToHead() {
-    appendCSSToHead(this);
+    // appendCSSToHead(this);
   }
 
   async handleFetchData(api = {}, req = {}, input = {}) {
@@ -56,7 +56,7 @@ class Component {
     
     const onBeforeRenderData = this.onBeforeRender();
 
-    unregisterListeners();
+    unregisterEventListeners();
     clearChildrenOnParent(this.instanceId);
 
     const updatedDOM = getUpdatedDOM(this);
@@ -95,7 +95,7 @@ class Component {
         renderOptions.afterSetStateRender();
       }
 
-      registerListeners();
+      registerEventListeners();
     }
   }
 

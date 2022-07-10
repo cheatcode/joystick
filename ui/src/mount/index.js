@@ -31,7 +31,7 @@ export default (Component = null, props = {}, target = null) => {
     appendToTarget(target, componentAsDOM);
   
     component.setDOMNodeOnInstance();
-    component.appendCSSToHead();
+    // component.appendCSSToHead();
     // component.queueEventListeners();
 
     

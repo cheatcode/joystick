@@ -45,6 +45,7 @@ var ssr_default = async ({
     });
     const tree = {
       id: component.id,
+      instanceId: component.instanceId,
       instance: component,
       children: [],
       dataFunctions: []

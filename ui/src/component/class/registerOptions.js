@@ -12,10 +12,6 @@ import windowIsUndefined from "../../lib/windowIsUndefined";
 
 export default (componentInstance = {}, componentOptions = {}) => {
   try {
-    if (componentOptions?.props?.hasOwnProperty('isScaleUp')) {
-      console.log('REGISTER', componentOptions.props);
-    }
-
     componentInstance.options = componentOptions || {};
     componentInstance.id = componentOptions?._componentId || null;
     componentInstance.instanceId = generateId(8);
