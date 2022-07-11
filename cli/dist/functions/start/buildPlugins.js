@@ -80,17 +80,22 @@ var buildPlugins_default = {
         }
       });
       build.onEnd(() => {
-        fs.readFile(build.initialOptions.outfile, { encoding: "utf-8" }, (error, file) => {
-          const joystickUIMatches = file.match(JOYSTICK_UI_REGEX) || [];
-          if (!error && file && joystickUIMatches?.length > 0) {
-            let contents = file.replace(/\.component\(\{/g, () => {
-              return `.component({
-  _componentId: '${generateId()}',`;
-            });
-            fs.writeFile(build.initialOptions.outfile, contents, (_error) => {
-            });
-          }
+        const shouldSetComponentId = [getPlatformSafePath("ui/")].some((bootstrapTarget) => {
+          return build.initialOptions.outfile.includes(bootstrapTarget);
         });
+        if (shouldSetComponentId) {
+          fs.readFile(build.initialOptions.outfile, { encoding: "utf-8" }, (error, file) => {
+            const joystickUIMatches = file.match(JOYSTICK_UI_REGEX) || [];
+            if (!error && file && joystickUIMatches?.length > 0) {
+              let contents = file.replace(/\.component\(\{/g, () => {
+                return `.component({
+  _componentId: '${generateId()}',`;
+              }).replace(/\.component\(\/\*\*\//g, ".component(");
+              fs.writeFile(build.initialOptions.outfile, contents, (_error) => {
+              });
+            }
+          });
+        }
       });
     }
   },

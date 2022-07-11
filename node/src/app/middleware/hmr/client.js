@@ -5,7 +5,10 @@ const serverAvailable = (callback = null) => {
       if (data && data === "<3" && callback) {
         // console.clear();
         console.log("[hmr] Listening for changes...");
-        callback();
+
+        setTimeout(() => {
+          callback();
+        }, 1000);
       }
     })
     .catch(async (error) => {

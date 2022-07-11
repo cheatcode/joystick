@@ -1,4 +1,4 @@
-import _component from "./component";
+import component from "./component";
 import _accounts from "./accounts";
 import _upload from './upload';
 import mount from "./mount";
@@ -7,7 +7,6 @@ import QueueArray from "./lib/queueArray";
 import attachJoystickToWindow from "./attachJoystickToWindow";
 import overrideTimers from "./overrideTimers";
 
-export const component = _component;
 export const get = api.get;
 export const set = api.set;
 export const accounts = _accounts;

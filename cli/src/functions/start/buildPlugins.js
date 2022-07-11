@@ -103,17 +103,27 @@ export default {
       });
 
       build.onEnd(() => {
-        fs.readFile(build.initialOptions.outfile, { encoding: 'utf-8' }, (error, file) => {
-          const joystickUIMatches = file.match(JOYSTICK_UI_REGEX) || [];
+        const shouldSetComponentId = [getPlatformSafePath("ui/")].some((bootstrapTarget) => {
+          return build.initialOptions.outfile.includes(bootstrapTarget);
+        });
 
-          if (!error && file && joystickUIMatches?.length > 0) {
-            let contents = file.replace(/\.component\(\{/g, () => {
-              return `.component({\n  _componentId: '${generateId()}',`;
-            });
-
-            fs.writeFile(build.initialOptions.outfile, contents, (_error) => {});
-          }
-        })
+        if (shouldSetComponentId) {
+          fs.readFile(build.initialOptions.outfile, { encoding: 'utf-8' }, (error, file) => {
+            const joystickUIMatches = file.match(JOYSTICK_UI_REGEX) || [];
+  
+            if (!error && file && joystickUIMatches?.length > 0) {
+              // NOTE: Regex/replace of /\.component\(\/\*\*\//g is a total fluke. This prevents
+              // sample code in Joystick from receiving a _componentId. We use the line .component(/**
+              // to escape the replacement and then automatically clear the escape after _componentId
+              // is set correctly in the file.
+              let contents = file.replace(/\.component\(\{/g, () => {
+                return `.component({\n  _componentId: '${generateId()}',`;
+              }).replace(/\.component\(\/\*\*\//g, '.component(');
+  
+              fs.writeFile(build.initialOptions.outfile, contents, (_error) => {});
+            }
+          });
+        }
       });
     }
   },
