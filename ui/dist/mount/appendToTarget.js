@@ -1,0 +1,1 @@
+var e=(o="",r={})=>{throw new Error(`[joystick${o?`.${o}`:""}] ${r.message||r.reason||r}`)};var l=(o={},r=null)=>{try{return o.innerHTML="",o.appendChild(r),r}catch(t){e("mount.appendToDOM",t)}};export{l as default};

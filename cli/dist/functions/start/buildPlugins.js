@@ -8,6 +8,7 @@ var buildPlugins_default = {
   bootstrapComponent: {
     name: "bootstrapComponent",
     setup(build) {
+      const ssrId = generateId();
       build.onLoad({ filter: /\.js$/ }, (args = {}) => {
         try {
           const shouldSetSSRId = [getPlatformSafePath("ui/")].some((bootstrapTarget) => {
@@ -31,7 +32,6 @@ var buildPlugins_default = {
               console.log(" ");
               return;
             }
-            const ssrId = generateId();
             let contents = code.replace("ui.component({", `ui.component({
   _ssrId: '${ssrId}',`);
             const exportDefaultMatchParts = exportDefaultMatch && exportDefaultMatch.split(" ") || [];
@@ -78,6 +78,19 @@ var buildPlugins_default = {
         } catch (exception) {
           console.warn(exception);
         }
+      });
+      build.onEnd(() => {
+        fs.readFile(build.initialOptions.outfile, { encoding: "utf-8" }, (error, file) => {
+          const joystickUIMatches = file.match(JOYSTICK_UI_REGEX) || [];
+          if (!error && file && joystickUIMatches?.length > 0) {
+            let contents = file.replace(/\.component\(\{/g, () => {
+              return `.component({
+  _componentId: '${generateId()}',`;
+            });
+            fs.writeFile(build.initialOptions.outfile, contents, (_error) => {
+            });
+          }
+        });
       });
     }
   },

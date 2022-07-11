@@ -9,6 +9,10 @@ export default {
   bootstrapComponent: {
     name: "bootstrapComponent",
     setup(build) {
+      // NOTE: Generate SSR ID and then replace the necessary markup. Make contents a let so we can perform
+      // additional modifications below.
+      const ssrId = generateId();
+
       build.onLoad({ filter: /\.js$/ }, (args = {}) => {
         try {
           const shouldSetSSRId = [getPlatformSafePath("ui/")].some((bootstrapTarget) => {
@@ -41,9 +45,6 @@ export default {
               return;
             }
 
-            // NOTE: Generate SSR ID and then replace the necessary markup. Make contents a let so we can perform
-            // additional modifications below.
-            const ssrId = generateId();
             let contents = code.replace('ui.component({', `ui.component({\n  _ssrId: '${ssrId}',`);
 
             const exportDefaultMatchParts = (exportDefaultMatch && exportDefaultMatch.split(" ")) || [];
@@ -99,6 +100,20 @@ export default {
         } catch (exception) {
           console.warn(exception);
         }
+      });
+
+      build.onEnd(() => {
+        fs.readFile(build.initialOptions.outfile, { encoding: 'utf-8' }, (error, file) => {
+          const joystickUIMatches = file.match(JOYSTICK_UI_REGEX) || [];
+
+          if (!error && file && joystickUIMatches?.length > 0) {
+            let contents = file.replace(/\.component\(\{/g, () => {
+              return `.component({\n  _componentId: '${generateId()}',`;
+            });
+
+            fs.writeFile(build.initialOptions.outfile, contents, (_error) => {});
+          }
+        })
       });
     }
   },

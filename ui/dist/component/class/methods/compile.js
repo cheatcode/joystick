@@ -1,0 +1,1 @@
+var t=(e="",r={})=>{throw new Error(`[joystick${e?`.${e}`:""}] ${r.message||r.reason||r}`)};var w=(e={},r={})=>{try{return Object.entries(r).reduce((o={},[m,n])=>(o[m]=(...a)=>n(...a,e),o),{})}catch{t("component.methods.compile")}};export{w as default};

@@ -1,1 +1,0 @@
-var c=(e="",l=[])=>{console.log(`%c\u274C ${e} failed with the following errors:`,'background-color: #ffcc00; padding: 7px; font-family: "Helvetica Neue", "Helvetica", "Arial", sans-serif; font-size: 13px; line-height: 13px; color: #000;'),l.forEach(o=>{console.log(o.message),o.stack&&console.log(o.stack)})};export{c as default};
