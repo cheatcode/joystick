@@ -1,14 +1,14 @@
-import generateId from "../../lib/generateId";
-import findComponentDataFromSSR from './data/findComponentDataFromSSR';
-import validateForm from '../../forms/validate';
-import throwFrameworkError from "../../lib/throwFrameworkError";
-import compileProps from "./props/compile";
-import compileCSS from './css/compile';
-import compileState from './state/compile';
-import compileLifecycle from './lifecycle/compile';
-import compileMethods from "./methods/compile";
-import compileUrl from "./url/compile";
-import windowIsUndefined from "../../lib/windowIsUndefined";
+import generateId from "../../../lib/generateId";
+import findComponentDataFromSSR from '../data/findComponentDataFromSSR';
+import validateForm from '../../../forms/validate';
+import throwFrameworkError from "../../../lib/throwFrameworkError";
+import compileProps from "../props/compile";
+import compileCSS from '../css/compile';
+import compileState from '../state/compile';
+import compileLifecycle from '../lifecycle/compile';
+import compileMethods from "../methods/compile";
+import compileUrl from "../url/compile";
+import windowIsUndefined from "../../../lib/windowIsUndefined";
 
 export default (componentInstance = {}, componentOptions = {}) => {
   try {

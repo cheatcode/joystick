@@ -31,16 +31,13 @@ export default (Component = null, props = {}, target = null) => {
     appendToTarget(target, componentAsDOM);
   
     component.setDOMNodeOnInstance();
-    // component.appendCSSToHead();
-    // component.queueEventListeners();
-
+    component.appendCSSToHead();
     
     // NOTE: Run onMount for mounted component and all of its children.
     component.lifecycle.onMount();
     processQueue('lifecycle.onMount');
   
     // NOTE: Run event listener attachment last to make sure everything is mounted.
-    // processQueue('eventListeners');
     registerEventListeners();
   } catch (exception) {
     throwFrameworkError('mount', exception);

@@ -1,1 +1,1 @@
-var s=(e={})=>Object.entries(e).map(([t,r])=>{let[o,...n]=t.split(" ");return{type:o.toLowerCase(),selector:n.join(" "),handler:r}});export{s as default};
+var t=(e="",r={})=>{throw new Error(`[joystick${e?`.${e}`:""}] ${r.message||r.reason||r}`)};var i=(e={})=>{try{return Object.entries(e).map(([r,o])=>{let[s,...a]=r.split(" ");return{type:s.toLowerCase(),selector:a.join(" "),handler:o}})}catch(r){t("lib.serializeEvents",r)}};export{i as default};

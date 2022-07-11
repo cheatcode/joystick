@@ -4,6 +4,14 @@ import throwFrameworkError from "../../../lib/throwFrameworkError";
 
 export default (componentInstance = {}) => {
   try {
+    const hasSSRStyles = document.head.querySelector(`style[js-ssr]`);
+
+    if (hasSSRStyles) {
+      // NOTE: SSR'd CSS has complete tree in one tag. No need to add individual
+      // styles back onto page.
+      return;
+    }
+
     const css = componentInstance?.options?.css;
     const compiledCSS = compileCSS(css, componentInstance);
     const cssHash = btoa(`${compiledCSS.trim()}`).substring(0, 8);

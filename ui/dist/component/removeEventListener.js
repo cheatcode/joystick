@@ -1,1 +1,0 @@
-var t=(e="",r={})=>{throw new Error(`[joystick${e?`.${e}`:""}] ${r.message||r.reason||r}`)};var n=(e,r,o)=>{e||t("Must pass an element to removeEventListener."),r||t("Must pass an eventType to removeEventListener."),o||t("Must pass an eventListener to removeEventListener."),e.removeEventListener(r,o)};export{n as default};

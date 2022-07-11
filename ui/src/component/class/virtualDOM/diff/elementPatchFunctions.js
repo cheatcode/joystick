@@ -3,8 +3,8 @@ import diffChildren from "./children";
 
 export default {
   select: (oldVirtualNode, newVirtualNode) => {
-    // NOTE: Tentative. This properly handles re-rendering selects without breaking the
-    // value but its a bit excessive to handle a single element like this.
+    // NOTE: This properly handles re-rendering selects without breaking the
+    // value. Not ideal, but this makes the behavior stable/predictable.
     return (node) => {
       const oldValue = node.value;
       node.replaceChildren();

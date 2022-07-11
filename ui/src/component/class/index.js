@@ -1,6 +1,6 @@
-import validateOptions from "./validateOptions";
-import registerOptions from "./registerOptions";
-import loadDataFromWindow from './loadDataFromWindow';
+import validateOptions from "./options/validateOptions";
+import registerOptions from "./options/registerOptions";
+import loadDataFromWindow from './data/loadDataFromWindow';
 import appendCSSToHead from "./css/appendToHead";
 import fetchData from "./data/fetch";
 import windowIsUndefined from "../../lib/windowIsUndefined";
@@ -15,6 +15,7 @@ import clearChildrenOnParent from "../tree/clearChildrenOnParent";
 import updateParentInstanceInTree from "../tree/updateParentInstanceInTree";
 import unregisterEventListeners from "./events/unregisterListeners";
 import registerEventListeners from "./events/registerListeners";
+import debounce from "../../lib/debounce";
 
 class Component {
   constructor(options = {}) {
@@ -28,7 +29,7 @@ class Component {
   }
 
   appendCSSToHead() {
-    // appendCSSToHead(this);
+    appendCSSToHead(this);
   }
 
   async handleFetchData(api = {}, req = {}, input = {}) {
@@ -95,7 +96,11 @@ class Component {
         renderOptions.afterSetStateRender();
       }
 
-      registerEventListeners();
+      // NOTE: Limit event attachment to only occur after no re-render for 50ms. This is a performance
+      // trick to avoid jamming up fast re-renders w/ event reattachment.
+      debounce(() => {
+        registerEventListeners();
+      }, 50);
     }
   }
 

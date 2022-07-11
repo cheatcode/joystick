@@ -1,6 +1,6 @@
-import throwFrameworkError from "../../lib/throwFrameworkError";
-import windowIsUndefined from "../../lib/windowIsUndefined";
-import compileData from "./data/compile";
+import throwFrameworkError from "../../../lib/throwFrameworkError";
+import windowIsUndefined from "../../../lib/windowIsUndefined";
+import compileData from "./compile";
 
 export default (componentInstance = {}) => {
   try {

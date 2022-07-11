@@ -33,8 +33,8 @@ const joystick = {
     },
     tree: {},
     eventListeners: [],
-    timers: [],
   },
+  timers: {},
 }
 
 attachJoystickToWindow(joystick);

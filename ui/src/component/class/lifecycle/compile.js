@@ -1,5 +1,5 @@
 import throwFrameworkError from "../../../lib/throwFrameworkError";
-import defaultLifecycleMethods from "../defaultLifecycleMethods";
+import defaultLifecycleMethods from "../options/defaultLifecycleMethods";
 
 export default (componentInstance = {}, lifecycle = {}) => {
   try {

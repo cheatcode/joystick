@@ -1,4 +1,4 @@
-import throwFrameworkError from "../../../lib/throwFrameworkError";
+import throwFrameworkError from "../../../../lib/throwFrameworkError";
 
 export default (value = null) => {
   if (typeof value !== "string") {

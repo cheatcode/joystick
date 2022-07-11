@@ -1,7 +1,6 @@
 import { diff as diffObjects } from 'nested-object-diff';
 import throwFrameworkError from "../../../lib/throwFrameworkError";
 import addToQueue from "../../../lib/addToQueue";
-import findComponentInTree from '../../findComponentInTree';
 import getUpdatedDOM from '../render/getUpdatedDOM';
 import addChildToParent from '../../tree/addChildToParent';
 
@@ -11,7 +10,6 @@ const renderForClient = (component = {}, componentMethodInstance = {}) => {
 
     component.dom = dom;
     component.setDOMNodeOnInstance();
-    // component.attachEventsToDOM();
     component.appendCSSToHead();
 
     componentMethodInstance.renderedComponent = component;

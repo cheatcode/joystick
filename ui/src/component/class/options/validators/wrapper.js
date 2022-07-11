@@ -1,5 +1,5 @@
-import throwFrameworkError from "../../../lib/throwFrameworkError"
-import { isArray, isObject, isString } from "../../../lib/types";
+import throwFrameworkError from "../../../../lib/throwFrameworkError"
+import { isArray, isObject, isString } from "../../../../lib/types";
 
 export default (value = null) => {
   try {

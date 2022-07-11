@@ -1,1 +1,0 @@
-var d=({tagName:e,attributes:o,children:s})=>{let t=document.createElement(e);for(let[n,r]of Object.entries(o))t.setAttribute(n,r);for(let n of s){let r=c(n);t.appendChild(r)}return t},c=e=>typeof e=="string"?document.createTextNode(e):d(e),f=c;export{f as default};

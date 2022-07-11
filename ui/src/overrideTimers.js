@@ -6,7 +6,6 @@ const overrideSetInterval = (interval = null) => {
     window.setInterval = (callback = null, milliseconds = null) => {
       if (callback && milliseconds >= 0) {
         const intervalId = isFunction(interval) && interval(callback, milliseconds);
-        window.joystick._internal.timers.push({ type: "interval", id: intervalId });
         return intervalId;
       }
     };
@@ -22,7 +21,6 @@ const overrideSetTimeout = (timeout = null) => {
     window.setTimeout = (callback = null, milliseconds = null) => {
       if (callback && milliseconds >= 0) {
         const timeoutId = isFunction(timeout) && timeout(callback, milliseconds);
-        window.joystick._internal.timers.push({ type: "timeout", id: timeoutId });
         return timeoutId;
       }
     };

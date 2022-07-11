@@ -1,8 +1,8 @@
-import throwFrameworkError from "../../lib/throwFrameworkError";
+import throwFrameworkError from "../../../lib/throwFrameworkError";
 import hasAllRequiredOptions from "./hasAllRequiredOptions";
 import allowedComponentOptions from './allowedComponentOptions';
-import optionValidators from "./optionValidators";
-import { isFunction } from "../../lib/types";
+import optionValidators from "./validators";
+import { isFunction } from "../../../lib/types";
 
 export default (options = {}) => {
   try {
