@@ -32,13 +32,14 @@ export default (Component = null, props = {}, target = null) => {
   
     component.setDOMNodeOnInstance();
     component.appendCSSToHead();
+
+    // NOTE: Run event listener attachment before lifecycle methods in case onMount
+    // triggers a re-render (potential for duplicate event listeners if we do this last).
+    registerEventListeners();
     
     // NOTE: Run onMount for mounted component and all of its children.
     component.lifecycle.onMount();
     processQueue('lifecycle.onMount');
-  
-    // NOTE: Run event listener attachment last to make sure everything is mounted.
-    registerEventListeners();
   } catch (exception) {
     throwFrameworkError('mount', exception);
   }

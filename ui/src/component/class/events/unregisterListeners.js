@@ -1,5 +1,9 @@
 export default () => {
   const events = window.joystick._internal.eventListeners;
+
+  console.log({
+    eventsToUnregister: events,
+  });
   
   for (let eventDefinitionIndex = 0; eventDefinitionIndex < events?.length; eventDefinitionIndex += 1) {
     const eventDefinition = events[eventDefinitionIndex];

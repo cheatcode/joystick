@@ -26,7 +26,7 @@ const serializeEventsFromInstances = (tree = {}, events = []) => {
   const hasEventsToAttach = Object.keys(eventsToAttach).length > 0;
 
   attachOnBeforeUnmount(tree.instance);
-
+  
   if (hasEventsToAttach) {
     events.push({
       id: tree.id,
@@ -63,6 +63,7 @@ const serializeEventsFromInstances = (tree = {}, events = []) => {
 export default () => {
   const events = serializeEventsFromInstances(window.joystick._internal.tree, []);
 
+  console.log({ events });
   for (let eventDefinitionIndex = 0; eventDefinitionIndex < events?.length; eventDefinitionIndex += 1) {
     const eventDefinition = events[eventDefinitionIndex];
 
