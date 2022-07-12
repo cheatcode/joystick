@@ -5,7 +5,9 @@ function rreaddirSync(dir, allFiles = []) {
   const files = fs.readdirSync(dir).map((f) => join(dir, f));
   allFiles.push(...files);
   files.forEach((f) => {
-    fs.statSync(f).isDirectory() && rreaddirSync(f, allFiles);
+    if (fs.existsSync(f)) {
+      fs.statSync(f).isDirectory() && rreaddirSync(f, allFiles);
+    }
   });
   return allFiles;
 }
