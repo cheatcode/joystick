@@ -1,7 +1,7 @@
 import fs from "fs";
 import chalk from 'chalk';
 import updateFileMap from "./updateFileMap.js";
-import { JOYSTICK_UI_REGEX, EXPORT_DEFAULT_REGEX } from "../../lib/regexes.js";
+import { JOYSTICK_UI_REGEX, EXPORT_DEFAULT_REGEX, JOYSTICK_COMPONENT_REGEX } from "../../lib/regexes.js";
 import generateId from "./generateId.js";
 import getPlatformSafePath from '../../lib/getPlatformSafePath.js';
 
@@ -109,7 +109,7 @@ export default {
 
         if (shouldSetComponentId) {
           fs.readFile(build.initialOptions.outfile, { encoding: 'utf-8' }, (error, file) => {
-            const joystickUIMatches = file.match(JOYSTICK_UI_REGEX) || [];
+            const joystickUIMatches = file.match(JOYSTICK_COMPONENT_REGEX) || [];
   
             if (!error && file && joystickUIMatches?.length > 0) {
               // NOTE: Regex/replace of /\.component\(\/\*\*\//g is a total fluke. This prevents
