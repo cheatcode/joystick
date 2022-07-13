@@ -1,1 +1,1 @@
-var v=()=>{let l=window.joystick._internal.eventListeners;for(let n=0;n<l?.length;n+=1){let o=l[n];for(let t=0;t<o?.events?.length;t+=1){let e=o.events[t];for(let s=0;s<e?.elements?.length;s+=1)e.elements[s].removeEventListener(e.type,e.eventListener)}}};export{v as default};
+var v=()=>{setTimeout(()=>{let o=window.joystick._internal.eventListeners;for(let t=0;t<o?.length;t+=1){let i=o[t];for(let n=0;n<i?.events?.length;n+=1){let e=i.events[n];for(let s=0;s<e?.elements?.length;s+=1)e.elements[s].removeEventListener(e.type,e.eventListener)}}},0)};export{v as default};

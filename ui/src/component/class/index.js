@@ -57,6 +57,7 @@ class Component {
     
     const onBeforeRenderData = this.onBeforeRender();
 
+    console.log('UNREGISTER');
     unregisterEventListeners();
     clearChildrenOnParent(this.instanceId);
 
@@ -65,6 +66,7 @@ class Component {
 
     // NOTE: Re-register events *before* calling any lifecycle methods on child components in case
     // they trigger their own re-render via a setState call.
+    console.log('REGISTER');
     registerEventListeners();
 
     if (patchDOMNodes && isFunction(patchDOMNodes)) {

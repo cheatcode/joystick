@@ -43,7 +43,11 @@ const serializeEventsFromInstances = (tree = {}, events = []) => {
             });
             eventToAttach.handler(DOMEvent, tree.instance);
           },
-          elements: elementsByInstanceId?.length > 0 ? elementsByInstanceId : elementsByComponentId,
+          // howMany: {
+          //   elementsByInstanceId,
+          //   elementsByComponentId,
+          // },
+          elements: elementsByInstanceId?.length > 0 ? elementsByInstanceId : [],
         };
       }),
       instance: tree.instance,
