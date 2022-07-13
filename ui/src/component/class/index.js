@@ -63,6 +63,10 @@ class Component {
     const updatedDOM = getUpdatedDOM(this);
     const patchDOMNodes = diffVirtualDOMNodes(this.dom.virtual, updatedDOM.virtual);
 
+    // NOTE: Re-register events *before* calling any lifecycle methods on child components in case
+    // they trigger their own re-render via a setState call.
+    registerEventListeners();
+
     if (patchDOMNodes && isFunction(patchDOMNodes)) {
       processQueue('lifecycle.onBeforeMount', () => {
         const patchedDOM = patchDOMNodes(this.DOMNode);
@@ -95,12 +99,6 @@ class Component {
       if (renderOptions?.afterSetStateRender && isFunction(renderOptions.afterSetStateRender)) {
         renderOptions.afterSetStateRender();
       }
-
-      // NOTE: Limit event attachment to only occur after no re-render for 50ms. This is a performance
-      // trick to avoid jamming up fast re-renders w/ event reattachment.
-      debounce(() => {
-        registerEventListeners();
-      }, 50);
     }
   }
 
