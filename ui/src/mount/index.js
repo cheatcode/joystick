@@ -5,7 +5,6 @@ import processQueue from "../lib/processQueue";
 import appendToTarget from "./appendToTarget";
 import registerEventListeners from "../component/class/events/registerListeners";
 
-
 export default (Component = null, props = {}, target = null) => {
   try {
     if (!isFunction(Component)) {

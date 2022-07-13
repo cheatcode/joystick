@@ -61,20 +61,24 @@ const serializeEventsFromInstances = (tree = {}, events = []) => {
 };
 
 export default () => {
-  const events = serializeEventsFromInstances(window.joystick._internal.tree, []);
+  // NOTE: Wrap with a 0 setTimeout to ensure this happens at end of call stack *after*
+  // all elements are mounted to screen.
+  setTimeout(() => {
+    const events = serializeEventsFromInstances(window.joystick._internal.tree, []);
 
-  for (let eventDefinitionIndex = 0; eventDefinitionIndex < events?.length; eventDefinitionIndex += 1) {
-    const eventDefinition = events[eventDefinitionIndex];
-
-    for (let eventIndex = 0; eventIndex < eventDefinition?.events?.length; eventIndex += 1) {
-      const event = eventDefinition.events[eventIndex];
-
-      for (let elementIndex = 0; elementIndex < event?.elements?.length; elementIndex += 1) {
-        const element = event.elements[elementIndex];
-        element.addEventListener(event.type, event.eventListener);
+    for (let eventDefinitionIndex = 0; eventDefinitionIndex < events?.length; eventDefinitionIndex += 1) {
+      const eventDefinition = events[eventDefinitionIndex];
+  
+      for (let eventIndex = 0; eventIndex < eventDefinition?.events?.length; eventIndex += 1) {
+        const event = eventDefinition.events[eventIndex];
+  
+        for (let elementIndex = 0; elementIndex < event?.elements?.length; elementIndex += 1) {
+          const element = event.elements[elementIndex];
+          element.addEventListener(event.type, event.eventListener);
+        }
       }
     }
-  }
-
-  window.joystick._internal.eventListeners = events;
+  
+    window.joystick._internal.eventListeners = events;
+  }, 0);
 };
