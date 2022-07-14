@@ -22,6 +22,12 @@ export default (Component = null, props = {}, target = null) => {
     const component = Component({ props });
     initializeJoystickComponentTree(component);
     const componentAsDOM = component.render({ mounting: true });
+
+    if (componentAsDOM) {
+      componentAsDOM.setAttribute('js-ssrId', component.ssrId);
+      componentAsDOM.setAttribute('js-c', component.id);
+      componentAsDOM.setAttribute('js-i', component.instanceId);
+    }
   
     // NOTE: Run onBeforeMount for mounted component and all of its children.
     component.lifecycle.onBeforeMount();
