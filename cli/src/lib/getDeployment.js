@@ -4,16 +4,16 @@ import domains from "./domains.js";
 import checkIfValidJSON from "./checkIfValidJSON.js";
 import CLILog from "./CLILog.js";
 
-export default (deploymentDomain = '', deploymentToken = '', fingerprint = {}) => {
+export default (deploymentDomain = '', joystickDeployToken = '', machineFingerprint = {}) => {
   return fetch(
-    `${domains?.deploy}/api/deployments/${deploymentDomain}`,
+    `${domains?.deploy}/api/cli/deployments/${deploymentDomain}`,
     {
-      method: 'POST',
+      method: 'GET',
       headers: {
-        'x-deployment-token': deploymentToken,
-        'Content-Type': 'application/json',
+        'x-joystick-deploy-token': joystickDeployToken,
+        'x-joystick-deploy-machine-fingerprint': JSON.stringify(machineFingerprint),
+        'content-type': 'application/json',
       },
-      body: JSON.stringify(fingerprint)
     },
   ).then(async (response) => {
     const text = await response.text();
@@ -35,6 +35,6 @@ export default (deploymentDomain = '', deploymentToken = '', fingerprint = {}) =
       return console.log(chalk.redBright(data.error));
     }
 
-    return data;
+    return data?.data;
   });
 };

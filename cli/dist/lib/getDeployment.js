@@ -3,14 +3,14 @@ import chalk from "chalk";
 import domains from "./domains.js";
 import checkIfValidJSON from "./checkIfValidJSON.js";
 import CLILog from "./CLILog.js";
-var getDeployment_default = (deploymentDomain = "", deploymentToken = "", fingerprint = {}) => {
-  return fetch(`${domains?.deploy}/api/deployments/${deploymentDomain}`, {
-    method: "POST",
+var getDeployment_default = (deploymentDomain = "", joystickDeployToken = "", machineFingerprint = {}) => {
+  return fetch(`${domains?.deploy}/api/cli/deployments/${deploymentDomain}`, {
+    method: "GET",
     headers: {
-      "x-deployment-token": deploymentToken,
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(fingerprint)
+      "x-joystick-deploy-token": joystickDeployToken,
+      "x-joystick-deploy-machine-fingerprint": JSON.stringify(machineFingerprint),
+      "content-type": "application/json"
+    }
   }).then(async (response) => {
     const text = await response.text();
     const data = checkIfValidJSON(text);
@@ -24,7 +24,7 @@ var getDeployment_default = (deploymentDomain = "", deploymentToken = "", finger
     if (data.error) {
       return console.log(chalk.redBright(data.error));
     }
-    return data;
+    return data?.data;
   });
 };
 export {

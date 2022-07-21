@@ -1,7 +1,7 @@
 {
   "name": "@joystick.js/cli",
-  "version": "1.0.0-beta.46",
-  "developmentVersion": "1.0.0-beta.1030",
+  "version": "1.0.0-beta.1049",
+  "developmentVersion": "1.0.0-beta.1068",
   "type": "module",
   "description": "CLI for the Joystick JavaScript framework.",
   "main": "development.js",

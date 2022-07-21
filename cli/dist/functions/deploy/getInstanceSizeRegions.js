@@ -3,7 +3,7 @@ import chalk from "chalk";
 import domains from "../../lib/domains.js";
 import CLILog from "../../lib/CLILog.js";
 import checkIfValidJSON from "../../lib/checkIfValidJSON.js";
-var getInstanceSizeRegions_default = (target = "", answers = {}, deploymentToken = "", fingerprint = {}) => {
+var getInstanceSizeRegions_default = (target = "", answers = {}, joystickDeployToken = "", machineFingerprint = {}) => {
   const url = new URL(`${domains.deploy}/api/providers/${answers?.provider}/regions`);
   const params = new URLSearchParams({
     size: answers[target],
@@ -11,12 +11,12 @@ var getInstanceSizeRegions_default = (target = "", answers = {}, deploymentToken
   });
   url.search = params.toString();
   return fetch(url, {
-    method: "POST",
+    method: "GET",
     headers: {
-      "Content-Type": "application/json",
-      "x-deployment-token": deploymentToken
-    },
-    body: JSON.stringify(fingerprint)
+      "content-type": "application/json",
+      "x-joystick-deploy-token": joystickDeployToken,
+      "x-joystick-deploy-machine-fingerprint": JSON.stringify(machineFingerprint)
+    }
   }).then(async (response) => {
     const text = await response.text();
     const data = checkIfValidJSON(text);
@@ -30,7 +30,7 @@ var getInstanceSizeRegions_default = (target = "", answers = {}, deploymentToken
     if (data.error) {
       return console.log(chalk.redBright(data.error));
     }
-    return data;
+    return data?.data;
   });
 };
 export {

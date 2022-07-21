@@ -3,7 +3,7 @@ import inquirer from "inquirer";
 import writeDeploymentTokenToDisk from "./writeDeploymentTokenToDisk.js";
 import isValidJSONString from "./isValidJSONString.js";
 import CLILog from "./CLILog.js";
-var getDeploymentToken_default = async (options = {}) => {
+var getJoystickDeployToken_default = async (options = {}) => {
   const hasDeploymentTokenFile = fs.existsSync(".deploy/token.json");
   let promptToken;
   if (!hasDeploymentTokenFile && !options.token) {
@@ -24,5 +24,5 @@ var getDeploymentToken_default = async (options = {}) => {
   return deploymentToken;
 };
 export {
-  getDeploymentToken_default as default
+  getJoystickDeployToken_default as default
 };

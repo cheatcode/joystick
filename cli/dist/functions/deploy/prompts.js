@@ -17,12 +17,12 @@ var prompts_default = {
       type: "text",
       prefix: "",
       message: `
- ${chalk.greenBright(">")} What is your deployment token?`,
+ ${chalk.greenBright(">")} What is your Joystick Deploy token?`,
       suffix: `
       
  ${chalk.yellowBright(`What does this mean?`)}
- Deployment tokens identify the Joystick Deploy account where your deployment will live.\r ${chalk.yellowBright(`Documentation:`)}
- ${chalk.blue("https://cheatcode.co/docs/deploy/deployment-tokens")}
+ Joystick Deploy Tokens identify the Joystick Deploy account where your deployment will live.\r ${chalk.yellowBright(`Documentation:`)}
+ ${chalk.blue("https://cheatcode.co/docs/deploy/tokens")}
       
 `
     }
@@ -37,7 +37,7 @@ var prompts_default = {
       suffix: " (e.g., app.myapp.com)"
     }
   ],
-  initialDeployment: (user = {}, deploymentToken = "", fingerprint = {}) => {
+  initialDeployment: (user = {}, joystickDeployToken = "", machineFingerprint = {}) => {
     const providers2 = getProvidersWithConnectionStatus(user);
     return [
       {
@@ -129,7 +129,7 @@ var prompts_default = {
 `,
         loop: false,
         choices: async (answers = {}) => {
-          const sizes = await getProviderInstanceSizes(answers, deploymentToken, fingerprint);
+          const sizes = await getProviderInstanceSizes(answers, joystickDeployToken, machineFingerprint);
           return (sizes || []).map((size) => {
             return {
               name: `${chalk.blue(`[${size?.name}]`)} -- ${chalk.white(`${size?.vcpus} ${size?.vcpus > 1 ? "VCPUs" : "VCPU"} + ${size?.memory / 1024}GB RAM + ${size?.disk > 1e3 ? `${size?.disk / 1e3}TB` : `${size?.disk}GB`} Disk`)} ${chalk.gray("=")} $${chalk.greenBright(`${size?.pricePerMonth}/mo`)}`,
@@ -155,7 +155,7 @@ var prompts_default = {
 `,
         loop: false,
         choices: async (answers = {}) => {
-          const regions = await getInstanceSizeRegions("loadBalancer_size", answers, deploymentToken, fingerprint);
+          const regions = await getInstanceSizeRegions("loadBalancer_size", answers, joystickDeployToken, machineFingerprint);
           return (regions || []).map((region) => {
             return {
               name: `${chalk.blue(`[${region?.id}]`)} -- ${region?.name} ${chalk.magentaBright(`(${region?.continent?.name})`)}`,
@@ -181,7 +181,7 @@ var prompts_default = {
 `,
         loop: false,
         choices: async (answers = {}) => {
-          const sizes = await getProviderInstanceSizes(answers, deploymentToken, fingerprint);
+          const sizes = await getProviderInstanceSizes(answers, joystickDeployToken, machineFingerprint);
           return (sizes || []).map((size) => {
             return {
               name: `${chalk.blue(`[${size?.name}]`)} -- ${chalk.white(`${size?.vcpus} ${size?.vcpus > 1 ? "VCPUs" : "VCPU"} + ${size?.memory / 1024}GB RAM + ${size?.disk > 1e3 ? `${size?.disk / 1e3}TB` : `${size?.disk}GB`} Disk`)} ${chalk.gray("=")} $${chalk.greenBright(`${size?.pricePerMonth}/mo`)}`,
@@ -207,7 +207,7 @@ var prompts_default = {
 `,
         loop: false,
         choices: async (answers = {}) => {
-          const regions = await getInstanceSizeRegions("instance_size", answers, deploymentToken, fingerprint);
+          const regions = await getInstanceSizeRegions("instance_size", answers, joystickDeployToken, machineFingerprint);
           return (regions || []).map((region) => {
             return {
               name: `${chalk.blue(`[${region?.id}]`)} -- ${region?.name} ${chalk.magentaBright(`(${region?.continent?.name})`)}`,

@@ -9,15 +9,15 @@ import checkIfValidJSON from "../../lib/checkIfValidJSON.js";
 import CLILog from "../../lib/CLILog.js";
 import build from "../build/index.js";
 let checkDeploymentInterval;
-const checkDeploymentStatus = (deploymentId = "", deploymentToken = "", fingerprint = {}) => {
+const checkDeploymentStatus = (deploymentId = "", joystickDeployToken = "", machineFingerprint = {}) => {
   try {
-    return fetch(`${domains?.deploy}/api/deployments/status/${deploymentId}`, {
-      method: "POST",
+    return fetch(`${domains?.deploy}/api/cli/deployments/${deploymentId}/status`, {
+      method: "GET",
       headers: {
-        "x-deployment-token": deploymentToken,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(fingerprint)
+        "x-joystick-deploy-token": joystickDeployToken,
+        "x-joystick-deploy-machine-fingerprint": JSON.stringify(machineFingerprint),
+        "content-type": "application/json"
+      }
     }).then(async (response) => {
       const text = await response.text();
       const data = checkIfValidJSON(text);
@@ -31,7 +31,7 @@ const checkDeploymentStatus = (deploymentId = "", deploymentToken = "", fingerpr
       if (data.error) {
         return console.log(chalk.redBright(data.error));
       }
-      return data;
+      return data?.data;
     });
   } catch (exception) {
     throw new Error(`[updateDeployment.checkDeploymentStatus] ${exception.message}`);
@@ -48,16 +48,16 @@ const getAppSettings = () => {
     throw new Error(`[updateDeployment.getAppSettings] ${exception.message}`);
   }
 };
-const startDeployment = (deploymentToken = "", deployment = {}, fingerprint = {}, deploymentTimestamp = "", appSettings = "") => {
+const startDeployment = (joystickDeployToken = "", deployment = {}, machineFingerprint = {}, deploymentTimestamp = "", appSettings = "") => {
   try {
-    return fetch(`${domains?.deploy}/api/deployments`, {
-      method: "POST",
+    return fetch(`${domains?.deploy}/api/cli/deployments`, {
+      method: "PUT",
       headers: {
-        "x-deployment-token": deploymentToken,
-        "Content-Type": "application/json"
+        "x-joystick-deploy-token": joystickDeployToken,
+        "x-joystick-deploy-machine-fingerprint": JSON.stringify(machineFingerprint),
+        "content-type": "application/json"
       },
       body: JSON.stringify({
-        ...fingerprint,
         ...deployment,
         deploymentTimestamp,
         flags: {
@@ -78,7 +78,7 @@ const startDeployment = (deploymentToken = "", deployment = {}, fingerprint = {}
       if (data.error) {
         return console.log(chalk.redBright(data.error));
       }
-      return data;
+      return data?.data;
     });
   } catch (exception) {
     throw new Error(`[updateDeployment.startDeployment] ${exception.message}`);
@@ -91,18 +91,18 @@ const uploadBuildToObjectStorage = (timestamp = "", deploymentOptions = {}, appS
     formData.append("flags", JSON.stringify({ isInitialDeployment: false }));
     formData.append("version", timestamp);
     formData.append("deployment", JSON.stringify(deploymentOptions?.deployment || {}));
-    formData.append("fingerprint", JSON.stringify(deploymentOptions?.fingerprint || {}));
     formData.append("settings", JSON.stringify(appSettings || {}));
-    return fetch(`${domains?.deploy}/api/deployments/upload`, {
+    return fetch(`${domains?.deploy}/api/cli/deployments/upload`, {
       method: "POST",
       headers: {
         ...formData.getHeaders(),
-        "x-deployment-token": deploymentOptions?.deploymentToken
+        "x-joystick-deploy-token": deploymentOptions?.joystickDeployToken,
+        "x-joystick-deploy-machine-fingerprint": JSON.stringify(deploymentOptions?.machineFingerprint)
       },
       body: formData
     }).then(async (response) => {
       const data = await response.json();
-      return data;
+      return data?.data;
     });
   } catch (exception) {
     throw new Error(`[updateDeployment.uploadBuildToObjectStorage] ${exception.message}`);
@@ -119,12 +119,12 @@ const validateOptions = (options) => {
   try {
     if (!options)
       throw new Error("options object is required.");
-    if (!options.deploymentToken)
-      throw new Error("options.deploymentToken is required.");
+    if (!options.joystickDeployToken)
+      throw new Error("options.joystickDeployToken is required.");
     if (!options.deployment)
       throw new Error("options.deployment is required.");
-    if (!options.fingerprint)
-      throw new Error("options.fingerprint is required.");
+    if (!options.machineFingerprint)
+      throw new Error("options.machineFingerprint is required.");
   } catch (exception) {
     throw new Error(`[updateDeployment.validateOptions] ${exception.message}`);
   }
@@ -148,9 +148,9 @@ const updateDeployment = async (options, { resolve, reject }) => {
       });
     }
     loader.text("Pushing version to instances...");
-    await startDeployment(options?.deploymentToken, options.deployment, options.fingerprint, deploymentTimestamp, appSettings);
+    await startDeployment(options?.joystickDeployToken, options.deployment, options.machineFingerprint, deploymentTimestamp, appSettings);
     checkDeploymentInterval = setInterval(async () => {
-      const deploymentStatus = await checkDeploymentStatus(options?.deployment?.deploymentId, options?.deploymentToken, options?.fingerprint);
+      const deploymentStatus = await checkDeploymentStatus(options?.deployment?.deploymentId, options?.joystickDeployToken, options?.machineFingerprint);
       loader.text(deploymentStatus?.log?.message);
       if (deploymentStatus?.deployment?.status === "deployed") {
         clearInterval(checkDeploymentInterval);

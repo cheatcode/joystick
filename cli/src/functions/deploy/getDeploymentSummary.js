@@ -3,15 +3,15 @@ import domains from "../../lib/domains.js";
 import checkIfValidJSON from "../../lib/checkIfValidJSON.js";
 import CLILog from "../../lib/CLILog.js";
 
-export default (answers = {}, deploymentToken = '', fingerprint = '') => {
-  return fetch(`${domains.deploy}/api/deployments/summary`, {
+export default (answers = {}, joystickDeployToken = '', machineFingerprint = {}) => {
+  return fetch(`${domains.deploy}/api/cli/deployments/summary`, {
     method: 'POST',
     headers: {
-      'x-deployment-token': deploymentToken,
-      'Content-Type': 'application/json',
+      'x-joystick-deploy-token': joystickDeployToken,
+      'x-joystick-deploy-machine-fingerprint': JSON.stringify(machineFingerprint),
+      'content-type': 'application/json',
     },
     body: JSON.stringify({
-      ...fingerprint,
       provider: answers?.provider,
       sizes: [
         { type: 'loadBalancers', quantity: answers?.loadBalancerInstances, id: answers?.loadBalancer_size },
@@ -38,6 +38,6 @@ export default (answers = {}, deploymentToken = '', fingerprint = '') => {
       return console.log(chalk.redBright(data.error));
     }
 
-    return data;
+    return data?.data;
   });
 };

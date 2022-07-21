@@ -3,14 +3,14 @@ import chalk from "chalk";
 import domains from "../../lib/domains.js";
 import CLILog from "../../lib/CLILog.js";
 import checkIfValidJSON from "../../lib/checkIfValidJSON.js";
-var getProviderInstanceSizes_default = (answers = {}, deploymentToken = "", fingerprint = {}) => {
+var getProviderInstanceSizes_default = (answers = {}, joystickDeployToken = "", machineFingerprint = {}) => {
   return fetch(`${domains.deploy}/api/providers/${answers?.provider}/sizes`, {
-    method: "POST",
+    method: "GET",
     headers: {
       "Content-Type": "application/json",
-      "x-deployment-token": deploymentToken
-    },
-    body: JSON.stringify(fingerprint)
+      "x-joystick-deploy-token": joystickDeployToken,
+      "x-joystick-deploy-machine-fingerprint": JSON.stringify(machineFingerprint)
+    }
   }).then(async (response) => {
     const text = await response.text();
     const data = checkIfValidJSON(text);
@@ -24,7 +24,7 @@ var getProviderInstanceSizes_default = (answers = {}, deploymentToken = "", fing
     if (data.error) {
       return console.log(chalk.redBright(data.error));
     }
-    return data;
+    return data?.data;
   });
 };
 export {

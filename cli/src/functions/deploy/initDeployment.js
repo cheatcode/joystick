@@ -14,15 +14,15 @@ import build from '../build/index.js';
 
 let checkDeploymentInterval;
 
-const checkDeploymentStatus = (deploymentId = '', deploymentToken = '', fingerprint = {}) => {
+const checkDeploymentStatus = (deploymentId = '', joystickDeployToken = '', machineFingerprint = {}) => {
   try {
-    return fetch(`${domains?.deploy}/api/deployments/status/${deploymentId}`, {
-      method: 'POST',
+    return fetch(`${domains?.deploy}/api/cli/deployments/${deploymentId}/status`, {
+      method: 'GET',
       headers: {
-        'x-deployment-token': deploymentToken,
-        'Content-Type': 'application/json',
+        'x-joystick-deploy-token': joystickDeployToken,
+        'x-joystick-deploy-machine-fingerprint': JSON.stringify(machineFingerprint),
+        'content-type': 'application/json',
       },
-      body: JSON.stringify(fingerprint)
     }).then(async (response) => {
       const text = await response.text();
       const data = checkIfValidJSON(text);
@@ -43,7 +43,7 @@ const checkDeploymentStatus = (deploymentId = '', deploymentToken = '', fingerpr
         return console.log(chalk.redBright(data.error));
       }
   
-      return data;
+      return data?.data;
     });
   } catch (exception) {
     throw new Error(`[initDeployment.checkDeploymentStatus] ${exception.message}`);
@@ -64,21 +64,21 @@ const getAppSettings = () => {
 };
 
 const startDeployment = (
-  deploymentToken = '',
+  joystickDeployToken = '',
   deployment = {},
-  fingerprint = {},
+  machineFingerprint = {},
   deploymentTimestamp = '',
   appSettings = '',
 ) => {
   try {
-    return fetch(`${domains?.deploy}/api/deployments`, {
+    return fetch(`${domains?.deploy}/api/cli/deployments`, {
       method: 'POST',
       headers: {
-        'x-deployment-token': deploymentToken,
-        'Content-Type': 'application/json',
+        'x-joystick-deploy-token': joystickDeployToken,
+        'x-joystick-deploy-machine-fingerprint': JSON.stringify(machineFingerprint),
+        'content-type': 'application/json',
       },
       body: JSON.stringify({
-        ...fingerprint,
         ...deployment,
         deploymentTimestamp,
         flags: {
@@ -106,7 +106,7 @@ const startDeployment = (
         return console.log(chalk.redBright(data.error));
       }
   
-      return data;
+      return data?.data;
     });
   } catch (exception) {
     throw new Error(`[initDeployment.startDeployment] ${exception.message}`);
@@ -121,19 +121,19 @@ const uploadBuildToObjectStorage = (timestamp = '', deploymentOptions = {}, appS
     formData.append('flags', JSON.stringify({ isInitialDeployment: true }));
     formData.append('version', timestamp);
     formData.append('deployment', JSON.stringify(deploymentOptions?.deployment || {}));
-    formData.append('fingerprint', JSON.stringify(deploymentOptions?.fingerprint || {}));
     formData.append('settings', JSON.stringify(appSettings || {}));
 
-    return fetch(`${domains?.deploy}/api/deployments/upload`, {
+    return fetch(`${domains?.deploy}/api/cli/deployments/upload`, {
       method: 'POST',
       headers: {
         ...formData.getHeaders(),
-        'x-deployment-token': deploymentOptions?.deploymentToken,
+        'x-joystick-deploy-token': deploymentOptions?.joystickDeployToken,
+        'x-joystick-deploy-machine-fingerprint': JSON.stringify(deploymentOptions?.machineFingerprint),
       },
       body: formData,
     }).then(async (response) => {
       const data = await response.json();
-      return data;
+      return data?.data;
     });
   } catch (exception) {
     throw new Error(`[initDeployment.uploadBuildToObjectStorage] ${exception.message}`);
@@ -151,9 +151,9 @@ const buildApp = () => {
 const validateOptions = (options) => {
   try {
     if (!options) throw new Error('options object is required.');
-    if (!options.deploymentToken) throw new Error('options.deploymentToken is required.');
+    if (!options.joystickDeployToken) throw new Error('options.joystickDeployToken is required.');
     if (!options.deployment) throw new Error('options.deployment is required.');
-    if (!options.fingerprint) throw new Error('options.fingerprint is required.');
+    if (!options.machineFingerprint) throw new Error('options.machineFingerprint is required.');
   } catch (exception) {
     throw new Error(`[initDeployment.validateOptions] ${exception.message}`);
   }
@@ -197,9 +197,9 @@ const initDeployment = async (options, { resolve, reject }) => {
 
     loader.text("Starting deployment...");
     await startDeployment(
-      options?.deploymentToken,
+      options?.joystickDeployToken,
       options.deployment,
-      options.fingerprint,
+      options.machineFingerprint,
       deploymentTimestamp,
       appSettings,
     );
@@ -207,8 +207,8 @@ const initDeployment = async (options, { resolve, reject }) => {
     checkDeploymentInterval = setInterval(async () => {
       const deploymentStatus = await checkDeploymentStatus(
         options?.deployment?.deploymentId,
-        options?.deploymentToken,
-        options?.fingerprint
+        options?.joystickDeployToken,
+        options?.machineFingerprint
       );
 
       loader.text(deploymentStatus?.log?.message);

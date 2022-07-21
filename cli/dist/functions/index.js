@@ -3,7 +3,6 @@ import start from "./start/index.js";
 import build from "./build/index.js";
 import update from "./update/index.js";
 import deploy from "./deploy/index.js";
-import deployment from "./deployment/index.js";
 const [_node, _bin, ...rawArgs] = process.argv;
 var functions_default = {
   build: {
@@ -99,46 +98,6 @@ var functions_default = {
       }
     },
     function: deploy
-  },
-  deployment: {
-    set: !!rawArgs.includes("deployment"),
-    description: "View and manage an existing deployment.",
-    args: {
-      action: {
-        set: !!rawArgs.includes("deployment") && !!rawArgs[rawArgs.indexOf("deployment") + 1],
-        value: !!rawArgs.includes("deployment") && rawArgs[rawArgs.indexOf("deployment") + 1],
-        description: "The action to perform for the deployment."
-      }
-    },
-    options: {
-      domain: {
-        flags: {
-          "-d": {
-            set: !!rawArgs.includes("-d"),
-            value: !!rawArgs.includes("-d") && rawArgs[rawArgs.indexOf("-d") + 1]
-          },
-          "--domain": {
-            set: !!rawArgs.includes("--domain"),
-            value: !!rawArgs.includes("--domain") && rawArgs[rawArgs.indexOf("--domain") + 1]
-          }
-        },
-        description: "The domain name for the deployment you want to view or manage."
-      },
-      token: {
-        flags: {
-          "-t": {
-            set: !!rawArgs.includes("-t"),
-            value: !!rawArgs.includes("-t") && rawArgs[rawArgs.indexOf("-t") + 1]
-          },
-          "--token": {
-            set: !!rawArgs.includes("--token"),
-            value: !!rawArgs.includes("--token") && rawArgs[rawArgs.indexOf("--token") + 1]
-          }
-        },
-        description: "A deployment token from the cheatcode.co/u/deployments/tokens page."
-      }
-    },
-    function: deployment
   },
   start: {
     set: !!rawArgs.includes("start"),

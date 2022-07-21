@@ -7,9 +7,10 @@ const getFilePlatform = (path = "") => {
   let platform = "copy";
 
   const browserPaths = [
-    getPlatformSafePath("ui/"),
+    getPlatformSafePath("email/"),
     getPlatformSafePath("lib/"),
     getPlatformSafePath("lib/browser"),
+    getPlatformSafePath("ui/"),
     "index.client.js"
   ];
 

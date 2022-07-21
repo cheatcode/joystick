@@ -20,7 +20,10 @@ var buildPlugins_default = {
           const isPageComponent = [getPlatformSafePath("ui/pages")].some((bootstrapTarget) => {
             return args.path.includes(bootstrapTarget);
           });
-          if (shouldSetSSRId || isLayoutComponent || isPageComponent) {
+          const isEmailComponent = [getPlatformSafePath("email/")].some((bootstrapTarget) => {
+            return args.path.includes(bootstrapTarget);
+          });
+          if (shouldSetSSRId || isLayoutComponent || isPageComponent || isEmailComponent) {
             const code = fs.readFileSync(getPlatformSafePath(args.path), "utf-8");
             const joystickUIMatches = code.match(JOYSTICK_UI_REGEX) || [];
             const joystickUIMatch = joystickUIMatches && joystickUIMatches[0];
@@ -80,7 +83,10 @@ var buildPlugins_default = {
         }
       });
       build.onEnd(() => {
-        const shouldSetComponentId = [getPlatformSafePath("ui/")].some((bootstrapTarget) => {
+        const shouldSetComponentId = [
+          getPlatformSafePath("ui/"),
+          getPlatformSafePath("email/")
+        ].some((bootstrapTarget) => {
           return build.initialOptions.outfile.includes(bootstrapTarget);
         });
         if (shouldSetComponentId) {

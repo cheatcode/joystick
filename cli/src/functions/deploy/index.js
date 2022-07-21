@@ -1,10 +1,7 @@
 import fs from 'fs';
-import os from 'os';
 import inquirer from 'inquirer';
 import chalk from 'chalk';
 import CLILog from '../../lib/CLILog.js';
-import writeDeploymentTokenToDisk from '../../lib/writeDeploymentTokenToDisk.js';
-import isValidJSONString from '../../lib/isValidJSONString.js';
 import prompts from './prompts.js';
 import getDeployment from '../../lib/getDeployment.js';
 import getMachineFingerprint from '../../lib/getMachineFingerprint.js';
@@ -13,19 +10,19 @@ import providerMap from './providerMap.js';
 import Loader from '../../lib/loader.js';
 import initDeployment from './initDeployment.js';
 import updateDeployment from './updateDeployment.js';
-import getDeploymentToken from '../../lib/getDeploymentToken.js';
+import getJoystickDeployToken from '../../lib/getJoystickDeployToken.js';
 
 const handleInitialDeployment = async ({
   deploymentFromServer = {},
-  deploymentToken = '',
-  fingerprint = {},
+  joystickDeployToken = '',
+  machineFingerprint = {},
   domain = '',
 }) => {
   try {
     const loader = new Loader({ padding: ' ', defaultMessage: "" });
     const deploymentToExecute = await inquirer.prompt(
-      prompts.initialDeployment(deploymentFromServer?.user, deploymentToken, fingerprint
-    ));
+      prompts.initialDeployment(deploymentFromServer?.user, joystickDeployToken, machineFingerprint)
+    );
 
     const deploymentToExecuteWithDefaults = {
       ...deploymentToExecute,
@@ -36,7 +33,7 @@ const handleInitialDeployment = async ({
     console.log("\n");
     loader.text("Building deployment summary...");
 
-    const deploymentSummary = await getDeploymentSummary(deploymentToExecuteWithDefaults, deploymentToken, fingerprint);
+    const deploymentSummary = await getDeploymentSummary(deploymentToExecuteWithDefaults, joystickDeployToken, machineFingerprint);
 
     loader.stop();
 
@@ -58,13 +55,13 @@ const handleInitialDeployment = async ({
 
     if (confirmation) {
       await initDeployment({
-        deploymentToken,
+        joystickDeployToken,
         deployment: {
           deploymentId: deploymentFromServer?.deployment?._id,
           domain,
           ...deploymentToExecuteWithDefaults
         },
-        fingerprint,
+        machineFingerprint,
       });
 
       loader.stable('Deployment complete!');
@@ -73,6 +70,7 @@ const handleInitialDeployment = async ({
       return;
     }
   } catch (exception) {
+    console.log(exception);
     throw new Error(`[deploy.handleInitialDeployment] ${exception.message}`);
   }
 };
@@ -90,7 +88,7 @@ export default async (args = {}, options = {}) => {
       process.exit(0);
     }
     
-    const deploymentToken = await getDeploymentToken(options);
+    const joystickDeployToken = await getJoystickDeployToken(options);
   
     let domain = options?.domain;
   
@@ -98,15 +96,15 @@ export default async (args = {}, options = {}) => {
       domain = await inquirer.prompt(prompts.domain()).then((answers) => answers?.domain);
     }
   
-    const fingerprint = await getMachineFingerprint();
-    const deploymentFromServer = await getDeployment(domain, deploymentToken, fingerprint);
+    const machineFingerprint = await getMachineFingerprint();
+    const deploymentFromServer = await getDeployment(domain, joystickDeployToken, machineFingerprint);
     const isInitialDeployment = deploymentFromServer?.deployment?.status === 'undeployed';
 
     if (isInitialDeployment) {
       await handleInitialDeployment({
         deploymentFromServer,
-        deploymentToken,
-        fingerprint,
+        joystickDeployToken,
+        machineFingerprint,
         domain,
       });
 
@@ -114,12 +112,12 @@ export default async (args = {}, options = {}) => {
     }
 
     await updateDeployment({
-      deploymentToken,
+      joystickDeployToken,
       deployment: {
         ...(deploymentFromServer?.deployment || {}),
         deploymentId: deploymentFromServer?.deployment?._id,
       },
-      fingerprint,
+      machineFingerprint,
     });
   } catch (exception) {
     throw new Error(`[deploy] ${exception.message}`);

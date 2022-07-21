@@ -22,7 +22,7 @@ export default (args = {}, options = {}) => {
 
   return buildFiles(filesToBuild, options?.type === 'tar' ? `${outputPath}/.tar` : outputPath).then((response) => {
     if (options?.type === 'tar') {
-      child_process.execSync(`cd ${outputPath}/.tar && tar -cf ../build.tar.xz --use-compress-program='xz -9' --exclude={".deploy",".git","uploads","storage",".DS_Store","*.tar","*.tar.gz","*.tar.xz"} .`);
+      child_process.execSync(`cd ${outputPath}/.tar && tar -cf ../build.tar.xz --use-compress-program='xz -9' --exclude={".build",".deploy",".git","uploads","storage",".DS_Store","*.tar","*.tar.gz","*.tar.xz"} .`);
       child_process.execSync(`cd ${outputPath} && rm -rf .tar`);
     }
 
