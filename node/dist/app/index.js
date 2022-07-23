@@ -27,6 +27,7 @@ import defaultUserOutputFields from "./accounts/defaultUserOutputFields.js";
 import createPostgreSQLAccountsTables from "./databases/postgresql/createAccountsTables";
 import createPostgreSQLAccountsIndexes from "./databases/postgresql/createAccountsIndexes";
 import loadSettings from "../settings/load.js";
+import Queue from "./queues/index.js";
 process.setMaxListeners(0);
 class App {
   constructor(options = {}) {
@@ -46,6 +47,7 @@ class App {
     this.initRoutes(options?.routes);
     this.initUploaders(options?.uploaders);
     this.initFixtures(options?.fixtures);
+    this.initQueues(options?.queues);
   }
   async loadDatabases(callback) {
     const settings = loadSettings();
@@ -457,6 +459,18 @@ class App {
   initFixtures(fixtures = null) {
     if (fixtures && typeof fixtures === "function") {
       fixtures();
+    }
+  }
+  initQueues(queues = null) {
+    if (queues && typeof queues === "object" && !Array.isArray(queues)) {
+      const queueDefinitions = Object.entries(queues);
+      for (let i = 0; i < queueDefinitions.length; i += 1) {
+        const [queueName, queueOptions] = queueDefinitions[i];
+        process.queues = {
+          ...process.queues || {},
+          [queueName]: new Queue(queueName, queueOptions)
+        };
+      }
     }
   }
 }
