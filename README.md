@@ -14,7 +14,8 @@ The full-stack JavaScript framework.
 1. [What is Joystick?](#what-is-joystick)
 2. [Installation](#installation)
 3. [Getting Started](#getting-started)
-4. [Folder and file structure](#folder-and-file-structure)
+   - [Tutorials](#tutorials)
+5. [Folder and file structure](#folder-and-file-structure)
    - [/api](#api)
    - [/fixtures](#fixtures)
    - [/email](#email)
@@ -31,24 +32,24 @@ The full-stack JavaScript framework.
    - [index.server.js](#indexserverjs)
    - [package.json](#packagejson)
    - [settings.env.json](#settingsenvjson)
-5. [Settings](#settings)
+6. [Settings](#settings)
    - [Defining settings per environment](#defining-settings-per-environment)
    - [Defining Joystick configuration](#defining-joystick-configuration)
    - [Defining global settings](#defining-global-settings)
    - [Defining public settings](#defining-public-settings)
    - [Defining server settings](#defining-private-settings)
-6. [@joystick.js/cli](#joystickjscli)
+7. [@joystick.js/cli](#joystickjscli)
    - [joystick create](#joystick-create)
    - [joystick start](#joystick-start)
    - [joystick build](#joystick-build)
    - [joystick update](#joystick-update)
-7. [Databases](#databases)
+8. [Databases](#databases)
    - [Adding a database](#adding-a-database)
    - [Users database](#users-database)
    - [MongoDB](#mongodb)
    - [PostgreSQL](#postgresql)
    - [Adding a remote database](#adding-a-remote-database)
-8. [Accounts](#accounts)
+9. [Accounts](#accounts)
    - [accounts.signup](#accountssignup)
    - [accounts.login](#accountslogin)
    - [accounts.logout](#accountslogout)
@@ -62,7 +63,7 @@ The full-stack JavaScript framework.
      - [accounts.roles.grant](#accountsrolesgrant)
      - [accounts.roles.revoke](#accountsrolesrevoke)
      - [accounts.roles.userHasRole](#accountsrolesuserhasrole)
-9. [@joystick.js/ui](#joystickjsui)
+10. [@joystick.js/ui](#joystickjsui)
     - [Writing a component](#writing-a-component)
     - [Render functions](#render-functions)
       - [component() and c()](#component-and-c)
@@ -81,7 +82,7 @@ The full-stack JavaScript framework.
     - [Accessing URL and query params](#accessing-url-and-query-params)
     - [Writing comments](#writing-comments)
     - [Accessing a Component's DOM Node](#accessing-the-dom-node)
-10. [@joystick.js/node](#joystickjsnode)
+11. [@joystick.js/node](#joystickjsnode)
     - [Defining an app](#defining-an-app)
     - [Middleware](#middleware)
       - [Configuring built-in middleware](#configuring-built-in-middleware)
@@ -111,7 +112,7 @@ The full-stack JavaScript framework.
       - [Accessing translations](#accessing-translations)
     - [Handling process events](#handling-process-events)
     - [__filename and __dirname](#__filename-and-__dirname)
-11. [Deployment](#deployment)
+12. [Deployment](#deployment)
 
 ---
 
@@ -171,6 +172,17 @@ cd <app> && joystick start
 This will build your app and start it at `http://localhost:2600`.
 
 > Questions about Joystick? [Join the Discord](https://discord.gg/UTy4Fpy).
+
+### Tutorials
+
+A great way to get familiar with Joystick beyond this documentation is to check out some of the tutorials walking through the basics over on CheatCode:
+
+- [Building and Rendering Your First Joystick Component](https://cheatcode.co/tutorials/building-and-rendering-your-first-joystick-component)
+- [How to Implement an API Using Getters and Setters in Joystick](https://cheatcode.co/tutorials/how-to-implement-an-api-using-getters-and-setters-in-joystick)
+- [How to Fetch and Render Data in Joystick Components](https://cheatcode.co/tutorials/how-to-fetch-and-render-data-in-joystick-components)
+- [How to Wire Up User Accounts and Authenticated Routing in Joystick](https://cheatcode.co/tutorials/how-to-wire-up-user-accounts-and-authenticated-routing-in-joystick)
+- [How to Upload Files to Multiple Locations Simultaneously with Joystick](https://cheatcode.co/tutorials/how-to-upload-files-to-multiple-locations-simultaneously-with-joystick)
+- [How to Define Templates and Send Email with Joystick](https://cheatcode.co/tutorials/how-to-define-templates-and-send-email-with-joystick)
 
 ## Folder and file structure
 
