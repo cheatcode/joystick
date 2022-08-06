@@ -13,16 +13,18 @@ export default (componentInstance = {}, options = {}) => {
       componentInstance.data = findComponentDataFromSSR(options.dataFromSSR, componentInstance.ssrId) || {};
     }
 
-    const renderMethods = compileRenderMethods({
+    const renderOptions = {
       ...componentInstance,
+      getExistingPropsMap: {},
       existingPropsMap: !windowIsUndefined() ? getExistingPropsMap(componentInstance) : {},
       existingStateMap: !windowIsUndefined() ? getExistingStateMap(componentInstance) : {},
       ssrTree: options?.ssrTree,
       translations: options?.translations || componentInstance.translations || {},
       walkingTreeForSSR: options?.walkingTreeForSSR,
       dataFromSSR: options?.dataFromSSR,
-    });
+    };
 
+    const renderMethods = compileRenderMethods(renderOptions);
     const html = componentInstance.options.render({
       ...(componentInstance || {}),
       setState: componentInstance.setState.bind(componentInstance),

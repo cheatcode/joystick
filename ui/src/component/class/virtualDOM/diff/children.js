@@ -21,7 +21,7 @@ const patchChildNodes = (patchNodeMap = []) => {
 const getNewChildrenFunctions = (oldVirtualChildren = [], newVirtualChildren = []) => {
   const newChildrenFunctions = [];
   const newChildren = newVirtualChildren.slice(oldVirtualChildren.length);
-  
+
   newChildren.forEach((newChild) => {
     const newChildFunction = (node) => {
       const newDOMNode = render(newChild);
@@ -41,7 +41,7 @@ const getPatchesForExistingChildren = (oldVirtualChildren = [], newVirtualChildr
   oldVirtualChildren.forEach((oldVirtualChild, index) => {
     const childPatchFunction = diffVirtualDOMNodes(
       oldVirtualChild,
-      newVirtualChildren[index]
+      newVirtualChildren[index],
     );
   
     childPatchFunctions.push(childPatchFunction);
@@ -57,7 +57,6 @@ const diffChildren = (oldVirtualChildren = [], newVirtualChildren = []) => {
   return (parentNode) => {
     if (parentNode) {
       const patchNodeMap = mapPatchFunctionsToNodes(childPatchFunctions, parentNode.childNodes);
-      
       patchChildNodes(patchNodeMap);
       appendNewChildren(newChildrenFunctions, parentNode);
     }

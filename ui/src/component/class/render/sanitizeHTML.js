@@ -28,7 +28,7 @@ export default (html = '') => {
     let sanitizedHTML = `${html}`;
 
     sanitizedHTML = removeCommentedCode(sanitizedHTML);
-    sanitizedHTML = removeNewLineCharacters(sanitizedHTML);
+    // sanitizedHTML = removeNewLineCharacters(sanitizedHTML);
  
     return sanitizedHTML;
   } catch (exception) {

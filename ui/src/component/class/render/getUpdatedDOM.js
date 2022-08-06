@@ -7,12 +7,12 @@ export default (componentInstance = {}, options = {}) => {
   try {
     const html = renderToHTML(componentInstance);
     const virtualDOMTree = buildVirtualDOM(html.unwrapped, componentInstance.id);
-    const virtualDOM = options.includeActual && virtualDOMTree ? renderTreeToDOM(virtualDOMTree) : null;
+    const DOMInMemory = options.includeActual && virtualDOMTree ? renderTreeToDOM(virtualDOMTree) : null;
 
     return {
       html,
       virtual: virtualDOMTree,
-      actual: virtualDOM,
+      actual: DOMInMemory,
     };
   } catch (exception) {
     throwFrameworkError('component.render.getUpdatedDOM', exception);

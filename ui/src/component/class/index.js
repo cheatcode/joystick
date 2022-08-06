@@ -54,13 +54,13 @@ class Component {
     if (options?.mounting) {
       return renderForMount(this);
     }
-    
+
     const onBeforeRenderData = this.onBeforeRender();
 
     unregisterEventListeners();
     clearChildrenOnParent(this.instanceId);
 
-    const updatedDOM = getUpdatedDOM(this);
+    const updatedDOM = getUpdatedDOM(this, {});
     const patchDOMNodes = diffVirtualDOMNodes(this.dom.virtual, updatedDOM.virtual);
 
     // NOTE: Re-register events *before* calling any lifecycle methods on child components in case
@@ -73,11 +73,11 @@ class Component {
         this.dom.actual = patchedDOM;
         this.dom.virtual = updatedDOM.virtual;
       });
-    }
 
-    processQueue('lifecycle.onMount', () => {
-      this.onAfterRender(onBeforeRenderData, options);
-    });
+      processQueue('lifecycle.onMount', () => {
+        this.onAfterRender(onBeforeRenderData, options);
+      });
+    }
   }
 
   renderToHTML(options = {}) {

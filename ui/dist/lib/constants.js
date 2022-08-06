@@ -1,1 +1,1 @@
-var E=new RegExp(/\<\!\-\-(?:.|\n|\r)*?-->/g),n=new RegExp(/(\r\n|\n|\r)/gm,"");export{E as JOYSTICK_COMMENT_REGEX,n as NEWLINE_REGEX};
+var E=new RegExp(/\<\!\-\-(?:.|\n|\r)*?-->/g),e=new RegExp(/\n/g);export{E as JOYSTICK_COMMENT_REGEX,e as NEWLINE_REGEX};

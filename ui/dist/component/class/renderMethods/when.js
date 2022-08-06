@@ -1,1 +1,1 @@
-var o=(e="",r={})=>{throw new Error(`[joystick${e?`.${e}`:""}] ${r.message||r.reason||r}`)};var w=function(r=!1,t=""){try{return r?t:""}catch(n){o("component.renderMethods.when",n)}},s=w;export{s as default};
+var e=(t="",r={})=>{throw new Error(`[joystick${t?`.${t}`:""}] ${r.message||r.reason||r}`)};var a=function(r=!1,o=""){try{return r?`<when>${o.trim()}</when>`:"<when> </when>"}catch(n){e("component.renderMethods.when",n)}},c=a;export{c as default};

@@ -3,11 +3,11 @@ import elementPatchFunctions from './elementPatchFunctions';
 import diffAttributes from './attributes';
 import diffChildren from './children';
 
-const getReplaceNodePatch = (newVirtualNode) => {
+const getReplaceNodePatch = (newVirtualNode, oldVirtualNode) => {
   return (node) => {
     const newDOMNode = newVirtualNode ? render(newVirtualNode) : null;
 
-    if (node && newDOMNode) {
+    if (node) {
       node.replaceWith(newDOMNode);
     }
 
@@ -26,15 +26,14 @@ const getRemoveNodePatch = () => {
 };
 
 const diff = (oldVirtualNode = undefined, newVirtualNode = undefined) => {
-  if (newVirtualNode === undefined) {
+  if (oldVirtualNode === undefined || newVirtualNode === undefined) {
     return getRemoveNodePatch();
   }
 
   const isPatchingString = typeof oldVirtualNode === 'string' || typeof newVirtualNode === "string";
-  const stringsDoNotMatch = isPatchingString && (oldVirtualNode !== newVirtualNode);
 
-  if (isPatchingString && stringsDoNotMatch) {
-    return getReplaceNodePatch(newVirtualNode);
+  if (isPatchingString) {
+    return getReplaceNodePatch(newVirtualNode, oldVirtualNode);
   }
 
   const nodeTagNameChanged = oldVirtualNode.tagName !== newVirtualNode.tagName;

@@ -3,7 +3,6 @@ import throwFrameworkError from "../../../lib/throwFrameworkError";
 
 const renderElement = (virtualDOMNode = {}) => {
   try {
-
     const element = document.createElement(virtualDOMNode.tagName);
     const attributes = Object.entries(virtualDOMNode.attributes);
 
@@ -34,7 +33,7 @@ const renderTreeToDOM = (virtualDOMNode = null) => {
     if (isString(virtualDOMNode)) {
       return document.createTextNode(virtualDOMNode);
     }
-  
+
     return renderElement(virtualDOMNode);
   } catch (exception) {
     throwFrameworkError('component.virtualDOM.renderTreeToDOM', exception);

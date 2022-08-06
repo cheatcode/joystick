@@ -35,16 +35,42 @@ const buildVirtualDOMTree = (element = '') => {
   }
 };
 
+const getChildNodesForVirtualDOMNode = (parentChildNodes = [], childNode = []) => {
+  try {
+
+  } catch (exception) {
+    throw new Error(`[actionName.getChildNodesForVirtualDOMNode] ${exception.message}`);
+  }
+};
+
+const flattenAndReplaceWhenElements = (dom = {}) => {
+  try {
+    if (dom?.childNodes?.length > 0) {
+      [].forEach.call(dom.childNodes, (childNode) => {
+        flattenAndReplaceWhenElements(childNode);
+
+        if (childNode?.tagName === 'WHEN' && childNode.childNodes?.length === 0) {
+          childNode.replaceWith(document.createTextNode(''));
+        }
+
+        if (childNode?.tagName === 'WHEN' && childNode?.childNodes?.length > 0) {
+          childNode.replaceWith(...childNode.childNodes);
+        }
+      }); 
+    }
+    
+    return dom;
+  } catch (exception) {
+    throw new Error(`[actionName.flattenAndReplaceWhenElements] ${exception.message}`);
+  }
+};
+
 const buildVirtualDOM = (html = '', componentId = '') => {
   try {
-    if (!html || !isString(html)) {
-      return null;
-    }
-
     const dom = document.createElement("div");
     dom.setAttribute("js-c", componentId);
     dom.innerHTML = html;
-    return dom;
+    return flattenAndReplaceWhenElements(dom);
   } catch (exception) {
     throwFrameworkError('component.virtualDOM.build.buildVirtualDOM', exception);
   }
