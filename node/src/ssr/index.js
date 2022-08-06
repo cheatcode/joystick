@@ -4,8 +4,8 @@ import formatCSS from "./formatCSS";
 import setHeadTagsInHTML from "./setHeadTagsInHTML";
 import get from '../api/get';
 import set from '../api/set';
-import findComponentInTree from "./findComponentInTree";
 import getBrowserSafeRequest from "../app/getBrowserSafeRequest";
+import replaceWhenTags from "./replaceWhenTags";
 
 export default async ({
   Component,
@@ -32,7 +32,7 @@ export default async ({
         });
       },
       set: (setterName = '', setterOptions = {}) => {
-        return get(setterName, {
+        return set(setterName, {
           ...setterOptions,
           headers: {
             cookie: req?.headers?.cookie,
@@ -94,6 +94,7 @@ export default async ({
       walkingTreeForSSR: false,
       dataFromSSR: dataFromTree,
     });
+    const htmlWithoutWhenTags = replaceWhenTags(html.wrapped);
 
     const css = formatCSS(getCSSFromTree(tree));
 
@@ -104,7 +105,7 @@ export default async ({
       .replace(
         '<div id="app"></div>',
         `
-        <div id="app">${html.wrapped}</div>
+        <div id="app">${htmlWithoutWhenTags}</div>
         <script>
           window.__joystick_ssr__ = true;
           window.__joystick_data__ = ${
