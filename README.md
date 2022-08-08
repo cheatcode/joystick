@@ -81,6 +81,7 @@ The full-stack JavaScript framework.
     - [Global State](#global-state)
       - [Setting](#updating-the-cache)
       - [Unsetting](#unsetting-the-cache)
+      - [Getting](#getting-data-from-the-cache)
       - [Listening for Changes](#listening-for-cache-changes) 
     - [Form Validation](#form-validation)
     - [Accessing URL and query params](#accessing-url-and-query-params)
@@ -1936,6 +1937,10 @@ In the example above, we use the `...` spread operator to "copy" the contents of
 To unset a specific value, the `.unset()` method can be called on a cache with a specific path like `appCache.unset('count')` (nested values can be accessed via dot notation like `appCache.unset('thing.i.want.to.unset')`). 
 
 Alternatively, to unset the _entire_ cache, just call `appCache.unset()` without a path.
+
+### Getting data from the cache
+
+Getting data from the cache can be done via the `.get()` method on the cache instance. For example, calling `appCache.get()` will get the entire cache, or, if you want to retrieve a specific value, a path can be passed like `appCache.get('count')` (dot notation can be used to access nested paths like `appCache.get('path.to.thing.i.want')`). 
 
 #### Listening for cache changes
 
