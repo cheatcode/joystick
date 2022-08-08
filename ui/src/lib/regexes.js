@@ -1,1 +1,0 @@
-export const STRING_CONTAINS_HTML = new RegExp(/<\/?[a-z][\s\S]*>/i);
