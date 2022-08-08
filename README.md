@@ -78,6 +78,10 @@ The full-stack JavaScript framework.
     - [Methods](#methods)
     - [DOM Events](#dom-events)
     - [CSS](#css)
+    - [Global State](#global-state)
+      - [Setting](#updating-the-cache)
+      - [Unsetting](#unsetting-the-cache)
+      - [Listening for Changes](#listening-for-cache-changes) 
     - [Form Validation](#form-validation)
     - [Accessing URL and query params](#accessing-url-and-query-params)
     - [Writing comments](#writing-comments)
@@ -1840,6 +1844,148 @@ const Form = ui.component({
 
 export default Form;
 ```
+
+### Global State
+
+`@joystick.js/ui` includes a global state library called Cache. Similar to popular libraries like Redux, Cache allows you to create a "store" or "cache" for storing global data. It features a simple API for getting, setting, and unsetting data from a cache as well as listening for changes to a cache.
+
+A cache can be defined by importing the named `cache` export from `@joystick.js/ui`:
+
+```javascript
+import ui, { cache } from '@joystick.js/ui';
+
+const appCache = cache('app', {});
+
+const Count = ui.component({
+  state: {
+    count: 0,
+  },
+  render: ({ state }) => {
+    return `
+      <div>
+        <p>Count: ${state.count}</p>
+        <button class="add">Add</button>
+        <button class="subtract">Subtract</button>
+        <button class="delete">Delete</button>
+      </div>
+    `;
+  },
+});
+
+export default Count;
+```
+
+Above, we create our cache with `cache('app', {});`, passing `'app'` as the name of the cache and `{}` as a default value. Here, we store our cache instance in a variable `appCache` that we can access throughout our component.
+
+> NOTE: The root value of a cache should always be an object.
+
+#### Updating the cache
+
+A cache can be updated via the `.set()` method defined on the cache instance:
+
+```javascript
+import ui, { cache } from '@joystick.js/ui';
+
+const appCache = cache('app', {});
+
+const Count = ui.component({
+  state: {
+    count: 0,
+  },
+  events: {
+    'click .add': (event, component) => {
+      appCache.set((state = {}) => {
+        return {
+          ...state,
+          count: (state.count || 0) + 1,
+        };
+      }, 'ADD');
+    },
+    'click .subtract': (event, component) => {
+      appCache.set((state = {}) => {
+        return {
+          ...state,
+          count: state?.count > 0 ? state.count - 1 : 0,
+        };
+      }, 'SUBTRACT');
+    },
+  },
+  render: ({ state }) => {
+    return `
+      <div>
+        <p>Count: ${state.count}</p>
+        <button class="add">Add</button>
+        <button class="subtract">Subtract</button>
+        <button class="delete">Delete</button>
+      </div>
+    `;
+  },
+});
+
+export default Count;
+```
+
+The `.set()` method receives a callback function as its first argument. That callback function receives the current `state` of the cache. To update the cache, return an object representing the modified state of the cache from the callback function.
+
+In the example above, we use the `...` spread operator to "copy" the contents of the existing state onto the new object being returned from our callback function, modifying the `count` field in response to either the `.add` or `.subtract` button being clicked.
+
+> NOTE: Optionally, the `.set()` function can receive a second argument which is a string containing the name of the event. This can be any name you'd like (above we're using `'ADD'` and `'SUBTRACT'`) and is intended as a means for identifying specific changes to a cache when listening for changes *to* that cache (more on this below).
+
+#### Unsetting the cache
+
+To unset a specific value, the `.unset()` method can be called on a cache with a specific path like `appCache.unset('count')` (nested values can be accessed via dot notation like `appCache.unset('thing.i.want.to.unset')`). 
+
+Alternatively, to unset the _entire_ cache, just call `appCache.unset()` without a path.
+
+#### Listening for cache changes
+
+If you need to listen for or "subscribe" to changes to a cache, you can utilize a cache's `.on()` method:
+
+```javascript
+import ui, { cache } from '@joystick.js/ui';
+
+const appCache = cache('app', {});
+
+const Count = ui.component({
+  state: {
+    count: 0,
+  },
+  lifecycle: {
+    onMount: (component = {}) => {
+      appCache.on('change', (state = {}, event = '', typeOfChange = '') => {
+        console.log({ state, event, typeOfChange });
+
+        // NOTE: As an example, take the count value from appCache and put it on
+        // to the local component state whenever a change occurs.
+        component.setState({ count: state?.count || 0 });
+      });
+    },
+  },
+  events: { ... },
+  render: ({ state }) => {
+    return `
+      <div>
+        <p>Count: ${state.count}</p>
+        <button class="add">Add</button>
+        <button class="subtract">Subtract</button>
+        <button class="delete">Delete</button>
+      </div>
+    `;
+  },
+});
+
+export default Count;
+```
+
+Above, in our component's `lifecycle.onMount` function, we've added a call to `appCache.on('change')`. Whenever there's a change to a cache, the callback function passed as the second argument to `.on()` will be called, passing three values:
+
+1. The new `state` of the cache.
+2. If passed, the `event` that took place (e.g., `ADD` or `SUBTRACT`).
+3. The `typeOfChange` (either `set` or `unset`).
+
+In the example above, we copy the global `count` from our `appCache` over to our component's local state, rendering the value in the component.
+
+> NOTE: If you only want to listen for a _specific_ type of change, you can also listen to `appCache.on('set')` and `appCache.on('unset')` with the above behavior being the same.
 
 ### Form Validation
 
