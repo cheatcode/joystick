@@ -9,12 +9,15 @@ import replaceBackslashesWithForwardSlashes from '../../lib/replaceBackslashesWi
 import getBuildPath from "../../lib/getBuildPath.js";
 
 const require = createRequire(import.meta.url);
+
 const getUrl = (request = {}) => {
+  const [path = null] = request.url?.split('?');
+
   return {
     params: request.params,
     query: request.query,
     route: request.route.path,
-    path: request.url,
+    path,
   };
 };
 
