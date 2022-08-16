@@ -79,7 +79,7 @@ var render_default = (req, res, next) => {
     const html = await ssr({
       Component: Layout || Page,
       props,
-      path,
+      path: path?.substring(0, 1) === "/" ? path?.replace("/", "") : path,
       url,
       translations,
       layout: options.layout,

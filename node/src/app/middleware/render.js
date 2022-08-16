@@ -111,7 +111,9 @@ export default (req, res, next) => {
     const html = await ssr({
       Component: Layout || Page,
       props,
-      path,
+      // NOTE: Safety mechanism. Don't punish a developer if the path they pass to res.render()
+      // has a forward slash prepended, just strip it for them.
+      path: path?.substring(0, 1) === '/' ? path?.replace('/', '') : path,
       url,
       translations,
       layout: options.layout,
