@@ -2,6 +2,7 @@ import component from "./component";
 import _accounts from "./accounts";
 import _upload from './upload';
 import _cache from './cache';
+import _html from './html';
 import mount from "./mount";
 import api from "./api";
 import QueueArray from "./lib/queueArray";
@@ -13,6 +14,7 @@ export const set = api.set;
 export const accounts = _accounts;
 export const upload = _upload;
 export const cache = _cache;
+export const html = _html;
 
 const joystick = {
   component,
@@ -22,6 +24,7 @@ const joystick = {
   upload,
   mount,
   cache,
+  html,
   _internal: {
     queues: {
       domNodes: new QueueArray([]),
