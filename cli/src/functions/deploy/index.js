@@ -58,6 +58,7 @@ const handleInitialDeployment = async ({
         joystickDeployToken,
         deployment: {
           deploymentId: deploymentFromServer?.deployment?._id,
+          encryptionToken: deploymentFromServer?.deployment?.token,
           domain,
           ...deploymentToExecuteWithDefaults
         },

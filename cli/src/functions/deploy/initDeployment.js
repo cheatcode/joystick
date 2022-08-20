@@ -2,6 +2,7 @@
 
 import fetch from 'node-fetch';
 import chalk from 'chalk';
+import child_process from 'child_process';
 import _ from 'lodash';
 import fs from 'fs';
 import FormData from 'form-data';
@@ -117,7 +118,7 @@ const uploadBuildToObjectStorage = (timestamp = '', deploymentOptions = {}, appS
   try {
     const formData = new FormData();
 
-    formData.append('build_tar', fs.readFileSync(`.build/build.tar.xz`), `${timestamp}.tar.xz`);
+    formData.append('build_tar', fs.readFileSync(`.build/build_enc.tar.xz`), `${timestamp}.tar.xz`);
     formData.append('flags', JSON.stringify({ isInitialDeployment: true }));
     formData.append('version', timestamp);
     formData.append('deployment', JSON.stringify(deploymentOptions?.deployment || {}));
@@ -137,6 +138,14 @@ const uploadBuildToObjectStorage = (timestamp = '', deploymentOptions = {}, appS
     });
   } catch (exception) {
     throw new Error(`[initDeployment.uploadBuildToObjectStorage] ${exception.message}`);
+  }
+};
+
+const encryptBuild = (deploymentToken = '') => {
+  try {
+    return child_process.execSync(`openssl enc -aes256 -in .build/build.tar.xz -out .build/build_enc.tar.xz -k ${deploymentToken}`);
+  } catch (exception) {
+    throw new Error(`[initDeployment.encryptBuild] ${exception.message}`);
   }
 };
 
@@ -176,6 +185,7 @@ const initDeployment = async (options, { resolve, reject }) => {
     const deploymentTimestamp = new Date().toISOString();
 
     await buildApp();
+    await encryptBuild(options?.deployment?.deploymentToken);
     
     loader.text("Uploading built app to version control...");
 
