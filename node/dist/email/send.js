@@ -13,10 +13,11 @@ var send_default = async ({ template: templateName, props, ...restOfOptions }) =
     console.warn(chalk.redBright("Cannot send email, invalid SMTP settings."));
     return Promise.resolve(null);
   }
+  const isNoSecurePort = [587, 25, "587", "25"].includes(settings?.config?.email?.smtp?.port);
   const smtp = validSMTPSettings ? nodemailer.createTransport({
     host: settings?.config?.email?.smtp?.host,
     port: settings?.config?.email?.smtp?.port,
-    secure: process.env.NODE_ENV !== "development",
+    secure: !isNoSecurePort && process.env.NODE_ENV !== "development",
     auth: {
       user: settings?.config?.email?.smtp?.username,
       pass: settings?.config?.email?.smtp?.password

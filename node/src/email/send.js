@@ -16,11 +16,15 @@ export default async ({ template: templateName, props, ...restOfOptions }) => {
     return Promise.resolve(null);
   }
 
+  // NOTE: Check the port number as nodemailer notes most SMTP providers required a plaintext
+  // connection *first* before upgrading the connection via STARTTLS. This prevents an SSL error
+  // when sending emails via SMTP port 587 or 25. See: https://nodemailer.com/smtp/#tls-options.
+  const isNoSecurePort = [587, 25, '587', '25'].includes(settings?.config?.email?.smtp?.port); 
   const smtp = validSMTPSettings
     ? nodemailer.createTransport({
         host: settings?.config?.email?.smtp?.host,
         port: settings?.config?.email?.smtp?.port,
-        secure: process.env.NODE_ENV !== "development",
+        secure: !isNoSecurePort && process.env.NODE_ENV !== "development",
         auth: {
           user: settings?.config?.email?.smtp?.username,
           pass: settings?.config?.email?.smtp?.password,
