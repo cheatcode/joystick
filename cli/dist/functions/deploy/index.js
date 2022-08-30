@@ -47,6 +47,7 @@ const handleInitialDeployment = async ({
         joystickDeployToken,
         deployment: {
           deploymentId: deploymentFromServer?.deployment?._id,
+          encryptionToken: deploymentFromServer?.deployment?.token,
           domain,
           ...deploymentToExecuteWithDefaults
         },
@@ -92,7 +93,8 @@ var deploy_default = async (args = {}, options = {}) => {
       joystickDeployToken,
       deployment: {
         ...deploymentFromServer?.deployment || {},
-        deploymentId: deploymentFromServer?.deployment?._id
+        deploymentId: deploymentFromServer?.deployment?._id,
+        encryptionToken: deploymentFromServer?.deployment?.token
       },
       machineFingerprint
     });

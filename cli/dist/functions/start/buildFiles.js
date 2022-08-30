@@ -47,16 +47,14 @@ const isNotJavaScript = (path = "") => {
   return extension && !extension.match(/\js$/);
 };
 var buildFiles_default = async (filesToBuild = [], outputPath = null) => {
-  return Promise.all(filesToBuild.map(async (fileToBuild) => {
+  return Promise.all(filesToBuild.map((fileToBuild) => {
     const platform = getFilePlatform(fileToBuild);
     const isFileToCopy = platform === "copy" || isNotJavaScript(fileToBuild) || filesToCopy.some((fileToCopy) => {
       return fileToBuild.includes(fileToCopy.path);
     });
     if (isFileToCopy) {
-      return new Promise((resolve) => {
-        fs.outputFileSync(`${outputPath || "./.joystick/build"}/${fileToBuild}`, fs.readFileSync(fileToBuild));
-        resolve();
-      });
+      fs.outputFileSync(`${outputPath || "./.joystick/build"}/${fileToBuild}`, fs.readFileSync(fileToBuild));
+      return fileToBuild;
     }
     return buildFile(fileToBuild, platform, outputPath);
   }));

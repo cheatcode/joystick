@@ -83,25 +83,26 @@ var buildPlugins_default = {
         }
       });
       build.onEnd(() => {
-        const shouldSetComponentId = [
-          getPlatformSafePath("ui/"),
-          getPlatformSafePath("email/")
-        ].some((bootstrapTarget) => {
-          return build.initialOptions.outfile.includes(bootstrapTarget);
-        });
-        if (shouldSetComponentId) {
-          fs.readFile(build.initialOptions.outfile, { encoding: "utf-8" }, (error, file) => {
-            const joystickUIMatches = file.match(JOYSTICK_COMPONENT_REGEX) || [];
-            if (!error && file && joystickUIMatches?.length > 0) {
+        return new Promise((resolve) => {
+          const shouldSetComponentId = [
+            getPlatformSafePath("ui/"),
+            getPlatformSafePath("email/")
+          ].some((bootstrapTarget) => {
+            return build.initialOptions.outfile.includes(bootstrapTarget);
+          });
+          if (shouldSetComponentId) {
+            const file = fs.readFileSync(build.initialOptions.outfile, "utf-8");
+            const joystickUIMatches = file?.match(JOYSTICK_COMPONENT_REGEX) || [];
+            if (joystickUIMatches?.length > 0) {
               let contents = file.replace(/\.component\(\{/g, () => {
                 return `.component({
   _componentId: '${generateId()}',`;
               }).replace(/\.component\(\/\*\*\//g, ".component(");
-              fs.writeFile(build.initialOptions.outfile, contents, (_error) => {
-              });
+              fs.writeFileSync(build.initialOptions.outfile, contents);
             }
-          });
-        }
+          }
+          resolve();
+        });
       });
     }
   },

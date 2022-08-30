@@ -106,18 +106,19 @@ export default {
       });
 
       build.onEnd(() => {
-        const shouldSetComponentId = [
-          getPlatformSafePath("ui/"),
-          getPlatformSafePath("email/"),
-        ].some((bootstrapTarget) => {
-          return build.initialOptions.outfile.includes(bootstrapTarget);
-        });
+        return new Promise((resolve) => {
+          const shouldSetComponentId = [
+            getPlatformSafePath("ui/"),
+            getPlatformSafePath("email/"),
+          ].some((bootstrapTarget) => {
+            return build.initialOptions.outfile.includes(bootstrapTarget);
+          });
 
-        if (shouldSetComponentId) {
-          fs.readFile(build.initialOptions.outfile, { encoding: 'utf-8' }, (error, file) => {
-            const joystickUIMatches = file.match(JOYSTICK_COMPONENT_REGEX) || [];
-  
-            if (!error && file && joystickUIMatches?.length > 0) {
+          if (shouldSetComponentId) {
+            const file = fs.readFileSync(build.initialOptions.outfile, 'utf-8');
+            const joystickUIMatches = file?.match(JOYSTICK_COMPONENT_REGEX) || [];
+    
+            if (joystickUIMatches?.length > 0) {
               // NOTE: Regex/replace of /\.component\(\/\*\*\//g is a total fluke. This prevents
               // sample code in Joystick from receiving a _componentId. We use the line .component(/**
               // to escape the replacement and then automatically clear the escape after _componentId
@@ -126,10 +127,12 @@ export default {
                 return `.component({\n  _componentId: '${generateId()}',`;
               }).replace(/\.component\(\/\*\*\//g, '.component(');
   
-              fs.writeFile(build.initialOptions.outfile, contents, (_error) => {});
+              fs.writeFileSync(build.initialOptions.outfile, contents);
             }
-          });
-        }
+          }
+
+          resolve();
+        });
       });
     }
   },

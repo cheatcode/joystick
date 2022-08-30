@@ -1,23 +1,34 @@
 import fs from "fs";
 import { join } from "path";
 
-function rreaddirSync(dir, allFiles = []) {
-  const files = fs.readdirSync(dir).map((f) => join(dir, f));
-  allFiles.push(...files);
-  files.forEach((f) => {
-    if (fs.existsSync(f)) {
-      fs.statSync(f).isDirectory() && rreaddirSync(f, allFiles);
+const getFileListFromPath = (directoryPath = '', files = []) => {
+  const filesInDirectory = fs.readdirSync(directoryPath);
+  const filesWithDirectoryPathPrefix = filesInDirectory.map((filePathInDirectory = '') => {
+    return join(directoryPath, filePathInDirectory);
+  });
+
+  files.push(...filesWithDirectoryPathPrefix);
+
+  filesWithDirectoryPathPrefix.forEach((filePathWithDirectoryPrefix = '') => {
+    const pathIsDirectory = fs.statSync(filePathWithDirectoryPrefix).isDirectory();
+
+    if (pathIsDirectory) {
+      getFileListFromPath(filePathWithDirectoryPrefix, files);
     }
   });
-  return allFiles;
-}
+
+  return files;
+};
+
 
 export default () => {
-  const files = rreaddirSync("./");
+  const files = getFileListFromPath("./");
   const filteredFiles = files
     .filter((path) => {
       return ![
         "node_modules",
+        ".DS_Store",
+        ".git",
         ".build",
         ".joystick",
         ".deploy",

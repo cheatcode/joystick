@@ -4,9 +4,9 @@ import throwFrameworkError from "../../../lib/throwFrameworkError";
 
 export default (componentInstance = {}) => {
   try {
-    const hasSSRStyles = document.head.querySelector(`style[js-ssr]`);
+    const hasSSRStylesForComponent = document.head.querySelector(`style[js-ssr]`)?.innerText?.includes(componentInstance.id);
 
-    if (hasSSRStyles) {
+    if (hasSSRStylesForComponent) {
       // NOTE: SSR'd CSS has complete tree in one tag. No need to add individual
       // styles back onto page.
       return;

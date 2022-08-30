@@ -117,6 +117,7 @@ export default async (args = {}, options = {}) => {
       deployment: {
         ...(deploymentFromServer?.deployment || {}),
         deploymentId: deploymentFromServer?.deployment?._id,
+        encryptionToken: deploymentFromServer?.deployment?.token,
       },
       machineFingerprint,
     });

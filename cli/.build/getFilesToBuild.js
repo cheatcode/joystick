@@ -1,17 +1,27 @@
 import fs from "fs";
 import { join } from "path";
 
-function rreaddirSync(directory, allFiles = []) {
-  const files = fs.readdirSync(directory).map((file) => join(directory, file));
-  allFiles.push(...files);
-  files.forEach((f) => {
-    fs.statSync(f).isDirectory() && rreaddirSync(f, allFiles);
+const getFileListFromPath = (directoryPath = '', files = []) => {
+  const filesInDirectory = fs.readdirSync(directoryPath);
+  const filesWithDirectoryPathPrefix = filesInDirectory.map((filePathInDirectory = '') => {
+    return join(directoryPath, filePathInDirectory);
   });
-  return allFiles;
-}
+
+  files.push(...filesWithDirectoryPathPrefix);
+
+  filesWithDirectoryPathPrefix.forEach((filePathWithDirectoryPrefix = '') => {
+    const pathIsDirectory = fs.statSync(filePathWithDirectoryPrefix).isDirectory();
+
+    if (pathIsDirectory) {
+      getFileListFromPath(filePathWithDirectoryPrefix, files);
+    }
+  });
+
+  return files;
+};
 
 export default () => {
-  const files = rreaddirSync("./src");
+  const files = getFileListFromPath("./src");
 
   const filteredFiles = files.filter((path) => {
     return (

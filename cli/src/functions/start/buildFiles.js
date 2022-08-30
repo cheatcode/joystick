@@ -60,21 +60,19 @@ const isNotJavaScript = (path = "") => {
 
 export default async (filesToBuild = [], outputPath = null) => {
   return Promise.all(
-    filesToBuild.map(async (fileToBuild) => {
+    filesToBuild.map((fileToBuild) => {
       const platform = getFilePlatform(fileToBuild);
       const isFileToCopy = platform === 'copy' || isNotJavaScript(fileToBuild) || filesToCopy.some((fileToCopy) => {
         return fileToBuild.includes(fileToCopy.path);
       });
 
       if (isFileToCopy) {
-        return new Promise((resolve) => {
-          fs.outputFileSync(
-            `${outputPath || './.joystick/build'}/${fileToBuild}`,
-            fs.readFileSync(fileToBuild)
-          );
+        fs.outputFileSync(
+          `${outputPath || './.joystick/build'}/${fileToBuild}`,
+          fs.readFileSync(fileToBuild)
+        );
 
-          resolve();
-        });
+        return fileToBuild;
       }
 
       return buildFile(fileToBuild, platform, outputPath);

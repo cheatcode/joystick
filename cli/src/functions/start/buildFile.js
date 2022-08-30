@@ -41,7 +41,7 @@ export default async (file = "", platform = "", outputPath = '') => {
 
     if (config) {
       try {
-        await esbuild.build(config)
+        await esbuild.build(config);
         return resolve({
           success: true,
         });

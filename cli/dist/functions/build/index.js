@@ -3,7 +3,7 @@ import Loader from "../../lib/loader.js";
 import getFilesToBuild from "../start/getFilesToBuild.js";
 import buildFiles from "../start/buildFiles.js";
 import CLILog from "../../lib/CLILog.js";
-var build_default = (args = {}, options = {}) => {
+var build_default = async (args = {}, options = {}) => {
   if (!options?.type) {
     CLILog("Must pass a type for your build.", {
       level: "danger",
@@ -16,16 +16,16 @@ var build_default = (args = {}, options = {}) => {
   loader.text("Building app...");
   const filesToBuild = getFilesToBuild();
   const outputPath = ".build";
-  return buildFiles(filesToBuild, options?.type === "tar" ? `${outputPath}/.tar` : outputPath).then((response) => {
-    if (options?.type === "tar") {
-      child_process.execSync(`cd ${outputPath}/.tar && tar -cf ../build.tar.xz --use-compress-program='xz -9' --exclude={".build",".deploy",".git","uploads","storage",".DS_Store","*.tar","*.tar.gz","*.tar.xz"} .`);
-      child_process.execSync(`cd ${outputPath} && rm -rf .tar`);
-    }
-    loader.stable(`App built as ${options?.type} to ${outputPath}!`);
-    loader.stop();
-  }).catch((error) => {
+  await buildFiles(filesToBuild, options?.type === "tar" ? `${outputPath}/.tar` : outputPath).catch((error) => {
     console.warn(error);
   });
+  if (options?.type === "tar") {
+    child_process.execSync(`cd ${outputPath}/.tar && tar -cf ../build.tar.xz --use-compress-program='xz -9' --exclude={".build",".deploy",".git","uploads","storage",".DS_Store","*.tar","*.tar.gz","*.tar.xz"} .`);
+    child_process.execSync(`cd ${outputPath} && rm -rf .tar`);
+  }
+  loader.stable(`App built as ${options?.type} to ${outputPath}!`);
+  loader.stop();
+  return Promise.resolve();
 };
 export {
   build_default as default

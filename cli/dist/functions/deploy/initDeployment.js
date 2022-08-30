@@ -1,5 +1,6 @@
 import fetch from "node-fetch";
 import chalk from "chalk";
+import child_process from "child_process";
 import _ from "lodash";
 import fs from "fs";
 import FormData from "form-data";
@@ -9,6 +10,8 @@ import checkIfValidJSON from "../../lib/checkIfValidJSON.js";
 import CLILog from "../../lib/CLILog.js";
 import rainbowRoad from "../../lib/rainbowRoad.js";
 import build from "../build/index.js";
+import encryptFile from "../../lib/encryptFile.js";
+import encryptText from "../../lib/encryptText.js";
 let checkDeploymentInterval;
 const checkDeploymentStatus = (deploymentId = "", joystickDeployToken = "", machineFingerprint = {}) => {
   try {
@@ -42,7 +45,7 @@ const getAppSettings = () => {
   try {
     if (fs.existsSync("settings.production.json")) {
       const file = fs.readFileSync("settings.production.json", "utf-8");
-      return JSON.parse(file);
+      return file;
     }
     return {};
   } catch (exception) {
@@ -85,14 +88,14 @@ const startDeployment = (joystickDeployToken = "", deployment = {}, machineFinge
     throw new Error(`[initDeployment.startDeployment] ${exception.message}`);
   }
 };
-const uploadBuildToObjectStorage = (timestamp = "", deploymentOptions = {}, appSettings = {}) => {
+const uploadBuildToObjectStorage = (timestamp = "", deploymentOptions = {}, appSettings = "") => {
   try {
     const formData = new FormData();
-    formData.append("build_tar", fs.readFileSync(`.build/build.tar.xz`), `${timestamp}.tar.xz`);
+    formData.append("build_tar", fs.readFileSync(`.build/build_enc.tar.xz`), `${timestamp}.tar.xz`);
     formData.append("flags", JSON.stringify({ isInitialDeployment: true }));
     formData.append("version", timestamp);
     formData.append("deployment", JSON.stringify(deploymentOptions?.deployment || {}));
-    formData.append("settings", JSON.stringify(appSettings || {}));
+    formData.append("settings", appSettings);
     return fetch(`${domains?.deploy}/api/cli/deployments/upload`, {
       method: "POST",
       headers: {
@@ -107,6 +110,17 @@ const uploadBuildToObjectStorage = (timestamp = "", deploymentOptions = {}, appS
     });
   } catch (exception) {
     throw new Error(`[initDeployment.uploadBuildToObjectStorage] ${exception.message}`);
+  }
+};
+const encryptBuild = (deploymentToken = "") => {
+  try {
+    return encryptFile({
+      in: ".build/build.tar.xz",
+      out: ".build/build_enc.tar.xz",
+      password: deploymentToken
+    });
+  } catch (exception) {
+    throw new Error(`[initDeployment.encryptBuild] ${exception.message}`);
   }
 };
 const buildApp = () => {
@@ -138,9 +152,12 @@ const initDeployment = async (options, { resolve, reject }) => {
     loader.text("Deploying app...");
     const deploymentTimestamp = new Date().toISOString();
     await buildApp();
+    loader.text("Encrypting build...");
+    await encryptBuild(options?.deployment?.encryptionToken);
     loader.text("Uploading built app to version control...");
     const appSettings = getAppSettings();
-    const uploadReponse = await uploadBuildToObjectStorage(deploymentTimestamp, options, appSettings);
+    const encryptedAppSettings = encryptText(appSettings || "{}", options?.deployment?.encryptionToken);
+    const uploadReponse = await uploadBuildToObjectStorage(deploymentTimestamp, options, encryptedAppSettings);
     if (uploadReponse?.error) {
       loader.stop();
       CLILog(uploadReponse?.error, {
@@ -150,7 +167,7 @@ const initDeployment = async (options, { resolve, reject }) => {
       });
     }
     loader.text("Starting deployment...");
-    await startDeployment(options?.joystickDeployToken, options.deployment, options.machineFingerprint, deploymentTimestamp, appSettings);
+    await startDeployment(options?.joystickDeployToken, options.deployment, options.machineFingerprint, deploymentTimestamp, encryptedAppSettings);
     checkDeploymentInterval = setInterval(async () => {
       const deploymentStatus = await checkDeploymentStatus(options?.deployment?.deploymentId, options?.joystickDeployToken, options?.machineFingerprint);
       loader.text(deploymentStatus?.log?.message);

@@ -4,4 +4,4 @@ var s=(t="",e={})=>{throw new Error(`[joystick${t?`.${t}`:""}] ${e.message||e.re
 `)}
           }
         `}).join(`
-`)}catch(r){s("component.css.prefix",r)}};var R=(t={})=>{try{if(document.head.querySelector("style[js-ssr]"))return;let r=t?.options?.css,i=u(r,t),c=btoa(`${i.trim()}`).substring(0,8),o=document.head.querySelector(`style[js-c="${t.id}"]`);if(!o){let n=document.createElement("style");n.setAttribute("js-c",t?.id),n.setAttribute("js-css",c),n.innerHTML=p(i,t?.id),document.head.appendChild(n)}o&&c!==o.getAttribute("js-css")&&(o.innerHTML=p(i,t?.id))}catch(e){s("component.css.appendToHead",e)}};export{R as default};
+`)}catch(r){s("component.css.prefix",r)}};var R=(t={})=>{try{if(document.head.querySelector("style[js-ssr]")?.innerText?.includes(t.id))return;let r=t?.options?.css,i=u(r,t),c=btoa(`${i.trim()}`).substring(0,8),o=document.head.querySelector(`style[js-c="${t.id}"]`);if(!o){let n=document.createElement("style");n.setAttribute("js-c",t?.id),n.setAttribute("js-css",c),n.innerHTML=p(i,t?.id),document.head.appendChild(n)}o&&c!==o.getAttribute("js-css")&&(o.innerHTML=p(i,t?.id))}catch(e){s("component.css.appendToHead",e)}};export{R as default};
