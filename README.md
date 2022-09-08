@@ -65,7 +65,6 @@ The full-stack JavaScript framework.
      - [accounts.roles.userHasRole](#accountsrolesuserhasrole)
 10. [@joystick.js/ui](#joystickjsui)
     - [Writing a component](#writing-a-component)
-    - [Syntax Highlighting](#syntax-highlighting)
     - [Render functions](#render-functions)
       - [component() and c()](#component-and-c)
       - [each() and e()](#each-and-e)
@@ -1183,34 +1182,6 @@ The HTML written in the string is plain HTML. Any HTML that you'd write in a nor
 To enable advanced functionality in the `render` function, JavaScript string interpolation is utilized. This allows for the evaluation (output) and execution (calling) of JavaScript variables and functions from _within_ a component's HTML.
 
 The `render` function is passed a single argument as an object: the component instance. This gives you access to the `props` and `state` for the component as well as some render functions to aid in the rendering process.
-
-### Syntax Highlighting
-
-Most IDEs will _not_ apply syntax highlighting to the HTML returned by your component's `render()` method (instead, as one would expect, it uses a monochrome highlight for the text as if it were a plain string). To get around this, `@joystick.js/ui` includes a special function `html()` that can be returned from the `render()` function on your components:
-
-```javascript
-import ui, { html } from "@joystick.js/ui";
-
-const Books = ui.component({
-  render: () => {
-    return html`
-      <div class="books">
-        <h2>Bookshelf</h2>
-      </div>
-    `;
-  },
-});
-
-export default Books;
-```
-
-> NOTE: Even though `html()` is a function, in order for this to work we need to omit the parentheses when calling `html` and make sure our HTML is passed using backticks. This is valid JavaScript and is a short-hand way to call a function who's only argument is a string.
-
-Depending on your IDE, this may or may not enable highlighting (out-of-the-box support is spotty). **It's recommended that you install a package to ensure this functionality is available in your text editor**.
-
-A list of recommended packages for popular IDEs:
-
-- **VSCode** - [lit-html](https://marketplace.visualstudio.com/items?itemName=bierner.lit-html)
 
 ### Render functions
 
