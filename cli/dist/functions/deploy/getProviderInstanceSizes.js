@@ -3,13 +3,12 @@ import chalk from "chalk";
 import domains from "../../lib/domains.js";
 import CLILog from "../../lib/CLILog.js";
 import checkIfValidJSON from "../../lib/checkIfValidJSON.js";
-var getProviderInstanceSizes_default = (answers = {}, joystickDeployToken = "", machineFingerprint = {}) => {
+var getProviderInstanceSizes_default = (answers = {}, loginSessionToken = "") => {
   return fetch(`${domains.deploy}/api/providers/${answers?.provider}/sizes`, {
     method: "GET",
     headers: {
-      "Content-Type": "application/json",
-      "x-joystick-deploy-token": joystickDeployToken,
-      "x-joystick-deploy-machine-fingerprint": JSON.stringify(machineFingerprint)
+      "x-login-session-token": loginSessionToken,
+      "Content-Type": "application/json"
     }
   }).then(async (response) => {
     const text = await response.text();

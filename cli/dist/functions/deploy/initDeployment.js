@@ -13,13 +13,13 @@ import build from "../build/index.js";
 import encryptFile from "../../lib/encryptFile.js";
 import encryptText from "../../lib/encryptText.js";
 let checkDeploymentInterval;
-const checkDeploymentStatus = (deploymentId = "", joystickDeployToken = "", machineFingerprint = {}) => {
+const checkDeploymentStatus = (deploymentId = "", loginSessionToken = "", domain = "") => {
   try {
     return fetch(`${domains?.deploy}/api/cli/deployments/${deploymentId}/status`, {
       method: "GET",
       headers: {
-        "x-joystick-deploy-token": joystickDeployToken,
-        "x-joystick-deploy-machine-fingerprint": JSON.stringify(machineFingerprint),
+        "x-login-session-token": loginSessionToken,
+        "x-deployment-domain": domain,
         "content-type": "application/json"
       }
     }).then(async (response) => {
@@ -52,13 +52,13 @@ const getAppSettings = () => {
     throw new Error(`[initDeployment.getAppSettings] ${exception.message}`);
   }
 };
-const startDeployment = (joystickDeployToken = "", deployment = {}, machineFingerprint = {}, deploymentTimestamp = "", appSettings = "") => {
+const startDeployment = (loginSessionToken = "", deployment = {}, deploymentTimestamp = "", appSettings = "") => {
   try {
     return fetch(`${domains?.deploy}/api/cli/deployments`, {
       method: "POST",
       headers: {
-        "x-joystick-deploy-token": joystickDeployToken,
-        "x-joystick-deploy-machine-fingerprint": JSON.stringify(machineFingerprint),
+        "x-login-session-token": loginSessionToken,
+        "x-deployment-domain": deployment?.domain,
         "content-type": "application/json"
       },
       body: JSON.stringify({
@@ -100,8 +100,8 @@ const uploadBuildToObjectStorage = (timestamp = "", deploymentOptions = {}, appS
       method: "POST",
       headers: {
         ...formData.getHeaders(),
-        "x-joystick-deploy-token": deploymentOptions?.joystickDeployToken,
-        "x-joystick-deploy-machine-fingerprint": JSON.stringify(deploymentOptions?.machineFingerprint)
+        "x-login-session-token": deploymentOptions?.loginSessionToken,
+        "x-deployment-domain": deploymentOptions?.domain
       },
       body: formData
     }).then(async (response) => {
@@ -134,12 +134,10 @@ const validateOptions = (options) => {
   try {
     if (!options)
       throw new Error("options object is required.");
-    if (!options.joystickDeployToken)
-      throw new Error("options.joystickDeployToken is required.");
+    if (!options.loginSessionToken)
+      throw new Error("options.loginSessionToken is required.");
     if (!options.deployment)
       throw new Error("options.deployment is required.");
-    if (!options.machineFingerprint)
-      throw new Error("options.machineFingerprint is required.");
   } catch (exception) {
     throw new Error(`[initDeployment.validateOptions] ${exception.message}`);
   }
@@ -167,9 +165,9 @@ const initDeployment = async (options, { resolve, reject }) => {
       });
     }
     loader.text("Starting deployment...");
-    await startDeployment(options?.joystickDeployToken, options.deployment, options.machineFingerprint, deploymentTimestamp, encryptedAppSettings);
+    await startDeployment(options?.loginSessionToken, options.deployment, deploymentTimestamp, encryptedAppSettings);
     checkDeploymentInterval = setInterval(async () => {
-      const deploymentStatus = await checkDeploymentStatus(options?.deployment?.deploymentId, options?.joystickDeployToken, options?.machineFingerprint);
+      const deploymentStatus = await checkDeploymentStatus(options?.deployment?.deploymentId, options?.loginSessionToken, options?.deployment?.domain);
       loader.text(deploymentStatus?.log?.message);
       if (deploymentStatus?.deployment?.status === "bootstrapping") {
         loader.stop();

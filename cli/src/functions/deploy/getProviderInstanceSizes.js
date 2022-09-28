@@ -4,15 +4,14 @@ import domains from "../../lib/domains.js";
 import CLILog from "../../lib/CLILog.js";
 import checkIfValidJSON from '../../lib/checkIfValidJSON.js';
 
-export default (answers = {}, joystickDeployToken = '', machineFingerprint = {}) => {
+export default (answers = {}, loginSessionToken = '') => {
   return fetch(
     `${domains.deploy}/api/providers/${answers?.provider}/sizes`,
     {
       method: 'GET',
       headers: {
+        'x-login-session-token': loginSessionToken,
         'Content-Type': 'application/json',
-        'x-joystick-deploy-token': joystickDeployToken,
-        'x-joystick-deploy-machine-fingerprint': JSON.stringify(machineFingerprint),
       },
     }
   ).then(async (response) => {

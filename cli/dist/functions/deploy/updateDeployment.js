@@ -11,13 +11,13 @@ import build from "../build/index.js";
 import encryptFile from "../../lib/encryptFile.js";
 import encryptText from "../../lib/encryptText.js";
 let checkDeploymentInterval;
-const checkDeploymentStatus = (deploymentId = "", joystickDeployToken = "", machineFingerprint = {}) => {
+const checkDeploymentStatus = (deploymentId = "", loginSessionToken = "", domain = "") => {
   try {
     return fetch(`${domains?.deploy}/api/cli/deployments/${deploymentId}/status`, {
       method: "GET",
       headers: {
-        "x-joystick-deploy-token": joystickDeployToken,
-        "x-joystick-deploy-machine-fingerprint": JSON.stringify(machineFingerprint),
+        "x-login-session-token": loginSessionToken,
+        "x-deployment-domain": domain,
         "content-type": "application/json"
       }
     }).then(async (response) => {
@@ -50,13 +50,13 @@ const getAppSettings = () => {
     throw new Error(`[updateDeployment.getAppSettings] ${exception.message}`);
   }
 };
-const startDeployment = (joystickDeployToken = "", deployment = {}, machineFingerprint = {}, deploymentTimestamp = "", appSettings = "") => {
+const startDeployment = (loginSessionToken = "", deployment = {}, domain = "", deploymentTimestamp = "", appSettings = "") => {
   try {
     return fetch(`${domains?.deploy}/api/cli/deployments`, {
       method: "PUT",
       headers: {
-        "x-joystick-deploy-token": joystickDeployToken,
-        "x-joystick-deploy-machine-fingerprint": JSON.stringify(machineFingerprint),
+        "x-login-session-token": loginSessionToken,
+        "x-deployment-domain": domain,
         "content-type": "application/json"
       },
       body: JSON.stringify({
@@ -70,6 +70,7 @@ const startDeployment = (joystickDeployToken = "", deployment = {}, machineFinge
     }).then(async (response) => {
       const text = await response.text();
       const data = checkIfValidJSON(text);
+      console.log({ data });
       if (data?.error) {
         CLILog(data.error, {
           level: "danger",
@@ -98,8 +99,8 @@ const uploadBuildToObjectStorage = (timestamp = "", deploymentOptions = {}, appS
       method: "POST",
       headers: {
         ...formData.getHeaders(),
-        "x-joystick-deploy-token": deploymentOptions?.joystickDeployToken,
-        "x-joystick-deploy-machine-fingerprint": JSON.stringify(deploymentOptions?.machineFingerprint)
+        "x-login-session-token": deploymentOptions?.loginSessionToken,
+        "x-deployment-domain": deploymentOptions?.domain
       },
       body: formData
     }).then(async (response) => {
@@ -132,12 +133,10 @@ const validateOptions = (options) => {
   try {
     if (!options)
       throw new Error("options object is required.");
-    if (!options.joystickDeployToken)
-      throw new Error("options.joystickDeployToken is required.");
+    if (!options.loginSessionToken)
+      throw new Error("options.loginSessionToken is required.");
     if (!options.deployment)
       throw new Error("options.deployment is required.");
-    if (!options.machineFingerprint)
-      throw new Error("options.machineFingerprint is required.");
   } catch (exception) {
     throw new Error(`[updateDeployment.validateOptions] ${exception.message}`);
   }
@@ -150,6 +149,7 @@ const updateDeployment = async (options, { resolve, reject }) => {
     const deploymentTimestamp = new Date().toISOString();
     await buildApp();
     loader.text("Encrypting build...");
+    console.log("DEPLOYMENT", options?.deployment);
     await encryptBuild(options?.deployment?.encryptionToken);
     loader.text("Uploading built app to version control...");
     const appSettings = getAppSettings();
@@ -164,9 +164,9 @@ const updateDeployment = async (options, { resolve, reject }) => {
       });
     }
     loader.text("Pushing version to instances...");
-    await startDeployment(options?.joystickDeployToken, options.deployment, options.machineFingerprint, deploymentTimestamp, encryptedAppSettings);
+    await startDeployment(options?.loginSessionToken, options.deployment, options?.domain, deploymentTimestamp, encryptedAppSettings);
     checkDeploymentInterval = setInterval(async () => {
-      const deploymentStatus = await checkDeploymentStatus(options?.deployment?.deploymentId, options?.joystickDeployToken, options?.machineFingerprint);
+      const deploymentStatus = await checkDeploymentStatus(options?.deployment?.deploymentId, options?.loginSessionToken, options?.domain);
       loader.text(deploymentStatus?.log?.message);
       if (deploymentStatus?.deployment?.status === "deployed") {
         clearInterval(checkDeploymentInterval);

@@ -3,12 +3,12 @@ import domains from "../../lib/domains.js";
 import checkIfValidJSON from "../../lib/checkIfValidJSON.js";
 import CLILog from "../../lib/CLILog.js";
 
-export default (answers = {}, joystickDeployToken = '', machineFingerprint = {}) => {
+export default (answers = {}, loginSessionToken = '', deploymentDomain = '') => {
   return fetch(`${domains.deploy}/api/cli/deployments/summary`, {
     method: 'POST',
     headers: {
-      'x-joystick-deploy-token': joystickDeployToken,
-      'x-joystick-deploy-machine-fingerprint': JSON.stringify(machineFingerprint),
+      'x-login-session-token': loginSessionToken,
+      'x-deployment-domain': deploymentDomain,
       'content-type': 'application/json',
     },
     body: JSON.stringify({

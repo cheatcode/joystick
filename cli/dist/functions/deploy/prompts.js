@@ -1,4 +1,3 @@
-import fetch from "node-fetch";
 import chalk from "chalk";
 import AsciiTable from "ascii-table";
 import currencyFormatter from "currency-formatter";
@@ -11,19 +10,39 @@ import getInstanceSizeRegions from "./getInstanceSizeRegions.js";
 import providers from "../../lib/providers.js";
 const table = new AsciiTable();
 var prompts_default = {
+  login: () => [
+    {
+      name: "emailAddress",
+      type: "text",
+      prefix: "",
+      message: `
+ ${chalk.greenBright(">")} What is your Email Address?
+`
+    },
+    {
+      name: "password",
+      type: "text",
+      prefix: "",
+      message: `
+ ${chalk.greenBright(">")} What is your Password?
+`
+    }
+  ],
   token: () => [
     {
       name: "token",
       type: "text",
       prefix: "",
       message: `
- ${chalk.greenBright(">")} What is your Joystick Deploy token?`,
+ ${chalk.greenBright(">")} What is your Deployment Token?
+`,
       suffix: `
-      
  ${chalk.yellowBright(`What does this mean?`)}
- Joystick Deploy Tokens identify the Joystick Deploy account where your deployment will live.\r ${chalk.yellowBright(`Documentation:`)}
+ Deployment Tokens identify the Deploy account where your deployment will live.
+
+ ${chalk.yellowBright(`Documentation:`)}
  ${chalk.blue("https://cheatcode.co/docs/deploy/tokens")}
-      
+
 `
     }
   ],
@@ -37,7 +56,7 @@ var prompts_default = {
       suffix: " (e.g., app.myapp.com)"
     }
   ],
-  initialDeployment: (user = {}, joystickDeployToken = "", machineFingerprint = {}) => {
+  initialDeployment: (user = {}, loginSessionToken = "") => {
     const providers2 = getProvidersWithConnectionStatus(user);
     return [
       {
@@ -129,7 +148,7 @@ var prompts_default = {
 `,
         loop: false,
         choices: async (answers = {}) => {
-          const sizes = await getProviderInstanceSizes(answers, joystickDeployToken, machineFingerprint);
+          const sizes = await getProviderInstanceSizes(answers, loginSessionToken);
           return (sizes || []).map((size) => {
             return {
               name: `${chalk.blue(`[${size?.name}]`)} -- ${chalk.white(`${size?.vcpus} ${size?.vcpus > 1 ? "VCPUs" : "VCPU"} + ${size?.memory / 1024}GB RAM + ${size?.disk > 1e3 ? `${size?.disk / 1e3}TB` : `${size?.disk}GB`} Disk`)} ${chalk.gray("=")} $${chalk.greenBright(`${size?.pricePerMonth}/mo`)}`,
@@ -155,7 +174,7 @@ var prompts_default = {
 `,
         loop: false,
         choices: async (answers = {}) => {
-          const regions = await getInstanceSizeRegions("loadBalancer_size", answers, joystickDeployToken, machineFingerprint);
+          const regions = await getInstanceSizeRegions("loadBalancer_size", answers, loginSessionToken);
           return (regions || []).map((region) => {
             return {
               name: `${chalk.blue(`[${region?.id}]`)} -- ${region?.name} ${chalk.magentaBright(`(${region?.continent?.name})`)}`,
@@ -181,7 +200,7 @@ var prompts_default = {
 `,
         loop: false,
         choices: async (answers = {}) => {
-          const sizes = await getProviderInstanceSizes(answers, joystickDeployToken, machineFingerprint);
+          const sizes = await getProviderInstanceSizes(answers, loginSessionToken);
           return (sizes || []).map((size) => {
             return {
               name: `${chalk.blue(`[${size?.name}]`)} -- ${chalk.white(`${size?.vcpus} ${size?.vcpus > 1 ? "VCPUs" : "VCPU"} + ${size?.memory / 1024}GB RAM + ${size?.disk > 1e3 ? `${size?.disk / 1e3}TB` : `${size?.disk}GB`} Disk`)} ${chalk.gray("=")} $${chalk.greenBright(`${size?.pricePerMonth}/mo`)}`,
@@ -207,7 +226,7 @@ var prompts_default = {
 `,
         loop: false,
         choices: async (answers = {}) => {
-          const regions = await getInstanceSizeRegions("instance_size", answers, joystickDeployToken, machineFingerprint);
+          const regions = await getInstanceSizeRegions("instance_size", answers, loginSessionToken);
           return (regions || []).map((region) => {
             return {
               name: `${chalk.blue(`[${region?.id}]`)} -- ${region?.name} ${chalk.magentaBright(`(${region?.continent?.name})`)}`,

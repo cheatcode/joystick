@@ -3,7 +3,7 @@ import chalk from "chalk";
 import domains from "../../lib/domains.js";
 import CLILog from "../../lib/CLILog.js";
 import checkIfValidJSON from "../../lib/checkIfValidJSON.js";
-var getInstanceSizeRegions_default = (target = "", answers = {}, joystickDeployToken = "", machineFingerprint = {}) => {
+var getInstanceSizeRegions_default = (target = "", answers = {}, loginSessionToken = "") => {
   const url = new URL(`${domains.deploy}/api/providers/${answers?.provider}/regions`);
   const params = new URLSearchParams({
     size: answers[target],
@@ -13,9 +13,8 @@ var getInstanceSizeRegions_default = (target = "", answers = {}, joystickDeployT
   return fetch(url, {
     method: "GET",
     headers: {
-      "content-type": "application/json",
-      "x-joystick-deploy-token": joystickDeployToken,
-      "x-joystick-deploy-machine-fingerprint": JSON.stringify(machineFingerprint)
+      "x-login-session-token": loginSessionToken,
+      "content-type": "application/json"
     }
   }).then(async (response) => {
     const text = await response.text();

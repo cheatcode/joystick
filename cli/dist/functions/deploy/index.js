@@ -4,22 +4,20 @@ import chalk from "chalk";
 import CLILog from "../../lib/CLILog.js";
 import prompts from "./prompts.js";
 import getDeployment from "../../lib/getDeployment.js";
-import getMachineFingerprint from "../../lib/getMachineFingerprint.js";
 import getDeploymentSummary from "./getDeploymentSummary.js";
 import providerMap from "./providerMap.js";
 import Loader from "../../lib/loader.js";
 import initDeployment from "./initDeployment.js";
 import updateDeployment from "./updateDeployment.js";
-import getJoystickDeployToken from "../../lib/getJoystickDeployToken.js";
+import getSessionToken from "../../lib/getSessionToken.js";
 const handleInitialDeployment = async ({
   deploymentFromServer = {},
-  joystickDeployToken = "",
-  machineFingerprint = {},
+  loginSessionToken = "",
   domain = ""
 }) => {
   try {
     const loader = new Loader({ padding: " ", defaultMessage: "" });
-    const deploymentToExecute = await inquirer.prompt(prompts.initialDeployment(deploymentFromServer?.user, joystickDeployToken, machineFingerprint));
+    const deploymentToExecute = await inquirer.prompt(prompts.initialDeployment(deploymentFromServer?.user, loginSessionToken));
     const deploymentToExecuteWithDefaults = {
       ...deploymentToExecute,
       loadBalancerInstances: deploymentToExecute?.loadBalancerInstances || 1,
@@ -27,7 +25,7 @@ const handleInitialDeployment = async ({
     };
     console.log("\n");
     loader.text("Building deployment summary...");
-    const deploymentSummary = await getDeploymentSummary(deploymentToExecuteWithDefaults, joystickDeployToken, machineFingerprint);
+    const deploymentSummary = await getDeploymentSummary(deploymentToExecuteWithDefaults, loginSessionToken, domain);
     loader.stop();
     const totalInstancesRequested = deploymentToExecuteWithDefaults?.loadBalancerInstances + deploymentToExecuteWithDefaults?.appInstances;
     const deploymentFeasible = totalInstancesRequested <= deploymentSummary?.limits?.available;
@@ -44,21 +42,19 @@ const handleInitialDeployment = async ({
     const { confirmation } = await inquirer.prompt(prompts.confirmInitialDeployment(deploymentToExecuteWithDefaults, deploymentSummary?.costs));
     if (confirmation) {
       await initDeployment({
-        joystickDeployToken,
+        loginSessionToken,
         deployment: {
           deploymentId: deploymentFromServer?.deployment?._id,
           encryptionToken: deploymentFromServer?.deployment?.token,
           domain,
           ...deploymentToExecuteWithDefaults
-        },
-        machineFingerprint
+        }
       });
       loader.stable("Deployment complete!");
       loader.stop();
       return;
     }
   } catch (exception) {
-    console.log(exception);
     throw new Error(`[deploy.handleInitialDeployment] ${exception.message}`);
   }
 };
@@ -72,33 +68,34 @@ var deploy_default = async (args = {}, options = {}) => {
       });
       process.exit(0);
     }
-    const joystickDeployToken = await getJoystickDeployToken(options);
+    const loginSessionToken = await getSessionToken();
     let domain = options?.domain;
     if (!options?.domain) {
       domain = await inquirer.prompt(prompts.domain()).then((answers) => answers?.domain);
     }
-    const machineFingerprint = await getMachineFingerprint();
-    const deploymentFromServer = await getDeployment(domain, joystickDeployToken, machineFingerprint);
+    const deploymentFromServer = await getDeployment({
+      domain,
+      loginSessionToken
+    });
     const isInitialDeployment = deploymentFromServer?.deployment?.status === "undeployed";
     if (isInitialDeployment) {
       await handleInitialDeployment({
         deploymentFromServer,
-        joystickDeployToken,
-        machineFingerprint,
+        loginSessionToken,
         domain
       });
       return;
     }
     await updateDeployment({
-      joystickDeployToken,
+      loginSessionToken,
       deployment: {
         ...deploymentFromServer?.deployment || {},
         deploymentId: deploymentFromServer?.deployment?._id,
         encryptionToken: deploymentFromServer?.deployment?.token
-      },
-      machineFingerprint
+      }
     });
   } catch (exception) {
+    console.warn(exception);
     throw new Error(`[deploy] ${exception.message}`);
   }
 };

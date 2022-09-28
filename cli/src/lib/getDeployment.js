@@ -4,14 +4,17 @@ import domains from "./domains.js";
 import checkIfValidJSON from "./checkIfValidJSON.js";
 import CLILog from "./CLILog.js";
 
-export default (deploymentDomain = '', joystickDeployToken = '', machineFingerprint = {}) => {
+export default ({
+  domain = '',
+  loginSessionToken = '',
+}) => {
   return fetch(
-    `${domains?.deploy}/api/cli/deployments/${deploymentDomain}`,
+    `${domains?.deploy}/api/cli/deployments/${domain}`,
     {
       method: 'GET',
       headers: {
-        'x-joystick-deploy-token': joystickDeployToken,
-        'x-joystick-deploy-machine-fingerprint': JSON.stringify(machineFingerprint),
+        'x-login-session-token': loginSessionToken,
+        'x-deployment-domain': domain,
         'content-type': 'application/json',
       },
     },
@@ -21,7 +24,7 @@ export default (deploymentDomain = '', joystickDeployToken = '', machineFingerpr
 
     if (data?.error) {
       CLILog(
-        data.error,
+        data?.error?.message || data?.error,
         {
           level: 'danger',
           docs: 'https://cheatcode.co/docs/deploy/deployment-tokens'

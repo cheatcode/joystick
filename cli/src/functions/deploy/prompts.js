@@ -1,4 +1,3 @@
-import fetch from 'node-fetch';
 import chalk from 'chalk';
 import AsciiTable from 'ascii-table';
 import currencyFormatter from 'currency-formatter';
@@ -13,15 +12,27 @@ import providers from '../../lib/providers.js';
 const table = new AsciiTable();
 
 export default {
+  login: () => [
+    {
+      name: 'emailAddress',
+      type: 'text',
+      prefix: '',
+      message: `\n ${chalk.greenBright('>')} What is your Email Address?\n`,
+    },
+    {
+      name: 'password',
+      type: 'text',
+      prefix: '',
+      message: `\n ${chalk.greenBright('>')} What is your Password?\n`,
+    },
+  ],
   token: () => [
     {
       name: 'token',
       type: 'text',
       prefix: '',
-      message: `\n ${chalk.greenBright('>')} What is your Joystick Deploy token?`,
-      suffix: `
-      \n ${chalk.yellowBright(`What does this mean?`)}\n Joystick Deploy Tokens identify the Joystick Deploy account where your deployment will live.\r ${chalk.yellowBright(`Documentation:`)}\n ${chalk.blue('https://cheatcode.co/docs/deploy/tokens')}
-      \n`,
+      message: `\n ${chalk.greenBright('>')} What is your Deployment Token?\n`,
+      suffix: `\n ${chalk.yellowBright(`What does this mean?`)}\n Deployment Tokens identify the Deploy account where your deployment will live.\n\n ${chalk.yellowBright(`Documentation:`)}\n ${chalk.blue('https://cheatcode.co/docs/deploy/tokens')}\n\n`,
     },
   ],
   domain: () => [
@@ -33,7 +44,7 @@ export default {
       suffix: ' (e.g., app.myapp.com)',
     }
   ],
-  initialDeployment: (user = {}, joystickDeployToken = '', machineFingerprint = {}) => {
+  initialDeployment: (user = {}, loginSessionToken = '') => {
     const providers = getProvidersWithConnectionStatus(user);
     return [
       {
@@ -108,7 +119,7 @@ export default {
           \n`,
         loop: false,
         choices: async (answers = {}) => {
-          const sizes = await getProviderInstanceSizes(answers, joystickDeployToken, machineFingerprint);
+          const sizes = await getProviderInstanceSizes(answers, loginSessionToken);
           return (sizes || []).map((size) => {
             return {
               name: `${chalk.blue(`[${size?.name}]`)} -- ${chalk.white(`${size?.vcpus} ${size?.vcpus > 1 ? 'VCPUs' : 'VCPU'} + ${size?.memory / 1024}GB RAM + ${size?.disk > 1000 ? `${size?.disk / 1000}TB` : `${size?.disk}GB`} Disk`)} ${chalk.gray('=')} $${chalk.greenBright(`${size?.pricePerMonth}/mo`)}`,
@@ -130,8 +141,7 @@ export default {
           const regions = await getInstanceSizeRegions(
             'loadBalancer_size',
             answers,
-            joystickDeployToken,
-            machineFingerprint
+            loginSessionToken,
           );
 
           return (regions || []).map((region) => {
@@ -152,7 +162,7 @@ export default {
           \n`,
         loop: false,
         choices: async (answers = {}) => {
-          const sizes = await getProviderInstanceSizes(answers, joystickDeployToken, machineFingerprint);
+          const sizes = await getProviderInstanceSizes(answers, loginSessionToken);
           return (sizes || []).map((size) => {
             return {
               name: `${chalk.blue(`[${size?.name}]`)} -- ${chalk.white(`${size?.vcpus} ${size?.vcpus > 1 ? 'VCPUs' : 'VCPU'} + ${size?.memory / 1024}GB RAM + ${size?.disk > 1000 ? `${size?.disk / 1000}TB` : `${size?.disk}GB`} Disk`)} ${chalk.gray('=')} $${chalk.greenBright(`${size?.pricePerMonth}/mo`)}`,
@@ -174,8 +184,7 @@ export default {
           const regions = await getInstanceSizeRegions(
             'instance_size',
             answers,
-            joystickDeployToken,
-            machineFingerprint
+            loginSessionToken,
           );
           return (regions || []).map((region) => {
             return {
