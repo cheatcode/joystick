@@ -21,6 +21,7 @@ export default (componentInstance = {}, options = {}) => {
       ssrTree: options?.ssrTree,
       translations: options?.translations || componentInstance.translations || {},
       walkingTreeForSSR: options?.walkingTreeForSSR,
+      renderingHTMLWithDataForSSR: options?.renderingHTMLWithDataForSSR,
       dataFromSSR: options?.dataFromSSR,
     };
 

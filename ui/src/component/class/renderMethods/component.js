@@ -49,6 +49,7 @@ const collectDataFunctionsForSSR = (component = {}) => {
 
     // NOTE: Call rest of tree for this component but signal that we're only collecting data,
     // not rendering any HTML.
+
     return component.renderToHTML({
       ssrTree: component?.parent?.ssrTree,
       translations: component?.parent?.translations,
