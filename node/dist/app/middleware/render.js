@@ -7,7 +7,6 @@ import generateErrorPage from "../../lib/generateErrorPage.js";
 import replaceFileProtocol from "../../lib/replaceFileProtocol.js";
 import replaceBackslashesWithForwardSlashes from "../../lib/replaceBackslashesWithForwardSlashes.js";
 import getBuildPath from "../../lib/getBuildPath.js";
-const require2 = createRequire(import.meta.url);
 const getUrl = (request = {}) => {
   const [path = null] = request.url?.split("?");
   return {
@@ -77,14 +76,16 @@ var render_default = (req, res, next) => {
       props.page = Page;
     }
     const html = await ssr({
-      Component: Layout || Page,
+      componentFunction: Layout || Page,
+      req,
       props,
-      path: path?.substring(0, 1) === "/" ? path?.replace("/", "") : path,
       url,
       translations,
-      layout: options.layout,
-      head: options.head,
-      req
+      email: false,
+      baseHTMLPath: null,
+      layoutComponentPath: options?.layout,
+      pageComponentPath: path?.substring(0, 1) === "/" ? path?.replace("/", "") : path,
+      head: options?.head
     });
     return res.status(200).send(html);
   };

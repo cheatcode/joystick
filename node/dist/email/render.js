@@ -1,22 +1,44 @@
 import fs from "fs";
-import getCSSFromTree from "../ssr/getCSSFromTree";
-import formatCSS from "../ssr/formatCSS";
-const defaultBaseHTMLPath = process.env.NODE_ENV === "test" ? `${process.cwd()}/src/email/templates/base.html` : `${process.cwd()}/node_modules/@joystick.js/node/dist/email/templates/base.html`;
-const defaultBaseHTML = fs.readFileSync(defaultBaseHTMLPath, "utf-8");
-var render_default = ({ Component, props = {} }) => {
+import ssr from "../ssr";
+import getBuildPath from "../lib/getBuildPath";
+import { isObject } from "../validation/lib/typeValidators";
+const getFile = async (buildPath = "") => {
+  const file = await import(buildPath);
+  return file.default;
+};
+const getTranslations = async (buildPath = "", templateName = "", user = {}, settings = {}) => {
+  const language = user?.language || settings?.config?.i18n?.defaultLanguage;
+  const languageFilePath = `${process.cwd()}/${buildPath}i18n/email/${templateName}_${language}.js`;
+  const hasLanguageFile = fs.existsSync(languageFilePath);
+  if (hasLanguageFile) {
+    const languageFile = await getFile(languageFilePath);
+    const isValidLanguageFile = languageFile && isObject(languageFile);
+    return isValidLanguageFile ? languageFile : {};
+  }
+  return {};
+};
+var render_default = async ({
+  templateName,
+  baseName,
+  settings,
+  Component,
+  props,
+  subject,
+  preheader,
+  user
+}) => {
   try {
-    const component = Component({ props });
-    const tree = {
-      id: component.id,
-      instance: component,
-      children: []
-    };
-    const customBaseHTML = fs.existsSync(`${process.cwd()}/email/base.html`) ? fs.readFileSync(`${process.cwd()}/email/base.html`, "utf-8") : null;
-    const html = component.renderToHTML({
-      ssrTree: tree
+    const buildPath = getBuildPath();
+    const translations = await getTranslations(buildPath, templateName, user, settings);
+    return ssr({
+      email: true,
+      emailSubject: subject,
+      emailPreheader: preheader,
+      componentFunction: Component,
+      baseEmailHTMLName: baseName,
+      props,
+      translations
     });
-    const css = formatCSS(getCSSFromTree(tree));
-    return (customBaseHTML || defaultBaseHTML).replace("${css}", css).replace('<div id="email"></div>', `<div id="email">${html.wrapped}</div>`);
   } catch (exception) {
     console.warn(exception);
   }

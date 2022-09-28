@@ -1,6 +1,10 @@
 import htmlParser from 'node-html-parser';
 
-export default (htmlString = '', head = {}) => {
+export default (htmlString = '', head = null) => {
+  if (!head) {
+    return htmlString;
+  }
+
   const html = htmlParser.parse(htmlString);
   const headTag = html.querySelector('head');
 

@@ -7,7 +7,7 @@ import settings from "../settings";
 import validateSMTPSettings from "./validateSMTPSettings";
 import render from "./render";
 import getBuildPath from "../lib/getBuildPath";
-var send_default = async ({ template: templateName, props, ...restOfOptions }) => {
+var send_default = async ({ template: templateName, props, base: baseName, ...restOfOptions }) => {
   const validSMTPSettings = validateSMTPSettings(settings?.config?.email?.smtp);
   if (!validSMTPSettings) {
     console.warn(chalk.redBright("Cannot send email, invalid SMTP settings."));
@@ -23,7 +23,7 @@ var send_default = async ({ template: templateName, props, ...restOfOptions }) =
       pass: settings?.config?.email?.smtp?.password
     }
   }) : null;
-  let templatePath = process.env.NODE_ENV === "test" ? `${process.cwd()}/src/email/templates/reset-password.js` : `${process.cwd()}/${getBuildPath()}email/${templateName}.js`;
+  let templatePath = `${process.cwd()}/${getBuildPath()}email/${templateName}.js`;
   const templateExists = templateName && fs.existsSync(templatePath);
   const options = {
     from: settings?.config?.email?.from,
@@ -31,9 +31,15 @@ var send_default = async ({ template: templateName, props, ...restOfOptions }) =
   };
   if (templateExists) {
     const template = (await import(templatePath)).default;
-    const html = render({
+    const html = await render({
+      templateName,
+      baseName,
+      settings,
       Component: template,
-      props
+      props,
+      subject: restOfOptions?.subject,
+      preheader: restOfOptions?.preheader,
+      user: restOfOptions?.user
     });
     const text = htmlToText(html);
     const htmlWithStylesInlined = juice(html);

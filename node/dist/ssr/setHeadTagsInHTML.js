@@ -1,5 +1,8 @@
 import htmlParser from "node-html-parser";
-var setHeadTagsInHTML_default = (htmlString = "", head = {}) => {
+var setHeadTagsInHTML_default = (htmlString = "", head = null) => {
+  if (!head) {
+    return htmlString;
+  }
   const html = htmlParser.parse(htmlString);
   const headTag = html.querySelector("head");
   if (head.title) {

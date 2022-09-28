@@ -8,7 +8,7 @@ import replaceFileProtocol from '../../lib/replaceFileProtocol.js';
 import replaceBackslashesWithForwardSlashes from '../../lib/replaceBackslashesWithForwardSlashes.js';
 import getBuildPath from "../../lib/getBuildPath.js";
 
-const require = createRequire(import.meta.url);
+// const require = createRequire(import.meta.url);
 
 const getUrl = (request = {}) => {
   const [path = null] = request.url?.split('?');
@@ -109,16 +109,18 @@ export default (req, res, next) => {
     }
 
     const html = await ssr({
-      Component: Layout || Page,
+      componentFunction: Layout || Page,
+      req,
       props,
-      // NOTE: Safety mechanism. Don't punish a developer if the path they pass to res.render()
-      // has a forward slash prepended, just strip it for them.
-      path: path?.substring(0, 1) === '/' ? path?.replace('/', '') : path,
       url,
       translations,
-      layout: options.layout,
-      head: options.head,
-      req,
+      email: false,
+      baseHTMLPath: null,
+      layoutComponentPath: options?.layout,
+      // NOTE: Safety mechanism. Don't punish a developer if the path they pass to res.render()
+      // has a forward slash prepended, just strip it for them.
+      pageComponentPath: path?.substring(0, 1) === '/' ? path?.replace('/', '') : path,
+      head: options?.head,
     });
 
     return res.status(200).send(html);

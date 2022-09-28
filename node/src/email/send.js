@@ -8,7 +8,7 @@ import validateSMTPSettings from "./validateSMTPSettings";
 import render from "./render";
 import getBuildPath from "../lib/getBuildPath";
 
-export default async ({ template: templateName, props, ...restOfOptions }) => {
+export default async ({ template: templateName, props, base: baseName, ...restOfOptions }) => {
   const validSMTPSettings = validateSMTPSettings(settings?.config?.email?.smtp);
 
   if (!validSMTPSettings) {
@@ -32,7 +32,7 @@ export default async ({ template: templateName, props, ...restOfOptions }) => {
       })
     : null;
 
-  let templatePath = process.env.NODE_ENV === 'test' ? `${process.cwd()}/src/email/templates/reset-password.js` : `${process.cwd()}/${getBuildPath()}email/${templateName}.js`;
+  let templatePath = `${process.cwd()}/${getBuildPath()}email/${templateName}.js`;
   const templateExists = templateName && fs.existsSync(templatePath);
 
   const options = {
@@ -42,16 +42,23 @@ export default async ({ template: templateName, props, ...restOfOptions }) => {
 
   if (templateExists) {
     const template = (await import(templatePath)).default;
-    const html = render({
+    const html = await render({
+      templateName,
+      baseName,
+      settings,
       Component: template,
       props,
+      subject: restOfOptions?.subject,
+      preheader: restOfOptions?.preheader,
+      user: restOfOptions?.user,
     });
-  
+
     const text = htmlToText(html);
     const htmlWithStylesInlined = juice(html);
-  
+
     options.html = htmlWithStylesInlined;
     options.text = text;
+    
     return smtp.sendMail(options);
   }
 
