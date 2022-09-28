@@ -12,8 +12,9 @@ The full-stack JavaScript framework.
 
 0. ⚠️ [Beta Warning](#beta-warning)
 1. [What is Joystick?](#what-is-joystick)
-2. [Installation](#installation)
-3. [Getting Started](#getting-started)
+2. [Joystick vs. Other Frameworks](#joystick-vs-other-frameworks)
+3. [Installation](#installation)
+4. [Getting Started](#getting-started)
    - [Tutorials](#tutorials)
 5. [Folder and file structure](#folder-and-file-structure)
    - [/api](#api)
@@ -65,7 +66,6 @@ The full-stack JavaScript framework.
      - [accounts.roles.userHasRole](#accountsrolesuserhasrole)
 10. [@joystick.js/ui](#joystickjsui)
     - [Writing a component](#writing-a-component)
-    - [Syntax Highlighting](#syntax-highlighting)
     - [Render functions](#render-functions)
       - [component() and c()](#component-and-c)
       - [each() and e()](#each-and-e)
@@ -148,6 +148,42 @@ Joystick includes:
 - An API layer that includes input validation and the ability to customize the output of responses.
 - Built-in server-side rendering of components built with `@joystick.js/ui` and automatic, no code, client-side hydration.
 - Hot module reloading in development.
+
+## Joystick vs. Other Frameworks
+
+A quick comparison table of Joystick vs. other frameworks can be [found here](https://tinyurl.com/joystick-comparison).
+
+### What distinguishes Joystick from other frameworks?
+
+Joystick is a full-stack framework, not front-end only. The UI part (@joystick.js/ui) is designed to snap in to the back-end/server part (@joystick.js/node). The advantage is that you're not wasting time trying to stitch together disparate parts that may or may not work together (or even worse, may or may not be supported long-term).
+
+Further, the current crop of frameworks seeks to overcomplicate APIs and are indecisive about how things should be done (as evidenced by the introduction of patterns that are "the way" one day and then a few months later are "deprecated"). This leads to a lot of confusion at the community level which makes it hard to build software that can endure over time.
+
+Even worse, these frameworks introduce their own languages/syntax which are foreign to what a beginner would learn (HTML, CSS, and JavaScript). This not only creates confusion and slows down the learning process, but it also creates the long-term nightmare of developers not understanding the fundamentals of the tools they use to build. Eventually, you hit a drop-off point where people think that, for example, JSX is HTML and in a pinch where they can't use React, are ineffective or incapable of completing the task properly.
+
+By contrast, Joystick is designed to be stable, long-term, from the beginning (i.e., no random "hey, we're deprecating all this stuff you depend on for this more confusing API that's less descriptive"). It's also based on the core technologies of the web: HTML, CSS, and JavaScript. Joystick doesn't introduce any hacks or syntax tricks to render the component. It's plain HTML, CSS, and JavaScript. This means that the transition from learning the basics of the web to shipping apps is far smoother (and an individual developer is less likely to make mistakes/get confused as everything looks consistent with where they started).
+
+Joystick's front-end component API and back-end API are designed to be fixed long-term. So, an app you write in Joystick today will look the same 10 years from now (features will be added/improved over time, but core APIs will not be deprecated unless there is a major security or performance issue). We like to refer to Joystick as "The Honda Civic of JavaScript Frameworks."
+
+### Who should use Joystick?
+
+SMBs, startups, and freelancers/contractors.
+
+For SMBs/startups, it's a solid framework for shipping custom software for your business (or a consumer/b2b SaaS) that you can rely on long-term. So, build it today and maintenance is limited to some patch upgrades and new features/improving existing features. Never a surprise refactor being plopped on the roadmap, distracting you and your team from delivering value to customers. Joystick also broadens your talent pool for hires as it's not using a proprietary language or set of conventions for working with it (if they understand HTML, CSS, and JavaScript, they'll understand Joystick).
+
+For freelancers/contractors, remove the overwhelm of juggling a bunch of disparate codebases across clients that each have their own shifting requirements (i.e., standardize what you ship, full-stack). This allows you to take on more work, but also, make your long-term support more predictable as the framework you're building on isn't going to rug pull you down the road. This allows you to build a better business with happier clients.
+
+Joystick is offered by CheatCode, an independent (not venture-backed) business. We understand the importance of long-term viability of technological bets and the effect surprise "rug pulls" can have on profits. Venture-backed startups are less-focused on the long-term as their existence is based on short-term ROI (return on investment) for investors. Even if CheatCode goes away, Joystick will continue to exist and be maintained by its creator, Ryan, for the sake of enjoyment/fun and use on his own projects. When we say "long-term," we mean it—[the bus factor](https://en.wikipedia.org/wiki/Bus_factor) withstanding. Even then, Joystick's stable-by-design and FOSS/MIT-licensure means a willing party can take the torch and run if Ryan merges with the infinite.
+
+### What does Joystick do? What doesn't it do?
+
+It allows you to define routes on the server which when matched, render some HTML, CSS, and JavaScript using a component framework that's a light abstraction over those core technologies (think what Rails or Django do but with JavaScript). It also makes it easy to define a JSON-RPC API that can be called directly from components, giving you complete transparency into the flow of data between the client and server without any ambiguity. In addition, it adds the necessary wiring to start and connect drivers for databases to your app with a few lines of configuration in the app's `settings.development.json` file, piping those drivers to where you need them (namely, your routes and your API endpoints/handlers).
+
+The back-end is just a plain Express.js/Node.js app so anything you can do in a standalone Node project, you can do in Joystick without any limitations. So, if you want to use a third-party package, just run npm install <blah> and it will work.
+
+All of this is backed by a built-in SSR/hydration implementation so all you have to do is write your routes, API, and components. No time wasted on wiring the front to the back-end. All of that is automated via the lightning-fast build system built around esbuild (which is implemented/configured out-of-the-box) so you can just run `joystick start` and get to work in a few seconds.
+
+What Joystick _doesn't_ do is get in your way and it isn't a ticking time bomb of deprecation. It allows you to actually focus on the product you're building, long-term.
 
 ## Installation
 
@@ -1183,34 +1219,6 @@ The HTML written in the string is plain HTML. Any HTML that you'd write in a nor
 To enable advanced functionality in the `render` function, JavaScript string interpolation is utilized. This allows for the evaluation (output) and execution (calling) of JavaScript variables and functions from _within_ a component's HTML.
 
 The `render` function is passed a single argument as an object: the component instance. This gives you access to the `props` and `state` for the component as well as some render functions to aid in the rendering process.
-
-### Syntax Highlighting
-
-Most IDEs will _not_ apply syntax highlighting to the HTML returned by your component's `render()` method (instead, as one would expect, it uses a monochrome highlight for the text as if it were a plain string). To get around this, `@joystick.js/ui` includes a special function `html()` that can be returned from the `render()` function on your components:
-
-```javascript
-import ui, { html } from "@joystick.js/ui";
-
-const Books = ui.component({
-  render: () => {
-    return html`
-      <div class="books">
-        <h2>Bookshelf</h2>
-      </div>
-    `;
-  },
-});
-
-export default Books;
-```
-
-> NOTE: Even though `html()` is a function, in order for this to work we need to omit the parentheses when calling `html` and make sure our HTML is passed using backticks. This is valid JavaScript and is a short-hand way to call a function who's only argument is a string.
-
-Depending on your IDE, this may or may not enable highlighting (out-of-the-box support is spotty). **It's recommended that you install a package to ensure this functionality is available in your text editor**.
-
-A list of recommended packages for popular IDEs:
-
-- **VSCode** - [lit-html](https://marketplace.visualstudio.com/items?itemName=bierner.lit-html)
 
 ### Render functions
 
