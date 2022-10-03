@@ -9,6 +9,8 @@ import formatCSS from "./formatCSS";
 import getCSSFromTree from "./getCSSFromTree";
 import replaceWhenTags from "./replaceWhenTags";
 import setHeadTagsInHTML from "./setHeadTagsInHTML";
+import { parseHTML } from 'linkedom';
+import { isString } from '../validation/lib/typeValidators';
 
 const injectCSSIntoHTML = (html, baseCSS = '', css = '') => {
   try {
@@ -17,7 +19,7 @@ const injectCSSIntoHTML = (html, baseCSS = '', css = '') => {
       .replace('${globalCSS}', `<style>${baseCSS || ''}</style>`)
       .replace('${componentCSS}', css);
   } catch (exception) {
-    throw new Error(`[actionName.injectCSSIntoHTML] ${exception.message}`);
+    throw new Error(`[ssr.injectCSSIntoHTML] ${exception.message}`);
   }
 };
 
@@ -168,7 +170,7 @@ const getHTMLWithData = (
       ssrTree,
       translations,
       walkingTreeForSSR: false,
-      renderingHTMLWithDataForSSR: true, // TODO:
+      renderingHTMLWithDataForSSR: true,
       dataFromSSR: dataFromTree,
     });
   } catch (exception) {
@@ -256,7 +258,50 @@ const getBaseCSS = (baseHTMLName = '') => {
 
     return fs.existsSync(baseCSSPathToFetch) ? fs.readFileSync(baseCSSPathToFetch, 'utf-8') : '';
   } catch (exception) {
-    throw new Error(`[actionName.getBaseCSS] ${exception.message}`);
+    throw new Error(`[ssr.getBaseCSS] ${exception.message}`);
+  }
+};
+
+const addAttributesToDOM = (dom = {}, attributes = {}) => {
+  try {
+    const attributeKeys = Object.keys(attributes);
+    const attributeKeysWithoutClassList = attributeKeys?.filter((key) => key !== 'class');
+
+    if (Array.isArray(attributes?.class?.list)) {
+      if (attributes?.class?.method === 'replace') {
+        dom.setAttribute('class', attributes.class.list.join(' '));
+      } else {
+        attributes.class.list.forEach((className) => {
+          dom.classList.add(className);
+        });
+      }
+    }
+    
+    attributeKeysWithoutClassList.forEach((attribute) => {
+      dom.setAttribute(attribute, attributes[attribute]);
+    });
+
+    return dom;
+  } catch (exception) {
+    throw new Error(`[ssr.addAttributesToDOM] ${exception.message}`);
+  }
+};
+
+const addAttributesToBaseHTML = (baseHTML = '', attributes = {}) => {
+  try {
+    const { document } = parseHTML(baseHTML);
+    
+    if (attributes?.html) {
+      addAttributesToDOM(document.documentElement, attributes.html)
+    }
+
+    if (attributes?.body) {
+      addAttributesToDOM(document.body, attributes.body)
+    }
+
+    return document.toString();
+  } catch (exception) {
+    throw new Error(`[ssr.addAttributesToBaseHTML] ${exception.message}`);
   }
 };
 
@@ -417,9 +462,13 @@ const ssr = async (options, { resolve, reject }) => {
 
     const dataFromTree = await getDataFromTree(ssrTree);
     const dataForClient = !options?.email ? buildDataForClient(dataFromTree) : null;
-    const baseHTML = getBaseHTML(options?.email, options?.baseEmailHTMLName);
+    
+    let baseHTML = getBaseHTML(options?.email, options?.baseEmailHTMLName);
 
-    // TODO: Run this with data AND additional flag to look for in when().
+    if (options?.attributes?.html || options?.attributes?.body) {
+      baseHTML = addAttributesToBaseHTML(baseHTML, options?.attributes); 
+    }
+
     const html = processHTML({
       componentInstance,
       ssrTree,

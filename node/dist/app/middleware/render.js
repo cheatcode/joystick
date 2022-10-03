@@ -81,6 +81,7 @@ var render_default = (req, res, next) => {
       props,
       url,
       translations,
+      attributes: options?.attributes,
       email: false,
       baseHTMLPath: null,
       layoutComponentPath: options?.layout,
