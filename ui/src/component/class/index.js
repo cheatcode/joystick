@@ -15,7 +15,6 @@ import clearChildrenOnParent from "../tree/clearChildrenOnParent";
 import updateParentInstanceInTree from "../tree/updateParentInstanceInTree";
 import unregisterEventListeners from "./events/unregisterListeners";
 import registerEventListeners from "./events/registerListeners";
-import debounce from "../../lib/debounce";
 
 class Component {
   constructor(options = {}) {
@@ -33,8 +32,9 @@ class Component {
   }
 
   async handleFetchData(api = {}, req = {}, input = {}) {
-    const data =  await fetchData(api, req, input, this);
+    const data = await fetchData(api, req, input, this);
     this.data = data;
+    return data;
   }
 
   handleGetInstance() {

@@ -10,7 +10,7 @@ import wrapHTML from "./wrapHTML";
 export default (componentInstance = {}, options = {}) => {
   try {
     if (options?.dataFromSSR) {
-      componentInstance.data = findComponentDataFromSSR(options.dataFromSSR, componentInstance.ssrId) || {};
+      componentInstance.data = findComponentDataFromSSR(options.dataFromSSR, componentInstance.id) || {};
     }
 
     const renderOptions = {

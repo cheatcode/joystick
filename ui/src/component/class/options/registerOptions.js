@@ -17,7 +17,7 @@ export default (componentInstance = {}, componentOptions = {}) => {
     componentInstance.instanceId = generateId(8);
     componentInstance.ssrId = componentOptions?._ssrId || null;
     componentInstance.css = compileCSS();
-    componentInstance.data = findComponentDataFromSSR(componentOptions?.dataFromSSR, componentOptions?._ssrId);
+    componentInstance.data = findComponentDataFromSSR(componentOptions?.dataFromSSR, componentOptions?._componentId);
     componentInstance.defaultProps = componentOptions?.defaultProps || {};
     componentInstance.props = compileProps(componentOptions?.defaultProps, componentOptions?.existingProps || componentOptions?.props);
     componentInstance.state = compileState(componentInstance, componentOptions?.existingState || componentOptions?.state);
