@@ -142,6 +142,7 @@ class ValidateForm {
 
       return this.checkIfValid();
     } else {
+      this.clearExistingErrors();
       const field = this.fields.find((field) => field.name === fieldName);
       this.validateField(field);
       return this.checkIfValid();
@@ -218,6 +219,8 @@ class ValidateForm {
     if (validator) {
       return validator(validation.rule, value, { isChecked });
     }
+
+    return true;
   }
 
   clearExistingErrors() {
