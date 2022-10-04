@@ -50,7 +50,8 @@ const handleHTMLReplacementsForApp = ({
           window.__joystick_ssr__ = true;
           window.__joystick_data__ = ${
             JSON.stringify({
-              [componentInstance.ssrId]: dataFromComponent || {},
+              // TODO:
+              [componentInstance.id]: dataFromComponent || {},
               ...(dataForClient || {}),
             })
           };
@@ -163,6 +164,7 @@ const getHTMLWithData = (
   componentInstance = {},
   ssrTree = {},
   translations = {},
+  dataFromComponent = {},
   dataFromTree = [],
 ) => {
   try {
@@ -171,7 +173,7 @@ const getHTMLWithData = (
       translations,
       walkingTreeForSSR: false,
       renderingHTMLWithDataForSSR: true,
-      dataFromSSR: dataFromTree,
+      dataFromSSR: [dataFromComponent, ...dataFromTree],
     });
   } catch (exception) {
     throw new Error(`[ssr.getHTMLWithData] ${exception.message}`);
@@ -203,6 +205,7 @@ const processHTML = ({
       componentInstance,
       ssrTree,
       translations,
+      dataFromComponent,
       dataFromTree,
     );
 
@@ -337,8 +340,8 @@ const getBaseHTML = (isEmailRender = false, baseEmailHTMLName = '') => {
 const buildDataForClient = (dataFromTree = []) => {
   try {
     return dataFromTree.reduce((data = {}, dataFromChildComponent) => {
-      if (!data[dataFromChildComponent.ssrId]) {
-        data[dataFromChildComponent.ssrId] = dataFromChildComponent.data;
+      if (!data[dataFromChildComponent.componentId]) {
+        data[dataFromChildComponent.componentId] = dataFromChildComponent.data;
       }
 
       return data;

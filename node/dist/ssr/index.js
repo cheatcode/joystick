@@ -35,7 +35,7 @@ const handleHTMLReplacementsForApp = ({
         <script>
           window.__joystick_ssr__ = true;
           window.__joystick_data__ = ${JSON.stringify({
-      [componentInstance.ssrId]: dataFromComponent || {},
+      [componentInstance.id]: dataFromComponent || {},
       ...dataForClient || {}
     })};
           window.__joystick_req__ = ${JSON.stringify(browserSafeRequest)};
@@ -114,14 +114,14 @@ const getHTMLWithTargetReplacements = ({
     throw new Error(`[ssr.getHTMLWithTargetReplacements] ${exception.message}`);
   }
 };
-const getHTMLWithData = (componentInstance = {}, ssrTree = {}, translations = {}, dataFromTree = []) => {
+const getHTMLWithData = (componentInstance = {}, ssrTree = {}, translations = {}, dataFromComponent = {}, dataFromTree = []) => {
   try {
     return componentInstance.renderToHTML({
       ssrTree,
       translations,
       walkingTreeForSSR: false,
       renderingHTMLWithDataForSSR: true,
-      dataFromSSR: dataFromTree
+      dataFromSSR: [dataFromComponent, ...dataFromTree]
     });
   } catch (exception) {
     throw new Error(`[ssr.getHTMLWithData] ${exception.message}`);
@@ -146,7 +146,7 @@ const processHTML = ({
   head = null
 }) => {
   try {
-    const htmlWithData = getHTMLWithData(componentInstance, ssrTree, translations, dataFromTree);
+    const htmlWithData = getHTMLWithData(componentInstance, ssrTree, translations, dataFromComponent, dataFromTree);
     const htmlWithWhenReplacements = replaceWhenTags(htmlWithData.wrapped);
     const htmlWithTargetReplacements = getHTMLWithTargetReplacements({
       componentInstance,
@@ -245,8 +245,8 @@ const getBaseHTML = (isEmailRender = false, baseEmailHTMLName = "") => {
 const buildDataForClient = (dataFromTree = []) => {
   try {
     return dataFromTree.reduce((data = {}, dataFromChildComponent) => {
-      if (!data[dataFromChildComponent.ssrId]) {
-        data[dataFromChildComponent.ssrId] = dataFromChildComponent.data;
+      if (!data[dataFromChildComponent.componentId]) {
+        data[dataFromChildComponent.componentId] = dataFromChildComponent.data;
       }
       return data;
     }, {});
