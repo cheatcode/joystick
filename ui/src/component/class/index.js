@@ -24,7 +24,7 @@ class Component {
   }
 
   setDOMNodeOnInstance() {
-    this.DOMNode = document.querySelector(`body [js-c="${this.id}"]`);
+    this.DOMNode = document.querySelector(`body [js-i="${this.instanceId}"]`);
   }
 
   appendCSSToHead() {
