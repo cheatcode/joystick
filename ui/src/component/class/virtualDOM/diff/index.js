@@ -46,6 +46,10 @@ const diff = (oldVirtualNode = undefined, newVirtualNode = undefined) => {
     return elementPatchFunctions.select(oldVirtualNode, newVirtualNode);
   }
 
+  if (newVirtualNode.tagName === 'code') {
+    return getReplaceNodePatch(newVirtualNode, oldVirtualNode);
+  }
+
   return (node) => {
     diffAttributes(oldVirtualNode.attributes, newVirtualNode.attributes)(node),
     diffChildren(oldVirtualNode.children, newVirtualNode.children)(node);
