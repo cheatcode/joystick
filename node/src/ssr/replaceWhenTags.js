@@ -1,13 +1,19 @@
 import { parseHTML } from 'linkedom';
 
-const flattenAndReplaceWhenElements = (dom = {}) => {
+const flattenAndReplaceWhenElements = (dom = {}, options = {}) => {
   try {
     if (dom?.childNodes?.length > 0) {
       [].forEach.call(dom.childNodes, (childNode) => {
-        flattenAndReplaceWhenElements(childNode);
+        flattenAndReplaceWhenElements(childNode, {
+          rootDocument: options?.rootDocument || dom,
+          isChildNode: true
+        });
 
         if (childNode?.tagName === 'WHEN' && childNode?.childNodes?.length === 0) {
-          childNode.replaceWith(document.createTextNode(''));
+          // NOTE: Necessary because we call flatterAndReplaceWhenElements recursively
+          // and the dom argument might be the child node, not the document.
+          const rootDocument = options?.rootDocument || dom;
+          childNode.replaceWith(rootDocument.createTextNode(''));
         }
 
         if (childNode?.tagName === 'WHEN' && childNode?.childNodes?.length > 0) {
@@ -24,8 +30,8 @@ const flattenAndReplaceWhenElements = (dom = {}) => {
 
 export default (html = '') => {
   try {
-    const { document } = parseHTML(html);
-    const dom = flattenAndReplaceWhenElements(document);
+    const { document: parseHTMLDocument } = parseHTML(html);
+    const dom = flattenAndReplaceWhenElements(parseHTMLDocument);
     return dom.toString();
   } catch (exception) {
     throw new Error(`[ssr.replaceWhenTags] ${exception.message}`);

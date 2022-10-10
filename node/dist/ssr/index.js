@@ -8,7 +8,6 @@ import getCSSFromTree from "./getCSSFromTree";
 import replaceWhenTags from "./replaceWhenTags";
 import setHeadTagsInHTML from "./setHeadTagsInHTML";
 import { parseHTML } from "linkedom";
-import { isString } from "../validation/lib/typeValidators";
 const injectCSSIntoHTML = (html, baseCSS = "", css = "") => {
   try {
     return html.replace("${css}", css).replace("${globalCSS}", `<style>${baseCSS || ""}</style>`).replace("${componentCSS}", css);
