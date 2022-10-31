@@ -113,13 +113,13 @@ const getHTMLWithTargetReplacements = ({
     throw new Error(`[ssr.getHTMLWithTargetReplacements] ${exception.message}`);
   }
 };
-const getHTMLWithData = (componentInstance = {}, ssrTree = {}, translations = {}, dataFromComponent = {}, dataFromTree = []) => {
+const getHTMLWithData = (renderingHTMLWithDataForSSR = false, componentInstance = {}, ssrTree = {}, translations = {}, dataFromComponent = {}, dataFromTree = []) => {
   try {
     return componentInstance.renderToHTML({
       ssrTree,
       translations,
       walkingTreeForSSR: false,
-      renderingHTMLWithDataForSSR: true,
+      renderingHTMLWithDataForSSR,
       dataFromSSR: [dataFromComponent, ...dataFromTree]
     });
   } catch (exception) {
@@ -142,10 +142,11 @@ const processHTML = ({
   url = {},
   layoutComponentPath = "",
   pageComponentPath = "",
-  head = null
+  head = null,
+  renderingHTMLWithDataForSSR = false
 }) => {
   try {
-    const htmlWithData = getHTMLWithData(componentInstance, ssrTree, translations, dataFromComponent, dataFromTree);
+    const htmlWithData = getHTMLWithData(renderingHTMLWithDataForSSR, componentInstance, ssrTree, translations, dataFromComponent, dataFromTree);
     const htmlWithWhenReplacements = replaceWhenTags(htmlWithData.wrapped);
     const htmlWithTargetReplacements = getHTMLWithTargetReplacements({
       componentInstance,
@@ -348,6 +349,7 @@ const ssr = async (options, { resolve, reject }) => {
       req: browserSafeRequest
     });
     const ssrTree = getTreeForSSR(componentInstance);
+    const ssrTreeForCSS = getTreeForSSR(componentInstance);
     const dataFromComponent = await getDataFromComponent(componentInstance, apiForDataFunctions, browserSafeRequest);
     buildTreeForComponent(componentInstance, ssrTree);
     const dataFromTree = await getDataFromTree(ssrTree);
@@ -357,6 +359,7 @@ const ssr = async (options, { resolve, reject }) => {
       baseHTML = addAttributesToBaseHTML(baseHTML, options?.attributes);
     }
     const html = processHTML({
+      renderingHTMLWithDataForSSR: false,
       componentInstance,
       ssrTree,
       dataFromComponent,
@@ -374,8 +377,27 @@ const ssr = async (options, { resolve, reject }) => {
       pageComponentPath: options?.pageComponentPath,
       head: options?.head
     });
+    processHTML({
+      renderingHTMLWithDataForSSR: true,
+      componentInstance,
+      ssrTree: ssrTreeForCSS,
+      dataFromComponent,
+      dataFromTree,
+      dataForClient,
+      baseHTML,
+      isEmailRender: options?.email,
+      emailSubject: options?.emailSubject,
+      emailPreheader: options?.emailPreheader,
+      browserSafeRequest,
+      props: options?.props,
+      translations: options?.translations,
+      url: options?.url,
+      layoutComponentPath: options?.layoutComponentPath,
+      pageComponentPath: options?.pageComponentPath,
+      head: options?.head
+    });
     const baseCSS = options?.email ? getBaseCSS(options?.baseEmailHTMLName) : "";
-    const css = formatCSS(getCSSFromTree(ssrTree));
+    const css = formatCSS(getCSSFromTree(ssrTreeForCSS));
     const htmlWithCSS = injectCSSIntoHTML(html, baseCSS, css);
     resolve(htmlWithCSS);
   } catch (exception) {

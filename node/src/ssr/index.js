@@ -160,6 +160,7 @@ const getHTMLWithTargetReplacements = ({
 };
 
 const getHTMLWithData = (
+  renderingHTMLWithDataForSSR = false,
   componentInstance = {},
   ssrTree = {},
   translations = {},
@@ -171,7 +172,7 @@ const getHTMLWithData = (
       ssrTree,
       translations,
       walkingTreeForSSR: false,
-      renderingHTMLWithDataForSSR: true,
+      renderingHTMLWithDataForSSR,
       dataFromSSR: [dataFromComponent, ...dataFromTree],
     });
   } catch (exception) {
@@ -198,9 +199,11 @@ const processHTML = ({
   layoutComponentPath = '',
   pageComponentPath = '',
   head = null,
+  renderingHTMLWithDataForSSR = false,
 }) => {
   try {
     const htmlWithData = getHTMLWithData(
+      renderingHTMLWithDataForSSR,
       componentInstance,
       ssrTree,
       translations,
@@ -458,6 +461,8 @@ const ssr = async (options, { resolve, reject }) => {
     });
 
     const ssrTree = getTreeForSSR(componentInstance);
+    const ssrTreeForCSS = getTreeForSSR(componentInstance);
+
     const dataFromComponent = await getDataFromComponent(componentInstance, apiForDataFunctions, browserSafeRequest);
 
     buildTreeForComponent(componentInstance, ssrTree);
@@ -471,15 +476,41 @@ const ssr = async (options, { resolve, reject }) => {
       baseHTML = addAttributesToBaseHTML(baseHTML, options?.attributes); 
     }
 
+    // NOTE: This is the HTML for the actual server-side render. Below, we run processHTML
+    // again w/o a return value so that we can get a separate tree for capturing all CSS.
+
     const html = processHTML({
+      renderingHTMLWithDataForSSR: false,
       componentInstance,
       ssrTree,
       dataFromComponent,
       dataFromTree,
       dataForClient,
       baseHTML,
-      // baseCSS,
-      // css,
+      isEmailRender: options?.email,
+      emailSubject: options?.emailSubject,
+      emailPreheader: options?.emailPreheader,
+      browserSafeRequest,
+      props: options?.props,
+      translations: options?.translations,
+      url: options?.url,
+      layoutComponentPath: options?.layoutComponentPath,
+      pageComponentPath: options?.pageComponentPath,
+      head: options?.head,
+    });
+
+    // NOTE: We do this again so we can scoop all possible CSS (including conditional CSS via when tags).
+    // The actual HTML returned for the SSR is captured above. Note the usage of ssrTreeForCSS vs ssrTree
+    // here which separates the two "runs" of processHTML.
+
+    processHTML({
+      renderingHTMLWithDataForSSR: true,
+      componentInstance,
+      ssrTree: ssrTreeForCSS,
+      dataFromComponent,
+      dataFromTree,
+      dataForClient,
+      baseHTML,
       isEmailRender: options?.email,
       emailSubject: options?.emailSubject,
       emailPreheader: options?.emailPreheader,
@@ -493,7 +524,7 @@ const ssr = async (options, { resolve, reject }) => {
     });
 
     const baseCSS = options?.email ? getBaseCSS(options?.baseEmailHTMLName) : '';
-    const css = formatCSS(getCSSFromTree(ssrTree));
+    const css = formatCSS(getCSSFromTree(ssrTreeForCSS));
     const htmlWithCSS = injectCSSIntoHTML(html, baseCSS, css);
 
     resolve(htmlWithCSS);

@@ -77,6 +77,7 @@ var generateErrorPage_default = ({ type = "build", frame, path, stack }) => {
             margin-bottom: 40px;
             border: 1px solid #eee;
             border-radius: 3px;
+            background: #282c34;
           }
 
           .code-block header {
