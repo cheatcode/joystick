@@ -388,12 +388,29 @@ Any or all of these files should be stored at the root of your project folder. *
 
 Configuration specific to Joystick is stored in the `config` object within your settings file. Currently, Joystick anticipates the following properties under config:
 
+- `build` an object of settings for build configuration (more information below).
 - `databases` an array of objects describing the databases you want Joystick to start for you in development and load drivers for in _all_ environments.
 - `i18n` an object containing configuration related to Joystick's internationalization feature.
 - `middleware` configuration for the built-in, third-party middleware implemented by Joystick when starting your app.
 - `email` configuration for Joystick's `email.send()` function.
 
 For specific configuration properties, see the corresponding section in the documentation below.
+
+#### Defining build settings
+
+To configure builds of your app, the `config.build` object should be utilized in your `settings.<env>.json` file. Currently, the only configuration option for builds are paths to exclude during the build process:
+
+```javascript
+{
+  "config": {
+    "build": {
+      "excludedPaths": ["repos/", "downloads/"]
+    }
+  }
+}
+```
+
+Paths in the `excludedPaths` array will be filtered out of the build process. **Note**: all paths listed should _not_ include a preceeding slash (i.e, write `repos/` not `/repos`).
 
 ### Defining global settings
 
