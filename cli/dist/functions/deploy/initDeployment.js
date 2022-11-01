@@ -95,7 +95,6 @@ const uploadBuildToObjectStorage = (timestamp = "", deploymentOptions = {}, appS
     formData.append("flags", JSON.stringify({ isInitialDeployment: true }));
     formData.append("version", timestamp);
     formData.append("deployment", JSON.stringify(deploymentOptions?.deployment || {}));
-    formData.append("settings", appSettings);
     return fetch(`${domains?.deploy}/api/cli/deployments/upload`, {
       method: "POST",
       headers: {
@@ -155,7 +154,7 @@ const initDeployment = async (options, { resolve, reject }) => {
     loader.text("Uploading built app to version control...");
     const appSettings = getAppSettings();
     const encryptedAppSettings = encryptText(appSettings || "{}", options?.deployment?.encryptionToken);
-    const uploadReponse = await uploadBuildToObjectStorage(deploymentTimestamp, options, encryptedAppSettings);
+    const uploadReponse = await uploadBuildToObjectStorage(deploymentTimestamp, options);
     if (uploadReponse?.error) {
       loader.stop();
       CLILog(uploadReponse?.error, {

@@ -1,4 +1,4 @@
-import fs from "fs";
+import fs, { watch } from "fs";
 import { join } from "path";
 const getFileListFromPath = (directoryPath = "", files = []) => {
   const filesInDirectory = fs.readdirSync(directoryPath);
@@ -14,9 +14,14 @@ const getFileListFromPath = (directoryPath = "", files = []) => {
   });
   return files;
 };
-var getFilesToBuild_default = () => {
+var getFilesToBuild_default = (excludedPaths = []) => {
   const files = getFileListFromPath("./");
   const filteredFiles = files.filter((path) => {
+    const isExcluded = excludedPaths.some((excludedPath) => {
+      return path.includes(excludedPath);
+    });
+    return !isExcluded;
+  }).filter((path) => {
     return ![
       "node_modules",
       ".DS_Store",

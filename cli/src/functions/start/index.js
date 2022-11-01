@@ -264,7 +264,7 @@ const restartApplicationProcess = () => {
   startHMRProcess();
 };
 
-const initialBuild = async () => {
+const initialBuild = async (buildSettings = {}) => {
   const buildPath = `.joystick/build`;
   const fileMapPath = `.joystick/build/fileMap.json`;
 
@@ -280,7 +280,7 @@ const initialBuild = async () => {
 
   await requiredFileCheck();
 
-  const filesToBuild = getFilesToBuild();
+  const filesToBuild = getFilesToBuild(buildSettings?.excludedPaths);
   const fileResults = await buildFiles(filesToBuild);
 
   const hasErrors = [...fileResults]
@@ -295,8 +295,8 @@ const initialBuild = async () => {
   }
 };
 
-const startWatcher = async () => {
-  await initialBuild();
+const startWatcher = async (buildSettings = {}) => {
+  await initialBuild(buildSettings);
 
   const watcher = chokidar.watch(watchlist.map(({ path }) => path), {
     ignoreInitial: true,
@@ -451,7 +451,7 @@ const loadSettings = async () => {
   // NOTE: Child process will inherit this env var from this parent process.
   process.env.JOYSTICK_SETTINGS = settingsFile;
 
-  return settingsFile;
+  return JSON.parse(settingsFile);
 };
 
 const checkIfJoystickProject = () => {
@@ -483,10 +483,9 @@ export default async (args = {}, options = {}) => {
   process.env.NODE_ENV = options?.environment || "development";
   process.env.PORT = options?.port ? parseInt(options?.port) : 2600;
 
-  await loadSettings();
+  const settings = await loadSettings();
   await startDatabases(databasePortStart);
 
-  
-  startWatcher();
+  startWatcher(settings?.config?.build);
   handleSignalEvents([]);
 };

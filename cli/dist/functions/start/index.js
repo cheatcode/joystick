@@ -212,7 +212,7 @@ const restartApplicationProcess = () => {
   startApplicationProcess();
   startHMRProcess();
 };
-const initialBuild = async () => {
+const initialBuild = async (buildSettings = {}) => {
   const buildPath = `.joystick/build`;
   const fileMapPath = `.joystick/build/fileMap.json`;
   if (!fs.existsSync(buildPath)) {
@@ -223,7 +223,7 @@ const initialBuild = async () => {
   }
   process.loader.text("Building app...");
   await requiredFileCheck();
-  const filesToBuild = getFilesToBuild();
+  const filesToBuild = getFilesToBuild(buildSettings?.excludedPaths);
   const fileResults = await buildFiles(filesToBuild);
   const hasErrors = [...fileResults].filter((result) => !!result).map(({ success }) => success).includes(false);
   if (!hasErrors) {
@@ -231,8 +231,8 @@ const initialBuild = async () => {
     startHMRProcess();
   }
 };
-const startWatcher = async () => {
-  await initialBuild();
+const startWatcher = async (buildSettings = {}) => {
+  await initialBuild(buildSettings);
   const watcher = chokidar.watch(watchlist.map(({ path: path2 }) => path2), {
     ignoreInitial: true
   });
@@ -338,7 +338,7 @@ const loadSettings = async () => {
   }
   const settingsFile = isValidJSON ? rawSettingsFile : "{}";
   process.env.JOYSTICK_SETTINGS = settingsFile;
-  return settingsFile;
+  return JSON.parse(settingsFile);
 };
 const checkIfJoystickProject = () => {
   return fs.existsSync(`${process.cwd()}/.joystick`);
@@ -360,9 +360,9 @@ var start_default = async (args = {}, options = {}) => {
   process.env.LOGS_PATH = options?.logs || null;
   process.env.NODE_ENV = options?.environment || "development";
   process.env.PORT = options?.port ? parseInt(options?.port) : 2600;
-  await loadSettings();
+  const settings = await loadSettings();
   await startDatabases(databasePortStart);
-  startWatcher();
+  startWatcher(settings?.config?.build);
   handleSignalEvents([]);
 };
 export {

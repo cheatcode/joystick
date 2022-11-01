@@ -1,4 +1,4 @@
-import fs from "fs";
+import fs, { watch } from "fs";
 import { join } from "path";
 
 const getFileListFromPath = (directoryPath = '', files = []) => {
@@ -21,9 +21,16 @@ const getFileListFromPath = (directoryPath = '', files = []) => {
 };
 
 
-export default () => {
+export default (excludedPaths = []) => {
   const files = getFileListFromPath("./");
   const filteredFiles = files
+    .filter((path) => {
+      const isExcluded = excludedPaths.some((excludedPath) => {
+        return path.includes(excludedPath);
+      });
+
+      return !isExcluded;
+    })
     .filter((path) => {
       return ![
         "node_modules",
