@@ -119,6 +119,8 @@ The full-stack JavaScript framework.
     - [Handling process events](#handling-process-events)
     - [__filename and __dirname](#__filename-and-__dirname)
 12. [Deployment](#deployment)
+    - [Setting and utilizing a ROOT_URL](#setting-and-utilizing-a-ROOT_URL)
+    - [Joystick Deploy](#joystick-deploy)
 
 ---
 
@@ -3379,4 +3381,29 @@ Here, when you call the functions, you need to pass the global `import.meta.url`
 
 ## Deployment
 
-An official strategy for deployment is in the works and will be available in time for the 1.0 release.
+### Setting and utilizing a ROOT_URL
+
+When deploying a Joystick app for a staging or production environment, in your environment variables—_not_ your Joystick settings file—the `process.env.ROOT_URL` value must be set to the valid origin your app will be accessible at. For example, if your app will be available at `https://cheatcode.co` you should set `process.env.ROOT_URL = 'https://cheatcode.co'`.
+
+This value is utilized by the `origin` variable exported from the `@joystick.js/node` which allows you to reference the correct application URL in your code. For example:
+
+```javascript
+import joystick, { origin, email } from '@joystick.js/node';
+
+joystick.app({ ... }).then(async () => {
+  await email.send({
+    to: 'somebody@gmail.com',
+    from: 'support@myapp.com',
+    subject: 'App start up!',
+    template: 'app-startup',
+    props: {
+      url: `${origin}/admin/users`,
+    },
+  });
+});
+```
+
+In the example above, on startup, an email is being sent to "somebody," and the URL for the app is intended to be referenced in the email. Instead of hard-coding the URL like `url: `https://myapp.com/admin/users`, we utilize the `origin` variable exported from `@joystick.js/node` so that our code works in any environment.
+
+### Joystick Deploy
+Joystick Deploy is a deployment service for Joystick apps that is currently under development and will be available in 2023.

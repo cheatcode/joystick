@@ -1,5 +1,6 @@
 import _accounts from "./app/accounts";
 import api from "./api/index.js";
+import getOrigin from "./api/getOrigin";
 import nodeUrlPolyfills from "./lib/nodeUrlPolyfills.js";
 import sendEmail from "./email/send";
 import loadSettings from "./settings/load";
@@ -18,6 +19,7 @@ const email = {
 const __filename = nodeUrlPolyfills.__filename;
 const __dirname = nodeUrlPolyfills.__dirname;
 const id = generateId;
+const origin = getOrigin();
 const settings = loadSettings();
 global.joystick = {
   id: generateId,
@@ -37,5 +39,6 @@ export {
   email,
   get,
   id,
+  origin,
   set
 };
