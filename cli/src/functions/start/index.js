@@ -4,9 +4,9 @@ import child_process from "child_process";
 import path, { dirname } from "path";
 import { fileURLToPath } from "url";
 import ps from "ps-node";
+import { kill as killPortProcess } from 'cross-port-killer';
 import watch from "node-watch";
 import fs from "fs";
-import { kill as killPortProcess } from 'cross-port-killer';
 import chokidar from 'chokidar';
 import Loader from "../../lib/loader.js";
 import getFilesToBuild from "./getFilesToBuild.js";
@@ -251,10 +251,14 @@ const startApplicationProcess = () => {
   handleServerProcessMessages();
 };
 
-const restartApplicationProcess = () => {
+const restartApplicationProcess = async () => {
   if (process.serverProcess && process.serverProcess.pid) {
     process.loader.text("Restarting app...");
-    ps.kill(process.serverProcess.pid);
+    // NOTE: Kill the Express server first and THEN take down the
+    // child process for the app.
+    killPortProcess(process.env.PORT);
+    killProcess(process.serverProcess.pid);
+
     return startApplicationProcess();
   }
 
@@ -313,7 +317,7 @@ const startWatcher = async (buildSettings = {}) => {
       !fs.existsSync(`./.joystick/build/${path}`)
     ) {
       fs.mkdirSync(`./.joystick/build/${path}`);
-      restartApplicationProcess();
+      await restartApplicationProcess();
     }
 
     if (!!filesToCopy.find((fileToCopy) => fileToCopy.path === path)) {
@@ -328,7 +332,8 @@ const startWatcher = async (buildSettings = {}) => {
       }
 
       await loadSettings();
-      return restartApplicationProcess();
+      await restartApplicationProcess();
+      return;
     }
 
     if (['add', 'change'].includes(event) && fs.existsSync(path)) {
@@ -360,12 +365,14 @@ const startWatcher = async (buildSettings = {}) => {
 
       if (!hasErrors) {
         process.initialBuildComplete = true;
-        restartApplicationProcess();
+        await restartApplicationProcess();
+        return;
       }
     }
 
     if (['unlink', 'unlinkDir'].includes(event) && !fs.existsSync(`./.joystick/build/${path}`)) {
-      restartApplicationProcess();
+      await restartApplicationProcess();
+      return;
     }
 
     if (['unlink', 'unlinkDir'].includes(event) && fs.existsSync(`./.joystick/build/${path}`)) {
@@ -380,7 +387,8 @@ const startWatcher = async (buildSettings = {}) => {
         fs.unlinkSync(pathToUnlink);
       }
 
-      restartApplicationProcess();
+      await restartApplicationProcess();
+      return;
     }
   });
 };

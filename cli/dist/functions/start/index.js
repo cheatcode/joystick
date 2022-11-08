@@ -2,9 +2,9 @@ import child_process from "child_process";
 import path, { dirname } from "path";
 import { fileURLToPath } from "url";
 import ps from "ps-node";
+import { kill as killPortProcess } from "cross-port-killer";
 import watch from "node-watch";
 import fs from "fs";
-import { kill as killPortProcess } from "cross-port-killer";
 import chokidar from "chokidar";
 import Loader from "../../lib/loader.js";
 import getFilesToBuild from "./getFilesToBuild.js";
@@ -202,10 +202,11 @@ const startApplicationProcess = () => {
   handleServerProcessSTDIO();
   handleServerProcessMessages();
 };
-const restartApplicationProcess = () => {
+const restartApplicationProcess = async () => {
   if (process.serverProcess && process.serverProcess.pid) {
     process.loader.text("Restarting app...");
-    ps.kill(process.serverProcess.pid);
+    killPortProcess(process.env.PORT);
+    killProcess(process.serverProcess.pid);
     return startApplicationProcess();
   }
   process.loader.text("Starting app...");
@@ -241,7 +242,7 @@ const startWatcher = async (buildSettings = {}) => {
     process.loader.text("Rebuilding app...");
     if (["addDir"].includes(event) && fs.existsSync(path2) && fs.lstatSync(path2).isDirectory() && !fs.existsSync(`./.joystick/build/${path2}`)) {
       fs.mkdirSync(`./.joystick/build/${path2}`);
-      restartApplicationProcess();
+      await restartApplicationProcess();
     }
     if (!!filesToCopy.find((fileToCopy) => fileToCopy.path === path2)) {
       const isDirectory = fs.statSync(path2).isDirectory();
@@ -252,7 +253,8 @@ const startWatcher = async (buildSettings = {}) => {
         fs.writeFileSync(`./.joystick/build/${path2}`, fs.readFileSync(path2));
       }
       await loadSettings();
-      return restartApplicationProcess();
+      await restartApplicationProcess();
+      return;
     }
     if (["add", "change"].includes(event) && fs.existsSync(path2)) {
       const codependencies = getCodependenciesForFile(path2);
@@ -270,11 +272,13 @@ const startWatcher = async (buildSettings = {}) => {
       }
       if (!hasErrors) {
         process.initialBuildComplete = true;
-        restartApplicationProcess();
+        await restartApplicationProcess();
+        return;
       }
     }
     if (["unlink", "unlinkDir"].includes(event) && !fs.existsSync(`./.joystick/build/${path2}`)) {
-      restartApplicationProcess();
+      await restartApplicationProcess();
+      return;
     }
     if (["unlink", "unlinkDir"].includes(event) && fs.existsSync(`./.joystick/build/${path2}`)) {
       const pathToUnlink = `./.joystick/build/${path2}`;
@@ -285,7 +289,8 @@ const startWatcher = async (buildSettings = {}) => {
       if (stats.isFile()) {
         fs.unlinkSync(pathToUnlink);
       }
-      restartApplicationProcess();
+      await restartApplicationProcess();
+      return;
     }
   });
 };
