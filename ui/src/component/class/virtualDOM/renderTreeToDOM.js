@@ -1,5 +1,6 @@
 import { isString } from "../../../lib/types";
 import throwFrameworkError from "../../../lib/throwFrameworkError";
+import isValidAttributeName from "../../../lib/isValidAttributeName";
 
 const renderElement = (virtualDOMNode = {}) => {
   try {
@@ -8,7 +9,9 @@ const renderElement = (virtualDOMNode = {}) => {
 
     for (let i = 0; i < attributes.length; i += 1) {
       const [key, value] = attributes[i];
-      element.setAttribute(key, value);
+      if (isValidAttributeName(key)) {
+        element.setAttribute(key, value);
+      }
     }
   
     for (let i = 0; i < virtualDOMNode?.children?.length; i += 1) {
