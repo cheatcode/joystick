@@ -29,12 +29,19 @@ export default async (settings = {}, databasePortBaseIndex = 0) => {
     return {
       pool,
       query: (...args) => {
-        return pool.connect().then((client) => {
-          return client.query(...args).then((res) => {
-            client.release();
-            return res.rows;
-          });
+        return pool.query(...args).then((response) => {
+          return response?.rows || [];
+        }).catch((error) => {
+          throw error;
         });
+
+        // return pool.connect().then((client) => {
+        //   // TODO: Strip this idea of one connection per query.
+        //   return client.query(...args).then((res) => {
+        //     client.release();
+        //     return res.rows;
+        //   });
+        // });
       }
     };
   } catch (exception) {
