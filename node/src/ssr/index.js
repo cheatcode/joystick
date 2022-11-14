@@ -276,15 +276,21 @@ const addAttributesToDOM = (dom = {}, attributes = {}) => {
       if (attributes?.class?.method === 'replace') {
         dom.setAttribute('class', attributes.class.list.join(' '));
       } else {
-        attributes.class.list.forEach((className) => {
+        let currentItem = attributes.class.list.length;
+
+        while(currentItem--) {
+          const className = attributes.class.list[currentItem];
           dom.classList.add(className);
-        });
+        }
       }
     }
+
+    let currentAttribute = attributeKeysWithoutClassList.length;
     
-    attributeKeysWithoutClassList.forEach((attribute) => {
+    while(currentAttribute--) {
+      const attribute = attributes.class.list[currentAttribute];
       dom.setAttribute(attribute, attributes[attribute]);
-    });
+    }
 
     return dom;
   } catch (exception) {

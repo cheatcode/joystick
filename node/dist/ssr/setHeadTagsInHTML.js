@@ -16,37 +16,52 @@ var setHeadTagsInHTML_default = (htmlString = "", head = null) => {
     }
   }
   if (head.tags && head.tags.meta && Array.isArray(head.tags.meta) && head.tags.meta.length > 0) {
-    head.tags.meta.forEach((metaTag) => {
+    let currentMetaTag = head.tags.meta.length;
+    while (currentMetaTag--) {
+      const metaTag = head.tags.meta[currentMetaTag];
       const existingTag = headTag.querySelector(`meta[name="${metaTag.name}"]`);
       const newTag = htmlParser.parse(`<meta />`);
-      Object.entries(metaTag).forEach(([attributeName, attributeValue]) => {
+      const metaTagEntries = Object.entries(metaTag);
+      let currentMetaTagEntry = metaTagEntries.length;
+      while (currentMetaTagEntry--) {
+        const [attributeName, attributeValue] = metaTagEntries[currentMetaTagEntry];
         newTag.querySelector("meta").setAttribute(attributeName, attributeValue);
-      });
+      }
       if (existingTag) {
         headTag.exchangeChild(existingTag, newTag);
       }
       if (!existingTag) {
         headTag.appendChild(newTag);
       }
-    });
+    }
   }
   if (head.tags && head.tags.link && Array.isArray(head.tags.link) && head.tags.link.length > 0) {
-    head.tags.link.forEach((linkTag) => {
+    let currentLinkTag = head.tags.link.length;
+    while (currentLinkTag--) {
+      const linkTag = head.tags.link[currentLinkTag];
       const newTag = htmlParser.parse(`<link />`);
-      Object.entries(linkTag).forEach(([attributeName, attributeValue]) => {
+      let linkTagEntries = Object.entries(linkTag);
+      let currentLinkTagEntry = linkTagEntries.length;
+      while (currentLinkTagEntry--) {
+        const [attributeName, attributeValue] = linkTagEntries[currentLinkTagEntry];
         newTag.querySelector("link").setAttribute(attributeName, attributeValue);
-      });
+      }
       headTag.appendChild(newTag);
-    });
+    }
   }
   if (head.tags && head.tags.script && Array.isArray(head.tags.script) && head.tags.script.length > 0) {
-    head.tags.script.forEach((scriptTag) => {
+    let currentScriptTag = head.tags.script.length;
+    while (currentScriptTag--) {
+      const scriptTag = head.tags.script[currentScriptTag];
       const newTag = htmlParser.parse(`<script><\/script>`);
-      Object.entries(scriptTag).forEach(([attributeName, attributeValue]) => {
+      let scriptTagEntries = Object.entries(scriptTag);
+      let currentScriptTagEntry = scriptTagEntries.length;
+      while (currentScriptTagEntry--) {
+        const [attributeName, attributeValue] = scriptTagEntries[currentScriptTagEntry];
         newTag.querySelector("script").setAttribute(attributeName, attributeValue);
-      });
+      }
       headTag.appendChild(newTag);
-    });
+    }
   }
   if (head.jsonld) {
     const newTag = htmlParser.parse(`<script><\/script>`);

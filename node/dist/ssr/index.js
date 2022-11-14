@@ -195,14 +195,18 @@ const addAttributesToDOM = (dom = {}, attributes = {}) => {
       if (attributes?.class?.method === "replace") {
         dom.setAttribute("class", attributes.class.list.join(" "));
       } else {
-        attributes.class.list.forEach((className) => {
+        let currentItem = attributes.class.list.length;
+        while (currentItem--) {
+          const className = attributes.class.list[currentItem];
           dom.classList.add(className);
-        });
+        }
       }
     }
-    attributeKeysWithoutClassList.forEach((attribute) => {
+    let currentAttribute = attributeKeysWithoutClassList.length;
+    while (currentAttribute--) {
+      const attribute = attributes.class.list[currentAttribute];
       dom.setAttribute(attribute, attributes[attribute]);
-    });
+    }
     return dom;
   } catch (exception) {
     throw new Error(`[ssr.addAttributesToDOM] ${exception.message}`);
