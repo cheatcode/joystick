@@ -1,7 +1,7 @@
 /* eslint-disable consistent-return */
 
 import fs from 'fs';
-import aws from 'aws-sdk';
+import AWS from 'aws-sdk';
 import path from 'path';
 
 function writeFile(path, contents, cb) {
@@ -20,12 +20,6 @@ const uploadToS3 = (upload = {}, options = {}) => {
       if (!fs.existsSync('.joystick/build/_tmp')) {
         fs.mkdirSync('.joystick/build/_tmp', { recursive: true });
       }
-
-      aws.config.update({
-        accessKeyId: upload?.s3?.accessKeyId,
-        secretAccessKey: upload?.s3?.secretAccessKey,
-        region: upload?.s3?.region,
-      });
       
       const uploadParams = {
         Bucket: upload?.s3?.bucket,
@@ -37,9 +31,15 @@ const uploadToS3 = (upload = {}, options = {}) => {
         uploadParams.ACL = upload?.s3?.acl;
       }
 
-      const s3Upload = new aws.S3.ManagedUpload({
+      const s3 = new AWS.S3({
+        accessKeyId: upload?.s3?.accessKeyId,
+        secretAccessKey: upload?.s3?.secretAccessKey,
+        region: upload?.s3?.region,
+      });
+
+      const s3Upload = s3.upload(uploadParams, {
         partSize: 5 * 1024 * 1024,
-        params: uploadParams,
+        queueSize: 3,
       });
 
       let uploaded = options?.progress;

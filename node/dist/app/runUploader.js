@@ -1,5 +1,5 @@
 import fs from "fs";
-import aws from "aws-sdk";
+import AWS from "aws-sdk";
 import path from "path";
 function writeFile(path2, contents, cb) {
   fs.mkdir(getDirName(path2), { recursive: true }, function(err) {
@@ -15,11 +15,6 @@ const uploadToS3 = (upload = {}, options = {}) => {
       if (!fs.existsSync(".joystick/build/_tmp")) {
         fs.mkdirSync(".joystick/build/_tmp", { recursive: true });
       }
-      aws.config.update({
-        accessKeyId: upload?.s3?.accessKeyId,
-        secretAccessKey: upload?.s3?.secretAccessKey,
-        region: upload?.s3?.region
-      });
       const uploadParams = {
         Bucket: upload?.s3?.bucket,
         Key: upload?.fileName,
@@ -28,9 +23,14 @@ const uploadToS3 = (upload = {}, options = {}) => {
       if (upload?.s3?.acl) {
         uploadParams.ACL = upload?.s3?.acl;
       }
-      const s3Upload = new aws.S3.ManagedUpload({
+      const s3 = new AWS.S3({
+        accessKeyId: upload?.s3?.accessKeyId,
+        secretAccessKey: upload?.s3?.secretAccessKey,
+        region: upload?.s3?.region
+      });
+      const s3Upload = s3.upload(uploadParams, {
         partSize: 5 * 1024 * 1024,
-        params: uploadParams
+        queueSize: 3
       });
       let uploaded = options?.progress;
       const emitter = joystick?.emitters[options?.req?.headers["x-joystick-upload-id"]];
