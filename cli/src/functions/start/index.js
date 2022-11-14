@@ -227,11 +227,20 @@ const handleServerProcessSTDIO = () => {
 };
 
 const startApplicationProcess = () => {
+  const execArgv = [
+    "--no-warnings",
+    "--experimental-specifier-resolution=node",
+  ];
+
+  if (process.env.NODE_ENV === 'development' && process.env.IS_DEBUG_MODE === 'true') {
+    execArgv.push('--inspect');
+  }
+
   const serverProcess = child_process.fork(
     path.resolve(".joystick/build/index.server.js"),
     [],
     {
-      execArgv: ["--no-warnings", "--experimental-specifier-resolution=node"],
+      execArgv,
       // NOTE: Pipe stdin, stdout, and stderr. IPC establishes a message channel so we
       // communicate with the child_process.
       silent: true,
@@ -490,6 +499,7 @@ export default async (args = {}, options = {}) => {
   process.env.LOGS_PATH = options?.logs || null;
   process.env.NODE_ENV = options?.environment || "development";
   process.env.PORT = options?.port ? parseInt(options?.port) : 2600;
+  process.env.IS_DEBUG_MODE = options?.debug;
 
   const settings = await loadSettings();
   await startDatabases(databasePortStart);

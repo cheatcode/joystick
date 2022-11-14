@@ -144,6 +144,19 @@ export default {
           },
         },
         description: 'Port number to run the app on.',
+      },
+      debug: {
+        flags: {
+          '-d': {
+            set: !!rawArgs.includes('-d'),
+            value: !!rawArgs.includes('-d'),
+          },
+          '--debug': {
+            set: !!rawArgs.includes('--debug'),
+            value: !!rawArgs.includes('--debug'),
+          },
+        },
+        description: 'Run the Joystick app\'s Node.js process in debug mode with --inspect.',
       }
     },
     function: start,
