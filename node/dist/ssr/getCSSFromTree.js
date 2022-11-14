@@ -1,4 +1,33 @@
 import css from "css";
+const mapSelectors = (componentId = "", selectors = []) => {
+  let currentSelector = selectors.length || 0;
+  const processedSelectors = new Array(selectors.length);
+  while (currentSelector--) {
+    const selector = selectors[currentSelector];
+    processedSelectors[currentSelector] = `[js-c="${componentId}"] ${selector}`;
+  }
+  return processedSelectors;
+};
+const mapRules = (componentId = "", rules = []) => {
+  let currentRule = rules.length || 0;
+  const processedRules = new Array(rules.length);
+  while (currentRule--) {
+    const rule = rules[currentRule];
+    if (rule.type === "rule") {
+      processedRules[currentRule] = {
+        ...rule,
+        selectors: mapSelectors(componentId, rule.selectors)
+      };
+    }
+    if (rule.type === "media") {
+      processedRules[currentRule] = {
+        ...rule,
+        rules: mapRules(componentId, rule.rules)
+      };
+    }
+  }
+  return processedRules;
+};
 const buildPrefixedAST = (componentId = "", cssString = "") => {
   const ast = css.parse(cssString);
   if (ast && ast.stylesheet && ast.stylesheet.rules) {
@@ -6,30 +35,7 @@ const buildPrefixedAST = (componentId = "", cssString = "") => {
       ...ast,
       stylesheet: {
         ...ast.stylesheet,
-        rules: ast.stylesheet.rules.map((rule) => {
-          if (rule.type === "rule") {
-            return {
-              ...rule,
-              selectors: rule.selectors.map((selector) => {
-                return `[js-c="${componentId}"] ${selector}`;
-              })
-            };
-          }
-          if (rule.type === "media") {
-            return {
-              ...rule,
-              rules: rule.rules.map((mediaRule) => {
-                return {
-                  ...mediaRule,
-                  selectors: mediaRule.selectors.map((selector) => {
-                    return `[js-c="${componentId}"] ${selector}`;
-                  })
-                };
-              })
-            };
-          }
-          return rule;
-        })
+        rules: mapRules(componentId, ast.stylesheet.rules)
       }
     };
   }
@@ -47,9 +53,10 @@ const getCSSFromTree = (tree = {}, css2 = []) => {
     css2.push(prefixedCSS);
   }
   if (tree.children && tree.children.length > 0) {
-    tree.children.forEach((childTree) => {
-      getCSSFromTree(childTree, css2);
-    });
+    let processed = tree?.children?.length || 0;
+    while (processed--) {
+      getCSSFromTree(tree.children[processed], css2);
+    }
   }
   return css2;
 };

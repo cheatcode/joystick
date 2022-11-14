@@ -2,7 +2,9 @@ import { parseHTML } from "linkedom";
 const flattenAndReplaceWhenElements = (dom = {}, options = {}) => {
   try {
     if (dom?.childNodes?.length > 0) {
-      [].forEach.call(dom.childNodes, (childNode) => {
+      let processed = dom.childNodes.length || 0;
+      while (processed--) {
+        const childNode = dom.childNodes[processed];
         flattenAndReplaceWhenElements(childNode, {
           rootDocument: options?.rootDocument || dom,
           isChildNode: true
@@ -14,7 +16,7 @@ const flattenAndReplaceWhenElements = (dom = {}, options = {}) => {
         if (childNode?.tagName === "WHEN" && childNode?.childNodes?.length > 0) {
           childNode.replaceWith(...childNode.childNodes);
         }
-      });
+      }
     }
     return dom;
   } catch (exception) {
