@@ -28,6 +28,8 @@ import createPostgreSQLAccountsTables from './databases/postgresql/createAccount
 import createPostgreSQLAccountsIndexes from './databases/postgresql/createAccountsIndexes';
 import loadSettings from '../settings/load.js';
 import Queue from './queues/index.js';
+import readDirectory from '../lib/readDirectory.js';
+import getBuildPath from '../lib/getBuildPath.js';
 
 process.setMaxListeners(0); 
 
@@ -42,6 +44,8 @@ export class App {
   }
 
   async start(options = {}) {
+    await this.invalidateCache();
+
     this.databases = await this.loadDatabases();
     this.express = initExpress(this.onStartApp, options);
     this.initWebsockets();
@@ -52,6 +56,17 @@ export class App {
     this.initUploaders(options?.uploaders);
     this.initFixtures(options?.fixtures);
     this.initQueues(options?.queues);
+  }
+
+  async invalidateCache() {
+    const uiFiles = fs.existsSync(`${getBuildPath()}ui`) ? await readDirectory(`${getBuildPath()}ui`) : [];
+    const cacheFiles = uiFiles?.filter((filePath) => filePath?.includes('_cache'));
+
+    for (let i = 0; i < cacheFiles?.length; i += 1) {
+      await fs.promises.unlink(cacheFiles[i]);
+    }
+
+    return Promise.resolve();
   }
 
   async loadDatabases(callback) {
