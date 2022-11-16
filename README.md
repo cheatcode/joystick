@@ -1,3 +1,4 @@
+<br />
 <img style="width: 200px;" src="https://cheatcode-assets.s3.amazonaws.com/logo-transparent.png" alt="CheatCode">
 
 ## Joystick (Beta)
