@@ -209,30 +209,33 @@ class App {
       }
       if (isObjectBasedRoute && methodsForRoute && isValidMethod && callback && callback.handler) {
         methodsForRoute.forEach((method2) => {
-          this.express.app[method2](path, async (req, res, next) => {
-            callback.handler(Object.assign(req, {
-              context: {
-                ...req?.context || {},
-                ifLoggedIn: (redirectPath = "", callback2 = null) => {
-                  if (!!req?.context?.user && redirectPath) {
-                    return res.redirect(redirectPath);
-                  }
-                  if (callback2) {
-                    return callback2();
-                  }
-                },
-                ifNotLoggedIn: (redirectPath = "", callback2 = null) => {
-                  if (!req?.context?.user && redirectPath) {
-                    return res.redirect(redirectPath);
-                  }
-                  if (callback2) {
-                    return callback2();
-                  }
-                },
-                ...process.databases || {}
-              }
-            }), res, next);
-          });
+          this.express.app[method2](path, ...[
+            ...Array.isArray(callback?.middleware) ? callback?.middleware : [],
+            async (req, res, next) => {
+              callback.handler(Object.assign(req, {
+                context: {
+                  ...req?.context || {},
+                  ifLoggedIn: (redirectPath = "", callback2 = null) => {
+                    if (!!req?.context?.user && redirectPath) {
+                      return res.redirect(redirectPath);
+                    }
+                    if (callback2) {
+                      return callback2();
+                    }
+                  },
+                  ifNotLoggedIn: (redirectPath = "", callback2 = null) => {
+                    if (!req?.context?.user && redirectPath) {
+                      return res.redirect(redirectPath);
+                    }
+                    if (callback2) {
+                      return callback2();
+                    }
+                  },
+                  ...process.databases || {}
+                }
+              }), res, next);
+            }
+          ]);
         });
       }
       if (isFunctionBasedRoute) {

@@ -262,36 +262,39 @@ export class App {
 
       if (isObjectBasedRoute && methodsForRoute && isValidMethod && callback && callback.handler) {
         methodsForRoute.forEach((method) => {
-          this.express.app[method](path, async (req, res, next) => {
-            callback.handler(
-              Object.assign(req, {
-                context: {
-                  ...(req?.context || {}),
-                  ifLoggedIn: (redirectPath = "", callback = null) => {
-                    if (!!req?.context?.user && redirectPath) {
-                      return res.redirect(redirectPath);
-                    }
-  
-                    if (callback) {
-                      return callback();
-                    }
+          this.express.app[method](path, ...[
+            ...(Array.isArray(callback?.middleware) ? callback?.middleware : []),
+            async (req, res, next) => {
+              callback.handler(
+                Object.assign(req, {
+                  context: {
+                    ...(req?.context || {}),
+                    ifLoggedIn: (redirectPath = "", callback = null) => {
+                      if (!!req?.context?.user && redirectPath) {
+                        return res.redirect(redirectPath);
+                      }
+    
+                      if (callback) {
+                        return callback();
+                      }
+                    },
+                    ifNotLoggedIn: (redirectPath = "", callback = null) => {
+                      if (!req?.context?.user && redirectPath) {
+                        return res.redirect(redirectPath);
+                      }
+    
+                      if (callback) {
+                        return callback();
+                      }
+                    },
+                    ...(process.databases || {}),
                   },
-                  ifNotLoggedIn: (redirectPath = "", callback = null) => {
-                    if (!req?.context?.user && redirectPath) {
-                      return res.redirect(redirectPath);
-                    }
-  
-                    if (callback) {
-                      return callback();
-                    }
-                  },
-                  ...(process.databases || {}),
-                },
-              }),
-              res,
-              next
-            );
-          });
+                }),
+                res,
+                next
+              );
+            }
+          ]);
         });
       }
 
