@@ -42,6 +42,8 @@ export default (app, port, config = {}) => {
 
   app.use(requestMethods);
   app.use(compression());
+
+  app.use('/css', express.static("css", { eTag: false, maxAge: "0" }));
   app.use(express.static("public", { eTag: false, maxAge: "0" }));
 
   app.use("/_joystick/heartbeat", (_req, res) => {
