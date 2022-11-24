@@ -4,6 +4,7 @@ Copyright &copy; 2021-2022 CheatCode Software LLC
 
 ---
 
+- [Definitions](#definitions)
 - [Scope](#scope)
 - [Copyright &amp; Attribution](#copyright--attribution)
 - [Agreement](#agreement)
@@ -13,6 +14,18 @@ Copyright &copy; 2021-2022 CheatCode Software LLC
 - [Limitation of Liability](#limitation-of-liability)
 
 ---
+
+## Definitions
+
+1. "License" shall mean the terms and conditions for use, reproduction, and distribution of the source code as defined in this document.
+
+2. "Author" shall mean the copyright owner or entity authorized by the copyright owner that is granting the License.
+
+3. "You" (or "Your") shall mean an individual or Legal Entity exercising permissions granted by this License.
+
+4. "Work" shall mean the work of authorship, whether in the form of source code, documentation, assets, or other materials, made available under the License, as indicated by a copyright notice that is included in or attached to the work.
+
+4. "Derivative Works" shall mean any work, whether in the form of source code, documentation, assets, or other materials that are based on (or derived from) the Work and for which the editorial revisions, annotations, elaborations, or other modifications represent, as a whole, an original work of authorship.
 
 ## Scope
 
