@@ -38,7 +38,7 @@ Under this license, the following derivative works using the source code are per
 
 Under this license, the following derivative works using the source code are not permitted:
 
-1. An alternative or competing software framework ("framework," "library," "package," "packages," "fork," "forks") that originates as a fork (modified copy of the source code) or copy (either a verbatim, unmodified copy or a reproduction or reimplemntation inspired by the source code) either for commercial or non-commercial purposes using either the current name or brand of the source code, Joystick, or a different name, brand, or entity.
+1. An alternative or competing software framework ("framework", "library", "package", "packages", "fork", "forks") that originates as a fork (modified copy of the source code) or copy (either a verbatim, unmodified copy or a reproduction or reimplemntation inspired by the source code) either for commercial or non-commercial purposes using either the current name or brand of the source code, Joystick, or a different name, brand, or entity.
 
 2. A Software as a Service (SaaS), Platform as a Service (PaaS), or any other incarnation of "as a service" software or software made available commercially or non-commercially that offers the source code as a cloud ("cloud", "hosted", "service", "distribution", "mainframe") or on-premises software service or product.
 
