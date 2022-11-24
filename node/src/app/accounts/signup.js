@@ -3,6 +3,9 @@ import generateSession from "./generateSession";
 import formatErrorString from "../../lib/formatErrorString";
 import runUserQuery from "./runUserQuery";
 import { isObject } from "../../validation/lib/typeValidators";
+import getOutput from "../getOutput";
+import typesMap from "../databases/typesMap";
+import getUsersDatabase from "./getUsersDatabase";
 
 const addSessionToUser = (userId = null, session = null) => {
   try {
@@ -32,6 +35,9 @@ const insertUserInDatabase = async (user = {}) => {
 
 const getUserToCreate = async (options = {}) => {
   try {
+    const usersDatabase = getUsersDatabase();
+    const usersDatabaseType = typesMap[usersDatabase];
+
     let user = {
       password: await hashString(options.password),
     };
@@ -40,7 +46,22 @@ const getUserToCreate = async (options = {}) => {
       user.emailAddress = options?.emailAddress;
     }
 
-    if (options?.metadata && isObject(options.metadata)) {
+    if (options?.username) {
+      user.username = options?.username;
+    }
+
+    if (
+      options?.metadata &&
+      isObject(options.metadata) &&
+      usersDatabaseType === 'sql' &&
+      options?.metadata?.language
+    ) {
+      // NOTE: Harshly limit metadata fields in an SQL users database. Prevents overcomplicated
+      // code and forces developer to move user metadata to another table they control.
+      user.language = options?.metadata?.language;
+    }
+
+    if (options?.metadata && isObject(options.metadata) && usersDatabaseType === 'nosql') {
       // NOTE: Put metadata first to avoid overrides of account fields (e.g., passing
       // metadata.password or metadata.emailAddress).
 
@@ -94,14 +115,18 @@ const signup = async (options, { resolve, reject }) => {
     const user = await getUserByUserId(userId);
     const session = generateSession();
 
-    await addSessionToUser(user._id, session);
+    // NOTE: _id on nosql databases and user_id on sql databases.
+    if (user?._id || user?.user_id) {
+      await addSessionToUser(user._id || user?.user_id, session);
+    }
 
     return resolve({
       ...session,
       userId,
-      user,
+      user: getOutput(user, options?.output),
     });
   } catch (exception) {
+    console.log(exception);
     reject(formatErrorString("signup", exception));
   }
 };

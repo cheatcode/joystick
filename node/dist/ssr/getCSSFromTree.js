@@ -47,9 +47,10 @@ const getCSSFromTree = (tree = {}, css2 = []) => {
     css2.push(prefixedCSS);
   }
   if (tree.children && tree.children.length > 0) {
-    tree.children.forEach((childTree) => {
-      getCSSFromTree(childTree, css2);
-    });
+    let processed = tree?.children?.length || 0;
+    while (processed--) {
+      getCSSFromTree(tree.children[processed], css2);
+    }
   }
   return css2;
 };

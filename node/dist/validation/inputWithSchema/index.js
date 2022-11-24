@@ -45,10 +45,10 @@ const addToValidationQueue = (queue = [], schema = {}, input = {}, parentPath = 
   if (queue && !Array.isArray(queue)) {
     throw new Error("queue must be an array");
   }
-  const rulesOnlySchema = !!schema.type;
+  const rulesOnlySchema = !!(schema.type && constants.types.includes(schema.type));
   if (!rulesOnlySchema) {
-    Object.entries(schema).forEach(([field2, rules]) => {
-      const path = `${parentPath ? `${parentPath}.${field2}` : field2}`;
+    Object.entries(schema).forEach(([field, rules]) => {
+      const path = `${parentPath ? `${parentPath}.${field}` : field}`;
       const validationTask = addValidationTask({
         queue,
         rules,
@@ -60,7 +60,7 @@ const addToValidationQueue = (queue = [], schema = {}, input = {}, parentPath = 
     });
   }
   if (rulesOnlySchema) {
-    const path = parentPath || field;
+    const path = parentPath;
     const validationTask = addValidationTask({
       queue,
       rules: schema,

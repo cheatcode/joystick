@@ -2,9 +2,9 @@ import child_process from "child_process";
 import path, { dirname } from "path";
 import { fileURLToPath } from "url";
 import ps from "ps-node";
+import { kill as killPortProcess } from "cross-port-killer";
 import watch from "node-watch";
 import fs from "fs";
-import { killPortProcess } from "kill-port-process";
 import chokidar from "chokidar";
 import Loader from "../../lib/loader.js";
 import getFilesToBuild from "./getFilesToBuild.js";
@@ -16,10 +16,15 @@ import isValidJSONString from "../../lib/isValidJSONString.js";
 import startDatabaseProvider from "./databases/startProvider.js";
 import CLILog from "../../lib/CLILog.js";
 import removeDeletedDependenciesFromMap from "./removeDeletedDependenciesFromMap.js";
+import validateDatabasesFromSettings from "../../lib/validateDatabasesFromSettings.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-const isObject = (value) => {
-  return !!(value && typeof value === "object" && !Array.isArray(value));
+const killProcess = (pid = 0) => {
+  return new Promise((resolve) => {
+    ps.kill(pid, () => {
+      resolve();
+    });
+  });
 };
 const watchlist = [
   { path: "ui" },
@@ -27,6 +32,8 @@ const watchlist = [
   { path: "i18n" },
   { path: "api" },
   { path: "email" },
+  { path: "fixtures" },
+  { path: "routes" },
   { path: "index.client.js" },
   { path: "index.server.js" },
   ...filesToCopy
@@ -73,21 +80,34 @@ const requiredFileCheck = () => {
     resolve();
   });
 };
-const handleCleanup = (processIds = []) => {
-  process.loader.stop();
-  Object.entries(process.databases || {}).forEach(([_databaseName, databaseInstance]) => {
+const handleCleanup = async (processIds = [
+  process?.serverProcess?.pid,
+  process?.hmrProcess?.pid
+]) => {
+  process.loader.text("Shutting down...");
+  const databases = Object.entries(process.env.DATABASES || {});
+  for (let i = 0; i < databases?.length; i += 1) {
+    const databaseInstance = databases[i] && databases[i][1];
     if (databaseInstance?.pid) {
-      ps.kill(databaseInstance.pid);
+      await killProcess(databaseInstance.pid);
     }
-  });
-  processIds.forEach((processId) => {
-    ps.kill(processId);
-  });
+  }
+  for (let i = 0; i < processIds?.length; i += 1) {
+    const processId = processIds[i];
+    if (processId) {
+      await killProcess(processId);
+    }
+  }
+  process.loader.stop();
   process.exit();
 };
 const handleSignalEvents = (processIds = []) => {
-  process.on("SIGINT", () => handleCleanup(processIds));
-  process.on("SIGTERM", () => handleCleanup(processIds));
+  process.on("SIGINT", async () => {
+    await handleCleanup(processIds);
+  });
+  process.on("SIGTERM", async () => {
+    await handleCleanup(processIds);
+  });
 };
 const handleHMRProcessMessages = () => {
   process.hmrProcess.on("message", (message) => {
@@ -167,31 +187,40 @@ const handleServerProcessSTDIO = () => {
   }
 };
 const startApplicationProcess = () => {
+  const execArgv = [
+    "--no-warnings",
+    "--experimental-specifier-resolution=node"
+  ];
+  if (process.env.NODE_ENV === "development" && process.env.IS_DEBUG_MODE === "true") {
+    execArgv.push("--inspect");
+  }
   const serverProcess = child_process.fork(path.resolve(".joystick/build/index.server.js"), [], {
-    execArgv: ["--no-warnings", "--experimental-specifier-resolution=node"],
+    execArgv,
     silent: true,
     env: {
+      FORCE_COLOR: "1",
+      LOGS_PATH: process.env.LOGS_PATH,
       NODE_ENV: process.env.NODE_ENV,
       PORT: process.env.PORT,
-      JOYSTICK_SETTINGS: process.env.JOYSTICK_SETTINGS,
-      databases: JSON.stringify(process.databases)
+      JOYSTICK_SETTINGS: process.env.JOYSTICK_SETTINGS
     }
   });
   process.serverProcess = serverProcess;
   handleServerProcessSTDIO();
   handleServerProcessMessages();
 };
-const restartApplicationProcess = () => {
+const restartApplicationProcess = async () => {
   if (process.serverProcess && process.serverProcess.pid) {
     process.loader.text("Restarting app...");
-    ps.kill(process.serverProcess.pid);
+    killPortProcess(process.env.PORT);
+    killProcess(process.serverProcess.pid);
     return startApplicationProcess();
   }
   process.loader.text("Starting app...");
   startApplicationProcess();
   startHMRProcess();
 };
-const initialBuild = async () => {
+const initialBuild = async (buildSettings = {}) => {
   const buildPath = `.joystick/build`;
   const fileMapPath = `.joystick/build/fileMap.json`;
   if (!fs.existsSync(buildPath)) {
@@ -202,7 +231,7 @@ const initialBuild = async () => {
   }
   process.loader.text("Building app...");
   await requiredFileCheck();
-  const filesToBuild = getFilesToBuild();
+  const filesToBuild = getFilesToBuild(buildSettings?.excludedPaths);
   const fileResults = await buildFiles(filesToBuild);
   const hasErrors = [...fileResults].filter((result) => !!result).map(({ success }) => success).includes(false);
   if (!hasErrors) {
@@ -210,8 +239,8 @@ const initialBuild = async () => {
     startHMRProcess();
   }
 };
-const startWatcher = async () => {
-  await initialBuild();
+const startWatcher = async (buildSettings = {}) => {
+  await initialBuild(buildSettings);
   const watcher = chokidar.watch(watchlist.map(({ path: path2 }) => path2), {
     ignoreInitial: true
   });
@@ -220,7 +249,7 @@ const startWatcher = async () => {
     process.loader.text("Rebuilding app...");
     if (["addDir"].includes(event) && fs.existsSync(path2) && fs.lstatSync(path2).isDirectory() && !fs.existsSync(`./.joystick/build/${path2}`)) {
       fs.mkdirSync(`./.joystick/build/${path2}`);
-      restartApplicationProcess();
+      await restartApplicationProcess();
     }
     if (!!filesToCopy.find((fileToCopy) => fileToCopy.path === path2)) {
       const isDirectory = fs.statSync(path2).isDirectory();
@@ -231,7 +260,8 @@ const startWatcher = async () => {
         fs.writeFileSync(`./.joystick/build/${path2}`, fs.readFileSync(path2));
       }
       await loadSettings();
-      return restartApplicationProcess();
+      await restartApplicationProcess();
+      return;
     }
     if (["add", "change"].includes(event) && fs.existsSync(path2)) {
       const codependencies = getCodependenciesForFile(path2);
@@ -249,11 +279,13 @@ const startWatcher = async () => {
       }
       if (!hasErrors) {
         process.initialBuildComplete = true;
-        restartApplicationProcess();
+        await restartApplicationProcess();
+        return;
       }
     }
     if (["unlink", "unlinkDir"].includes(event) && !fs.existsSync(`./.joystick/build/${path2}`)) {
-      restartApplicationProcess();
+      await restartApplicationProcess();
+      return;
     }
     if (["unlink", "unlinkDir"].includes(event) && fs.existsSync(`./.joystick/build/${path2}`)) {
       const pathToUnlink = `./.joystick/build/${path2}`;
@@ -264,59 +296,28 @@ const startWatcher = async () => {
       if (stats.isFile()) {
         fs.unlinkSync(pathToUnlink);
       }
-      restartApplicationProcess();
+      await restartApplicationProcess();
+      return;
     }
   });
 };
-const startDatabase = async (database = {}) => {
-  if (database.provider && database.provider === "mongodb") {
-    await startDatabaseProvider("mongodb", database);
-  }
+const startDatabase = async (database = {}, databasePort = 2610) => {
+  process.env.DATABASES = {
+    ...process.env.DATABASES || {},
+    [database.provider]: await startDatabaseProvider(database, databasePort)
+  };
   return Promise.resolve();
 };
-const validateDatabases = (databases = []) => {
-  const databasesNotAsObjects = databases.filter((database) => !isObject(database));
-  const userDatabases = databases.filter((database) => !!database.users);
-  const databasesWithDuplicateNames = databases.flatMap((database, index) => {
-    return databases.map((currentDatabase, currentIndex) => {
-      if (index === currentIndex)
-        return null;
-      if (currentDatabase.provider === database.provider) {
-        return database;
-      }
-    });
-  }).filter((database) => !!database);
-  if (databasesNotAsObjects && databasesNotAsObjects.length > 0) {
-    CLILog(`Please ensure that each database in the config.databases array in your settings.${process.env.NODE_ENV}.json is an object. Correct the array and restart your app.`, {
-      level: "danger",
-      docs: "https://github.com/cheatcode/joystick#databases"
-    });
-    process.exit(1);
-  }
-  if (userDatabases && userDatabases.length > 1) {
-    CLILog(`Please select a single database for your user accounts and restart your app.`, {
-      level: "danger",
-      docs: "https://github.com/cheatcode/joystick#users-database"
-    });
-    process.exit(1);
-  }
-  if (databasesWithDuplicateNames && databasesWithDuplicateNames.length > 1) {
-    CLILog(`Please only specify a database provider once. Remove any duplicates from the config.databases array in your settings.${process.env.NODE_ENV}.json and restart your app.`, {
-      level: "danger",
-      docs: "https://github.com/cheatcode/joystick#databases"
-    });
-    process.exit(1);
-  }
-  return true;
-};
-const startDatabases = async () => {
+const startDatabases = async (databasePortStart = 2610) => {
   try {
     const hasSettings = !!process.env.JOYSTICK_SETTINGS;
     const settings = hasSettings && JSON.parse(process.env.JOYSTICK_SETTINGS);
     const databases = settings?.config?.databases || [];
     if (databases && Array.isArray(databases) && databases.length > 0) {
-      validateDatabases(databases);
-      await Promise.all(databases.map((database) => startDatabase(database)));
+      validateDatabasesFromSettings(databases);
+      for (let i = 0; i < databases?.length; i += 1) {
+        await startDatabase(databases[i], databasePortStart + i);
+      }
       return Promise.resolve();
     }
     return Promise.resolve();
@@ -349,7 +350,7 @@ const loadSettings = async () => {
   }
   const settingsFile = isValidJSON ? rawSettingsFile : "{}";
   process.env.JOYSTICK_SETTINGS = settingsFile;
-  return settingsFile;
+  return JSON.parse(settingsFile);
 };
 const checkIfJoystickProject = () => {
   return fs.existsSync(`${process.cwd()}/.joystick`);
@@ -357,6 +358,7 @@ const checkIfJoystickProject = () => {
 var start_default = async (args = {}, options = {}) => {
   process.loader = new Loader({ defaultMessage: "Starting app..." });
   const port = options?.port ? parseInt(options?.port) : 2600;
+  const databasePortStart = port + 10;
   const isJoystickProject = checkIfJoystickProject();
   if (!isJoystickProject) {
     CLILog("This is not a Joystick project. A .joystick folder could not be found.", {
@@ -367,11 +369,13 @@ var start_default = async (args = {}, options = {}) => {
   }
   await killPortProcess(port);
   process.title = "joystick";
+  process.env.LOGS_PATH = options?.logs || null;
   process.env.NODE_ENV = options?.environment || "development";
   process.env.PORT = options?.port ? parseInt(options?.port) : 2600;
-  await loadSettings();
-  await startDatabases();
-  startWatcher();
+  process.env.IS_DEBUG_MODE = options?.debug;
+  const settings = await loadSettings();
+  await startDatabases(databasePortStart);
+  startWatcher(settings?.config?.build);
   handleSignalEvents([]);
 };
 export {

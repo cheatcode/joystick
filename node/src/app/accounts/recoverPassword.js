@@ -8,7 +8,8 @@ export default async (options = {}) => {
       emailAddress: options.emailAddress,
     });
 
-    const url = `${options.origin}/reset-password/${resetToken}`;
+    const domain = process.env.ROOT_URL || `http://localhost:${process.env.PORT}`;
+    const url = `${domain}/reset-password/${resetToken}`;
 
     if (process.env.NODE_ENV === "development") {
       console.log({ url });

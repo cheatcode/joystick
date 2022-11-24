@@ -1,0 +1,1 @@
+var o=["render"];var t=(e="",r={})=>{throw new Error(`[joystick${e?`.${e}`:""}] ${r.message||r.reason||r}`)};var d=(e={})=>{try{return o.every(r=>Object.keys(e).includes(r))}catch(r){t("component.hasAllRequiredOptions",r)}};export{d as default};

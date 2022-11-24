@@ -32,6 +32,7 @@ const findCodependenciesInMap = (pathVariations = [], map = {}) => {
 const getPathVariations = (path = "") => {
   const pathParts = path.split("/");
   const variations = [];
+  const lastPathPart = pathParts && pathParts[pathParts.length - 1];
 
   pathParts.forEach((pathPart, pathPartIndex) => {
     let base = `${pathPart}`;
@@ -47,6 +48,11 @@ const getPathVariations = (path = "") => {
     });
   });
 
+  if (lastPathPart?.includes('.')) {
+    variations.push(`./${lastPathPart}`);
+    variations.push(`./${lastPathPart?.split('.')[0]}`);
+  }
+
   variations.push(`./${pathParts[0]}`);
   variations.push(`./${pathParts[0]}/index`);
   variations.push(`./${pathParts[0]}/index.js`);
@@ -61,9 +67,7 @@ const getPathVariations = (path = "") => {
 
 export default (pathToFind = "") => {
   const pathVariations = getPathVariations(pathToFind);
-
   const fileDependencyMap = readFileDependencyMap();
-
   const codpendencies = findCodependenciesInMap(
     pathVariations,
     fileDependencyMap

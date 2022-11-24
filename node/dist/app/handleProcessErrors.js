@@ -17,7 +17,9 @@ var handleProcessErrors_default = (listeners = {}) => {
     }
   });
   process.on("message", async (message, sendHandle) => {
-    console.log(message);
+    if (process.env.NODE_ENV !== "test") {
+      console.log(message);
+    }
     if (listeners?.message && typeof listeners.message === "function") {
       listeners.message(message, sendHandle);
     }

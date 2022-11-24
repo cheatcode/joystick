@@ -34,7 +34,7 @@ try {
 }
 
 if (process.env.NODE_ENV === 'production') {
-  execSync(`git add . && git commit -m "release @joystick.js/ui@${version}" && git push origin master`);
+  execSync(`git add . && git commit -m "release @joystick.js/ui@${version}"`);
 }
 
 if (process.env.NODE_ENV === 'development') {

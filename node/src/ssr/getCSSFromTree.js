@@ -55,9 +55,11 @@ const getCSSFromTree = (tree = {}, css = []) => {
   }
 
   if (tree.children && tree.children.length > 0) {
-    tree.children.forEach((childTree) => {
-      getCSSFromTree(childTree, css);
-    });
+    let processed = tree?.children?.length || 0;
+
+    while(processed--) {
+      getCSSFromTree(tree.children[processed], css);
+    }
   }
 
   return css;

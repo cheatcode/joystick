@@ -1,38 +1,41 @@
 import esbuild from "esbuild";
+import svg from "esbuild-plugin-svg";
 import fs from "fs";
 import plugins from "./buildPlugins.js";
 import onWarn from "./onWarn.js";
 import getCodeFrame from "../../lib/getCodeFrame.js";
 const configs = {
-  node: (inputPath) => ({
+  node: (inputPath, outputPath = null) => ({
     entryPoints: [inputPath],
     bundle: false,
-    outfile: `./.joystick/build/${inputPath}`,
+    outfile: `${outputPath || "./.joystick/build"}/${inputPath}`,
     platform: "node",
     format: "esm",
     minify: process.env.NODE_ENV !== "development",
     logLevel: "silent",
     plugins: [plugins.generateFileDependencyMap]
   }),
-  browser: (inputPath) => ({
-    target: "es2020",
-    entryPoints: [inputPath],
-    bundle: true,
-    outfile: `./.joystick/build/${inputPath}`,
-    platform: "browser",
-    format: "esm",
-    minify: process.env.NODE_ENV !== "development",
-    logLevel: "silent",
-    plugins: [
-      plugins.generateFileDependencyMap,
-      plugins.bootstrapLayoutComponent,
-      plugins.bootstrapPageComponent
-    ]
-  })
+  browser: (inputPath, outputPath = null) => {
+    return {
+      target: "es2020",
+      entryPoints: [inputPath],
+      bundle: true,
+      outfile: `${outputPath || "./.joystick/build"}/${inputPath}`,
+      platform: "browser",
+      format: "esm",
+      minify: process.env.NODE_ENV !== "development",
+      logLevel: "silent",
+      plugins: [
+        plugins.generateFileDependencyMap,
+        plugins.bootstrapComponent,
+        svg()
+      ]
+    };
+  }
 };
-var buildFile_default = async (file = "", platform = "") => {
+var buildFile_default = async (file = "", platform = "", outputPath = "") => {
   return new Promise(async (resolve) => {
-    const config = configs[platform] && configs[platform](file);
+    const config = configs[platform] && configs[platform](file, outputPath);
     if (config) {
       try {
         await esbuild.build(config);

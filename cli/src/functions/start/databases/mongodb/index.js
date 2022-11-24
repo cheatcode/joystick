@@ -2,19 +2,17 @@ import fs from "fs";
 import chalk from "chalk";
 import util from "util";
 import commandExists from "command-exists";
-import child_process, { spawn } from "child_process";
-import { killPortProcess } from 'kill-port-process';
+import child_process, { spawn, spawnSync } from "child_process";
+import { kill as killPortProcess } from 'cross-port-killer';
+import isWindows from "../../isWindows.js";
+import CLILog from "../../../../lib/CLILog.js";
+import getProcessIdFromPort from "../../getProcessIdFromPort.js";
 
 const exec = util.promisify(child_process.exec);
 
-const getMongoProcessId = (stdout = null) => {
-  const forkedProcessId = stdout && stdout.match(/forked process:+\s[0-9]+/gi);
-  const processId =
-    forkedProcessId &&
-    forkedProcessId[0] &&
-    forkedProcessId[0].replace("forked process: ", "");
-
-  return processId && parseInt(processId, 10);
+const getMongoProcessId = async (port = 2601) => {
+  const pids = await getProcessIdFromPort(port);
+  return pids.tcp && pids.tcp[0];
 };
 
 const warnMongoDBMissing = () => {
@@ -31,7 +29,7 @@ const checkIfMongoDBExists = () => {
   return commandExists.sync("mongod");
 };
 
-const startMongoDB = async () => {
+const startMongoDB = async (port = 2010) => {
   const mongodbExists = checkIfMongoDBExists();
 
   if (!mongodbExists) {
@@ -47,17 +45,51 @@ const startMongoDB = async () => {
   }
 
   try {
-    const mongodbPort = parseInt(process.env.PORT, 10) + 1;
+    const mongodbPort = port;
     await killPortProcess(mongodbPort);
-    const { stdout } = await exec(
-      `mongod --port ${mongodbPort} --dbpath ./.joystick/data/mongodb --quiet --fork --logpath ./.joystick/data/mongodb/log`
+
+    if (isWindows) {
+      const mongodbVersions = fs
+        .readdirSync(`C:\\Program Files\\MongoDB\\Server\\`)
+        .sort()
+        .reverse();
+
+      if (mongodbVersions && mongodbVersions.length === 0) {
+        CLILog(
+          `Couldn't find any MongoDB versions in C:\\Program Files\\MongoDB\\Server. Please double-check your MongoDB installation or re-install MongoDB and try again.`, {
+          level: 'danger',
+          docs: 'https://github.com/cheatcode/joystick#databases',
+        });
+        process.exit(1);
+        return;
+      }
+    }
+
+    const databaseProcess = child_process.spawn(
+      `mongod`,
+      [
+        '--port',
+        mongodbPort,
+        '--dbpath',
+        './.joystick/data/mongodb',
+        '--quiet',
+      ].filter((command) => !!command),
     );
 
-    return getMongoProcessId(stdout);
+    return new Promise((resolve) => {
+      databaseProcess.stdout.on('data', async (data) => {
+        const stdout = data?.toString();
+        if (stdout.includes('Waiting for connections')) {
+          const processId = await getMongoProcessId(mongodbPort);
+          resolve(processId);
+          return processId;
+        }
+      });
+    });
   } catch (exception) {
     console.warn(exception);
     process.exit(1);
   }
 };
 
-export default async (options = {}) => await startMongoDB(options);
+export default async (port = 2610) => await startMongoDB(port);

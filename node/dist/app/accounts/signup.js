@@ -3,6 +3,9 @@ import generateSession from "./generateSession";
 import formatErrorString from "../../lib/formatErrorString";
 import runUserQuery from "./runUserQuery";
 import { isObject } from "../../validation/lib/typeValidators";
+import getOutput from "../getOutput";
+import typesMap from "../databases/typesMap";
+import getUsersDatabase from "./getUsersDatabase";
 const addSessionToUser = (userId = null, session = null) => {
   try {
     return runUserQuery("addSession", { userId, session });
@@ -26,13 +29,21 @@ const insertUserInDatabase = async (user = {}) => {
 };
 const getUserToCreate = async (options = {}) => {
   try {
+    const usersDatabase = getUsersDatabase();
+    const usersDatabaseType = typesMap[usersDatabase];
     let user = {
       password: await hashString(options.password)
     };
     if (options?.emailAddress) {
       user.emailAddress = options?.emailAddress;
     }
-    if (options?.metadata && isObject(options.metadata)) {
+    if (options?.username) {
+      user.username = options?.username;
+    }
+    if (options?.metadata && isObject(options.metadata) && usersDatabaseType === "sql" && options?.metadata?.language) {
+      user.language = options?.metadata?.language;
+    }
+    if (options?.metadata && isObject(options.metadata) && usersDatabaseType === "nosql") {
       user = {
         ...options.metadata,
         ...user
@@ -66,13 +77,16 @@ const signup = async (options, { resolve, reject }) => {
     const userId = await insertUserInDatabase(userToCreate);
     const user = await getUserByUserId(userId);
     const session = generateSession();
-    await addSessionToUser(user._id, session);
+    if (user?._id || user?.user_id) {
+      await addSessionToUser(user._id || user?.user_id, session);
+    }
     return resolve({
       ...session,
       userId,
-      user
+      user: getOutput(user, options?.output)
     });
   } catch (exception) {
+    console.log(exception);
     reject(formatErrorString("signup", exception));
   }
 };

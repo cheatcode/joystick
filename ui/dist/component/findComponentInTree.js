@@ -1,1 +1,0 @@
-var y=r=>!!(r&&typeof r=="object"&&!Array.isArray(r)),l=(r={},i="",f={})=>{let d=r&&r.id;if(y(r)&&d){let c=Object.entries(r);for(let t=0;t<c.length;t+=1){let[s,e]=c[t];if(s==="id"&&e===i)return r;if(s==="children"&&Array.isArray(e))for(let n=0;n<e.length;n+=1){let u=e[n],o=l(u,i,f);if(o!==null)return o}}}return null},h=l;export{h as default};

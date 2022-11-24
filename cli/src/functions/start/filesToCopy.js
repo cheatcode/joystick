@@ -1,6 +1,7 @@
 export default [
   { path: "i18n" },
   { path: "public" },
+  { path: "private" },
   { path: "index.html" },
   { path: "index.css" },
   { path: "package.json" },

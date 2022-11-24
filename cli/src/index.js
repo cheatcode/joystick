@@ -1,54 +1,13 @@
-#!/usr/bin/env node --no-warnings
+#!/usr/bin/env node
 
-import chalk from 'chalk';
-import help from './lib/help.js';
-import functions from './functions/index.js';
-import getArgs from './lib/getArgs.js';
-import getOptions from './lib/getOptions.js';
+import { spawn } from 'child_process';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
 
-const functionNames = Object.keys(functions);
-const functionsCalled = process.argv.filter((arg) => functionNames.includes(arg));
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
-const showHelp = process.argv.some((arg) => ['-h', '--help'].includes(arg));
+// NOTE: Capture args passed to command line to forward to spawned script.
+const args = process.argv.slice(2, process.argv.length);
 
-if (showHelp || functionsCalled.length === 0) {
-  help();
-  process.exit(0);
-}
-
-if (functionsCalled.length > 1) {
-  console.log(chalk.red('Only one function can be called at a time.'));
-  process.exit(0); 
-}
-
-if (functionsCalled.includes('create')) {
-  const args = getArgs(functions.create.args);
-  const options = getOptions(functions.create.options);
-    
-  if (!args.name) {
-    console.log(chalk.red('Must pass a <name> for your app to joystick create. Run joystick --help for examples.'));
-    process.exit(0);
-  }
-
-  if (functions.create.function && typeof functions.create.function === 'function') {
-    functions.create.function(args, options);
-  }
-}
-
-if (functionsCalled.includes('start')) {
-  const args = getArgs(functions.start.args);
-  const options = getOptions(functions.start.options);
-
-  if (functions.start.function && typeof functions.start.function === 'function') {
-    functions.start.function(args, options);
-  }
-}
-
-if (functionsCalled.includes('build')) {
-  const args = getArgs(functions.build.args);
-  const options = getOptions(functions.build.options);
-
-  if (functions.build.function && typeof functions.build.function === 'function') {
-    functions.build.function(args, options);
-  }
-}
+spawn('node', ['--no-warnings', `${__dirname}/cli.js`, ...args], { stdio: 'inherit' });

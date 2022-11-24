@@ -16,7 +16,7 @@ export default () => {
   const filteredFiles = files.filter((path) => {
     return (
       !fs.lstatSync(path).isDirectory() &&
-      !["node_modules", ".DS_Store"].some((excludedPath) => {
+      !["node_modules", ".DS_Store", "src/tests"].some((excludedPath) => {
         return path.includes(excludedPath);
       })
     );

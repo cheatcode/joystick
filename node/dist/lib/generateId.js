@@ -1,5 +1,13 @@
-import crypto from "crypto-extra";
-var generateId_default = (length = 16) => crypto.randomString(length);
+const characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ01234567890".split("");
+var generateId_default = (length = 16) => {
+  let id = "";
+  let i = 0;
+  while (i < length) {
+    id += characters[Math.floor(Math.random() * (characters.length - 1))];
+    i += 1;
+  }
+  return id;
+};
 export {
   generateId_default as default
 };

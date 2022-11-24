@@ -1,48 +1,14 @@
-import mongodb from "./mongodb/index.js";
-import checkMongoDBConnection from "./mongodb/checkConnection.js";
+import connectMongoDB from './mongodb/connect.js';
+import connectPostgreSQL from './postgresql/connect.js';
 
-export default async (provider = "", settings = {}) => {
-  if (provider === "mongodb") {
-    process.loader.text("Starting MongoDB...");
-
-    const hasConnection =
-      settings.connection && Object.keys(settings.connection).length > 0;
-    let db = null;
-
-    if (hasConnection) {
-      await checkMongoDBConnection(settings.connection);
-    }
-
-    if (!hasConnection) {
-      db = await mongodb(settings);
-    }
-
-    const defaultConnection = {
-      hosts: [
-        {
-          hostname: "127.0.0.1",
-          port: parseInt(process.env.PORT, 10) + 1,
-        },
-      ],
-      database: "app",
-      username: "",
-      password: "",
-    };
-
-    const instance = {
-      pid: db,
-      connection: hasConnection ? settings.connection : defaultConnection,
-      settings,
-    };
-
-    process.databases = process.databases
-      ? {
-          ...process.databases,
-          mongodb: instance,
-        }
-      : {
-          mongodb: instance,
-        };
+export default async (database = {}, databasePort = 2610) => {
+  switch(database.provider) {
+    case 'mongodb':
+      process.loader.text("Starting MongoDB...");
+      return connectMongoDB(database, databasePort);
+    case 'postgresql':
+      process.loader.text("Starting PostgreSQL...");
+      return connectPostgreSQL(database, databasePort);
   }
 
   return Promise.resolve();

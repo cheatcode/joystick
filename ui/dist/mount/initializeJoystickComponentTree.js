@@ -1,0 +1,1 @@
+var t=(r="",e={})=>{throw new Error(`[joystick${r?`.${r}`:""}] ${e.message||e.reason||e}`)};var n=(r={})=>{try{window.joystick._internal.tree={id:r?.id||null,instanceId:r?.instanceId||null,instance:r,children:[]}}catch(e){t("mount.initializeJoystickComponentTree",e)}};export{n as default};

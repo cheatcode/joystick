@@ -1,51 +1,71 @@
-<img src="https://cheatcode-assets.s3.amazonaws.com/cheatcode-logo-sm.svg" alt="CheatCode">
+<br />
+<img style="width: 200px;" src="https://cheatcode-assets.s3.amazonaws.com/logo-transparent.png" alt="CheatCode">
 
 ## Joystick (Beta)
 
 The full-stack JavaScript framework.
 
+[Join the Discord](https://discord.gg/UTy4Fpy)
+
+---
+
 #### Table of Contents
 
 0. ⚠️ [Beta Warning](#beta-warning)
 1. [What is Joystick?](#what-is-joystick)
-2. [Installation](#installation)
-3. [Getting Started](#getting-started)
-4. [Folder and file structure](#folder-and-file-structure)
+2. [Joystick vs. Other Frameworks](#joystick-vs-other-frameworks)
+3. [Installation](#installation)
+4. [Getting Started](#getting-started)
+   - [Tutorials](#tutorials)
+5. [Folder and file structure](#folder-and-file-structure)
    - [/api](#api)
+   - [/fixtures](#fixtures)
    - [/email](#email)
    - [/i18n](#i18n)
    - [/lib](#lib)
    - [/node_modules](#node_modules)
    - [/public](#public)
+   - [/private](#private)
    - [/ui](#ui)
+   - [/routes](#routes)
    - [index.client.js](#indexclientjs)
    - [index.css](#indexcss)
    - [index.html](#indexhtml)
    - [index.server.js](#indexserverjs)
    - [package.json](#packagejson)
    - [settings.env.json](#settingsenvjson)
-5. [Settings](#settings)
+6. [Settings](#settings)
    - [Defining settings per environment](#defining-settings-per-environment)
    - [Defining Joystick configuration](#defining-joystick-configuration)
    - [Defining global settings](#defining-global-settings)
    - [Defining public settings](#defining-public-settings)
    - [Defining server settings](#defining-private-settings)
-6. [@joystick.js/cli](#joystickjscli)
+7. [@joystick.js/cli](#joystickjscli)
    - [joystick create](#joystick-create)
    - [joystick start](#joystick-start)
    - [joystick build](#joystick-build)
-7. [Databases](#databases)
+   - [joystick update](#joystick-update)
+8. [Databases](#databases)
    - [Adding a database](#adding-a-database)
    - [Users database](#users-database)
    - [MongoDB](#mongodb)
+   - [PostgreSQL](#postgresql)
    - [Adding a remote database](#adding-a-remote-database)
-8. [Accounts](#accounts)
+9. [Accounts](#accounts)
    - [accounts.signup](#accountssignup)
    - [accounts.login](#accountslogin)
    - [accounts.logout](#accountslogout)
+   - [accounts.authenticated](#accountsauthenticated)
+   - [accounts.user](#accountsuser)
    - [accounts.recoverPassword](#accountsrecoverpassword)
    - [accounts.resetPassword](#accountsresetpassword)
-9. [@joystick.js/ui](#joystickjsui)
+   - [accounts.roles](#accountsroles)
+     - [accounts.roles.add](#accountsrolesadd)
+     - [accounts.roles.remove](#accountsrolesremove)
+     - [accounts.roles.grant](#accountsrolesgrant)
+     - [accounts.roles.revoke](#accountsrolesrevoke)
+     - [accounts.roles.userHasRole](#accountsrolesuserhasrole)
+10. [@joystick.js/ui](#joystickjsui)
     - [Writing a component](#writing-a-component)
     - [Render functions](#render-functions)
       - [component() and c()](#component-and-c)
@@ -54,20 +74,27 @@ The full-stack JavaScript framework.
       - [i18n() and i()](#i18n-and-i)
     - [Props](#props)
     - [State](#state)
+    - [Data](#data)
+      - [Refetching Data](#refetching-data)
     - [Lifecycle methods](#lifecycle-methods)
     - [Methods](#methods)
     - [DOM Events](#dom-events)
     - [CSS](#css)
+    - [Global State](#global-state)
+      - [Setting](#updating-the-cache)
+      - [Unsetting](#unsetting-the-cache)
+      - [Getting](#getting-data-from-the-cache)
+      - [Listening for Changes](#listening-for-cache-changes) 
     - [Form Validation](#form-validation)
     - [Accessing URL and query params](#accessing-url-and-query-params)
     - [Writing comments](#writing-comments)
     - [Accessing a Component's DOM Node](#accessing-the-dom-node)
-10. [@joystick.js/node](#joystickjsnode)
+11. [@joystick.js/node](#joystickjsnode)
     - [Defining an app](#defining-an-app)
     - [Middleware](#middleware)
       - [Configuring built-in middleware](#configuring-built-in-middleware)
       - [Adding custom middleware](#adding-custom-middleware)
-    - [Routes](#routes)
+    - [Routes](#node-routes)
       - [Defining routes](#defining-routes)
       - [Defining routes for specific HTTP methods](#defining-routes-for-specific-http-methods)
       - [req.context.ifLoggedIn()](#reqcontextifloggedin)
@@ -80,6 +107,7 @@ The full-stack JavaScript framework.
     - [API](#api-1)
       - [Getters](#getters)
       - [Setters](#setters)
+      - [Accessing getters and setters as HTTP endpoints](#accessing-getters-and-setters-as-http-endpoints)
       - [Validating inputs](#validating-inputs)
       - [Authorization](#authorization)
       - [Schema](#schema)
@@ -90,7 +118,10 @@ The full-stack JavaScript framework.
       - [Adding a language file](#adding-a-language-file)
       - [Accessing translations](#accessing-translations)
     - [Handling process events](#handling-process-events)
-11. [Deployment](#deployment)
+    - [__filename and __dirname](#__filename-and-__dirname)
+12. [Deployment](#deployment)
+    - [Setting and utilizing a ROOT_URL](#setting-and-utilizing-a-ROOT_URL)
+    - [Joystick Deploy](#joystick-deploy)
 
 ---
 
@@ -121,6 +152,42 @@ Joystick includes:
 - Built-in server-side rendering of components built with `@joystick.js/ui` and automatic, no code, client-side hydration.
 - Hot module reloading in development.
 
+## Joystick vs. Other Frameworks
+
+A quick comparison table of Joystick vs. other frameworks can be [found here](https://tinyurl.com/joystick-comparison).
+
+### What distinguishes Joystick from other frameworks?
+
+Joystick is a full-stack framework, not front-end only. The UI part (@joystick.js/ui) is designed to snap in to the back-end/server part (@joystick.js/node). The advantage is that you're not wasting time trying to stitch together disparate parts that may or may not work together (or even worse, may or may not be supported long-term).
+
+Further, the current crop of frameworks seeks to overcomplicate APIs and are indecisive about how things should be done (as evidenced by the introduction of patterns that are "the way" one day and then a few months later are "deprecated"). This leads to a lot of confusion at the community level which makes it hard to build software that can endure over time.
+
+Even worse, these frameworks introduce their own languages/syntax which are foreign to what a beginner would learn (HTML, CSS, and JavaScript). This not only creates confusion and slows down the learning process, but it also creates the long-term nightmare of developers not understanding the fundamentals of the tools they use to build. Eventually, you hit a drop-off point where people think that, for example, JSX is HTML and in a pinch where they can't use React, are ineffective or incapable of completing the task properly.
+
+By contrast, Joystick is designed to be stable, long-term, from the beginning (i.e., no random "hey, we're deprecating all this stuff you depend on for this more confusing API that's less descriptive"). It's also based on the core technologies of the web: HTML, CSS, and JavaScript. Joystick doesn't introduce any hacks or syntax tricks to render the component. It's plain HTML, CSS, and JavaScript. This means that the transition from learning the basics of the web to shipping apps is far smoother (and an individual developer is less likely to make mistakes/get confused as everything looks consistent with where they started).
+
+Joystick's front-end component API and back-end API are designed to be fixed long-term. So, an app you write in Joystick today will look the same 10 years from now (features will be added/improved over time, but core APIs will not be deprecated unless there is a major security or performance issue). We like to refer to Joystick as "The Honda Civic of JavaScript Frameworks."
+
+### Who should use Joystick?
+
+SMBs, startups, and freelancers/contractors.
+
+For SMBs/startups, it's a solid framework for shipping custom software for your business (or a consumer/b2b SaaS) that you can rely on long-term. So, build it today and maintenance is limited to some patch upgrades and new features/improving existing features. Never a surprise refactor being plopped on the roadmap, distracting you and your team from delivering value to customers. Joystick also broadens your talent pool for hires as it's not using a proprietary language or set of conventions for working with it (if they understand HTML, CSS, and JavaScript, they'll understand Joystick).
+
+For freelancers/contractors, remove the overwhelm of juggling a bunch of disparate codebases across clients that each have their own shifting requirements (i.e., standardize what you ship, full-stack). This allows you to take on more work, but also, make your long-term support more predictable as the framework you're building on isn't going to rug pull you down the road. This allows you to build a better business with happier clients.
+
+Joystick is offered by CheatCode, an independent (not venture-backed) business. We understand the importance of long-term viability of technological bets and the effect surprise "rug pulls" can have on profits. Venture-backed startups are less-focused on the long-term as their existence is based on short-term ROI (return on investment) for investors. Even if CheatCode goes away, Joystick will continue to exist and be maintained by its creator, Ryan, for the sake of enjoyment/fun and use on his own projects. When we say "long-term," we mean it—[the bus factor](https://en.wikipedia.org/wiki/Bus_factor) withstanding. Even then, Joystick's stable-by-design and FOSS/MIT-licensure means a willing party can take the torch and run if Ryan merges with the infinite.
+
+### What does Joystick do? What doesn't it do?
+
+It allows you to define routes on the server which when matched, render some HTML, CSS, and JavaScript using a component framework that's a light abstraction over those core technologies (think what Rails or Django do but with JavaScript). It also makes it easy to define a JSON-RPC API that can be called directly from components, giving you complete transparency into the flow of data between the client and server without any ambiguity. In addition, it adds the necessary wiring to start and connect drivers for databases to your app with a few lines of configuration in the app's `settings.development.json` file, piping those drivers to where you need them (namely, your routes and your API endpoints/handlers).
+
+The back-end is just a plain Express.js/Node.js app so anything you can do in a standalone Node project, you can do in Joystick without any limitations. So, if you want to use a third-party package, just run npm install <blah> and it will work.
+
+All of this is backed by a built-in SSR/hydration implementation so all you have to do is write your routes, API, and components. No time wasted on wiring the front to the back-end. All of that is automated via the lightning-fast build system built around esbuild (which is implemented/configured out-of-the-box) so you can just run `joystick start` and get to work in a few seconds.
+
+What Joystick _doesn't_ do is get in your way and it isn't a ticking time bomb of deprecation. It allows you to actually focus on the product you're building, long-term.
+
 ## Installation
 
 To get started with Joystick, install the CLI via NPM:
@@ -149,6 +216,19 @@ cd <app> && joystick start
 
 This will build your app and start it at `http://localhost:2600`.
 
+> Questions about Joystick? [Join the Discord](https://discord.gg/UTy4Fpy).
+
+### Tutorials
+
+A great way to get familiar with Joystick beyond this documentation is to check out some of the tutorials walking through the basics over on CheatCode:
+
+- [Building and Rendering Your First Joystick Component](https://cheatcode.co/tutorials/building-and-rendering-your-first-joystick-component)
+- [How to Implement an API Using Getters and Setters in Joystick](https://cheatcode.co/tutorials/how-to-implement-an-api-using-getters-and-setters-in-joystick)
+- [How to Fetch and Render Data in Joystick Components](https://cheatcode.co/tutorials/how-to-fetch-and-render-data-in-joystick-components)
+- [How to Wire Up User Accounts and Authenticated Routing in Joystick](https://cheatcode.co/tutorials/how-to-wire-up-user-accounts-and-authenticated-routing-in-joystick)
+- [How to Upload Files to Multiple Locations Simultaneously with Joystick](https://cheatcode.co/tutorials/how-to-upload-files-to-multiple-locations-simultaneously-with-joystick)
+- [How to Define Templates and Send Email with Joystick](https://cheatcode.co/tutorials/how-to-define-templates-and-send-email-with-joystick)
+
 ## Folder and file structure
 
 Joystick takes an opinionated approach to file structure. It is _not_ designed to be a one-size-fits-all framework which means that the structure of your project **must** follow Joystick's guidelines.
@@ -160,11 +240,14 @@ The default structure for a Joystick app consists of the following:
 ```javascript
 ├── /api
 │   ├── index.js
+├── /fixtures
 ├── /email
 │   ├── base.html
 ├── /i18n
 │   ├── en-US.js
 ├── /lib
+│   ├── /browser
+│   ├── /node
 ├── /node_modules
 ├── /public
 │   ├── apple-touch-icon-152x152.png
@@ -172,10 +255,12 @@ The default structure for a Joystick app consists of the following:
 │   ├── manifest.json
 │   ├── service-worker.js
 │   ├── splash-screen-1024x1024.png
+├── /private
 ├── /ui
 │   ├── /components
 │   ├── /layouts
 │   ├── /pages
+├── /routes
 ├── index.client.js
 ├── index.css
 ├── index.html
@@ -196,6 +281,10 @@ Inside of `/api/index.js`, all of your getters and setters are imported from eac
 
 Your `/api/index.js` file is then imported in your `index.server.js` file and passed as the `api` property on your call to `node.app()`.
 
+### /fixtures
+
+An optional folder for storing database fixtures. Files here can be imported into `/index.server.js` and called via the `fixtures` function on the options passed to `node.app()`. 
+
 ### /email
 
 This folder contains the `base.html` file for all of the emails in your app and your email templates defined as Joystick components in `.js` files (e.g., `/email/welcome.js` or `/email/reset-password.js`).
@@ -208,6 +297,8 @@ This folder contains all of the internationalization or translation files for yo
 
 This folder contains all of these miscellaneous/shared functions and data for your application. For example, a function like `lib/formatEmailAddress.js` or some generic data like `/lib/animals.json`.
 
+> Files located at the root of `/lib` are treated as browser (universal) JavaScript. If you have modules that need to be built specifically for the browser or specifically for Node.js, you can place them in the /lib/browser or /lib/node directory, respectively.
+
 ### /node_modules
 
 All of the currently installed NPM modules for the application.
@@ -215,6 +306,10 @@ All of the currently installed NPM modules for the application.
 ### /public
 
 Any public-facing, static assets for your application like your `favicon.ico` file or your app's logo. All files in this folder are mapped to the root `/` URL in your application (e.g., `/public/favicon.ico` would map to `http://localhost:2600/favicon.ico` in development).
+
+### /private
+
+Any private assets that you _do not_ want to expose to the public (e.g., a `.pem` file). This folder is only accessible on the server.
 
 ### /ui
 
@@ -225,6 +320,10 @@ This folder contains all of the Joystick components for your app. Components are
 - `pages` - Components that are intended to be rendered by your router. A page components consists of some HTML and a composition of _other_ components (e.g., components that live in your `/ui/components` directory).
 
 Regardless of type, components should be organized into their own folders containing an `index.js` file (e.g., `ui/components/toggleSwitch/index.js` or `ui/pages/notifications/index.js`).
+
+### /routes
+
+An optional folder for storing files containing route definitions. Helpful if you're building a large application with several routes and you want to avoid defining them all together in `/index.server.js`.
 
 ### index.client.js
 
@@ -292,12 +391,29 @@ Any or all of these files should be stored at the root of your project folder. *
 
 Configuration specific to Joystick is stored in the `config` object within your settings file. Currently, Joystick anticipates the following properties under config:
 
+- `build` an object of settings for build configuration (more information below).
 - `databases` an array of objects describing the databases you want Joystick to start for you in development and load drivers for in _all_ environments.
 - `i18n` an object containing configuration related to Joystick's internationalization feature.
 - `middleware` configuration for the built-in, third-party middleware implemented by Joystick when starting your app.
 - `email` configuration for Joystick's `email.send()` function.
 
 For specific configuration properties, see the corresponding section in the documentation below.
+
+#### Defining build settings
+
+To configure builds of your app, the `config.build` object should be utilized in your `settings.<env>.json` file. Currently, the only configuration option for builds are paths to exclude during the build process:
+
+```javascript
+{
+  "config": {
+    "build": {
+      "excludedPaths": ["repos/", "downloads/"]
+    }
+  }
+}
+```
+
+Paths in the `excludedPaths` array will be filtered out of the build process. **Note**: all paths listed should _not_ include a preceeding slash (i.e, write `repos/` not `/repos`).
 
 ### Defining global settings
 
@@ -403,6 +519,22 @@ This will build your application to the `.joystick/build` folder at the root of 
 
 **Note**: this feature is not well-tuned for production environments yet. **Use with caution and low expectations**.
 
+### joystick update
+
+To update an existing Joystick project, from the root of the project, run:
+
+```javascript
+joystick update
+```
+
+For example, assuming your project lives at `~/projects/spotify` on your computer:
+
+```javascript
+cd ~/projects/spotify && joystick update
+```
+
+This will update `@joystick.js/node` and `@joystick.js/ui` in the project and `@joystick.js/cli` globally on your computer.
+
 ## Databases
 
 One of the flagship features of Joystick is the ability to run one or more databases in development and connect the Node.js drivers for those databases to your Joystick app. This allows you to run multiple databases alongside your app simultaneously.
@@ -411,11 +543,41 @@ One of the flagship features of Joystick is the ability to run one or more datab
 
 ### Adding a database
 
-Databases are added via the `config.databases` array in your `settings.env.json` file. **As of the current release, MongoDB is the only database supported but support for PostgreSQL and Redis are planned for the 1.0 release**.
+Databases are added via the `config.databases` array in your `settings.env.json` file.
 
 Joystick starts and connects to databases based on the contents of the `config.databases` array. If a database isn't in this array, **it will not be started alongside your app and its driver will not be connected in your app**.
 
-To specify a database:
+The table below showcases which databases Joystick currently supports (and which features each database supports):
+
+<table>
+  <thead>
+    <tr>
+      <th>Database</th>
+      <th>Autostart via CLI</th>
+      <th>User Accounts</th>
+      <th>Node.js Driver</th>
+      <th>Notes</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>MongoDB</td>
+      <td style="text-align:center;">✅</td>
+      <td style="text-align:center;">✅</td>
+      <td style="text-align:center;">✅</td>
+      <td style="text-align:left;"></td>
+    </tr>
+    <tr>
+      <td>PostgreSQL</td>
+      <td style="text-align:center;">✅</td>
+      <td style="text-align:center;">✅</td>
+      <td style="text-align:center;">✅</td>
+      <td style="text-align:left;"><code>metadata</code> field passed to <code>accounts.signup()</code> only supports the <code>language</code> property.</td>
+    </tr>
+  </tbody>
+</table>
+
+To specify databases:
 
 ```javascript
 {
@@ -424,6 +586,10 @@ To specify a database:
       {
         "provider": "mongodb",
         "options": {}
+      },
+      {
+        "provider": "postgresql",
+        "options": {}
       }
     ]
   }
@@ -431,6 +597,8 @@ To specify a database:
 ```
 
 Databases are specified as objects with a minimum of two properties: `provider` set equal to a string containing the lowercase name of one of Joystick's supported database providers and an `options` object which are the options for the official Node.js driver for that database (loaded and wired into your app by Joystick).
+
+In the above example, our app is loading _two_ databases simultaneously: MongoDB and PostgreSQL.
 
 ### Users database
 
@@ -463,17 +631,38 @@ To add support for MongoDB, add an object to the `config.databases` array in you
   "config": {
     "databases": [
       {
-        "provider": "mongodb",
-        "options": {}
+        "provider": "mongodb"
       }
     ]
   }
 }
 ```
 
-Configuration `options` for the MongoDB driver can be found in the [MongoDB Node.js Driver documentation](https://docs.mongodb.com/drivers/node/current/).
+When you run `joystick start`, Joystick will automatically detect the database, start it locally (or warn you if it's not installed on your computer), and then start your app and connect the driver for that database.
+
+### PostgreSQL
+
+> NOTE: In order for PostgreSQL to work, it must be installed on your computer and available via your operating system's PATH variable. For MacOS users, this is automatically set up for you when installing PostgreSQL. For Windows users, [read the instructions here](https://cheatcode.co/tutorials/how-to-use-postgresql-with-node-js#installing-and-configuring-postgresql) for adding PostgreSQL to your PATH variable.
+
+To add support for PostgreSQL, add an object to the `config.databases` array in your settings file with the following properties:
+
+```javascript
+{
+  "config": {
+    "databases": [
+      {
+        "provider": "postgresql"
+      }
+    ]
+  }
+}
+```
+
+When you run `joystick start`, Joystick will automatically detect the database, start it locally (or warn you if it's not installed on your computer), and then start your app and connect the driver for that database.
 
 ### Adding a remote database
+
+> NOTE: When running Joystick in a production environment (not on your own computer), a remote database is **required**. Joystick does *not* start up a database for you in production.
 
 If you do _not_ want Joystick to start a database on your behalf but you _do_ want Joystick to connect the driver for your database to a remote database (running on your computer or in the cloud), pass a `connection` object with your database:
 
@@ -482,14 +671,14 @@ If you do _not_ want Joystick to start a database on your behalf but you _do_ wa
   "config": {
     "databases": [
       {
-        "provider": "mongodb",
+        "provider": "postgresql",
         "options": {},
         "connection": {
           "username": "username",
           "password": "password",
           "hosts": [{
             hostname: "127.0.0.1",
-            port: "27017"
+            port: "5432"
           }],
           "database": "databaseName"
         }
@@ -505,7 +694,7 @@ When you start your app with `joystick start`, Joystick will test this `connecti
 
 Joystick includes a basic email address/password accounts system that you can use to create users in your app.
 
-To facilitate in the management of accounts `@joystick.js/ui` exports an object `accounts` that includes a handful of methods for managing users: `accounts.signup`, `accounts.login`, `accounts.logout`, `accounts.recoverPassword`, and `accounts.resetPassword`.
+To facilitate in the management of accounts `@joystick.js/ui` exports an object `accounts` that includes a handful of methods for managing users: `accounts.signup`, `accounts.login`, `accounts.logout`, `accounts.authenticated`, `accounts.user`, `accounts.recoverPassword`, and `accounts.resetPassword`.
 
 ### accounts.signup
 
@@ -630,6 +819,8 @@ export default Signup;
 
 **Note**: though Joystick checks for the `language` field in the metadata object, _any_ field you'd like to add to your user can be set on this object (e.g., `metadata.firstName`). Any fields you pass here will be added directly to the user object in the database.
 
+> WARNING: Only `metadata.language` is supported by SQL databases (e.g., PostgreSQL). Additional metadata fields should be added independently in your code as part of a separate table in your database.
+
 ### accounts.login
 
 To login to an existing account, pass either an `emailAddress` or `username` along with a `password` to `accounts.login()`.
@@ -700,6 +891,85 @@ export default Navigation;
 ```
 
 Once called, Joystick will unset the `joystickLoginToken` and `joystickLoginTokenExpiresAt` in the user's cookies.
+
+### accounts.authenticated
+
+If you'd like to check the authenicated status of a user, call the `accounts.authenticated()` function.
+
+```javascript
+import ui, { accounts } from "@joystick.js/ui";
+
+const Navigation = ui.component({
+  state: {
+    authenticated: false,
+  },
+  lifecycle: {
+    onMount: async (component) => {
+      const authenticated = await accounts.authenticated();
+      component.setState({ authenticated });
+    },
+  },
+  render: ({ state }) => {
+    return `
+      <nav>
+        ${state.authenticated ? `
+          <ul>
+            <li><a href="/dashboard">Dashboard</a></li>
+            <li><a href="/documents">Documents</a></li>
+            <li><a href="/settings">Settings</a></li>
+            <li class="logout">Logout</li>
+          </ul>
+        ` : `
+          <ul>
+            <li><a href="/login">Login</a></li>
+            <li><a href="/signup">Signup</a></li>
+          </ul>
+        `}
+      </nav>
+    `;
+  },
+});
+
+export default Navigation;
+```
+
+Once called, `accounts.authenticated()` will return a `true` or `false` value indicating the user's authentication status.
+
+### accounts.user
+
+If you'd like to retrieve the currently logged in user, call the `accounts.user()` function.
+
+```javascript
+import ui, { accounts } from "@joystick.js/ui";
+
+const Navigation = ui.component({
+  state: {
+    user: null,
+  },
+  lifecycle: {
+    onMount: async (component) => {
+      const user = await accounts.user();
+      component.setState({ user });
+    },
+  },
+  render: ({ state }) => {
+    return `
+      <nav>
+        <ul>
+          <li><a href="/dashboard">Dashboard</a></li>
+          <li><a href="/documents">Documents</a></li>
+          <li><a href="/settings">Settings</a></li>
+          <li>${state?.user?.emailAddress}</li>
+        </ul>
+      </nav>
+    `;
+  },
+});
+
+export default Navigation;
+```
+
+Once called, `accounts.user()` will return a browser-safe copy of the currently logged in user as an object. This object is identical to what's in the database with known-sensitive data removed like the `password` and `sessions`.
 
 ### accounts.recoverPassword
 
@@ -786,6 +1056,157 @@ export default ResetPassword;
 ```
 
 If a reset is succesful, two HTTP-only cookies will be created in the user's browser: `joystickLoginToken` and `joystickLoginTokenExpiresAt`. Once this exists, Joystick will automatically retrieve the user from your users database and include them in every HTTP request to the server.
+
+### accounts.roles
+
+Joystick ships with a basic roles system for performing authorization checks on users in your database. All roles are stored in the `roles` collection/table in your database. Roles granted to users are stored in the `roles` array on a user's document/row in the `users` database.
+
+#### accounts.roles.add
+
+Creates a new role, adding it to the `roles` collection/table in the database (a convenience so you can see which roles you've granted across all users). You do not have to call `accounts.roles.add()` before granting a role to a user. Joystick will automatically add unrecognized roles to the `roles` collection/table when they're passed to `accounts.roles.grant()`.
+
+```javascript
+import { accounts } from '@joystick.js/node';
+
+export default {
+  adminCreateRole: {
+    input: {
+      role: {
+        type: "string",
+        required: true,
+      }
+    },
+    set: (input = {}) => {
+      return accounts.roles.add(input?.role);
+    },
+  },
+}
+```
+
+Here, we create a fictitious [setter](#setters) endpoint `adminCreateRole` which receives a role to add as an input.
+
+#### accounts.roles.remove
+
+Removes an existing role from the `roles` collection/table in the database as well as any users with that role in their `roles` array.
+
+```javascript
+import { accounts } from '@joystick.js/node';
+
+export default {
+  adminDeleteRole: {
+    input: {
+      role: {
+        type: "string",
+        required: true,
+      }
+    },
+    set: (input = {}) => {
+      return accounts.roles.remove(input?.role);
+    },
+  },
+}
+```
+
+Here, we create a fictitious [setter](#setters) endpoint `adminDeleteRole` which receives a role to remove as an input.
+
+#### accounts.roles.list
+
+Returns a list of roles in the roles collection in the database.
+
+```javascript
+import { accounts } from '@joystick.js/node';
+
+export default {
+  adminGetRoles: {
+    get: (input = {}) => {
+      return accounts.roles.list();
+    },
+  },
+}
+```
+
+Here, we create a fictitious [getter](#getters) endpoint `adminGetRoles` which retrieves a list of roles.
+
+#### accounts.roles.grant
+
+Adds a role to the `roles` array on a user in the database and to the `roles` collection/table if it doesn't already exist there.
+
+```javascript
+import { accounts } from '@joystick.js/node';
+
+export default {
+  signup: {
+    input: {
+      emailAddress: {
+        type: "string",
+        required: true,
+      },
+      password: {
+        type: "string",
+        required: true,
+      },
+      role: {
+        type: "string",
+        required: true,
+      }
+    },
+    set: async (input = {}) => {
+      const user = await accounts.signup({ emailAddress: input?.emailAddress, password: input?.password });
+      await accounts.roles.grant(user?.userId, input?.role);
+      return user;
+    },
+  },
+}
+```
+
+Here, we create a fictitious [setter](#setters) endpoint `signup` which receives an email address, password, and role for a new user, creating the user and granting them the role passed in the input.
+
+#### accounts.roles.revoke
+
+Remove a role from the `roles` array on a user in the database.
+
+```javascript
+import { accounts } from '@joystick.js/node';
+
+export default {
+  demoteManager: {
+    input: {
+      userId: {
+        type: "string",
+        required: true,
+      },
+    },
+    set: async (input = {}) => {
+      await accounts.roles.revoke(input?.userId, 'manager');
+      await accounts.roles.grant(input?.userId, 'employee');
+      return user;
+    },
+  },
+}
+```
+
+Here, we create a fictitious [setter](#setters) endpoint `demoteManager` which receives a `userId` and revokes the `manager` role and then grants the `employee` role.
+
+#### accounts.roles.userHasRole
+
+Returns true or false as to whether or not a user has a role.
+
+```javascript
+import { accounts } from '@joystick.js/node';
+
+export default {
+  adminGetRoles: {
+    authorized: (input, context) => {
+      return accounts.roles.userHasRole(context?.user?._id, 'admin');
+    },
+    get: (input = {}) => {
+      return accounts.roles.list();
+    },
+  },
+}
+```
+
+Here, we create a fictitious [getter](#getters) endpoint `adminGetRoles` which retrieves a list of roles if the logged in user—available via `context.user`—is in the admin role (the getter will only serve the request if the `authorized` function returns `true`).
 
 ## @joystick.js/ui
 
@@ -1183,6 +1604,107 @@ const Books = ui.component({
 export default Books;
 ```
 
+### Data
+
+When rendering Joystick components via `@joystick.js/node`'s `res.render()` function, the `data` option on the component can be used to fetch data on the server from within a component.
+
+This is useful for:
+
+1. Developers that want to keep data fetching close to their components.
+1. Apps that have reusable components that need to fetch the same data over and over (e.g., a navigation component that fetches the logged in user).
+
+While this *can* be done by passing props to a component, `data` simplifies the process significantly.
+
+```javascript
+import ui from "@joystick.js/ui";
+
+const Books = ui.component({
+  data: async (api = {}, req = {}) => {
+    const books = await api.get('books', {
+      input: {
+        category: 'non-fiction',
+      },
+    });
+
+    return {
+      books,
+    };
+  },
+  render: ({ data }) => {
+    return `
+      <div class="books">
+        ${data?.books?.length > 0 ? `
+          <ul>
+            ${each(data.books, (book) => {
+              return `<li>${book}</li>`;
+            })}
+          </ul>
+        ` : ''}
+      </div>
+    `;
+  },
+});
+
+export default Books;
+```
+
+Here, we've added `data` as a function to our `Books` component. Inside of that function, as the first argument we anticipate an object `api` which gives us access to `@joystick.js/node`'s `get()` and `set()` functions and as the second argument, the inbound HTTP request as `req`.
+
+> Note: this function _will only be called when rendering the component on the server_. **The `data` option is completely ignored in the browser.** Joystick automatically hydrates components on the client with the data it retrieves on the server.
+
+Inside, we call to `api.get()` to retrieve the data we need, returning an object from the `data` function. In our `render()` function now (and anywhere the `component` instance is accessible to us), we'll have access to the data we fetched via the `data` property on the component instance.
+
+Here, we treat `data.books` just like we would `state.books` or `props.books` in our `render()`. The difference is that our data is coming from the value returned by the `data` function.
+
+#### Refetching Data
+
+The `data` option is designed to only fetch data once on render. If you're building a dynamic app with Joystick (e.g., an internal dashboard or a social media site with live data), you can refetch data on-demand via the  `data.refetch` function:
+
+```javascript
+import ui from "@joystick.js/ui";
+
+const Books = ui.component({
+  data: async (api = {}, req = {}, input = {}) => {
+    const books = await api.get('books', {
+      input: {
+        category: 'non-fiction',
+        page: input?.page || 1,
+      },
+    });
+
+    return {
+      books,
+    };
+  },
+  events: {
+    'click .refetch': (event, component) => {
+      // NOTE: Here, we're simulating a pagination call saying "go get page 2" of
+      // the books list. The object passed here is available as the the third
+      // argument to the data function on your component when calling data.refetch.
+      component.data.refetch({ page: 2 });
+    },
+  },
+  render: ({ data }) => {
+    return `
+      <div class="books">
+        ${data?.books?.length > 0 ? `
+          <ul>
+            ${each(data.books, (book) => {
+              return `<li>${book}</li>`;
+            })}
+          </ul>
+        ` : ''}
+        <button class="refetch">Get the latest books</button>
+      </div>
+    `;
+  },
+});
+
+export default Books;
+```
+
+Here, we've added a button with the class `refetch` and event listener for that button's `click` event. When clicked, we call to `data.refetch` (here, we're pulling `data` from the component instance passed to event handlers), passing in an object of `input` that we can reference from within our `data` function (helpful for passing new input/params to get different data on the server).
+
 ### Lifecycle methods
 
 There are three lifecycle methods (functions that are called at different stages of a component's life):
@@ -1381,6 +1903,152 @@ const Form = ui.component({
 export default Form;
 ```
 
+### Global State
+
+`@joystick.js/ui` includes a global state library called Cache. Similar to popular libraries like Redux, Cache allows you to create a "store" or "cache" for storing global data. It features a simple API for getting, setting, and unsetting data from a cache as well as listening for changes to a cache.
+
+A cache can be defined by importing the named `cache` export from `@joystick.js/ui`:
+
+```javascript
+import ui, { cache } from '@joystick.js/ui';
+
+const appCache = cache('app', {});
+
+const Count = ui.component({
+  state: {
+    count: 0,
+  },
+  render: ({ state }) => {
+    return `
+      <div>
+        <p>Count: ${state.count}</p>
+        <button class="add">Add</button>
+        <button class="subtract">Subtract</button>
+        <button class="delete">Delete</button>
+      </div>
+    `;
+  },
+});
+
+export default Count;
+```
+
+Above, we create our cache with `cache('app', {});`, passing `'app'` as the name of the cache and `{}` as a default value. Here, we store our cache instance in a variable `appCache` that we can access throughout our component.
+
+> NOTE: The root value of a cache should always be an object.
+
+#### Updating the cache
+
+A cache can be updated via the `.set()` method defined on the cache instance:
+
+```javascript
+import ui, { cache } from '@joystick.js/ui';
+
+const appCache = cache('app', {});
+
+const Count = ui.component({
+  state: {
+    count: 0,
+  },
+  events: {
+    'click .add': (event, component) => {
+      appCache.set((state = {}) => {
+        return {
+          ...state,
+          count: (state.count || 0) + 1,
+        };
+      }, 'ADD');
+    },
+    'click .subtract': (event, component) => {
+      appCache.set((state = {}) => {
+        return {
+          ...state,
+          count: state?.count > 0 ? state.count - 1 : 0,
+        };
+      }, 'SUBTRACT');
+    },
+  },
+  render: ({ state }) => {
+    return `
+      <div>
+        <p>Count: ${state.count}</p>
+        <button class="add">Add</button>
+        <button class="subtract">Subtract</button>
+        <button class="delete">Delete</button>
+      </div>
+    `;
+  },
+});
+
+export default Count;
+```
+
+The `.set()` method receives a callback function as its first argument. That callback function receives the current `state` of the cache. To update the cache, return an object representing the modified state of the cache from the callback function.
+
+In the example above, we use the `...` spread operator to "copy" the contents of the existing state onto the new object being returned from our callback function, modifying the `count` field in response to either the `.add` or `.subtract` button being clicked.
+
+> NOTE: Optionally, the `.set()` function can receive a second argument which is a string containing the name of the event. This can be any name you'd like (above we're using `'ADD'` and `'SUBTRACT'`) and is intended as a means for identifying specific changes to a cache when listening for changes *to* that cache (more on this below).
+
+#### Unsetting the cache
+
+To unset a specific value, the `.unset()` method can be called on a cache with a specific path like `appCache.unset('count')` (nested values can be accessed via dot notation like `appCache.unset('thing.i.want.to.unset')`). 
+
+Alternatively, to unset the _entire_ cache, just call `appCache.unset()` without a path.
+
+#### Getting data from the cache
+
+Getting data from the cache can be done via the `.get()` method on the cache instance. For example, calling `appCache.get()` will get the entire cache, or, if you want to retrieve a specific value, a path can be passed like `appCache.get('count')` (dot notation can be used to access nested paths like `appCache.get('path.to.thing.i.want')`). 
+
+#### Listening for cache changes
+
+If you need to listen for or "subscribe" to changes to a cache, you can utilize a cache's `.on()` method:
+
+```javascript
+import ui, { cache } from '@joystick.js/ui';
+
+const appCache = cache('app', {});
+
+const Count = ui.component({
+  state: {
+    count: 0,
+  },
+  lifecycle: {
+    onMount: (component = {}) => {
+      appCache.on('change', (state = {}, event = '', typeOfChange = '') => {
+        console.log({ state, event, typeOfChange });
+
+        // NOTE: As an example, take the count value from appCache and put it on
+        // to the local component state whenever a change occurs.
+        component.setState({ count: state?.count || 0 });
+      });
+    },
+  },
+  events: { ... },
+  render: ({ state }) => {
+    return `
+      <div>
+        <p>Count: ${state.count}</p>
+        <button class="add">Add</button>
+        <button class="subtract">Subtract</button>
+        <button class="delete">Delete</button>
+      </div>
+    `;
+  },
+});
+
+export default Count;
+```
+
+Above, in our component's `lifecycle.onMount` function, we've added a call to `appCache.on('change')`. Whenever there's a change to a cache, the callback function passed as the second argument to `.on()` will be called, passing three values:
+
+1. The new `state` of the cache.
+2. If passed, the `event` that took place (e.g., `ADD` or `SUBTRACT`).
+3. The `typeOfChange` (either `set` or `unset`).
+
+In the example above, we copy the global `count` from our `appCache` over to our component's local state, rendering the value in the component.
+
+> NOTE: If you only want to listen for a _specific_ type of change, you can also listen to `appCache.on('set')` and `appCache.on('unset')` with the above behavior being the same.
+
 ### Form Validation
 
 If you need to validate a user's form input in your components, `@joystick.js/ui` includes a built-in, real-time form validator with several built in validation functions and dynamic error message rendering.
@@ -1501,8 +2169,8 @@ Currently, `component.validateForm()` offers the following validation rules:
     </tr>
     <tr>
       <td>postalCode</td>
-      <td>Boolean <code>true</code> or <code>false</code></td>
-      <td>Validates whether the field's input is a postal code (zip code).</td>
+      <td>Boolean <code>true</code> or <code>false</code> or <code>Object</code> with an <code>ISO</code> property as a <code>String</code> and <code>rule</code> property as a Boolean <code>true</code> or <code>false</code>.</td>
+      <td>Validates whether the field's input is a postal code (zip code). If defined as an object, regex will be set to the postal code pattern for the specified <a href="https://gist.github.com/jamesbar2/1c677c22df8f21e869cca7e439fc3f5b">ISO code</a>.</td>
     </tr>
     <tr>
       <td>required</td>
@@ -1531,8 +2199,8 @@ Currently, `component.validateForm()` offers the following validation rules:
     </tr>
     <tr>
       <td>vat</td>
-      <td>Boolean <code>true</code> or <code>false</code></td>
-      <td>Validates whether the field's input is a valid VAT code.</td>
+      <td>Boolean <code>true</code> or <code>false</code> or <code>Object</code> with an <code>ISO</code> property as a <code>String</code> and <code>rule</code> property as a Boolean <code>true</code> or <code>false</code>.</td>
+      <td>Validates whether the field's input is a valid VAT code. If defined as an object, regex will be set to the postal code pattern for the specified <a href="https://gist.github.com/marcinlerka/630cc05d11bb10c5f1904506ff92abcd">ISO code</a>.</td>
     </tr>
   </tbody>
 </table>
@@ -1787,7 +2455,7 @@ node.app({
 
 `middleware` should be passed as an array containing functions which expect to be called receiving the standard Express.js route arguments: `req`, `res`, and `next`. Middleware can be from a third-party package, or, a custom middleware that you implement yourself.
 
-### Routes
+<h3 id="node-routes">Routes</h3>
 
 Routes are the URLs supported by your application. In Joystick, the only routes you will need to define for your app will be on the server here as part of your `node.app()` options (i.e., Joystick does not have a separate client and server router—just one set of routes that rely on the traditional behavior of HTTP).
 
@@ -1811,7 +2479,7 @@ By default, all routes are defined as HTTP GET requests using the Express `app.g
 
 #### Defining routes for specific HTTP methods
 
-If you want to define routes in your app that use another HTTP method other than GET, your route can be defined as an object with an accompanying `method` field:
+If you want to define routes in your app that use another HTTP method other than GET, your route can be defined as an object with an accompanying `method` (single HTTP method) or `methods` (multiple HTTP methods) field:
 
 ```javascript
 import node from "@joystick.js/node";
@@ -1821,6 +2489,25 @@ node.app({
     "/newsletter": {
       method: "POST",
       handler: (req, res) => {
+        console.log(req.body.emailAddress);
+        res.send("Subscribed!");
+      },
+    },
+  },
+});
+```
+
+If you want to support more than one custom HTTP method:
+
+```javascript
+import node from "@joystick.js/node";
+
+node.app({
+  routes: {
+    "/newsletter": {
+      methods: ["POST", "PUT"],
+      handler: (req, res) => {
+        // Check req.method here to decide which code to run.
         console.log(req.body.emailAddress);
         res.send("Subscribed!");
       },
@@ -1896,6 +2583,10 @@ As part of the server-side rendering process, Joystick will automatically build 
 ##### Rendering in a layout
 
 As part of Joystick's file structure, you will find a `/ui/layouts` folder. This folder should contain Joystick components that represent layouts for your app. A layout is a "wrapper" component that contains always-visible elements like a navigation bar or footer with a space to render the contents of the current page.
+
+> WARNING: Layouts should only be rendered by the res.render() function's layout option. Though they *can* be nested inside of other Joystick components (e.g., a page), this breaks Joystick's rendering model leading to unwanted bugs.
+>
+> If you need to create a reusable layout that's nestable, it's recommended that you create a component in `/ui/components` that receives a page prop and renders it via the component render function, like this: `${component(props.page, props)}`.
 
 ```javascript
 import node from "@joystick.js/node";
@@ -2029,6 +2720,8 @@ To simplify the process of defining an API, Joystick includes a thin abstraction
 
 Following this logic, Joystick introduce a concept called "getters" and "setters." The former helps you define HTTP GET endpoints for _reading_ data from your database while the latter helps you define HTTP POST endpoints for _creating, updating, and removing_ data from your database.
 
+Getters are available at `/api/_getters/<getterName>` and setters are available at `/api/_setters/<setterName>`. This means that, if you wish, you can access getters and setters via `fetch()`, curl, or any other HTTP request tool with ease.
+
 #### Getters
 
 A getter is nothing more than a JavaScript object set to a property with the name of the getter you'd like to make accessible on the server.
@@ -2096,6 +2789,20 @@ Here, we define a setter called `createPost` with two properties: `input`, set t
 A setter is intended to create, update, and delete data, and optionally return data. Once inside the body of the `set()` function, you can call to any data source you wish (typically a database, but could also be from a third-party API or a static data file on the server).
 
 Once your data is set, you can optionally return a value from the `set()` function and Joystick will send it back to the originating request as a JSON body.
+
+#### Accessing getters and setters as HTTP endpoints
+
+As hinted above, getters and setters can be accessed as plain HTTP endpoints. While in most cases you'll want to use Joystick's `get()` and `set()` methods for interacting with endpoints, if you're building a separate app (e.g., a mobile app) and using Joystick as a backend, it can be helpful to rely on this access method.
+
+For getters, the inbound request must be an HTTP GET request. Any `input` or `output` parameters must be passed via the _query_ parameters in the URL. For example, if we had a getter called `books` in our app that expected an input value `category`, we could perform a direct URL request like this:
+
+```javascript
+http://localhost:2600/api/_getters/books?input={"category":"non-fiction"}
+```
+
+Similarly, an `output` query parameter can be added to customize the return value from the getter.
+
+For setters, the inbound request must be an HTTP POST request. Any `input` or `output` parameters must be pased via the _body_ of the request. This means that, unlike in the getters example above, if we expected input, we would have to use a tool like cURL or another HTTP library instead of accessing the URL directly in the browser.
 
 #### Validating inputs
 
@@ -2657,6 +3364,47 @@ node
 
 The list of events in this example (and their names) represent the full list of events that you can listen for through Joystick. Of course, you can still manually tap into the Node.js `process` directly if you need access to other events, or, prefer a DIY approach to handling.
 
+## __filename and __dirname
+
+Because `@joystick.js/node` uses the `--experimental-modules` flag to enable ES Module support in Joystick, the `__filename` and `__dirname` global variables you expect to have access to in a Node.js app are unavailable. To supplement, `@joystick.js/node` includes two polyfill functions for mimicing the behavior of these variables: `__filename()` and `__dirname()`.
+
+```javascript
+import { __filename, __dirname } from '@joystick.js/node';
+
+console.log(__filename(import.meta.url));
+// Absolute path to the current file in your .joystick/build directory.
+
+console.log(__dirname(import.meta.url));
+// Absolute path to the current directory in your .joystick/build directory.
+```
+
+Here, when you call the functions, you need to pass the global `import.meta.url` value from Node which describes the current path of the file where `import.meta.url` is utilized. If you _do not_ pass `import.meta.url` to either function, it will return an empty string.
+
 ## Deployment
 
-An official strategy for deployment is in the works and will be available in time for the 1.0 release.
+### Setting and utilizing a ROOT_URL
+
+When deploying a Joystick app for a staging or production environment, in your environment variables—_not_ your Joystick settings file—the `process.env.ROOT_URL` value must be set to the valid origin your app will be accessible at. For example, if your app will be available at `https://cheatcode.co` you should set `process.env.ROOT_URL = 'https://cheatcode.co'`.
+
+This value is utilized by the `origin` variable exported from the `@joystick.js/node` which allows you to reference the correct application URL in your code. For example:
+
+```javascript
+import joystick, { origin, email } from '@joystick.js/node';
+
+joystick.app({ ... }).then(async () => {
+  await email.send({
+    to: 'somebody@gmail.com',
+    from: 'support@myapp.com',
+    subject: 'App start up!',
+    template: 'app-startup',
+    props: {
+      url: `${origin}/admin/users`,
+    },
+  });
+});
+```
+
+In the example above, on startup, an email is being sent to "somebody," and the URL for the app is intended to be referenced in the email. Instead of hard-coding the URL like `url: `https://myapp.com/admin/users`, we utilize the `origin` variable exported from `@joystick.js/node` so that our code works in any environment.
+
+### Joystick Deploy
+Joystick Deploy is a deployment service for Joystick apps that is currently under development and will be available in 2023.

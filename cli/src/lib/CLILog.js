@@ -20,21 +20,21 @@ export default (message = '', options = {}) => {
   const title = options.level ? titles[options.level] : 'Log';
   const docs = options.docs || 'https://github.com/cheatcode/joystick';
 
-  console.log(`\n${rainbowRoad()}\n`);
-  console.log(`${chalk[color](`${title}:`)}\n`)
-  console.log(`${chalk.white(message)}\n`);
-  console.log(`${chalk.grey('---')}\n`);
-  console.log(`${chalk.white('Relevant Documentation:')}\n`)
-  console.log(`${chalk.blue(docs)}\n`);
-  console.log(`${chalk.white('Stuck? Ask a Question:')}\n`)
-  console.log(`${chalk.blue('https://github.com/cheatcode/joystick/discussions')}\n`);
+  console.log(`\n${(options.padding || '')}${rainbowRoad()}\n`);
+  console.log(`${(options.padding || '')}${chalk[color](`${title}:`)}\n`)
+  console.log(`${(options.padding || '')}${chalk.white(message)}\n`);
+  console.log(`${(options.padding || '')}${chalk.grey('---')}\n`);
+  console.log(`${(options.padding || '')}${chalk.white('Relevant Documentation:')}\n`)
+  console.log(`${(options.padding || '')}${chalk.blue(docs)}\n`);
+  console.log(`${(options.padding || '')}${chalk.white('Stuck? Ask a Question:')}\n`)
+  console.log(`${(options.padding || '')}${chalk.blue('https://github.com/cheatcode/joystick/discussions')}\n`);
   
   if (options.tools && Array.isArray(options.tools)) {
-    console.log(`${chalk.white('Helpful Tools:')}\n`);
+    console.log(`${(options.padding || '')}${chalk.white('Helpful Tools:')}\n`);
     options.tools.forEach((tool) => {
-      console.log(`${chalk.blue(`${tool.title} — ${tool.url}`)}\n`);
+      console.log(`${(options.padding || '')}${chalk.blue(`${tool.title} — ${tool.url}`)}\n`);
     });
   }
 
-  console.log(`${rainbowRoad()}\n`);
+  console.log(`${(options.padding || '')}${rainbowRoad()}\n`);
 };

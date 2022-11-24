@@ -17,31 +17,31 @@ var CLILog_default = (message = "", options = {}) => {
   const title = options.level ? titles[options.level] : "Log";
   const docs = options.docs || "https://github.com/cheatcode/joystick";
   console.log(`
-${rainbowRoad()}
+${options.padding || ""}${rainbowRoad()}
 `);
-  console.log(`${chalk[color](`${title}:`)}
+  console.log(`${options.padding || ""}${chalk[color](`${title}:`)}
 `);
-  console.log(`${chalk.white(message)}
+  console.log(`${options.padding || ""}${chalk.white(message)}
 `);
-  console.log(`${chalk.grey("---")}
+  console.log(`${options.padding || ""}${chalk.grey("---")}
 `);
-  console.log(`${chalk.white("Relevant Documentation:")}
+  console.log(`${options.padding || ""}${chalk.white("Relevant Documentation:")}
 `);
-  console.log(`${chalk.blue(docs)}
+  console.log(`${options.padding || ""}${chalk.blue(docs)}
 `);
-  console.log(`${chalk.white("Stuck? Ask a Question:")}
+  console.log(`${options.padding || ""}${chalk.white("Stuck? Ask a Question:")}
 `);
-  console.log(`${chalk.blue("https://github.com/cheatcode/joystick/discussions")}
+  console.log(`${options.padding || ""}${chalk.blue("https://github.com/cheatcode/joystick/discussions")}
 `);
   if (options.tools && Array.isArray(options.tools)) {
-    console.log(`${chalk.white("Helpful Tools:")}
+    console.log(`${options.padding || ""}${chalk.white("Helpful Tools:")}
 `);
     options.tools.forEach((tool) => {
-      console.log(`${chalk.blue(`${tool.title} \u2014 ${tool.url}`)}
+      console.log(`${options.padding || ""}${chalk.blue(`${tool.title} \u2014 ${tool.url}`)}
 `);
     });
   }
-  console.log(`${rainbowRoad()}
+  console.log(`${options.padding || ""}${rainbowRoad()}
 `);
 };
 export {

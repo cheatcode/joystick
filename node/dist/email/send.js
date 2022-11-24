@@ -3,52 +3,52 @@ import nodemailer from "nodemailer";
 import fs from "fs";
 import { htmlToText } from "html-to-text";
 import juice from "juice";
-import { createRequire } from "module";
 import settings from "../settings";
 import validateSMTPSettings from "./validateSMTPSettings";
 import render from "./render";
-const require2 = createRequire(import.meta.url);
-var send_default = ({ template: templateName, props, ...restOfOptions }) => {
+import getBuildPath from "../lib/getBuildPath";
+var send_default = async ({ template: templateName, props, base: baseName, ...restOfOptions }) => {
   const validSMTPSettings = validateSMTPSettings(settings?.config?.email?.smtp);
   if (!validSMTPSettings) {
     console.warn(chalk.redBright("Cannot send email, invalid SMTP settings."));
-    return;
+    return Promise.resolve(null);
   }
+  const isNoSecurePort = [587, 25, "587", "25"].includes(settings?.config?.email?.smtp?.port);
   const smtp = validSMTPSettings ? nodemailer.createTransport({
     host: settings?.config?.email?.smtp?.host,
     port: settings?.config?.email?.smtp?.port,
-    secure: process.env.NODE_ENV !== "development",
+    secure: !isNoSecurePort && process.env.NODE_ENV !== "development",
     auth: {
       user: settings?.config?.email?.smtp?.username,
       pass: settings?.config?.email?.smtp?.password
     }
   }) : null;
-  const templatePath = `${process.cwd()}/.joystick/build/email/${templateName}.js`;
+  let templatePath = `${process.cwd()}/${getBuildPath()}email/${templateName}.js`;
+  const templateExists = templateName && fs.existsSync(templatePath);
   const options = {
     from: settings?.config?.email?.from,
     ...restOfOptions
   };
-  if (templateName && !fs.existsSync(templatePath)) {
-    console.warn(chalk.redBright(`Could not find an email template with the name ${templateName}.js in /email.`));
-  }
-  console.log({
-    templateName,
-    exists: fs.existsSync(templatePath)
-  });
-  if (templateName && fs.existsSync(templatePath)) {
-    const template = require2(templatePath);
-    console.log(template);
-    const html = render({
+  if (templateExists) {
+    const template = (await import(templatePath)).default;
+    const html = await render({
+      templateName,
+      baseName,
+      settings,
       Component: template,
-      props
+      props,
+      subject: restOfOptions?.subject,
+      preheader: restOfOptions?.preheader,
+      user: restOfOptions?.user
     });
     const text = htmlToText(html);
     const htmlWithStylesInlined = juice(html);
     options.html = htmlWithStylesInlined;
     options.text = text;
+    return smtp.sendMail(options);
   }
-  console.log(options);
-  return smtp.sendMail(options);
+  console.warn(`Template ${templateName} could not be found in /email. Double-check the template exists and try again.`);
+  return Promise.resolve();
 };
 export {
   send_default as default

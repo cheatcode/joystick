@@ -1,7 +1,7 @@
 import { isObject } from "../validation/lib/typeValidators";
 
 const getOutput = (object = {}, fields = []) => {
-  Object.entries(object).forEach(([key, value]) => {
+  Object.entries(object || {}).forEach(([key, value]) => {
     const keyInFields = fields.find((field) => field.key === key);
 
     if (!keyInFields) {

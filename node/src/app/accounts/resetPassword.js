@@ -1,6 +1,7 @@
 import hashString from "./hashString";
 import runUserQuery from "./runUserQuery";
 import generateSession from "./generateSession";
+import getOutput from "../getOutput";
 
 const removeTokenFromUser = (userId = null, token = null) => {
   try {
@@ -52,21 +53,22 @@ const resetPassword = async (options, { resolve, reject }) => {
     }
 
     const hashedNewPassword = await setNewPasswordOnUser(
-      user?._id,
+      user?._id || user?.user_id,
       options.password
     );
 
+    const updatedUser = await removeTokenFromUser(user?._id || user?.user_id, options.token);
+
     const session = await generateSession({
-      userId: user?._id,
-      emailAddress: user?.emailAddress,
+      userId: updatedUser?._id || updatedUser?.user_id,
+      emailAddress: updatedUser?.emailAddress || updatedUser?.email_address,
       password: hashedNewPassword,
     });
 
-    await addSessionToUser(user?._id, session);
-    await removeTokenFromUser(user?._id, options.token);
+    await addSessionToUser(updatedUser?._id || updatedUser?.user_id, session);
 
     resolve({
-      user,
+      user: getOutput(updatedUser, options?.output),
       ...session,
     });
   } catch (exception) {

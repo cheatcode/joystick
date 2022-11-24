@@ -4,7 +4,9 @@ var serverAvailable = (callback = null) => {
     const data = await response.text();
     if (data && data === "<3" && callback) {
       console.log("[hmr] Listening for changes...");
-      callback();
+      setTimeout(() => {
+        callback();
+      }, 1e3);
     }
   }).catch(async (error) => {
     console.log("Server unavailable. Trying again...");

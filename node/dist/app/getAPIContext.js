@@ -5,6 +5,7 @@ var getAPIContext_default = (httpContext = {}, context = null) => {
       const compiledContext = await context(httpContext.req, httpContext.res);
       return resolve({
         ...compiledContext,
+        ...httpContext?.req?.context || {},
         req: httpContext.req,
         res: httpContext.res,
         ...process.databases || {}
@@ -12,6 +13,7 @@ var getAPIContext_default = (httpContext = {}, context = null) => {
     }
     return resolve({
       ...context,
+      ...httpContext?.req?.context || {},
       req: httpContext.req,
       res: httpContext.res,
       ...process.databases || {}
