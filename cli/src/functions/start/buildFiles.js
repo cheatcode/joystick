@@ -63,7 +63,7 @@ export default async (filesToBuild = [], outputPath = null) => {
     filesToBuild.map((fileToBuild) => {
       const platform = getFilePlatform(fileToBuild);
       const isFileToCopy = platform === 'copy' || isNotJavaScript(fileToBuild) || filesToCopy.some((fileToCopy) => {
-        return fileToBuild.includes(fileToCopy.path);
+        return fileToCopy.regex.test(fileToBuild);
       });
 
       if (isFileToCopy) {

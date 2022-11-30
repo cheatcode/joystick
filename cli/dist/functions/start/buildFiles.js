@@ -50,7 +50,7 @@ var buildFiles_default = async (filesToBuild = [], outputPath = null) => {
   return Promise.all(filesToBuild.map((fileToBuild) => {
     const platform = getFilePlatform(fileToBuild);
     const isFileToCopy = platform === "copy" || isNotJavaScript(fileToBuild) || filesToCopy.some((fileToCopy) => {
-      return fileToBuild.includes(fileToCopy.path);
+      return fileToCopy.regex.test(fileToBuild);
     });
     if (isFileToCopy) {
       fs.outputFileSync(`${outputPath || "./.joystick/build"}/${fileToBuild}`, fs.readFileSync(fileToBuild));
