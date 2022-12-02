@@ -19,8 +19,13 @@ export default async (args = {}, options = {}) => {
 
   const filesToBuild = getFilesToBuild();
   const outputPath = '.build';
+  const outputPathForBuildType = options?.type === 'tar' ? `${outputPath}/.tar` : outputPath;
 
-  await buildFiles(filesToBuild, options?.type === 'tar' ? `${outputPath}/.tar` : outputPath).catch((error) => {
+  await buildFiles(
+    filesToBuild,
+    outputPathForBuildType,
+    'production',
+  ).catch((error) => {
     console.warn(error);
   });
 

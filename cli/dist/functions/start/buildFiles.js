@@ -46,7 +46,7 @@ const isNotJavaScript = (path = "") => {
   const extension = path.split(".").pop();
   return extension && !extension.match(/\js$/);
 };
-var buildFiles_default = async (filesToBuild = [], outputPath = null) => {
+var buildFiles_default = async (filesToBuild = [], outputPath = null, environment = "development") => {
   return Promise.all(filesToBuild.map((fileToBuild) => {
     const platform = getFilePlatform(fileToBuild);
     const isFileToCopy = platform === "copy" || isNotJavaScript(fileToBuild) || filesToCopy.some((fileToCopy) => {
@@ -56,7 +56,7 @@ var buildFiles_default = async (filesToBuild = [], outputPath = null) => {
       fs.outputFileSync(`${outputPath || "./.joystick/build"}/${fileToBuild}`, fs.readFileSync(fileToBuild));
       return fileToBuild;
     }
-    return buildFile(fileToBuild, platform, outputPath);
+    return buildFile(fileToBuild, platform, outputPath, environment);
   }));
 };
 export {

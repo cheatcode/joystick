@@ -201,6 +201,7 @@ const startApplicationProcess = () => {
       FORCE_COLOR: "1",
       LOGS_PATH: process.env.LOGS_PATH,
       NODE_ENV: process.env.NODE_ENV,
+      ROOT_URL: process.env.ROOT_URL,
       PORT: process.env.PORT,
       JOYSTICK_SETTINGS: process.env.JOYSTICK_SETTINGS
     }
@@ -232,7 +233,7 @@ const initialBuild = async (buildSettings = {}) => {
   process.loader.text("Building app...");
   await requiredFileCheck();
   const filesToBuild = getFilesToBuild(buildSettings?.excludedPaths);
-  const fileResults = await buildFiles(filesToBuild);
+  const fileResults = await buildFiles(filesToBuild, null, process.env.NODE_ENV);
   const hasErrors = [...fileResults].filter((result) => !!result).map(({ success }) => success).includes(false);
   if (!hasErrors) {
     startApplicationProcess();
@@ -265,10 +266,10 @@ const startWatcher = async (buildSettings = {}) => {
     }
     if (["add", "change"].includes(event) && fs.existsSync(path2)) {
       const codependencies = getCodependenciesForFile(path2);
-      const fileResults = await buildFiles([path2]);
+      const fileResults = await buildFiles([path2], null, process.env.NODE_ENV);
       const fileResultsHaveErrors = fileResults.filter((result) => !!result).map(({ success }) => success).includes(false);
       removeDeletedDependenciesFromMap(codependencies.deleted);
-      const codependencyResult = fileResultsHaveErrors ? [] : await buildFiles(codependencies.existing);
+      const codependencyResult = fileResultsHaveErrors ? [] : await buildFiles(codependencies.existing, null, process.env.NODE_ENV);
       const codependencyResultsHaveErrors = codependencyResult.filter((result) => !!result).map(({ success }) => success).includes(false);
       const hasErrors = fileResultsHaveErrors || codependencyResultsHaveErrors;
       if (process.serverProcess && hasErrors) {

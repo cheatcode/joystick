@@ -6,17 +6,17 @@ import onWarn from "./onWarn.js";
 import getCodeFrame from "../../lib/getCodeFrame.js";
 
 const configs = {
-  node: (inputPath, outputPath = null) => ({
+  node: (inputPath, outputPath = null, environment = 'development') => ({
     entryPoints: [inputPath],
     bundle: false,
     outfile: `${outputPath || './.joystick/build'}/${inputPath}`,
     platform: "node",
     format: "esm",
-    minify: process.env.NODE_ENV !== "development",
+    minify: environment !== "development",
     logLevel: 'silent',
     plugins: [plugins.generateFileDependencyMap],
   }),
-  browser: (inputPath, outputPath = null) => {
+  browser: (inputPath, outputPath = null, environment = 'development') => {
     return {
       target: "es2020",
       entryPoints: [inputPath],
@@ -24,7 +24,7 @@ const configs = {
       outfile: `${outputPath || './.joystick/build'}/${inputPath}`,
       platform: "browser",
       format: "esm",
-      minify: process.env.NODE_ENV !== "development",
+      minify: environment !== "development",
       logLevel: 'silent',
       plugins: [
         plugins.generateFileDependencyMap,
@@ -35,9 +35,9 @@ const configs = {
   },
 };
 
-export default async (file = "", platform = "", outputPath = '') => {
+export default async (file = "", platform = "", outputPath = '', environment = 'development') => {
   return new Promise(async (resolve) => {
-    const config = configs[platform] && configs[platform](file, outputPath);
+    const config = configs[platform] && configs[platform](file, outputPath, environment);
 
     if (config) {
       try {

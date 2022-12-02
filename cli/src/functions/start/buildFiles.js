@@ -58,7 +58,7 @@ const isNotJavaScript = (path = "") => {
   return extension && !extension.match(/\js$/);
 };
 
-export default async (filesToBuild = [], outputPath = null) => {
+export default async (filesToBuild = [], outputPath = null, environment = 'development') => {
   return Promise.all(
     filesToBuild.map((fileToBuild) => {
       const platform = getFilePlatform(fileToBuild);
@@ -75,7 +75,12 @@ export default async (filesToBuild = [], outputPath = null) => {
         return fileToBuild;
       }
 
-      return buildFile(fileToBuild, platform, outputPath);
+      return buildFile(
+        fileToBuild,
+        platform,
+        outputPath,
+        environment,
+      );
     })
   );
 };
