@@ -8,8 +8,8 @@ const websocketClient = (options = {}, onConnect = null) => {
   try {
     let url = options?.url;
 
-    if (options.queryParams) {
-      url = `${url}?${queryString.stringify(options.queryParams)}`;
+    if (options?.query) {
+      url = `${url}?${queryString.stringify(options.query)}`;
     }
   
     let client = new WebSocket(url);
@@ -19,38 +19,58 @@ const websocketClient = (options = {}, onConnect = null) => {
       reconnectInterval = null;
     }
   
+    const connection = {
+      client,
+      send: (message = {}) => {
+        return client.send(JSON.stringify(message));
+      },
+    };
+
     client.addEventListener("open", () => {
-      if (options?.logging) {
-        console.log(`[websockets] Connected to ${options?.url}`);
+      if (options?.options?.logging) {
+        console.log(`[joystick.websockets] Connected to ${options?.url}`);
       }
   
+      if (options?.events?.onOpen) {
+        options.events.onOpen(connection);
+      }
+
       reconnectAttempts = 0;
     });
   
     client.addEventListener("message", (event) => {
-      if (event?.data && options.onMessage) {
-        options.onMessage(JSON.parse(event.data));
+      if (event?.data && options?.events?.onMessage) {
+        options.events.onMessage(JSON.parse(event.data || {}), connection);
       }
     });
   
-    client.addEventListener("close", () => {
-      if (options?.logging) {
-        console.log(`[websockets] Disconnected from ${options?.url}`);
+    client.addEventListener("close", (event) => {
+      if (options?.options?.logging) {
+        console.log(`[joystick.websockets] Disconnected from ${options?.url}`);
+      }
+
+      if (options?.events?.onClose) {
+        options.events.onClose(event?.code, event?.reason, connection);
       }
   
       client = null;
   
-      if (options.autoReconnect && !reconnectInterval) {
+      // NOTE: An intentional close refers to a close that was initiated by the user (refresh),
+      // or, a close that was terminated purposefully by the server. An unintentional close
+      // would be a server going down/restarting or not responding properly.
+      const wasIntentionalClose = [1000, 1001]?.includes(event?.code);
+
+      if (options?.options?.autoReconnect && !reconnectInterval && !wasIntentionalClose) {
         reconnectInterval = setInterval(() => {
           client = null;
   
           // NOTE: 12 attempts === try to reconnect for up to 1 minute (12 * 5 seconds between each attempt).
-          if (reconnectAttempts < 12) {
+          if (reconnectAttempts < (options?.options?.reconnectAttempts || 12)) {
             websocketClient(options, onConnect);
   
-            if (options?.logging) {
+            if (options?.options?.logging) {
               console.log(
-                `[websockets] Attempting to reconnect (${
+                `[joystick.websockets] Attempting to reconnect (${
                   reconnectAttempts + 1
                 }/12)...`
               );
@@ -60,20 +80,9 @@ const websocketClient = (options = {}, onConnect = null) => {
           } else {
             clearInterval(reconnectInterval);
           }
-        }, 5000);
+        }, ((options?.options?.reconnectDelayInSeconds * 1000) || 5000));
       }
     });
-  
-    const connection = {
-      client,
-      send: (message = {}) => {
-        if (options.queryParams) {
-          message = { ...message, ...options.queryParams };
-        }
-  
-        return client.send(JSON.stringify(message));
-      },
-    };
   
     if (onConnect) onConnect(connection);
   

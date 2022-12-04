@@ -1,0 +1,1 @@
+var e=(r="",t={})=>{throw new Error(`[joystick${r?`.${r}`:""}] ${t.message||t.reason||t}`)};var o=r=>{try{return typeof r=="function"}catch(t){e("types.isFunction",t)}};var a=(r=null)=>{try{o(r)||e("component.optionValidators.websockets","options.websockets must be a function returning an object.")}catch(t){e("component.optionValidators.websockets",t)}};export{a as default};

@@ -1,4 +1,5 @@
 import _accounts from "./app/accounts";
+import _websockets from "./websockets";
 import api from "./api/index.js";
 import getOrigin from "./api/getOrigin";
 import nodeUrlPolyfills from "./lib/nodeUrlPolyfills.js";
@@ -16,6 +17,7 @@ const set = api.set;
 const email = {
   send: sendEmail
 };
+const websockets = _websockets;
 const __filename = nodeUrlPolyfills.__filename;
 const __dirname = nodeUrlPolyfills.__dirname;
 const id = generateId;
@@ -40,5 +42,6 @@ export {
   get,
   id,
   origin,
-  set
+  set,
+  websockets
 };

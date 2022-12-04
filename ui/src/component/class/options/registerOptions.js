@@ -9,6 +9,8 @@ import compileLifecycle from '../lifecycle/compile';
 import compileMethods from "../methods/compile";
 import compileUrl from "../url/compile";
 import windowIsUndefined from "../../../lib/windowIsUndefined";
+import { isFunction, isObject } from "../../../lib/types";
+import websocketClient from "../../../websockets/client";
 
 export default (componentInstance = {}, componentOptions = {}) => {
   try {
@@ -34,12 +36,36 @@ export default (componentInstance = {}, componentOptions = {}) => {
     componentInstance.dom.virtual = {};
     componentInstance.dom.actual = {};
 
-    if (windowIsUndefined()) {
+    const windowExists = !windowIsUndefined();
+
+    if (!windowExists) {
       componentInstance.url = compileUrl(componentOptions?.url);
     }
 
-    if (!windowIsUndefined() && window.__joystick_url__) {
+    if (windowExists && window.__joystick_url__) {
       componentInstance.url = compileUrl(window.__joystick_url__);
+    }
+
+    if (windowExists && componentOptions?.websockets && isFunction(componentOptions?.websockets)) {
+      // TODO: For each websocket entry, try to establish a connect and assign it back to the websockets object on the component instance.
+      const compiledWebsocketOption = componentOptions.websockets(componentInstance);
+      const websocketDefinitions = isObject(compiledWebsocketOption) && Object.entries(compiledWebsocketOption);
+
+      for (let i = 0; i < websocketDefinitions?.length; i += 1) {
+        const [websocketName, websocketDefinition] = websocketDefinitions[i];
+
+        websocketClient({
+          url: `${window?.process?.env.NODE_ENV === 'development' ? 'ws' : 'wss'}://${location.host}/api/_websockets/${websocketName}`,
+          options: websocketDefinition?.options || {},
+          query: websocketDefinition?.query || {},
+          events: websocketDefinition?.events || {},
+        }, (websocketConnection = {}) => {
+          componentInstance.websockets = {
+            ...(componentInstance.websockets || {}),
+            [websocketName]: websocketConnection,
+          }
+        });
+      }
     }
   } catch (exception) {
     throwFrameworkError('component.registerOptions', exception);

@@ -48,7 +48,7 @@ export class App {
 
     this.databases = await this.loadDatabases();
     this.express = initExpress(this.onStartApp, options);
-    this.initWebsockets();
+    this.initWebsockets(options?.websockets || {});
     this.initAccounts();
     this.initDeploy();
     this.initAPI(options?.api);
@@ -333,9 +333,7 @@ export class App {
     });
   }
 
-  initWebsockets() {
-    // TODO: Pull in user-defined websockets too.
-
+  initWebsockets(userWebsockets = {}) {
     const websocketServers = {
       uploaders: {
         server: new WebSocket.WebSocketServer({
@@ -343,41 +341,92 @@ export class App {
           path: "/api/_websockets/uploaders",
         }),
       },
+      ...(Object.entries(userWebsockets).reduce((definitions = {}, [userWebsocketName, userWebsocketDefinition]) => {
+        definitions[userWebsocketName] = {
+          server: new WebSocket.WebSocketServer({
+            noServer: true,
+            path: `/api/_websockets/${userWebsocketName}`,
+          }),
+          onOpen: userWebsocketDefinition?.onOpen || null,
+          onMessage: userWebsocketDefinition?.onMessage || null,
+          onClose: userWebsocketDefinition?.onClose || null,
+        };
+
+        return definitions;
+      }, {})),
     };
 
-    this.express.server.on("upgrade", (request, socket, head) => {
-      Object.entries(websocketServers).forEach(([serverName, websocket]) => {
-        websocket.server.on(
-          "connection",
-          function connection(websocketConnection, connectionRequest) {
-            const [_path, params] = connectionRequest?.url?.split("?");
-            const connectionParams = queryString.parse(params);
-            const emitter = new EventEmitter();
-            const emitterId = connectionParams?.id || generateId();
+    Object.entries(websocketServers).forEach(([websocketName, websocketDefinition]) => {
+      websocketDefinition.server.on("connection", function connection(websocketConnection, connectionRequest) {
+        try {
+          const [_path, params] = connectionRequest?.url?.split("?");
+          const connectionParams = queryString.parse(params);
 
-            joystick.emitters[emitterId] = emitter;
-            
-            if (websocket?.onConnection) {
-              websocket.onConnection(joystick.emitters[emitterId]);
-            }
-
-            websocketConnection.on("message", (message) => {
-              const parsedMessage = JSON.parse(message);
-              if (websocket.onMessage) {
-                websocket.onMessage(parsedMessage);
-              }
-            });
- 
-            emitter.on('progress', (progress = {}) => {
-              websocketConnection.send(JSON.stringify({ type: 'PROGRESS', ...progress }));
-            });
+          const emitter = new EventEmitter();
+          const emitterId = connectionParams?.id ? `${websocketName}_${connectionParams?.id}` : websocketName;
+  
+          if (joystick?.emitters[emitterId]) {
+            joystick.emitters[emitterId].push(emitter);
+          } else {
+            joystick.emitters = {
+              ...(joystick?.emitters || {}),
+              [emitterId]: [emitter],
+            };
           }
-        );
+  
+          const connection = Object.assign(websocketConnection, {
+            params: connectionParams,
+          });
+  
+          if (websocketDefinition?.onOpen) {
+            websocketDefinition.onOpen(connection);
+          }
+  
+          // NOTE: This is a message being sent inbound by the client.
+          websocketConnection.on("message", (message) => {
+            const parsedMessage = JSON.parse(message);
+            if (websocketDefinition.onMessage) {
+              websocketDefinition.onMessage(parsedMessage, connection);
+            }
+          });
+  
+          websocketConnection.on("close", (code = 0, reason = '') => {
+            if (websocketDefinition?.onClose) {
+              websocketDefinition.onClose(code, reason?.toString(), connection);
+            }
+          });
+  
+          // NOTE: This is a message being sent outbound by the server. This is already contextualized
+          // to a unique ID (if applicable) via the joystick.emitters.<emitterId> pattern above.
+          emitter.on('message', (message = {}) => {
+            websocketConnection.send(JSON.stringify(message));
+          });
+          
+          // NOTE: This is an internal emitter for handling progress events via uploaders.
+          emitter.on('progress', (progress = {}) => {
+            websocketConnection.send(JSON.stringify({ type: 'PROGRESS', ...progress }));
+          });
+        } catch (exception) {
+          console.warn(exception);
+        }
+      });
+    });
 
+    // NOTE: Doing this here is intentional. Because the upgrade emits a connection event,
+    // the connection event handler must be defined first (what we're doing above).
+    this.express.server.on("upgrade", (request, socket, head) => {
+      if (!request?.url?.includes('/api/_websockets/')) {
+        return;
+      }
+
+      const websocketName = (request?.url?.replace('/api/_websockets/', '').split('?') || [])[0];
+      const websocket = websocketServers[websocketName];
+
+      if (websocket) {  
         websocket.server.handleUpgrade(request, socket, head, (socket) => {
           websocket.server.emit("connection", socket, request);
         });
-      });
+      }
     });
   }
 

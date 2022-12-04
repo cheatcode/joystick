@@ -11,14 +11,22 @@ export default (uploaderName = '', uploaderOptions = {}) => {
   
       websocketClient({
         url: `${window?.process?.env.NODE_ENV === 'development' ? 'ws' : 'wss'}://${location.host}/api/_websockets/uploaders`,
-        queryParams: {
+        options: {
+          logging: process.env.NODE_ENV === 'development',
+          autoReconnect: true,
+          reconnectAttempts: 12,
+          reconnectDelayInSeconds: 5,
+        },
+        query: {
           id: uploadId,
         },
-        onMessage: (message = {}) => {
-          if (message?.type === 'PROGRESS' && uploaderOptions?.onProgress && lastProgress < 100 && lastProgress !== message?.progress) {
-            lastProgress = message?.progress;
-            uploaderOptions.onProgress(message?.progress, message?.provider);
-          }
+        events: {
+          onMessage: (message = {}) => {
+            if (message?.type === 'PROGRESS' && uploaderOptions?.onProgress && lastProgress < 100 && lastProgress !== message?.progress) {
+              lastProgress = message?.progress;
+              uploaderOptions.onProgress(message?.progress, message?.provider);
+            }
+          },
         },
       }, () => {
         let formData;

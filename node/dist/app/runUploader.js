@@ -1,6 +1,7 @@
 import fs from "fs";
 import AWS from "aws-sdk";
 import path from "path";
+import emitWebsocketEvent from "../websockets/emitWebsocketEvent";
 function writeFile(path2, contents, cb) {
   fs.mkdir(getDirName(path2), { recursive: true }, function(err) {
     if (err)
@@ -33,15 +34,12 @@ const uploadToS3 = (upload = {}, options = {}) => {
         queueSize: 3
       });
       let uploaded = options?.progress;
-      const emitter = joystick?.emitters[options?.req?.headers["x-joystick-upload-id"]];
       let previous = 0;
       s3Upload.on("httpUploadProgress", (progress) => {
-        if (emitter) {
-          uploaded += progress?.loaded - previous;
-          previous = progress?.loaded;
-          const percentage = Math.round(uploaded / options?.totalFileSizeAllProviders * 100);
-          emitter.emit("progress", { provider: "s3", progress: percentage });
-        }
+        uploaded += progress?.loaded - previous;
+        previous = progress?.loaded;
+        const percentage = Math.round(uploaded / options?.totalFileSizeAllProviders * 100);
+        emitWebsocketEvent(`uploaders_${options?.req?.headers["x-joystick-upload-id"]}`, "progress", { provider: "s3", progress: percentage });
       });
       s3Upload.send((error, data) => {
         if (error) {

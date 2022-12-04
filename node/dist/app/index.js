@@ -43,7 +43,7 @@ class App {
     await this.invalidateCache();
     this.databases = await this.loadDatabases();
     this.express = initExpress(this.onStartApp, options);
-    this.initWebsockets();
+    this.initWebsockets(options?.websockets || {});
     this.initAccounts();
     this.initDeploy();
     this.initAPI(options?.api);
@@ -266,40 +266,81 @@ class App {
       }
     });
   }
-  initWebsockets() {
+  initWebsockets(userWebsockets = {}) {
     const websocketServers = {
       uploaders: {
         server: new WebSocket.WebSocketServer({
           noServer: true,
           path: "/api/_websockets/uploaders"
         })
-      }
+      },
+      ...Object.entries(userWebsockets).reduce((definitions = {}, [userWebsocketName, userWebsocketDefinition]) => {
+        definitions[userWebsocketName] = {
+          server: new WebSocket.WebSocketServer({
+            noServer: true,
+            path: `/api/_websockets/${userWebsocketName}`
+          }),
+          onOpen: userWebsocketDefinition?.onOpen || null,
+          onMessage: userWebsocketDefinition?.onMessage || null,
+          onClose: userWebsocketDefinition?.onClose || null
+        };
+        return definitions;
+      }, {})
     };
-    this.express.server.on("upgrade", (request, socket, head) => {
-      Object.entries(websocketServers).forEach(([serverName, websocket]) => {
-        websocket.server.on("connection", function connection(websocketConnection, connectionRequest) {
+    Object.entries(websocketServers).forEach(([websocketName, websocketDefinition]) => {
+      websocketDefinition.server.on("connection", function connection(websocketConnection, connectionRequest) {
+        try {
           const [_path, params] = connectionRequest?.url?.split("?");
           const connectionParams = queryString.parse(params);
           const emitter = new EventEmitter();
-          const emitterId = connectionParams?.id || generateId();
-          joystick.emitters[emitterId] = emitter;
-          if (websocket?.onConnection) {
-            websocket.onConnection(joystick.emitters[emitterId]);
+          const emitterId = connectionParams?.id ? `${websocketName}_${connectionParams?.id}` : websocketName;
+          if (joystick?.emitters[emitterId]) {
+            joystick.emitters[emitterId].push(emitter);
+          } else {
+            joystick.emitters = {
+              ...joystick?.emitters || {},
+              [emitterId]: [emitter]
+            };
+          }
+          const connection2 = Object.assign(websocketConnection, {
+            params: connectionParams
+          });
+          if (websocketDefinition?.onOpen) {
+            websocketDefinition.onOpen(connection2);
           }
           websocketConnection.on("message", (message) => {
             const parsedMessage = JSON.parse(message);
-            if (websocket.onMessage) {
-              websocket.onMessage(parsedMessage);
+            if (websocketDefinition.onMessage) {
+              websocketDefinition.onMessage(parsedMessage, connection2);
             }
+          });
+          websocketConnection.on("close", (code = 0, reason = "") => {
+            if (websocketDefinition?.onClose) {
+              websocketDefinition.onClose(code, reason?.toString(), connection2);
+            }
+          });
+          emitter.on("message", (message = {}) => {
+            websocketConnection.send(JSON.stringify(message));
           });
           emitter.on("progress", (progress = {}) => {
             websocketConnection.send(JSON.stringify({ type: "PROGRESS", ...progress }));
           });
-        });
+        } catch (exception) {
+          console.warn(exception);
+        }
+      });
+    });
+    this.express.server.on("upgrade", (request, socket, head) => {
+      if (!request?.url?.includes("/api/_websockets/")) {
+        return;
+      }
+      const websocketName = (request?.url?.replace("/api/_websockets/", "").split("?") || [])[0];
+      const websocket = websocketServers[websocketName];
+      if (websocket) {
         websocket.server.handleUpgrade(request, socket, head, (socket2) => {
           websocket.server.emit("connection", socket2, request);
         });
-      });
+      }
     });
   }
   initAccounts() {

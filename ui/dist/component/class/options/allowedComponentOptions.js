@@ -1,1 +1,1 @@
-var e=["_componentId","_ssrId","instanceId","dataFromSSR","api","req","existingProps","existingState","id","wrapper","name","props","defaultProps","state","data","lifecycle","methods","events","css","render","url","translations"];export{e as default};
+var e=["_componentId","_ssrId","api","dataFromSSR","existingProps","existingState","instanceId","req","css","data","defaultProps","events","id","lifecycle","methods","name","props","render","state","translations","url","websockets","wrapper"];export{e as default};
