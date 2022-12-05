@@ -12,9 +12,9 @@ function writeFile(path2, contents, cb) {
 const uploadToS3 = (upload = {}, options = {}) => {
   try {
     return new Promise((resolve) => {
-      const temporaryFilePath = `.joystick/build/_tmp/${upload?.fileName}`;
-      if (!fs.existsSync(".joystick/build/_tmp")) {
-        fs.mkdirSync(".joystick/build/_tmp", { recursive: true });
+      const temporaryFilePath = `.joystick/uploads/_tmp/${upload?.fileName}`;
+      if (!fs.existsSync(".joystick/uploads/_tmp")) {
+        fs.mkdirSync(".joystick/uploads/_tmp", { recursive: true });
       }
       const uploadParams = {
         Bucket: upload?.s3?.bucket,
