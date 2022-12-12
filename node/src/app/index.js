@@ -179,16 +179,17 @@ export class App {
   }
 
   initAPI(api = {}) {
-    const context = api?.context;
     const getters = api?.getters;
     const setters = api?.setters;
+    const options = api?.options;
+    const context = api?.context;
 
     if (getters && isObject(getters) && Object.keys(getters).length > 0) {
-      registerGetters(this.express, Object.entries(getters), context);
+      registerGetters(this.express, Object.entries(getters), context, options);
     }
 
     if (setters && isObject(setters) && Object.keys(setters).length > 0) {
-      registerSetters(this.express, Object.entries(setters), context);
+      registerSetters(this.express, Object.entries(setters), context, options);
     }
   }
 

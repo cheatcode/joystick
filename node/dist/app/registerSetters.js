@@ -4,7 +4,9 @@ import getAPIContext from "./getAPIContext.js";
 import formatAPIError from "../lib/formatAPIError.js";
 import validate from "../validation/index.js";
 import getOutput from "./getOutput.js";
-var registerSetters_default = (express, setters = [], context = {}) => {
+import sanitizeAPIResponse from "./sanitizeAPIResponse.js";
+import { isObject } from "../validation/lib/typeValidators.js";
+var registerSetters_default = (express, setters = [], context = {}, APIOptions = {}) => {
   const { app } = express;
   if (app) {
     for (const [setter_name, setter_options] of setters) {
@@ -14,6 +16,8 @@ var registerSetters_default = (express, setters = [], context = {}) => {
         const output = req?.body?.output;
         const authorized = setter_options?.authorized;
         const set = setter_options?.set;
+        const localSanitizationOptions = setter_options?.sanitize;
+        const shouldSanitizeOutput = (setter_options?.sanitize || APIOptions?.sanitize) === true || isObject(APIOptions?.sanitize || setter_options?.sanitize);
         let validationErrors = [];
         if (setter_options?.input) {
           validationErrors = await validate.inputWithSchema(input, setter_options.input);
@@ -45,7 +49,8 @@ var registerSetters_default = (express, setters = [], context = {}) => {
           try {
             const data = await set(input, setter_context) || {};
             const response = output ? getOutput(data, output) : data;
-            return res.send(JSON.stringify(response || {}));
+            const sanitizedResponse = shouldSanitizeOutput ? sanitizeAPIResponse(response, localSanitizationOptions || APIOptions?.sanitize) : response;
+            return res.send(JSON.stringify(sanitizedResponse || {}));
           } catch (exception) {
             console.log(exception);
             return res.status(500).send(JSON.stringify({

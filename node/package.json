@@ -1,7 +1,7 @@
 {
   "name": "@joystick.js/node",
-  "version": "1.0.0-beta.110",
-  "developmentVersion": "1.0.0-beta.880",
+  "version": "1.0.0-beta.111",
+  "developmentVersion": "1.0.0-beta.889",
   "type": "module",
   "description": "A Node.js framework for building web apps.",
   "main": "./dist/index.js",
@@ -39,6 +39,7 @@
     "pg": "^8.7.3",
     "process": "^0.11.10",
     "query-string": "^7.0.1",
+    "sanitize-html": "^2.7.3",
     "serve-favicon": "^2.5.0",
     "sqlite3": "^5.0.6",
     "ws": "^8.4.0"

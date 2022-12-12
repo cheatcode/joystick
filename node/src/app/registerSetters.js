@@ -4,8 +4,10 @@ import getAPIContext from "./getAPIContext.js";
 import formatAPIError from "../lib/formatAPIError.js";
 import validate from "../validation/index.js";
 import getOutput from "./getOutput.js";
+import sanitizeAPIResponse from './sanitizeAPIResponse.js';
+import { isObject } from '../validation/lib/typeValidators.js';
 
-export default (express, setters = [], context = {}) => {
+export default (express, setters = [], context = {}, APIOptions = {}) => {
   const { app } = express;
 
   if (app) {
@@ -18,6 +20,8 @@ export default (express, setters = [], context = {}) => {
           const output = req?.body?.output;
           const authorized = setter_options?.authorized;
           const set = setter_options?.set;
+          const localSanitizationOptions = setter_options?.sanitize;
+          const shouldSanitizeOutput = (setter_options?.sanitize || APIOptions?.sanitize) === true || isObject((APIOptions?.sanitize || setter_options?.sanitize));
 
           let validationErrors = [];
 
@@ -59,7 +63,8 @@ export default (express, setters = [], context = {}) => {
             try {
               const data = (await set(input, setter_context)) || {};
               const response = output ? getOutput(data, output) : data;
-              return res.send(JSON.stringify(response || {}));
+              const sanitizedResponse = shouldSanitizeOutput ? sanitizeAPIResponse(response, localSanitizationOptions || APIOptions?.sanitize) : response;
+              return res.send(JSON.stringify(sanitizedResponse || {}));
             } catch (exception) {
               console.log(exception);
               return res.status(500).send(

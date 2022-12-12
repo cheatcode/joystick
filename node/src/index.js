@@ -1,3 +1,4 @@
+import sanitizeHTML from 'sanitize-html';
 import _accounts from './app/accounts';
 import _websockets from './websockets';
 import api from "./api/index.js";
@@ -20,6 +21,11 @@ export const email = {
   send: sendEmail,
 };
 export const websockets = _websockets;
+export const sanitize = {
+  defaults: {
+    allowedTags: sanitizeHTML.defaults.allowedTags,
+  }
+};
 
 export const __filename = nodeUrlPolyfills.__filename;
 export const __dirname = nodeUrlPolyfills.__dirname;
