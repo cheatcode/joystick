@@ -17,6 +17,7 @@ var registerSetters_default = (express, setters = [], context = {}, APIOptions =
         const authorized = setter_options?.authorized;
         const set = setter_options?.set;
         const localSanitizationOptions = setter_options?.sanitize;
+        const shouldDisableSanitizationForSetter = setter_options?.sanitize === false;
         const shouldSanitizeOutput = (setter_options?.sanitize || APIOptions?.sanitize) === true || isObject(APIOptions?.sanitize || setter_options?.sanitize);
         let validationErrors = [];
         if (setter_options?.input) {
@@ -49,7 +50,7 @@ var registerSetters_default = (express, setters = [], context = {}, APIOptions =
           try {
             const data = await set(input, setter_context) || {};
             const response = output ? getOutput(data, output) : data;
-            const sanitizedResponse = shouldSanitizeOutput ? sanitizeAPIResponse(response, localSanitizationOptions || APIOptions?.sanitize) : response;
+            const sanitizedResponse = !shouldDisableSanitizationForSetter && shouldSanitizeOutput ? sanitizeAPIResponse(response, localSanitizationOptions || APIOptions?.sanitize) : response;
             return res.send(JSON.stringify(sanitizedResponse || {}));
           } catch (exception) {
             console.log(exception);

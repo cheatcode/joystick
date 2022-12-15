@@ -18,6 +18,7 @@ var registerGetters_default = (express, getters = [], context = {}, APIOptions =
         const authorized = getter_options?.authorized;
         const get = getter_options?.get;
         const localSanitizationOptions = getter_options?.sanitize;
+        const shouldDisableSanitizationForGetter = getter_options?.sanitize === false;
         const shouldSanitizeOutput = (getter_options?.sanitize || APIOptions?.sanitize) === true || isObject(APIOptions?.sanitize || getter_options?.sanitize);
         let validationErrors = [];
         if (getter_options?.input) {
@@ -50,7 +51,7 @@ var registerGetters_default = (express, getters = [], context = {}, APIOptions =
           try {
             const data = await get(input, getter_context) || {};
             const response = output ? getOutput(data, output) : data;
-            const sanitizedResponse = shouldSanitizeOutput ? sanitizeAPIResponse(response, localSanitizationOptions || APIOptions?.sanitize) : response;
+            const sanitizedResponse = !shouldDisableSanitizationForGetter && shouldSanitizeOutput ? sanitizeAPIResponse(response, localSanitizationOptions || APIOptions?.sanitize) : response;
             return res.send(JSON.stringify(sanitizedResponse || {}));
           } catch (exception) {
             console.log(exception);
