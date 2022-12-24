@@ -281,7 +281,7 @@ const buildTreeForComponent = (componentInstance = {}, ssrTree = {}, translation
 };
 const getDataFromComponent = (componentInstance = {}, api = {}, browserSafeRequest = {}) => {
   try {
-    return componentInstance.handleFetchData(api, browserSafeRequest);
+    return componentInstance.handleFetchData(api, browserSafeRequest, {}, componentInstance);
   } catch (exception) {
     throw new Error(`[ssr.getDataFromComponent] ${exception.message}`);
   }
