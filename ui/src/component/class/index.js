@@ -31,8 +31,8 @@ class Component {
     appendCSSToHead(this);
   }
 
-  async handleFetchData(api = {}, req = {}, input = {}) {
-    const data = await fetchData(api, req, input, this);
+  async handleFetchData(api = {}, req = {}, input = {}, componentInstance = this) {
+    const data = await fetchData(api, req, input, componentInstance);
     this.data = data;
     return data;
   }
