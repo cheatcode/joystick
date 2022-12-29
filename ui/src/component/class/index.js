@@ -15,12 +15,16 @@ import clearChildrenOnParent from "../tree/clearChildrenOnParent";
 import updateParentInstanceInTree from "../tree/updateParentInstanceInTree";
 import unregisterEventListeners from "./events/unregisterListeners";
 import registerEventListeners from "./events/registerListeners";
+import findComponentInTreeByField from "../tree/findComponentInTreeByField";
+import buildVirtualDOMTree from "./virtualDOM/buildTree";
+import replaceChildInVDOMTree from "../tree/replaceChildInVDOMTree";
 
 class Component {
   constructor(options = {}) {
     validateOptions(options);
     registerOptions(this, options);
     this.data = loadDataFromWindow(this);
+    this.onUpdateChildComponent = this.handleUpdateChildComponentInVDOM;
   }
 
   setDOMNodeOnInstance() {
@@ -70,12 +74,13 @@ class Component {
     if (patchDOMNodes && isFunction(patchDOMNodes)) {
       processQueue('lifecycle.onBeforeMount', () => {
         const patchedDOM = patchDOMNodes(this.DOMNode);
+        
         this.dom.actual = patchedDOM;
         this.dom.virtual = updatedDOM.virtual;
-      });
 
-      processQueue('lifecycle.onMount', () => {
-        this.onAfterRender(onBeforeRenderData, options);
+        processQueue('lifecycle.onMount', () => {
+          this.onAfterRender(onBeforeRenderData, options);
+        });
       });
     }
   }
@@ -99,6 +104,12 @@ class Component {
       if (renderOptions?.afterSetStateRender && isFunction(renderOptions.afterSetStateRender)) {
         renderOptions.afterSetStateRender();
       }
+
+      // NOTE: If a parent exists, call to update the parent's VDOM to include the latest render
+      // of this child component.
+      if (this.parent) {
+        this.parent.onUpdateChildComponent(this.id, this.instanceId);
+      }
     }
   }
 
@@ -115,6 +126,18 @@ class Component {
         }
       },
     });
+  }
+
+  handleUpdateChildComponentInVDOM(componentId = '', instanceId = '') {
+    // NOTE: parentComponent here is the parent relative *to* the child component, not the parent of this
+    // component (why we pass this.instanceId here to lookup the parentComponent).
+    const parentComponent = findComponentInTreeByField(window.joystick._internal.tree, this.instanceId, 'instanceId');
+    const childComponent = findComponentInTreeByField(window.joystick._internal.tree, instanceId, 'instanceId');
+
+    if (childComponent) {
+      const childAsVDOM = buildVirtualDOMTree(childComponent?.instance?.DOMNode);
+      replaceChildInVDOMTree(parentComponent?.instance?.dom?.virtual, childComponent?.instanceId, childAsVDOM);
+    }
   }
 }
 
