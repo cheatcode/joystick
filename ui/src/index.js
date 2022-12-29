@@ -8,6 +8,7 @@ import api from "./api";
 import QueueArray from "./lib/queueArray";
 import attachJoystickToWindow from "./attachJoystickToWindow";
 import overrideTimers from "./overrideTimers";
+import generateId from "./lib/generateId";
 
 export const get = api.get;
 export const set = api.set;
@@ -17,14 +18,6 @@ export const cache = _cache;
 export const html = _html;
 
 const joystick = {
-  component,
-  get,
-  set,
-  accounts,
-  upload,
-  mount,
-  cache,
-  html,
   _internal: {
     queues: {
       domNodes: new QueueArray([]),
@@ -39,6 +32,15 @@ const joystick = {
     tree: {},
     eventListeners: [],
   },
+  accounts,
+  cache,
+  component,
+  get,
+  html,
+  id: generateId,
+  mount,
+  set,
+  upload,
   timers: {},
 }
 
