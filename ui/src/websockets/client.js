@@ -1,4 +1,3 @@
-import queryString from "query-string";
 import throwFrameworkError from "../lib/throwFrameworkError";
 
 let reconnectInterval = null;
@@ -9,7 +8,7 @@ const websocketClient = (options = {}, onConnect = null) => {
     let url = options?.url;
 
     if (options?.query) {
-      url = `${url}?${queryString.stringify(options.query)}`;
+      url = `${url}?${new URLSearchParams(options.query).toString()}`;
     }
   
     let client = new WebSocket(url);

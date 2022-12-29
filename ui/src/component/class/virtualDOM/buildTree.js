@@ -32,7 +32,7 @@ const flattenWhenTags = (element = {}) => {
 
 const buildVirtualDOMTree = (element = {}) => {
   try {
-    const tagName = (element.tagName && element.tagName.toLowerCase()) || "text";
+    const tagName = (element && element.tagName && element.tagName.toLowerCase()) || "text";
 
     let virtualDOMNode = {
       tagName,

@@ -134,7 +134,7 @@ class Component {
     const parentComponent = findComponentInTreeByField(window.joystick._internal.tree, this.instanceId, 'instanceId');
     const childComponent = findComponentInTreeByField(window.joystick._internal.tree, instanceId, 'instanceId');
 
-    if (childComponent) {
+    if (childComponent?.instance?.DOMNode) {
       const childAsVDOM = buildVirtualDOMTree(childComponent?.instance?.DOMNode);
       replaceChildInVDOMTree(parentComponent?.instance?.dom?.virtual, childComponent?.instanceId, childAsVDOM);
     }
