@@ -1,4 +1,5 @@
 import api from '../../../api';
+import addToQueue from '../../../lib/addToQueue';
 import throwFrameworkError from "../../../lib/throwFrameworkError";
 import fetchData from './fetch';
 
@@ -20,7 +21,13 @@ const compileData = (dataFromWindow = {}, requestFromWindow = {}, componentInsta
         // mount, the data rendered isn't stale.
         window.__joystick_data__[componentInstance?.ssrId] = data;
 
-        componentInstance.render();
+        componentInstance.render({
+          afterRefetchDataRender: () => {
+            if (componentInstance?.lifecycle?.onRefetchData) {
+              componentInstance?.lifecycle?.onRefetchData(componentInstance);
+            }
+          },
+        });
 
         return data;
       },

@@ -105,6 +105,10 @@ class Component {
         renderOptions.afterSetStateRender();
       }
 
+      if (renderOptions?.afterRefetchDataRender && isFunction(renderOptions.afterRefetchDataRender)) {
+        renderOptions.afterRefetchDataRender();
+      }
+
       // NOTE: If a parent exists, call to update the parent's VDOM to include the latest render
       // of this child component.
       if (this.parent) {

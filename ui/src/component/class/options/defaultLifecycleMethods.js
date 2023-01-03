@@ -3,4 +3,5 @@ export default {
   onMount: () => null,
   onBeforeUnmount: () => null,
   onUpdateProps: () => null,
+  onRefetchData: () => null,
 };

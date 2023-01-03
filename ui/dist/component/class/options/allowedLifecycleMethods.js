@@ -1,1 +1,1 @@
-var o=["onBeforeMount","onMount","onUpdateProps","onBeforeUnmount"];export{o as default};
+var o=["onBeforeMount","onMount","onUpdateProps","onBeforeUnmount","onRefetchData"];export{o as default};
