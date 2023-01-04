@@ -16,7 +16,7 @@ const handleParseResponse = async (response = {}) => {
 
 export default (getterName = "", getterOptions = {}) => {
   try {
-    if (typeof window.fetch !== 'undefined') {
+    if (typeof window.fetch !== 'undefined' && !getterOptions?.skip) {
       // NOTE: Wrap fetch() with another Promise so we can control routing of errors
       // received in the response (by default they don't go to catch() which is where
       // get() should return errors).
