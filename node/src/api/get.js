@@ -3,7 +3,7 @@ import { URL, URLSearchParams } from "url";
 import getOrigin from "./getOrigin";
 
 export default (getterName = "", getterOptions = {}) => {
-  if (fetch) {
+  if (fetch && !getterOptions?.skip) {
     return new Promise((resolve, reject) => {
       const url = new URL(`${getOrigin()}/api/_getters/${getterName}`);
       const input = getterOptions.input

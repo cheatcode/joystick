@@ -2,7 +2,7 @@ import fetch from "node-fetch";
 import { URL, URLSearchParams } from "url";
 import getOrigin from "./getOrigin";
 var get_default = (getterName = "", getterOptions = {}) => {
-  if (fetch) {
+  if (fetch && !getterOptions?.skip) {
     return new Promise((resolve, reject) => {
       const url = new URL(`${getOrigin()}/api/_getters/${getterName}`);
       const input = getterOptions.input ? JSON.stringify(getterOptions.input) : null;
