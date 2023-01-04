@@ -1,7 +1,7 @@
 import fs from "fs";
 import chalk from 'chalk';
 import updateFileMap from "./updateFileMap.js";
-import { JOYSTICK_UI_REGEX, EXPORT_DEFAULT_REGEX, JOYSTICK_COMPONENT_REGEX } from "../../lib/regexes.js";
+import { JOYSTICK_UI_REGEX, EXPORT_DEFAULT_REGEX, JOYSTICK_COMPONENT_REGEX, JOYSTICK_COMMENT_REGEX } from "../../lib/regexes.js";
 import generateId from "./generateId.js";
 import getPlatformSafePath from '../../lib/getPlatformSafePath.js';
 
@@ -49,6 +49,10 @@ export default {
             }
 
             let contents = code.replace('ui.component({', `ui.component({\n  _ssrId: '${ssrId}',`);
+
+            // NOTE: Remove any commented code inside of render() so it doesn't get rendered during SSR
+            // or in the browser.
+            contents = contents.replace(JOYSTICK_COMMENT_REGEX, '');
 
             const exportDefaultMatchParts = (exportDefaultMatch && exportDefaultMatch.split(" ")) || [];
             const componentName = exportDefaultMatchParts.pop();

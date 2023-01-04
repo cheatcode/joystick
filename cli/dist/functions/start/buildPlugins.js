@@ -1,7 +1,7 @@
 import fs from "fs";
 import chalk from "chalk";
 import updateFileMap from "./updateFileMap.js";
-import { JOYSTICK_UI_REGEX, EXPORT_DEFAULT_REGEX, JOYSTICK_COMPONENT_REGEX } from "../../lib/regexes.js";
+import { JOYSTICK_UI_REGEX, EXPORT_DEFAULT_REGEX, JOYSTICK_COMPONENT_REGEX, JOYSTICK_COMMENT_REGEX } from "../../lib/regexes.js";
 import generateId from "./generateId.js";
 import getPlatformSafePath from "../../lib/getPlatformSafePath.js";
 var buildPlugins_default = {
@@ -37,6 +37,7 @@ var buildPlugins_default = {
             }
             let contents = code.replace("ui.component({", `ui.component({
   _ssrId: '${ssrId}',`);
+            contents = contents.replace(JOYSTICK_COMMENT_REGEX, "");
             const exportDefaultMatchParts = exportDefaultMatch && exportDefaultMatch.split(" ") || [];
             const componentName = exportDefaultMatchParts.pop();
             if (componentName && isLayoutComponent) {
