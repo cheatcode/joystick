@@ -1,6 +1,6 @@
 # Source Available Under Commercial Restriction (SAUCR) License
 
-Copyright &copy; 2021-2022 CheatCode Software LLC
+Copyright &copy; 2021-2023 CheatCode Software LLC
 
 ---
 
@@ -54,6 +54,8 @@ Under this license, the following derivative works using the source code are not
 1. An alternative or competing software framework ("framework", "library", "package", "packages", "fork", "forks") that originates as a fork (modified copy of the source code) or copy (either a verbatim, unmodified copy or a reproduction or reimplemntation inspired by the source code) either for commercial or non-commercial purposes using either the current name or brand of the source code, Joystick, or a different name, brand, or entity.
 
 2. A Software as a Service (SaaS), Platform as a Service (PaaS), or any other incarnation of "as a service" software or software made available commercially or non-commercially that offers the source code as a cloud ("cloud", "hosted", "service", "distribution", "mainframe") or on-premises software service or product.
+
+3. Use of the source code as the training data for any Artificial Intelligence (AI) model.
 
 ### Requesting Permission for Derivative Works
 

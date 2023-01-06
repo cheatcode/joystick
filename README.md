@@ -3,7 +3,7 @@
 
 ## Joystick (Beta)
 
-The full-stack JavaScript framework.
+A full-stack JavaScript framework for building web apps and websites.
 
 [Join the Discord](https://discord.gg/UTy4Fpy)
 
