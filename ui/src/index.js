@@ -1,4 +1,5 @@
 import component from "./component";
+import _renderComponentToHTML from './component/renderComponentToHTML';
 import _accounts from "./accounts";
 import _upload from './upload';
 import _cache from './cache';
@@ -16,6 +17,7 @@ export const accounts = _accounts;
 export const upload = _upload;
 export const cache = _cache;
 export const html = _html;
+export const renderComponentToHTML = _renderComponentToHTML;
 
 const joystick = {
   _internal: {
@@ -39,6 +41,7 @@ const joystick = {
   html,
   id: generateId,
   mount,
+  renderComponentToHTML,
   set,
   upload,
   timers: {},

@@ -46,7 +46,7 @@ const diff = (oldVirtualNode = undefined, newVirtualNode = undefined) => {
     return elementPatchFunctions.select(oldVirtualNode, newVirtualNode);
   }
 
-  if (newVirtualNode.tagName === 'code') {
+  if (['pre', 'code'].includes(newVirtualNode.tagName)) {
     return getReplaceNodePatch(newVirtualNode, oldVirtualNode);
   }
 

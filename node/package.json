@@ -15,7 +15,7 @@
   },
   "keywords": [],
   "author": "",
-  "license": "MIT",
+  "license": "SAUCR",
   "dependencies": {
     "aws-sdk": "^2.1046.0",
     "bcrypt": "^5.0.1",
