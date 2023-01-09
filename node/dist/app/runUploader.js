@@ -21,6 +21,9 @@ const uploadToS3 = (upload = {}, options = {}) => {
         Key: upload?.fileName,
         Body: upload?.content
       };
+      if (upload?.fileName?.includes(".svg")) {
+        uploadParams.ContentType = "image/svg+xml";
+      }
       if (upload?.s3?.acl) {
         uploadParams.ACL = upload?.s3?.acl;
       }

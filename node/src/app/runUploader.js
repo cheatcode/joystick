@@ -28,6 +28,11 @@ const uploadToS3 = (upload = {}, options = {}) => {
         Body: upload?.content,
       };
 
+      if (upload?.fileName?.includes('.svg')) {
+        // NOTE: Do this because AWS fails to properly detect mime type for SVGs.
+        uploadParams.ContentType = 'image/svg+xml';
+      }
+
       if (upload?.s3?.acl) {
         uploadParams.ACL = upload?.s3?.acl;
       }
