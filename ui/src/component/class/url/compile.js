@@ -1,4 +1,3 @@
-import matchURL from "../../../lib/matchURL";
 import throwFrameworkError from "../../../lib/throwFrameworkError";
 import { isString } from "../../../lib/types";
 
@@ -8,7 +7,7 @@ export default (url = {}) => {
       ...url,
       isActive: (path = '') => {
         if (isString(path) && url?.route !== '*') {
-          return matchURL(path, url?.route);
+          return path === (typeof location !== 'undefined' ? location.pathname : url.path);
         }
 
         return false;
