@@ -50,7 +50,7 @@ const handleHTMLReplacementsForApp = ({
           window.__joystick_data__ = ${
             JSON.stringify({
               // TODO:
-              [componentInstance.id]: dataFromComponent || {},
+              [componentInstance.id]: dataFromComponent?.data || {},
               ...(dataForClient || {}),
             })
           };
@@ -384,9 +384,13 @@ const buildTreeForComponent = (componentInstance = {}, ssrTree = {}, translation
   }
 };
 
-const getDataFromComponent = (componentInstance = {}, api = {}, browserSafeRequest = {}) => {
+const getDataFromComponent = async (componentInstance = {}, api = {}, browserSafeRequest = {}) => {
   try {
-    return componentInstance.handleFetchData(api, browserSafeRequest, {}, componentInstance);
+    const data = await componentInstance.handleFetchData(api, browserSafeRequest, {}, componentInstance);
+    return {
+      componentId: componentInstance?.id,
+      data,
+    };
   } catch (exception) {
     throw new Error(`[ssr.getDataFromComponent] ${exception.message}`);
   }
