@@ -87,7 +87,6 @@ const getTranslationsFile = async (languageFilePath = "", paths = "") => {
 const getTranslations = async (paths = {}, languagePreferences = []) => {
   const languageFiles = fs.readdirSync(`${paths.build}/i18n`);
   let matchingFile = null;
-  console.log(languagePreferences);
   for (let i = 0; i < languagePreferences.length; i += 1) {
     const languageRegex = languagePreferences[i];
     const match = languageFiles.find((languageFile) => !!languageFile.match(languageRegex));
@@ -97,7 +96,6 @@ const getTranslations = async (paths = {}, languagePreferences = []) => {
     }
   }
   const translationsFile = await getTranslationsFile(matchingFile, paths);
-  console.log("MATCH", { matchingFile, translationsFile });
   return translationsFile;
 };
 const getLanguagePreferenceRegexes = (userLanguage = "", browserLanguages = []) => {
@@ -171,7 +169,6 @@ var render_default = (req, res, next) => {
     const layoutFile = layoutPath ? await getFile(layoutPath) : null;
     const Layout = layoutFile;
     const browserLanguages = parseBrowserLanguages(req?.headers["accept-language"]);
-    console.log("USER", req?.context?.user);
     const languagePreferenceRegexes = getLanguagePreferenceRegexes(req?.context?.user?.language, browserLanguages);
     const translations = await getTranslations({ build: buildPath, page: path }, languagePreferenceRegexes);
     const url = getUrl(req);
