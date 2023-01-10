@@ -84,40 +84,76 @@ const getFile = async (buildPath = "") => {
   return file.default;
 };
 
-const getTranslations = async (buildPath = "", pagePath = "", user = {}) => {
-  const defaultLanguage =
-    user?.language || settings?.config?.i18n?.defaultLanguage;
-  const hasDefaultLanguageFile = fs.existsSync(
-    `${buildPath}/i18n/${defaultLanguage}.js`
-  );
+const getTranslationsFile = async (languageFilePath = '', paths = '') => {
+  const languageFile = await getFile(`${paths.build}/i18n/${languageFilePath}`);
+  const isValidLanguageFile = languageFile && isObject(languageFile);
 
-  const language = user?.language;
-  const hasLanguageFile = fs.existsSync(`${buildPath}/i18n/${language}.js`);
-
-  if (hasLanguageFile) {
-    const languageFile = await getFile(`${buildPath}/i18n/${language}.js`);
-    const isValidLanguageFile = languageFile && isObject(languageFile);
-
-    if (isValidLanguageFile) {
-      const translationsForPage = languageFile[pagePath];
-      return translationsForPage ? translationsForPage : languageFile;
-    }
-  }
-
-  if (hasDefaultLanguageFile) {
-    const defaultLanguageFile = await getFile(
-      `${buildPath}/i18n/${defaultLanguage}.js`
-    );
-    const isValidDefaultLanguageFile =
-      defaultLanguageFile && isObject(defaultLanguageFile);
-
-    if (isValidDefaultLanguageFile) {
-      const translationsForPage = defaultLanguageFile[pagePath];
-      return translationsForPage ? translationsForPage : defaultLanguageFile;
-    }
+  if (isValidLanguageFile) {
+    const translationsForPage = languageFile[paths.page];
+    return translationsForPage ? translationsForPage : languageFile;
   }
 
   return {};
+};
+
+const getTranslations = async (paths = {}, languagePreferences = []) => {
+  const languageFiles = fs.readdirSync(`${paths.build}/i18n`);
+
+  let matchingFile = null;
+
+  for (let i = 0; i < languagePreferences.length; i += 1) {
+    const languageRegex = languagePreferences[i];
+    const match = languageFiles.find((languageFile) => !!languageFile.match(languageRegex));
+
+    if (match) {
+      matchingFile = match;
+      break;
+    }
+  }
+
+  
+  const translationsFile = await getTranslationsFile(matchingFile, paths);
+
+  return translationsFile;
+};
+
+const getLanguagePreferenceRegexes = (userLanguage = '', browserLanguages = []) => {
+  let languagePreferences = [];
+
+  if (userLanguage) {
+    languagePreferences.push(userLanguage);
+  }
+
+  languagePreferences.push(...browserLanguages);
+  languagePreferences.push(settings?.config?.i18n?.defaultLanguage);
+
+  return languagePreferences?.flatMap((language) => {
+    const variants = [language];
+  
+    if (language?.length === 2) {
+      variants.push(`${language.substring(0, 2)}-`);
+    }
+  
+    if (language?.length > 2) {
+      variants.push(`${language?.split('-')[0]}`);
+      variants.push(`${language?.split('-')[0]}-`);
+    }
+  
+    return variants;
+  })?.map((languageString) => {
+    const lastCharacter = languageString[languageString.length - 1];
+  
+    if (lastCharacter === '-') {
+      return new RegExp(`^${languageString}[A-Z]+.js`, 'g');
+    }
+  
+    return new RegExp(`^${languageString}.js`, 'g');
+  });
+};
+
+const parseBrowserLanguages = (languages = '') => {
+  const rawLanguages = languages.split(',');
+  return rawLanguages?.map((rawLanguage) => rawLanguage.split(';')[0]);
 };
 
 export default (req, res, next) => {
@@ -177,7 +213,11 @@ export default (req, res, next) => {
     const layoutFile = layoutPath ? await getFile(layoutPath) : null;
     const Layout = layoutFile;
 
-    const translations = await getTranslations(buildPath, path, req?.context?.user);
+    const browserLanguages = parseBrowserLanguages(req?.headers['accept-language']);
+    const languagePreferenceRegexes = getLanguagePreferenceRegexes(req?.context?.user?.language, browserLanguages);
+
+    const translations = await getTranslations({ build: buildPath, page: path }, languagePreferenceRegexes);
+
     const url = getUrl(req);
     const props = { ...(options?.props || {}) };
 
