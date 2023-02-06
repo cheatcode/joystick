@@ -69,7 +69,7 @@ var logs_default = () => {
   if (process.env.NODE_ENV !== "production") {
     return false;
   }
-  if (process.env.IS_JOYSTICK_DEPLOY !== "true") {
+  if (process.env.IS_PUSH_DEPLOYED !== "true") {
     return writeLogsToDisk();
   }
   return writeLogsToSQLite();
