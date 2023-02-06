@@ -5,12 +5,14 @@ import fs from 'fs';
 import buildConnectionString from "./buildConnectionString";
 
 export default async (settings = {}, databasePortBaseIndex = 0) => {
+  const databasePort = parseInt(process.env.PORT, 10) + 10 + databasePortBaseIndex;
   const connection = settings?.connection || {
     hosts: [
       // NOTE: By default, expect databases start from 2610 (assuming a PORT of 2600).
-      { hostname: "127.0.0.1", port: parseInt(process.env.PORT, 10) + 10 + databasePortBaseIndex },
+      { hostname: "127.0.0.1", port: databasePort },
     ],
     database: "app",
+    replicaSet: `joystick_${databasePort}`,
   };
 
   const connectionString = buildConnectionString(connection);

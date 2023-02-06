@@ -6,10 +6,13 @@ export default (user = {}) => {
       ...provider,
       connectedAs: {
         // aws: user?.aws ? `Connected as ${login?.user?.aws?.username}` : null,
-        digitalOcean: user?.digitalOcean ? `Connected as ${user?.digitalOcean?.info?.email}` : null,
-        linode: user?.linode ? `Connected as ${user?.linode?.account?.email}` : null,
-        vultr: user?.vultr ? `Connected as ${user?.vultr?.email}` : null,
-      }[provider?.value] || 'Not Connected, needs login',
+        digitalOcean: user?.digitalOcean ? `✔ Connected as ${user?.digitalOcean?.info?.email}` : null,
+        // google: user?.aws ? `Connected as ${login?.user?.aws?.username}` : null,
+        // hetzner: user?.aws ? `Connected as ${login?.user?.aws?.username}` : null,
+        linode: user?.linode ? `✔ Connected as ${user?.linode?.account?.email}` : null,
+        // rackspace: user?.aws ? `Connected as ${login?.user?.aws?.username}` : null,
+        vultr: user?.vultr ? `✔ Connected as ${user?.vultr?.email}` : null,
+      }[provider?.value] || '🗙 Not connected',
     }
   });
 };

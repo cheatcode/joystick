@@ -1,5 +1,11 @@
+import fs from 'fs';
+
 export default (req, res, next) => {
-  if (req.get('x-forwarded-proto') !== 'https') {
+  const instanceToken = fs.readFileSync("/root/token.txt", "utf-8");
+  const instanceTokenFromHeaders = req.get('x-instance-token');
+  const hasValidToken = instanceTokenFromHeaders && instanceTokenFromHeaders === instanceToken;
+
+  if (req.get('x-forwarded-proto') !== 'https' && !hasValidToken) {
     res.setHeader('Content-Type', 'text/html');
 
     return res.status(403).send(`

@@ -9,6 +9,9 @@ var buildConnectionString_default = (connection = {}) => {
   if (connection && connection.database) {
     connectionString = `${connectionString}/${connection.database}`;
   }
+  if (connection && connection.replicaSet) {
+    connectionString = `${connectionString}?replicaSet=${connection.replicaSet}`;
+  }
   return connectionString;
 };
 export {

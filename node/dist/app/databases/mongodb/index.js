@@ -4,11 +4,13 @@ import mongoUri from "mongo-uri-tool";
 import fs from "fs";
 import buildConnectionString from "./buildConnectionString";
 var mongodb_default = async (settings = {}, databasePortBaseIndex = 0) => {
+  const databasePort = parseInt(process.env.PORT, 10) + 10 + databasePortBaseIndex;
   const connection = settings?.connection || {
     hosts: [
-      { hostname: "127.0.0.1", port: parseInt(process.env.PORT, 10) + 10 + databasePortBaseIndex }
+      { hostname: "127.0.0.1", port: databasePort }
     ],
-    database: "app"
+    database: "app",
+    replicaSet: `joystick_${databasePort}`
   };
   const connectionString = buildConnectionString(connection);
   const parsedURI = mongoUri.parseUri(connectionString);

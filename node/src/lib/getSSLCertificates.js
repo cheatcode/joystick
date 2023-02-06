@@ -3,8 +3,8 @@ import fs from 'fs';
 export default (ssl = {}) => {
   const deployCertificatePath = '/lib/deploy/certs/cert.pem';
   const deployKeyPath = '/lib/deploy/certs/key.pem';
-  const certPath = process.env.IS_JOYSTICK_DEPLOY ? deployCertificatePath : ssl?.cert;
-  const keyPath = process.env.IS_JOYSTICK_DEPLOY ? deployKeyPath : ssl?.key;
+  const certPath = process.env.IS_PUSH_DEPLOYED ? deployCertificatePath : ssl?.cert;
+  const keyPath = process.env.IS_PUSH_DEPLOYED ? deployKeyPath : ssl?.key;
   const certExists = fs.existsSync(certPath);
   const keyExists = fs.existsSync(keyPath);
 

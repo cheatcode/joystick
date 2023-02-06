@@ -4,7 +4,7 @@ import checkIfValidJSON from "../../lib/checkIfValidJSON.js";
 import CLILog from "../../lib/CLILog.js";
 
 export default (answers = {}, loginSessionToken = '', deploymentDomain = '') => {
-  return fetch(`${domains.deploy}/api/cli/deployments/summary`, {
+  return fetch(`${domains.provision}/api/deployments/summary`, {
     method: 'POST',
     headers: {
       'x-login-session-token': loginSessionToken,
@@ -15,7 +15,7 @@ export default (answers = {}, loginSessionToken = '', deploymentDomain = '') => 
       provider: answers?.provider,
       sizes: [
         { type: 'loadBalancers', quantity: answers?.loadBalancerInstances, id: answers?.loadBalancer_size },
-        { type: 'instances', quantity: answers?.appInstances, id: answers?.instance_size }
+        { type: 'instances', quantity: answers?.appInstances, id: answers?.app_size }
       ],
     })
   }).then(async (response) => {
@@ -24,20 +24,16 @@ export default (answers = {}, loginSessionToken = '', deploymentDomain = '') => 
 
     if (data?.error) {
       CLILog(
-        data.error,
+        data.error?.message,
         {
           level: 'danger',
-          docs: 'https://cheatcode.co/docs/deploy'
+          docs: 'https://cheatcode.co/docs/push'
         }
       );
   
       process.exit(0);
     }
 
-    if (data.error) {
-      return console.log(chalk.redBright(data.error));
-    }
-
-    return data?.data;
+    return data?.data?.summary;
   });
 };

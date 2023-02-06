@@ -8,6 +8,9 @@ import getProvider from '../../lib/getProvider.js';
 import getProviderInstanceSizes from './getProviderInstanceSizes.js';
 import getInstanceSizeRegions from './getInstanceSizeRegions.js';
 import providers from '../../lib/providers.js';
+import getProviderRegions from './getProviderRegions.js';
+import getInstanceSizesForRegion from './getInstanceSizesForRegion.js';
+import checkIfProvisionAvailable from './checkIfProvisionAvailable.js';
 
 const table = new AsciiTable();
 
@@ -32,7 +35,7 @@ export default {
       type: 'text',
       prefix: '',
       message: `\n ${chalk.greenBright('>')} What is your Deployment Token?\n`,
-      suffix: `\n ${chalk.yellowBright(`What does this mean?`)}\n Deployment Tokens identify the Deploy account where your deployment will live.\n\n ${chalk.yellowBright(`Documentation:`)}\n ${chalk.blue('https://cheatcode.co/docs/deploy/tokens')}\n\n`,
+      suffix: `\n ${chalk.yellowBright(`What does this mean?`)}\n Deployment Tokens identify the Deploy account where your deployment will live.\n\n ${chalk.yellowBright(`Documentation:`)}\n ${chalk.blue('https://cheatcode.co/docs/push/tokens')}\n\n`,
     },
   ],
   domain: () => [
@@ -54,7 +57,7 @@ export default {
         message: `\n ${chalk.greenBright('>')} Where do you want to host the initial deployment?`,
         loop: false,
         suffix: `
-        \n ${chalk.yellowBright(`What does this mean?`)}\n Select the hosting provider where your deployment's load balancers and app instances will be created.\n This can be scaled to include additional providers later.\n\n ${chalk.yellowBright(`Documentation:`)}\n ${chalk.blue('https://cheatcode.co/docs/deploy/hosting-providers')}
+        \n ${chalk.yellowBright(`What does this mean?`)}\n Select the hosting provider where your deployment's load balancers and app instances will be created.\n This can be scaled to include additional providers later.\n\n ${chalk.yellowBright(`Documentation:`)}\n ${chalk.blue('https://cheatcode.co/docs/push/hosting-providers')}
         \n`,
         choices: providers.map((provider) => {
           return {
@@ -110,37 +113,18 @@ export default {
         suffix: ` -- (press enter to use recommendation of 2)`,
       },
       {
-        name: 'loadBalancer_size',
-        type: 'list',
-        prefix: '',
-        message: `\n ${chalk.greenBright('>')} Select a Size for Your Load Balancer Instances`,
-        suffix: `
-          \n ${chalk.yellowBright(`What is this?`)}\n Load balancers distribute inbound internet traffic to your app instances. \n\n ${chalk.yellowBright(`Recommendations:`)}\n ${chalk.blue('https://cheatcode.co/docs/deploy/scaling#load-balancer-instances')}
-          \n`,
-        loop: false,
-        choices: async (answers = {}) => {
-          const sizes = await getProviderInstanceSizes(answers, loginSessionToken);
-          return (sizes || []).map((size) => {
-            return {
-              name: `${chalk.blue(`[${size?.name}]`)} -- ${chalk.white(`${size?.vcpus} ${size?.vcpus > 1 ? 'VCPUs' : 'VCPU'} + ${size?.memory / 1024}GB RAM + ${size?.disk > 1000 ? `${size?.disk / 1000}TB` : `${size?.disk}GB`} Disk`)} ${chalk.gray('=')} $${chalk.greenBright(`${size?.pricePerMonth}/mo`)}`,
-              value: size?.id,
-            };
-          });
-        },
-      },
-      {
         name: 'loadBalancer_region',
         type: 'list',
         prefix: '',
         message: `\n ${chalk.greenBright('>')} Select a Region for Your Load Balancer Instances`,
         suffix: `
-          \n ${chalk.yellowBright(`What is this?`)}\n The location of the data center where your load balancer instances will live. The continent where your choosen region is located will determine the regions available for your app instances. \n\n ${chalk.yellowBright(`Recommendations:`)}\n ${chalk.blue('https://cheatcode.co/docs/deploy/scaling#regions')}
+          \n ${chalk.yellowBright(`What is this?`)}\n The location of the data center where your load balancer instances will live. The continent where your choosen region is located will determine the regions available for your app instances. \n\n ${chalk.yellowBright(`Recommendations:`)}\n ${chalk.blue('https://cheatcode.co/docs/push/scaling#regions')}
           \n`,
         loop: false,
         choices: async (answers = {}) => {
-          const regions = await getInstanceSizeRegions(
-            'loadBalancer_size',
-            answers,
+          await checkIfProvisionAvailable();
+          const regions = await getProviderRegions(
+            answers?.provider,
             loginSessionToken,
           );
 
@@ -153,16 +137,17 @@ export default {
         },
       },
       {
-        name: 'instance_size',
+        name: 'loadBalancer_size',
         type: 'list',
         prefix: '',
-        message: `\n ${chalk.greenBright('>')} Select a Size for Your App Instances`,
+        message: `\n ${chalk.greenBright('>')} Select a Size for Your Load Balancer Instances`,
         suffix: `
-          \n ${chalk.yellowBright(`What is this?`)}\n App instances are running copies of your app. \n\n ${chalk.yellowBright(`Recommendations:`)}\n ${chalk.blue('https://cheatcode.co/docs/deploy/scaling#app-instances')}
+          \n ${chalk.yellowBright(`What is this?`)}\n Load balancers distribute inbound internet traffic to your app instances. \n\n ${chalk.yellowBright(`Recommendations:`)}\n ${chalk.blue('https://cheatcode.co/docs/push/scaling#load-balancer-instances')}
           \n`,
         loop: false,
         choices: async (answers = {}) => {
-          const sizes = await getProviderInstanceSizes(answers, loginSessionToken);
+          await checkIfProvisionAvailable();
+          const sizes = await getInstanceSizesForRegion(answers?.provider, answers?.loadBalancer_region, loginSessionToken);
           return (sizes || []).map((size) => {
             return {
               name: `${chalk.blue(`[${size?.name}]`)} -- ${chalk.white(`${size?.vcpus} ${size?.vcpus > 1 ? 'VCPUs' : 'VCPU'} + ${size?.memory / 1024}GB RAM + ${size?.disk > 1000 ? `${size?.disk / 1000}TB` : `${size?.disk}GB`} Disk`)} ${chalk.gray('=')} $${chalk.greenBright(`${size?.pricePerMonth}/mo`)}`,
@@ -172,24 +157,45 @@ export default {
         },
       },
       {
-        name: 'instance_region',
+        name: 'app_region',
         type: 'list',
         prefix: '',
         message: `\n ${chalk.greenBright('>')} Select a Region for Your App Instances`,
         suffix: `
-          \n ${chalk.yellowBright(`What is this?`)}\n The location of the data center where your app instances will live. \n\n ${chalk.yellowBright(`Recommendations:`)}\n ${chalk.blue('https://cheatcode.co/docs/deploy/scaling#regions')}
+          \n ${chalk.yellowBright(`What is this?`)}\n The location of the data center where your app instances will live. \n\n ${chalk.yellowBright(`Recommendations:`)}\n ${chalk.blue('https://cheatcode.co/docs/push/scaling#regions')}
           \n`,
         loop: false,
         choices: async (answers = {}) => {
-          const regions = await getInstanceSizeRegions(
-            'instance_size',
-            answers,
+          await checkIfProvisionAvailable();
+          const regions = await getProviderRegions(
+            answers?.provider,
             loginSessionToken,
           );
+
           return (regions || []).map((region) => {
             return {
               name: `${chalk.blue(`[${region?.id}]`)} -- ${region?.name} ${chalk.magentaBright(`(${region?.continent?.name})`)}`,
               value: region?.id,
+            };
+          });
+        },
+      },
+      {
+        name: 'app_size',
+        type: 'list',
+        prefix: '',
+        message: `\n ${chalk.greenBright('>')} Select a Size for Your App Instances`,
+        suffix: `
+          \n ${chalk.yellowBright(`What is this?`)}\n App instances are running copies of your app. \n\n ${chalk.yellowBright(`Recommendations:`)}\n ${chalk.blue('https://cheatcode.co/docs/push/scaling#app-instances')}
+          \n`,
+        loop: false,
+        choices: async (answers = {}) => {
+          await checkIfProvisionAvailable();
+          const sizes = await getInstanceSizesForRegion(answers?.provider, answers?.app_region, loginSessionToken);
+          return (sizes || []).map((size) => {
+            return {
+              name: `${chalk.blue(`[${size?.name}]`)} -- ${chalk.white(`${size?.vcpus} ${size?.vcpus > 1 ? 'VCPUs' : 'VCPU'} + ${size?.memory / 1024}GB RAM + ${size?.disk > 1000 ? `${size?.disk / 1000}TB` : `${size?.disk}GB`} Disk`)} ${chalk.gray('=')} $${chalk.greenBright(`${size?.pricePerMonth}/mo`)}`,
+              value: size?.id,
             };
           });
         },
@@ -229,7 +235,7 @@ export default {
           .addRow(chalk.blue('Provider'), `${chalk.greenBright(provider?.name)}\n`)
           .addRow(chalk.white('---'), `\n`)
           .addRow(chalk.blue('Load Balancers'), `${chalk.yellowBright(`(${answers?.loadBalancerInstances}x)`)} ${answers?.loadBalancer_size} ${chalk.gray(`[${answers?.loadBalancer_region}]`)} = ${chalk.greenBright(`${currencyFormatter.format(loadBalancerCosts?.monthly, { code: 'USD' })}/mo`)}`)
-          .addRow(chalk.blue('App Instances'), `${chalk.yellowBright(`(${answers?.appInstances}x)`)} ${answers?.instance_size} ${chalk.gray(`[${answers?.instance_region}]`)} = ${chalk.greenBright(`${currencyFormatter.format(instanceCosts?.monthly, { code: 'USD' })}/mo`)}\n`)
+          .addRow(chalk.blue('App Instances'), `${chalk.yellowBright(`(${answers?.appInstances}x)`)} ${answers?.app_size} ${chalk.gray(`[${answers?.app_region}]`)} = ${chalk.greenBright(`${currencyFormatter.format(instanceCosts?.monthly, { code: 'USD' })}/mo`)}\n`)
           .addRow(chalk.blue('Build Storage'), `${chalk.greenBright(`${currencyFormatter.format(5, { code: 'USD' })}/mo`)}\n`)
           .addRow(chalk.white('---'), `\n`)
           .addRow(chalk.magenta('Est. Total Monthly Cost'), chalk.greenBright(`${currencyFormatter.format(totalMonthlyCost, { code: 'USD' })}/mo`))

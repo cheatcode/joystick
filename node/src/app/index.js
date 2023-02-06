@@ -136,7 +136,7 @@ export class App {
   }
 
   initDeploy() {
-    if (process.env.NODE_ENV === 'production' && process.env.IS_JOYSTICK_DEPLOY) {
+    if (process.env.NODE_ENV === 'production' && process.env.IS_PUSH_DEPLOYED) {
       this.express.app.get('/api/_deploy/pre-version', async (req, res) => {
         const instanceToken = fs.readFileSync('/root/token.txt', 'utf-8');
 

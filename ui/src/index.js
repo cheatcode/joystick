@@ -48,6 +48,6 @@ const joystick = {
 }
 
 attachJoystickToWindow(joystick);
-overrideTimers();
+// overrideTimers();
 
 export default joystick;

@@ -1,7 +1,7 @@
 import os from 'os';
 import fs from 'fs';
 import inquirer from 'inquirer';
-import prompts from '../functions/deploy/prompts.js';
+import prompts from '../functions/push/prompts.js';
 import loginToCheatCode from './loginToCheatCode.js';
 
 export default async () => {

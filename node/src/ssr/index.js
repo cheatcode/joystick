@@ -535,6 +535,10 @@ const ssr = async (options, { resolve, reject }) => {
 
     const baseCSS = options?.email ? getBaseCSS(options?.baseEmailHTMLName) : '';
     const css = formatCSS(getCSSFromTree(ssrTreeForCSS));
+    // TODO: If we use a call to renderComponentToHTML(), pass in a special "cssTree" that we can use to collect CSS
+    // from the dynamically rendered components. This can be injected below so that inline/dynamically rendered components
+    // don't have a FOUC.
+    // const dynamicallyRenderedCSS = ;
     const htmlWithCSS = injectCSSIntoHTML(html, baseCSS, css);
 
     resolve(htmlWithCSS);

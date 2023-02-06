@@ -10,17 +10,21 @@ import Loader from '../../lib/loader.js';
 import initDeployment from './initDeployment.js';
 import updateDeployment from './updateDeployment.js';
 import getSessionToken from '../../lib/getSessionToken.js';
+import getUserFromSessionToken from './getUserFromSessionToken.js';
+import colorLog from '../../lib/colorLog.js';
+import checkIfProvisionAvailable from './checkIfProvisionAvailable.js';
 
 const handleInitialDeployment = async ({
-  deploymentFromServer = {},
   loginSessionToken = '',
   domain = '',
+  deployment = {},
+  user = {},
 }) => {
   try {
     const loader = new Loader({ padding: ' ', defaultMessage: "" });
     const deploymentToExecute = await inquirer.prompt(
       prompts.initialDeployment(
-        deploymentFromServer?.user,
+        user,
         loginSessionToken,
       )
     );
@@ -30,6 +34,8 @@ const handleInitialDeployment = async ({
       loadBalancerInstances: deploymentToExecute?.loadBalancerInstances || 1,
       appInstances: deploymentToExecute?.appInstances || 2,
     };
+
+    await checkIfProvisionAvailable();
 
     console.log("\n");
     loader.text("Building deployment summary...");
@@ -42,10 +48,10 @@ const handleInitialDeployment = async ({
     const deploymentFeasible = totalInstancesRequested <= deploymentSummary?.limits?.available;
 
     if (!deploymentFeasible) {
-      CLILog(`${chalk.yellowBright(`Cannot deploy with this configuration as it would exceed the limits set by your selected provider (${providerMap[deploymentToExecuteWithDefaults?.provider]}).`)} Your account there is limited to ${deploymentSummary?.limits?.account} instances (currently using ${deploymentSummary?.limits?.existing}).\n\n You requested ${totalInstancesRequested} instances which would go over your account limit. Please adjust your configuration (or request an increase from your provider) and try again.`, {
+      CLILog(`${chalk.yellowBright(`Cannot push with this configuration as it would exceed the limits set by your selected provider (${providerMap[deploymentToExecuteWithDefaults?.provider]}).`)} Your account there is limited to ${deploymentSummary?.limits?.account} instances (currently using ${deploymentSummary?.limits?.existing}).\n\n You requested ${totalInstancesRequested} instances which would go over your account limit. Please adjust your configuration (or request an increase from your provider) and try again.`, {
         padding: ' ',
         level: 'danger',
-        docs: 'https://cheatcode.co/docs/deploy/provider-limits',
+        docs: 'https://cheatcode.co/docs/push/provider-limits',
       });
       process.exit(0);
     }
@@ -58,8 +64,7 @@ const handleInitialDeployment = async ({
       await initDeployment({
         loginSessionToken,
         deployment: {
-          deploymentId: deploymentFromServer?.deployment?._id,
-          encryptionToken: deploymentFromServer?.deployment?.token,
+          deploymentId: deployment?._id,
           domain,
           ...deploymentToExecuteWithDefaults
         },
@@ -71,7 +76,7 @@ const handleInitialDeployment = async ({
       return;
     }
   } catch (exception) {
-    throw new Error(`[deploy.handleInitialDeployment] ${exception.message}`);
+    throw new Error(`[push.handleInitialDeployment] ${exception.message}`);
   }
 };
 
@@ -88,41 +93,47 @@ export default async (args = {}, options = {}) => {
       process.exit(0);
     }
 
+    await checkIfProvisionAvailable();
+
     const loginSessionToken = await getSessionToken();
+
+    await checkIfProvisionAvailable();
+
+    const user = await getUserFromSessionToken(loginSessionToken);
+
+    colorLog(`\n✔ Logged in as ${user?.emailAddress}\n`, 'greenBright');
 
     let domain = options?.domain;
 
     if (!options?.domain) {
       domain = await inquirer.prompt(prompts.domain()).then((answers) => answers?.domain);
     }
-  
-    const deploymentFromServer = await getDeployment({
-      domain,
-      loginSessionToken,
-    });
 
-    const isInitialDeployment = deploymentFromServer?.deployment?.status === 'undeployed';
+    await checkIfProvisionAvailable();
+    const deploymentFromServer = await getDeployment({ domain, loginSessionToken });
+    const isInitialDeployment = deploymentFromServer?.status === 'undeployed';
 
     if (isInitialDeployment) {
       await handleInitialDeployment({
-        deploymentFromServer,
         loginSessionToken,
         domain,
+        deployment: deploymentFromServer,
+        user,
       });
 
-      return;
+      return true;
     }
 
-    await updateDeployment({
-      loginSessionToken,
-      deployment: {
-        ...(deploymentFromServer?.deployment || {}),
-        deploymentId: deploymentFromServer?.deployment?._id,
-        encryptionToken: deploymentFromServer?.deployment?.token,
-      },
-    });
+    // await updateDeployment({
+    //   loginSessionToken,
+    //   deployment: {
+    //     ...(deploymentFromServer?.deployment || {}),
+    //     deploymentId: deploymentFromServer?.deployment?._id,
+    //     encryptionToken: deploymentFromServer?.deployment?.token,
+    //   },
+    // });
   } catch (exception) {
     console.warn(exception);
-    throw new Error(`[deploy] ${exception.message}`);
+    throw new Error(`[push] ${exception.message}`);
   }
 };

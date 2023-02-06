@@ -1,70 +1,82 @@
 import fs from "fs";
-import chalk from "chalk";
-import util from "util";
 import commandExists from "command-exists";
-import child_process, { spawn, spawnSync } from "child_process";
+import child_process from "child_process";
 import { kill as killPortProcess } from "cross-port-killer";
 import isWindows from "../../isWindows.js";
 import CLILog from "../../../../lib/CLILog.js";
 import getProcessIdFromPort from "../../getProcessIdFromPort.js";
-const exec = util.promisify(child_process.exec);
 const getMongoProcessId = async (port = 2601) => {
   const pids = await getProcessIdFromPort(port);
   return pids.tcp && pids.tcp[0];
 };
 const warnMongoDBMissing = () => {
-  console.warn(`
-  ${chalk.red("MongoDB is not installed on this computer.")}
+  CLILog(`MongoDB is not installed on this computer.
 
-  ${chalk.green("Download MongoDB at https://www.mongodb.com/try/download/community")}
-    After you've installed MongoDB, run joystick start again, or, remove MongoDB from your databases list in your settings.development.json file to skip startup.
-  `);
+ Download MongoDB at https://www.mongodb.com/try/download/community
+
+ After you've installed MongoDB, run joystick start again, or, remove MongoDB from your config.databases array in your settings.development.json file to skip starting it up.`, {
+    level: "danger",
+    docs: "https://github.com/cheatcode/joystick#databases"
+  });
 };
 const checkIfMongoDBExists = () => {
+  if (isWindows) {
+    const mongodbVersions = fs.readdirSync(`C:\\Program Files\\MongoDB\\Server\\`).sort().reverse();
+    return mongodbVersions && mongodbVersions.length > 0;
+  }
   return commandExists.sync("mongod");
 };
-const startMongoDB = async (port = 2010) => {
+const startMongoDBProcess = (mongodbPort = 2610, dataDirectoryExists = false, resolveAfterRestart = null) => {
+  return new Promise((resolve) => {
+    console.log("START");
+    const databaseProcessFlags = [
+      "--port",
+      mongodbPort,
+      "--dbpath",
+      `./.joystick/data/mongodb_${mongodbPort}`,
+      "--quiet",
+      "--replSet",
+      `joystick_${mongodbPort}`
+    ];
+    const databaseProcess = child_process.spawn(`mongod`, databaseProcessFlags.filter((command) => !!command));
+    databaseProcess.stdout.on("data", async (data) => {
+      const stdout = data?.toString();
+      if (stdout.includes("Waiting for connections")) {
+        child_process.exec(`mongo --eval "rs.initiate()" --verbose --port ${mongodbPort}`, async (error, stdout2, stderr) => {
+          if (error || stderr) {
+            console.warn(error || stderr);
+          } else {
+            const processId = await getMongoProcessId(mongodbPort);
+            return resolve(processId);
+          }
+        });
+      }
+    });
+  });
+};
+const setupDataDirectory = (mongodbPort = 2610) => {
+  const legacyDataDirectoryExists = fs.existsSync(".joystick/data/mongodb");
+  const dataDirectoryExists = fs.existsSync(`.joystick/data/mongodb_${mongodbPort}`);
+  if (legacyDataDirectoryExists && !dataDirectoryExists) {
+    fs.renameSync(".joystick/data/mongodb", `.joystick/data/mongodb_${mongodbPort}`);
+  }
+  if (!dataDirectoryExists) {
+    fs.mkdirSync(`.joystick/data/mongodb_${mongodbPort}`, { recursive: true });
+  }
+  return dataDirectoryExists;
+};
+const startMongoDB = async (mongodbPort = 2610) => {
   const mongodbExists = checkIfMongoDBExists();
   if (!mongodbExists) {
     process.loader.stop();
     warnMongoDBMissing();
     process.exit(1);
   }
-  const dataDirectoryExists = fs.existsSync(".joystick/data/mongodb");
-  if (!dataDirectoryExists) {
-    fs.mkdirSync(".joystick/data/mongodb", { recursive: true });
-  }
+  const dataDirectoryExists = setupDataDirectory(mongodbPort);
   try {
-    const mongodbPort = port;
     await killPortProcess(mongodbPort);
-    if (isWindows) {
-      const mongodbVersions = fs.readdirSync(`C:\\Program Files\\MongoDB\\Server\\`).sort().reverse();
-      if (mongodbVersions && mongodbVersions.length === 0) {
-        CLILog(`Couldn't find any MongoDB versions in C:\\Program Files\\MongoDB\\Server. Please double-check your MongoDB installation or re-install MongoDB and try again.`, {
-          level: "danger",
-          docs: "https://github.com/cheatcode/joystick#databases"
-        });
-        process.exit(1);
-        return;
-      }
-    }
-    const databaseProcess = child_process.spawn(`mongod`, [
-      "--port",
-      mongodbPort,
-      "--dbpath",
-      "./.joystick/data/mongodb",
-      "--quiet"
-    ].filter((command) => !!command));
-    return new Promise((resolve) => {
-      databaseProcess.stdout.on("data", async (data) => {
-        const stdout = data?.toString();
-        if (stdout.includes("Waiting for connections")) {
-          const processId = await getMongoProcessId(mongodbPort);
-          resolve(processId);
-          return processId;
-        }
-      });
-    });
+    const mongodbProcessId = await startMongoDBProcess(mongodbPort, dataDirectoryExists);
+    return mongodbProcessId;
   } catch (exception) {
     console.warn(exception);
     process.exit(1);

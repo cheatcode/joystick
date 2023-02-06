@@ -4,9 +4,9 @@ import domains from "../../lib/domains.js";
 import CLILog from "../../lib/CLILog.js";
 import checkIfValidJSON from '../../lib/checkIfValidJSON.js';
 
-export default (answers = {}, loginSessionToken = '') => {
+export default (provider = '', region = '', loginSessionToken = '') => {
   return fetch(
-    `${domains.deploy}/api/providers/${answers?.provider}/sizes`,
+    `${domains.provision}/api/providers/${provider}/sizes?region=${region}`,
     {
       method: 'GET',
       headers: {
@@ -20,20 +20,16 @@ export default (answers = {}, loginSessionToken = '') => {
 
     if (data?.error) {
       CLILog(
-        data.error,
+        data.error?.message,
         {
           level: 'danger',
-          docs: 'https://cheatcode.co/docs/deploy/deployment-tokens'
+          docs: 'https://cheatcode.co/docs/push/deployment-tokens'
         }
       );
   
       process.exit(0);
     }
 
-    if (data.error) {
-      return console.log(chalk.redBright(data.error));
-    }
-
-    return data?.data;
+    return data?.data?.sizes;
   });
 };

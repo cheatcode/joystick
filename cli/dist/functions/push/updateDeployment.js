@@ -1,6 +1,5 @@
 import fetch from "node-fetch";
 import chalk from "chalk";
-import child_process from "child_process";
 import _ from "lodash";
 import fs from "fs";
 import FormData from "form-data";
@@ -8,7 +7,6 @@ import Loader from "../../lib/loader.js";
 import domains from "../../lib/domains.js";
 import checkIfValidJSON from "../../lib/checkIfValidJSON.js";
 import CLILog from "../../lib/CLILog.js";
-import rainbowRoad from "../../lib/rainbowRoad.js";
 import build from "../build/index.js";
 import encryptFile from "../../lib/encryptFile.js";
 import encryptText from "../../lib/encryptText.js";
@@ -28,7 +26,7 @@ const checkDeploymentStatus = (deploymentId = "", loginSessionToken = "", domain
       if (data?.error) {
         CLILog(data.error, {
           level: "danger",
-          docs: "https://cheatcode.co/docs/deploy"
+          docs: "https://cheatcode.co/docs/push"
         });
         process.exit(0);
       }
@@ -38,7 +36,7 @@ const checkDeploymentStatus = (deploymentId = "", loginSessionToken = "", domain
       return data?.data;
     });
   } catch (exception) {
-    throw new Error(`[initDeployment.checkDeploymentStatus] ${exception.message}`);
+    throw new Error(`[updateDeployment.checkDeploymentStatus] ${exception.message}`);
   }
 };
 const getAppSettings = () => {
@@ -47,35 +45,36 @@ const getAppSettings = () => {
       const file = fs.readFileSync("settings.production.json", "utf-8");
       return file;
     }
-    return {};
+    return "{}";
   } catch (exception) {
-    throw new Error(`[initDeployment.getAppSettings] ${exception.message}`);
+    throw new Error(`[updateDeployment.getAppSettings] ${exception.message}`);
   }
 };
-const startDeployment = (loginSessionToken = "", deployment = {}, deploymentTimestamp = "", appSettings = "") => {
+const startDeployment = (loginSessionToken = "", deployment = {}, domain = "", deploymentTimestamp = "", appSettings = "") => {
   try {
     return fetch(`${domains?.deploy}/api/cli/deployments`, {
-      method: "POST",
+      method: "PUT",
       headers: {
         "x-login-session-token": loginSessionToken,
-        "x-deployment-domain": deployment?.domain,
+        "x-deployment-domain": domain,
         "content-type": "application/json"
       },
       body: JSON.stringify({
         ...deployment,
         deploymentTimestamp,
         flags: {
-          isInitialDeployment: true
+          isInitialDeployment: false
         },
         settings: appSettings
       })
     }).then(async (response) => {
       const text = await response.text();
       const data = checkIfValidJSON(text);
+      console.log({ data });
       if (data?.error) {
         CLILog(data.error, {
           level: "danger",
-          docs: "https://cheatcode.co/docs/deploy"
+          docs: "https://cheatcode.co/docs/push"
         });
         process.exit(0);
       }
@@ -85,14 +84,14 @@ const startDeployment = (loginSessionToken = "", deployment = {}, deploymentTime
       return data?.data;
     });
   } catch (exception) {
-    throw new Error(`[initDeployment.startDeployment] ${exception.message}`);
+    throw new Error(`[updateDeployment.startDeployment] ${exception.message}`);
   }
 };
 const uploadBuildToObjectStorage = (timestamp = "", deploymentOptions = {}, appSettings = "") => {
   try {
     const formData = new FormData();
     formData.append("build_tar", fs.readFileSync(`.build/build_enc.tar.xz`), `${timestamp}.tar.xz`);
-    formData.append("flags", JSON.stringify({ isInitialDeployment: true }));
+    formData.append("flags", JSON.stringify({ isInitialDeployment: false }));
     formData.append("version", timestamp);
     formData.append("deployment", JSON.stringify(deploymentOptions?.deployment || {}));
     return fetch(`${domains?.deploy}/api/cli/deployments/upload`, {
@@ -108,7 +107,7 @@ const uploadBuildToObjectStorage = (timestamp = "", deploymentOptions = {}, appS
       return data?.data;
     });
   } catch (exception) {
-    throw new Error(`[initDeployment.uploadBuildToObjectStorage] ${exception.message}`);
+    throw new Error(`[updateDeployment.uploadBuildToObjectStorage] ${exception.message}`);
   }
 };
 const encryptBuild = (deploymentToken = "") => {
@@ -119,14 +118,14 @@ const encryptBuild = (deploymentToken = "") => {
       password: deploymentToken
     });
   } catch (exception) {
-    throw new Error(`[initDeployment.encryptBuild] ${exception.message}`);
+    throw new Error(`[updateDeployment.encryptBuild] ${exception.message}`);
   }
 };
 const buildApp = () => {
   try {
     return build({}, { isDeploy: true, type: "tar" });
   } catch (exception) {
-    throw new Error(`[initDeployment.buildApp] ${exception.message}`);
+    throw new Error(`[updateDeployment.buildApp] ${exception.message}`);
   }
 };
 const validateOptions = (options) => {
@@ -138,18 +137,18 @@ const validateOptions = (options) => {
     if (!options.deployment)
       throw new Error("options.deployment is required.");
   } catch (exception) {
-    throw new Error(`[initDeployment.validateOptions] ${exception.message}`);
+    throw new Error(`[updateDeployment.validateOptions] ${exception.message}`);
   }
 };
-const initDeployment = async (options, { resolve, reject }) => {
+const updateDeployment = async (options, { resolve, reject }) => {
   try {
     validateOptions(options);
-    console.log("");
     const loader = new Loader({ padding: "  ", defaultMessage: "Deploying app..." });
     loader.text("Deploying app...");
     const deploymentTimestamp = new Date().toISOString();
     await buildApp();
     loader.text("Encrypting build...");
+    console.log("DEPLOYMENT", options?.deployment);
     await encryptBuild(options?.deployment?.encryptionToken);
     loader.text("Uploading built app to version control...");
     const appSettings = getAppSettings();
@@ -160,40 +159,29 @@ const initDeployment = async (options, { resolve, reject }) => {
       CLILog(uploadReponse?.error, {
         padding: "  ",
         level: "danger",
-        docs: "https://cheatcode.co/docs/deploy/hosting-providers"
+        docs: "https://cheatcode.co/docs/push/hosting-providers"
       });
     }
-    loader.text("Starting deployment...");
-    await startDeployment(options?.loginSessionToken, options.deployment, deploymentTimestamp, encryptedAppSettings);
+    loader.text("Pushing version to instances...");
+    await startDeployment(options?.loginSessionToken, options.deployment, options?.domain, deploymentTimestamp, encryptedAppSettings);
     checkDeploymentInterval = setInterval(async () => {
-      const deploymentStatus = await checkDeploymentStatus(options?.deployment?.deploymentId, options?.loginSessionToken, options?.deployment?.domain);
+      const deploymentStatus = await checkDeploymentStatus(options?.deployment?.deploymentId, options?.loginSessionToken, options?.domain);
       loader.text(deploymentStatus?.log?.message);
-      if (deploymentStatus?.deployment?.status === "bootstrapping") {
-        loader.stop();
+      if (deploymentStatus?.deployment?.status === "deployed") {
         clearInterval(checkDeploymentInterval);
-        console.log(`  
-  ${rainbowRoad()}
-
-`);
-        console.log(`  ${chalk.greenBright("Servers provisioned!")}
-`);
-        console.log(`  ${chalk.whiteBright(`We're bootstrapping your servers now (nerd-speak for installing dependencies, tweaking settings, and uploading your app code).`)}
-`);
-        console.log(`  ${chalk.yellowBright(`To keep an eye on progress and finish getting your app live, head over to:`)}
-`);
-        console.log(`  ${chalk.blueBright(`https://cheatcode.co/u/deployments/${options?.deployment?.domain}/deployment`)}
-
-`);
+        loader.stop();
+        console.log(chalk.green(`  App deployed!
+`));
       }
     }, 3e3);
   } catch (exception) {
     console.warn(exception);
-    reject(`[initDeployment] ${exception.message}`);
+    reject(`[updateDeployment] ${exception.message}`);
   }
 };
-var initDeployment_default = (options) => new Promise((resolve, reject) => {
-  initDeployment(options, { resolve, reject });
+var updateDeployment_default = (options) => new Promise((resolve, reject) => {
+  updateDeployment(options, { resolve, reject });
 });
 export {
-  initDeployment_default as default
+  updateDeployment_default as default
 };

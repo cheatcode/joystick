@@ -1,8 +1,9 @@
-import create from "./create/index.js";
-import start from "./start/index.js";
 import build from "./build/index.js";
+import create from "./create/index.js";
+import logout from "./logout/index.js";
+import push from "./push/index.js";
+import start from "./start/index.js";
 import update from "./update/index.js";
-import deploy from "./deploy/index.js";
 const [_node, _bin, ...rawArgs] = process.argv;
 var functions_default = {
   build: {
@@ -52,9 +53,16 @@ var functions_default = {
     options: {},
     function: create
   },
-  deploy: {
-    set: !!rawArgs.includes("deploy"),
-    description: "Deploy an existing Joystick app.",
+  logout: {
+    set: !!rawArgs.includes("logout"),
+    description: "Log out of your CheatCode account.",
+    args: {},
+    options: {},
+    function: logout
+  },
+  push: {
+    set: !!rawArgs.includes("push"),
+    description: "Deploy your Joystick app.",
     args: {},
     options: {
       domain: {
@@ -82,22 +90,9 @@ var functions_default = {
           }
         },
         description: "The value you want to use for NODE_ENV in the deployed app (e.g., staging or production). Default is production."
-      },
-      token: {
-        flags: {
-          "-t": {
-            set: !!rawArgs.includes("-t"),
-            value: !!rawArgs.includes("-t") && rawArgs[rawArgs.indexOf("-t") + 1]
-          },
-          "--token": {
-            set: !!rawArgs.includes("--token"),
-            value: !!rawArgs.includes("--token") && rawArgs[rawArgs.indexOf("--token") + 1]
-          }
-        },
-        description: "A deployment token from the cheatcode.co/u/deployments/tokens page."
       }
     },
-    function: deploy
+    function: push
   },
   start: {
     set: !!rawArgs.includes("start"),

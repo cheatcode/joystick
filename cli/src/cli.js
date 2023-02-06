@@ -19,6 +19,15 @@ if (functionsCalled.length > 1) {
   process.exit(0); 
 }
 
+if (functionsCalled.includes('build')) {
+  const args = getArgs(functions.build.args);
+  const options = getOptions(functions.build.options);
+
+  if (functions.build.function && typeof functions.build.function === 'function') {
+    functions.build.function(args, options);
+  }
+}
+
 if (functionsCalled.includes('create')) {
   const args = getArgs(functions.create.args);
   const options = getOptions(functions.create.options);
@@ -33,6 +42,24 @@ if (functionsCalled.includes('create')) {
   }
 }
 
+if (functionsCalled.includes('logout')) {
+  const args = getArgs(functions.logout.args);
+  const options = getOptions(functions.logout.options);
+
+  if (functions.logout.function && typeof functions.logout.function === 'function') {
+    functions.logout.function(args, options);
+  }
+}
+
+if (functionsCalled.includes('push')) {
+  const args = getArgs(functions.push.args);
+  const options = getOptions(functions.push.options);
+
+  if (functions.push.function && typeof functions.push.function === 'function') {
+    functions.push.function(args, options);
+  }
+}
+
 if (functionsCalled.includes('start')) {
   const args = getArgs(functions.start.args);
   const options = getOptions(functions.start.options);
@@ -42,38 +69,11 @@ if (functionsCalled.includes('start')) {
   }
 }
 
-if (functionsCalled.includes('build')) {
-  const args = getArgs(functions.build.args);
-  const options = getOptions(functions.build.options);
-
-  if (functions.build.function && typeof functions.build.function === 'function') {
-    functions.build.function(args, options);
-  }
-}
-
 if (functionsCalled.includes('update')) {
   const args = getArgs(functions.update.args);
   const options = getOptions(functions.update.options);
 
   if (functions.update.function && typeof functions.update.function === 'function') {
     functions.update.function(args, options);
-  }
-}
-
-if (functionsCalled.includes('deploy')) {
-  const args = getArgs(functions.deploy.args);
-  const options = getOptions(functions.deploy.options);
-
-  if (functions.deploy.function && typeof functions.deploy.function === 'function') {
-    functions.deploy.function(args, options);
-  }
-}
-
-if (functionsCalled.includes('deployment')) {
-  const args = getArgs(functions.deployment.args);
-  const options = getOptions(functions.deployment.options);
-
-  if (functions.deployment.function && typeof functions.deployment.function === 'function') {
-    functions.deployment.function(args, options);
   }
 }

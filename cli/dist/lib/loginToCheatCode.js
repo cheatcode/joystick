@@ -1,7 +1,9 @@
 import fetch from "node-fetch";
+import checkIfValidJSON from "./checkIfValidJSON.js";
+import CLILog from "./CLILog.js";
 import domains from "./domains.js";
 var loginToCheatCode_default = (emailAddress = "", password = "") => {
-  return fetch(`${domains.deploy}/api/cli/login`, {
+  return fetch(`${domains.provision}/api/cli/login`, {
     method: "POST",
     headers: {
       "content-type": "application/json"
@@ -11,7 +13,16 @@ var loginToCheatCode_default = (emailAddress = "", password = "") => {
       password
     })
   }).then(async (response) => {
-    return response.text();
+    const text = await response.text();
+    const data = checkIfValidJSON(text);
+    if (data?.error) {
+      CLILog(data?.error?.message, {
+        level: "danger",
+        docs: "https://cheatcode.co/docs/push/authentication"
+      });
+      process.exit(0);
+    }
+    return data?.data?.token;
   });
 };
 export {

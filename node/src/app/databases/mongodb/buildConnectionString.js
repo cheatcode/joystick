@@ -17,5 +17,9 @@ export default (connection = {}) => {
     connectionString = `${connectionString}/${connection.database}`;
   }
 
+  if (connection && connection.replicaSet) {
+    connectionString = `${connectionString}?replicaSet=${connection.replicaSet}`;
+  }
+
   return connectionString;
 };

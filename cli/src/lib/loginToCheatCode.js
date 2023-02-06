@@ -1,8 +1,10 @@
 import fetch from 'node-fetch';
+import checkIfValidJSON from './checkIfValidJSON.js';
+import CLILog from './CLILog.js';
 import domains from './domains.js';
 
 export default (emailAddress = '', password = '') => {
-  return fetch(`${domains.deploy}/api/cli/login`, {
+  return fetch(`${domains.provision}/api/cli/login`, {
     method: 'POST',
     headers: {
       'content-type': 'application/json',
@@ -12,9 +14,21 @@ export default (emailAddress = '', password = '') => {
       password,
     })
   }).then(async (response) => {
-    // NOTE: We anticipate this to be a string containing a temporary login token
-    // that will be written to disk to fulfill a deployment request and then burned
-    // after use.
-    return response.text();
+    const text = await response.text();
+    const data = checkIfValidJSON(text);
+
+    if (data?.error) {
+      CLILog(
+        data?.error?.message,
+        {
+          level: 'danger',
+          docs: 'https://cheatcode.co/docs/push/authentication'
+        }
+      );
+  
+      process.exit(0);
+    }
+
+    return data?.data?.token;
   });
 };
