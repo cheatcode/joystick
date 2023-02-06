@@ -6,6 +6,23 @@ import generateId from "./generateId.js";
 import getPlatformSafePath from '../../lib/getPlatformSafePath.js';
 
 export default {
+  warnNodeEnvironment: {
+    name: 'warnNodeEnvironment',
+    setup(build) {
+      build.onLoad({ filter: /\.js$/ }, (args = {}) => {
+        const code = fs.readFileSync(args.path, 'utf-8');
+
+        if (code?.match(/process.env.NODE_ENV\s+=\s/gi)?.length) {
+          console.warn(chalk.yellowBright('\n[WARNING] process.env.NODE_ENV should only be set via a CLI flag in development or via external environment variables in production.\n'));
+        }
+
+        return {
+          contents: code,
+          loader: 'js',
+        };
+      });
+    }
+  },
   bootstrapComponent: {
     name: "bootstrapComponent",
     setup(build) {

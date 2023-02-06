@@ -11,9 +11,15 @@ const configs = {
     outfile: `${outputPath || "./.joystick/build"}/${inputPath}`,
     platform: "node",
     format: "esm",
+    define: {
+      "process.env.NODE_ENV": `'${environment}'`
+    },
     minify: environment !== "development",
     logLevel: "silent",
-    plugins: [plugins.generateFileDependencyMap]
+    plugins: [
+      plugins.warnNodeEnvironment,
+      plugins.generateFileDependencyMap
+    ]
   }),
   browser: (inputPath, outputPath = null, environment = "development") => {
     return {
@@ -23,9 +29,13 @@ const configs = {
       outfile: `${outputPath || "./.joystick/build"}/${inputPath}`,
       platform: "browser",
       format: "esm",
+      define: {
+        "process.env.NODE_ENV": `'${environment}'`
+      },
       minify: environment !== "development",
       logLevel: "silent",
       plugins: [
+        plugins.warnNodeEnvironment,
         plugins.generateFileDependencyMap,
         plugins.bootstrapComponent,
         svg()
