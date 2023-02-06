@@ -28,7 +28,6 @@ const checkIfMongoDBExists = () => {
 };
 const startMongoDBProcess = (mongodbPort = 2610, dataDirectoryExists = false, resolveAfterRestart = null) => {
   return new Promise((resolve) => {
-    console.log("START");
     const databaseProcessFlags = [
       "--port",
       mongodbPort,
