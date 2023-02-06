@@ -11,18 +11,18 @@ var functions_default = {
     description: "Build an existing Joystick app.",
     args: {},
     options: {
-      type: {
+      environment: {
         flags: {
-          "-t": {
-            set: !!rawArgs.includes("-t"),
-            value: !!rawArgs.includes("-t") && rawArgs[rawArgs.indexOf("-t") + 1]
+          "-e": {
+            set: !!rawArgs.includes("-e"),
+            value: !!rawArgs.includes("-e") && rawArgs[rawArgs.indexOf("-e") + 1]
           },
-          "--type": {
-            set: !!rawArgs.includes("--type"),
-            value: !!rawArgs.includes("--type") && rawArgs[rawArgs.indexOf("--type") + 1]
+          "--environment": {
+            set: !!rawArgs.includes("--environment"),
+            value: !!rawArgs.includes("--environment") && rawArgs[rawArgs.indexOf("--environment") + 1]
           }
         },
-        description: "The type of build you want to generate (tar or folder)."
+        description: "The NODE_ENV you want to use for your build (default: production)."
       },
       outputPath: {
         flags: {
@@ -36,6 +36,19 @@ var functions_default = {
           }
         },
         description: "The path you want to build the output to."
+      },
+      type: {
+        flags: {
+          "-t": {
+            set: !!rawArgs.includes("-t"),
+            value: !!rawArgs.includes("-t") && rawArgs[rawArgs.indexOf("-t") + 1]
+          },
+          "--type": {
+            set: !!rawArgs.includes("--type"),
+            value: !!rawArgs.includes("--type") && rawArgs[rawArgs.indexOf("--type") + 1]
+          }
+        },
+        description: "The type of build you want to generate (tar or folder)."
       }
     },
     function: build

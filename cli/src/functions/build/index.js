@@ -24,7 +24,8 @@ export default async (args = {}, options = {}) => {
   await buildFiles(
     filesToBuild,
     outputPathForBuildType,
-    'production',
+    // NOTE: Treat standalone builds as being for production by default.
+    options?.environment || 'production',
   ).catch((error) => {
     console.warn(error);
   });

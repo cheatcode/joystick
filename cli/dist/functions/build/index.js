@@ -17,7 +17,7 @@ var build_default = async (args = {}, options = {}) => {
   const filesToBuild = getFilesToBuild();
   const outputPath = ".build";
   const outputPathForBuildType = options?.type === "tar" ? `${outputPath}/.tar` : outputPath;
-  await buildFiles(filesToBuild, outputPathForBuildType, "production").catch((error) => {
+  await buildFiles(filesToBuild, outputPathForBuildType, options?.environment || "production").catch((error) => {
     console.warn(error);
   });
   if (options?.type === "tar") {
