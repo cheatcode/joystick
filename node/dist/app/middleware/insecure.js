@@ -1,6 +1,6 @@
 import fs from "fs";
 var insecure_default = (req, res, next) => {
-  const instanceToken = fs.readFileSync("/root/token.txt", "utf-8");
+  const instanceToken = process.env.IS_PUSH_DEPLOYED ? fs.readFileSync("/root/token.txt", "utf-8") : null;
   const instanceTokenFromHeaders = req.get("x-instance-token");
   const hasValidToken = instanceTokenFromHeaders && instanceTokenFromHeaders === instanceToken;
   if (req.get("x-forwarded-proto") !== "https" && !hasValidToken) {
