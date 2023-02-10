@@ -24,7 +24,7 @@ class Queue {
     }
   }
   add(options = {}) {
-    const nextRunAt2 = options?.nextRunAt === "now" || !options?.nextRunAt ? new Date().toISOString() : options?.nextRunAt;
+    const nextRunAt2 = options?.nextRunAt === "now" || !options?.nextRunAt ? dayjs().format() : options?.nextRunAt;
     this.db.insertOne({
       _id: generateId,
       status: "pending",
@@ -61,11 +61,11 @@ class Queue {
         if (okayToRunJobs && !process.env.HALT_QUEUES) {
           const nextJob = await this.db.findOneAndUpdate({
             status: "pending",
-            nextRunAt: { $lte: new Date().toISOString() }
+            nextRunAt: { $lte: dayjs().format() }
           }, {
             $set: {
               status: "running",
-              startedAt: new Date().toISOString()
+              startedAt: dayjs().format()
             }
           }, {
             sort: {
@@ -101,7 +101,7 @@ class Queue {
     return this.db.updateOne({ _id: jobId }, {
       $set: {
         status: "completed",
-        completedAt: new Date().toISOString()
+        completedAt: dayjs().format()
       }
     });
   }
@@ -109,7 +109,7 @@ class Queue {
     return this.db.updateOne({ _id: jobId }, {
       $set: {
         status: "failed",
-        failedAt: new Date().toISOString(),
+        failedAt: dayjs().format(),
         error
       }
     });
@@ -124,7 +124,7 @@ class Queue {
       }
     });
   }
-  _handleRequeueJob(job = {}, nextRunAt2 = new Date().toISOString()) {
+  _handleRequeueJob(job = {}, nextRunAt2 = dayjs().format()) {
     return this.db.updateOne({ _id: job?._id }, {
       $set: {
         status: "pending",

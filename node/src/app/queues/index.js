@@ -1,6 +1,9 @@
 import dayjs from 'dayjs';
 import generateId from "../../lib/generateId";
 
+// TODO: Add a maxAttempts option to jobs so we don't run incessantly.
+// TODO: Add a "hook" function for onMaxAttemptsExhausted() so you can do stuff like send emails/warnings/etc.
+
 class Queue {
   constructor(queueName = '', queueOptions = {}) {
     if (!process?.databases?.mongodb) {
@@ -35,7 +38,7 @@ class Queue {
 
   add(options = {}) {
     // NOTE: If no nextRunAt specified, run the job ASAP.
-    const nextRunAt = options?.nextRunAt === 'now' || !options?.nextRunAt ? new Date().toISOString() : options?.nextRunAt;
+    const nextRunAt = options?.nextRunAt === 'now' || !options?.nextRunAt ? dayjs().format() : options?.nextRunAt;
     this.db.insertOne({
       _id: generateId,
       status: 'pending',
@@ -85,11 +88,11 @@ class Queue {
           if (okayToRunJobs && !process.env.HALT_QUEUES) {
             const nextJob = await this.db.findOneAndUpdate({
               status: 'pending',
-              nextRunAt: { $lte: new Date().toISOString() },
+              nextRunAt: { $lte: dayjs().format() },
             }, {
               $set: {
                 status: 'running',
-                startedAt: new Date().toISOString(),
+                startedAt: dayjs().format(),
               },
             }, {
               sort: {
@@ -129,7 +132,7 @@ class Queue {
     return this.db.updateOne({ _id: jobId }, {
       $set: {
         status: 'completed',
-        completedAt: new Date().toISOString(),
+        completedAt: dayjs().format(),
       },
     });
   }
@@ -138,7 +141,7 @@ class Queue {
     return this.db.updateOne({ _id: jobId }, {
       $set: {
         status: 'failed',
-        failedAt: new Date().toISOString(),
+        failedAt: dayjs().format(),
         error,
       },
     });
@@ -156,7 +159,7 @@ class Queue {
     });
   }
 
-  _handleRequeueJob(job = {}, nextRunAt = new Date().toISOString()) {
+  _handleRequeueJob(job = {}, nextRunAt = dayjs().format()) {
     return this.db.updateOne({ _id: job?._id }, {
       $set: {
         status: 'pending',
