@@ -22,7 +22,7 @@ const getAppSettings = () => {
 const startDeployment = (loginSessionToken = "", deployment = {}, deploymentTimestamp = "", appSettings = "") => {
   try {
     const formData = new FormData();
-    formData.append("build_tar", fs.readFileSync(`.build/build_enc.tar.xz`), `${deploymentTimestamp}.tar.xz`);
+    formData.append("build_tar", fs.readFileSync(`.build/build.tar.xz`), `${deploymentTimestamp}.tar.xz`);
     formData.append("deployment", JSON.stringify({
       ...deployment,
       version: deploymentTimestamp,
@@ -39,10 +39,11 @@ const startDeployment = (loginSessionToken = "", deployment = {}, deploymentTime
     }).then(async (response) => {
       const text = await response.text();
       const data = checkIfValidJSON(text);
-      if (data?.error) {
-        CLILog(data.error?.message, {
+      const isPayloadSizeError = text?.includes("payload");
+      if (data?.error || isPayloadSizeError) {
+        CLILog(data.error?.message || text, {
           level: "danger",
-          docs: "https://cheatcode.co/docs/push"
+          docs: isPayloadSizeError ? "https://cheatcode.co/docs/push/considerations/payload-size" : "https://cheatcode.co/docs/push"
         });
         process.exit(0);
       }

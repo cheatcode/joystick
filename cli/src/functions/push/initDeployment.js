@@ -33,7 +33,7 @@ const startDeployment = (
   try {
     const formData = new FormData();
 
-    formData.append('build_tar', fs.readFileSync(`.build/build_enc.tar.xz`), `${deploymentTimestamp}.tar.xz`);
+    formData.append('build_tar', fs.readFileSync(`.build/build.tar.xz`), `${deploymentTimestamp}.tar.xz`);
     formData.append('deployment', JSON.stringify({
       ...deployment,
       version: deploymentTimestamp,
@@ -51,13 +51,14 @@ const startDeployment = (
     }).then(async (response) => {
       const text = await response.text();
       const data = checkIfValidJSON(text);
+      const isPayloadSizeError = text?.includes('payload');
 
-      if (data?.error) {
+      if (data?.error || isPayloadSizeError) {
         CLILog(
-          data.error?.message,
+          data.error?.message || text,
           {
             level: 'danger',
-            docs: 'https://cheatcode.co/docs/push'
+            docs: isPayloadSizeError ? 'https://cheatcode.co/docs/push/considerations/payload-size' : 'https://cheatcode.co/docs/push'
           }
         );
     
