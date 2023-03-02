@@ -30,12 +30,15 @@ import loadSettings from '../settings/load.js';
 import Queue from './queues/index.js';
 import readDirectory from '../lib/readDirectory.js';
 import getBuildPath from '../lib/getBuildPath.js';
+import generateMachineId from '../lib/generateMachineId.js';
 
 process.setMaxListeners(0); 
 
 export class App {
   constructor(options = {}) {
+    this.setMachineId();
     this.setJoystickProcessId();
+    
     handleProcessErrors(options?.events);
 
     this.databases = [];
@@ -120,6 +123,10 @@ export class App {
     });
 
     console.log(`App running at: http://localhost:${express.port}`);
+  }
+
+  setMachineId() {
+    generateMachineId();  
   }
 
   setJoystickProcessId() {

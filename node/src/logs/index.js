@@ -1,5 +1,5 @@
 import dayjs from 'dayjs';
-import ObsceneDB from '../lib/obscenedb';
+import TuskDB from 'tuskdb';
 
 const captureLog = (callback = null) => {
   process.stdout.write = (data) => {
@@ -22,7 +22,7 @@ const captureLog = (callback = null) => {
 };
 
 const writeLogsToDisk = () => {
-  const db = new ObsceneDB({
+  const db = new TuskDB({
     file: {
       development: 'logs.json',
       production: '/root/logs.json', // NOTE: Assume we're writing to .json file in root of machine in production.
@@ -35,14 +35,14 @@ const writeLogsToDisk = () => {
   captureLog((source = '', data = '') => {
     switch(source) {
       case 'stdout':
-        return db.insert('logs', {
+        return db.collection('logs').insertOne({
           error: false,
           timestamp: dayjs().format(),
           data,
         });
       case 'stderr':
       case 'uncaughtException':
-        return db.insert('logs', {
+        return db.collection('logs').insertOne({
           error: true,
           timestamp: dayjs().format(),
           data,

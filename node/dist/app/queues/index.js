@@ -1,10 +1,14 @@
 import dayjs from "dayjs";
+import fs from "fs";
+import os from "os";
 import generateId from "../../lib/generateId";
 class Queue {
   constructor(queueName = "", queueOptions = {}) {
     if (!process?.databases?.mongodb) {
       return null;
     }
+    this.machineId = fs.readFileSync(`${os.homedir()}/.cheatcode/MACHINE_ID`, "utf-8")?.trim().replace(/\n/g, "");
+    console.log({ machineId: this.machineId });
     this.db = process.databases.mongodb.collection(`queue_${queueName}`);
     this.db.createIndex({ status: 1 });
     this.db.createIndex({ status: 1, nextRunAt: 1 });
@@ -41,15 +45,18 @@ class Queue {
   }
   _handleRequeueJobsRunningBeforeRestart() {
     if (!this.options.retryJobsRunningBeforeRestart) {
-      return this.db.updateMany({ status: "running" }, {
+      return this.db.updateMany({ status: "running", lockedBy: this.machineId }, {
         $set: {
           status: "incomplete"
         }
       });
     }
-    return this.db.updateMany({ status: "running" }, {
+    return this.db.updateMany({ status: { $in: ["running", "pending"] }, lockedBy: this.machineId }, {
       $set: {
         status: "pending"
+      },
+      $unset: {
+        lockedBy: ""
       }
     });
   }
@@ -60,12 +67,23 @@ class Queue {
         const okayToRunJobs = await this._checkIfOkayToRunJobs();
         if (okayToRunJobs && !process.env.HALT_QUEUES) {
           const nextJob = await this.db.findOneAndUpdate({
-            status: "pending",
-            nextRunAt: { $lte: dayjs().format() }
+            $or: [
+              {
+                status: "pending",
+                nextRunAt: { $lte: dayjs().format() },
+                lockedBy: { $exists: false }
+              },
+              {
+                status: "pending",
+                nextRunAt: { $lte: dayjs().format() },
+                lockedBy: null
+              }
+            ]
           }, {
             $set: {
               status: "running",
-              startedAt: dayjs().format()
+              startedAt: dayjs().format(),
+              lockedBy: this.machineId
             }
           }, {
             sort: {
@@ -129,6 +147,9 @@ class Queue {
       $set: {
         status: "pending",
         nextRunAt: nextRunAt2
+      },
+      $unset: {
+        lockedBy: ""
       }
     });
   }

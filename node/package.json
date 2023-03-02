@@ -1,7 +1,7 @@
 {
   "name": "@joystick.js/node",
   "version": "1.0.0-beta.120",
-  "developmentVersion": "1.0.0-beta.908",
+  "developmentVersion": "1.0.0-beta.916",
   "type": "module",
   "description": "A Node.js framework for building web apps.",
   "main": "./dist/index.js",
@@ -41,6 +41,7 @@
     "query-string": "^7.0.1",
     "sanitize-html": "^2.7.3",
     "serve-favicon": "^2.5.0",
+    "tuskdb": "^0.0.12",
     "ws": "^8.4.0"
   },
   "devDependencies": {
