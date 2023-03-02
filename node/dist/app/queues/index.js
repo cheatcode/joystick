@@ -8,7 +8,6 @@ class Queue {
       return null;
     }
     this.machineId = fs.readFileSync(`${os.homedir()}/.cheatcode/MACHINE_ID`, "utf-8")?.trim().replace(/\n/g, "");
-    console.log({ machineId: this.machineId });
     this.db = process.databases.mongodb.collection(`queue_${queueName}`);
     this.db.createIndex({ status: 1 });
     this.db.createIndex({ status: 1, nextRunAt: 1 });
