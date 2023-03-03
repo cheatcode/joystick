@@ -1,7 +1,7 @@
 {
   "name": "@joystick.js/node",
-  "version": "1.0.0-beta.121",
-  "developmentVersion": "1.0.0-beta.917",
+  "version": "1.0.0-beta.122",
+  "developmentVersion": "1.0.0-beta.920",
   "type": "module",
   "description": "A Node.js framework for building web apps.",
   "main": "./dist/index.js",
@@ -17,6 +17,7 @@
   "author": "",
   "license": "SAUCR",
   "dependencies": {
+    "@tuskdb/node": "^0.1.0",
     "aws-sdk": "^2.1046.0",
     "bcrypt": "^5.0.1",
     "chalk": "^4.1.2",
@@ -41,7 +42,6 @@
     "query-string": "^7.0.1",
     "sanitize-html": "^2.7.3",
     "serve-favicon": "^2.5.0",
-    "tuskdb": "^0.0.12",
     "ws": "^8.4.0"
   },
   "devDependencies": {

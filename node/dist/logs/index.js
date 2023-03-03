@@ -1,5 +1,5 @@
 import dayjs from "dayjs";
-import TuskDB from "tuskdb";
+import TuskDB from "@tuskdb/node";
 const captureLog = (callback = null) => {
   process.stdout.write = (data) => {
     if (callback) {
