@@ -1,7 +1,7 @@
 import fs from "fs";
 var getSSLCertificates_default = (ssl = {}) => {
-  const deployCertificatePath = "/lib/deploy/certs/cert.pem";
-  const deployKeyPath = "/lib/deploy/certs/key.pem";
+  const deployCertificatePath = "/lib/push/certs/cert.pem";
+  const deployKeyPath = "/lib/push/certs/key.pem";
   const certPath = process.env.IS_PUSH_DEPLOYED ? deployCertificatePath : ssl?.cert;
   const keyPath = process.env.IS_PUSH_DEPLOYED ? deployKeyPath : ssl?.key;
   const certExists = fs.existsSync(certPath);
