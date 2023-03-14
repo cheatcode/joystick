@@ -1,5 +1,6 @@
-import fs, { watch } from "fs";
+import fs from "fs";
 import { join } from "path";
+import masterIgnoreList from "../../lib/masterIgnoreList.js";
 const getFileListFromPath = (directoryPath = "", files = []) => {
   const filesInDirectory = fs.readdirSync(directoryPath);
   const filesWithDirectoryPathPrefix = filesInDirectory.map((filePathInDirectory = "") => {
@@ -22,16 +23,7 @@ var getFilesToBuild_default = (excludedPaths = []) => {
     });
     return !isExcluded;
   }).filter((path) => {
-    return ![
-      "node_modules",
-      ".DS_Store",
-      ".git",
-      ".build",
-      ".joystick",
-      ".deploy",
-      "storage",
-      "uploads"
-    ].some((excludedPath) => {
+    return !masterIgnoreList.some((excludedPath) => {
       return path.includes(excludedPath);
     });
   }).filter((path) => {

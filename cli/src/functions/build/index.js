@@ -3,6 +3,8 @@ import Loader from "../../lib/loader.js";
 import getFilesToBuild from "../start/getFilesToBuild.js";
 import buildFiles from "../start/buildFiles.js";
 import CLILog from "../../lib/CLILog.js";
+import getTarIgnoreList from './getTarIgnoreList.js';
+import loadSettings from '../../lib/loadSettings.js';
 
 export default async (args = {}, options = {}) => {
   if (!options?.type) {
@@ -17,7 +19,9 @@ export default async (args = {}, options = {}) => {
   const loader = new Loader({ padding: options?.isDeploy ? '  ' : '', defaultMessage: "Building app..." });
   loader.text("Building app...");
 
-  const filesToBuild = getFilesToBuild();
+  const environment = options?.environment || 'production';
+  const settings = await loadSettings(environment);
+  const filesToBuild = getFilesToBuild(settings?.config?.build?.excludedPaths);
   const outputPath = '.build';
   const outputPathForBuildType = options?.type === 'tar' ? `${outputPath}/.tar` : outputPath;
 
@@ -25,13 +29,14 @@ export default async (args = {}, options = {}) => {
     filesToBuild,
     outputPathForBuildType,
     // NOTE: Treat standalone builds as being for production by default.
-    options?.environment || 'production',
+   environment,
   ).catch((error) => {
     console.warn(error);
   });
 
   if (options?.type === 'tar') { 
-    child_process.execSync(`cd ${outputPath}/.tar && tar -cf ../build.tar.xz --exclude={".build",".deploy",".git","uploads","storage",".DS_Store","*.tar","*.tar.gz","*.tar.xz"} .`);
+    const ignoreList = getTarIgnoreList(settings?.config?.build?.excludedPaths);
+    child_process.execSync(`cd ${outputPath}/.tar && tar -cf ../build.tar.xz --exclude=${ignoreList} .`);
     child_process.execSync(`cd ${outputPath} && rm -rf .tar`);
   }
 

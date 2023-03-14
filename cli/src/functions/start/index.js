@@ -341,7 +341,7 @@ const startWatcher = async (buildSettings = {}) => {
         fs.writeFileSync(`./.joystick/build/${path}`, fs.readFileSync(path));
       }
 
-      await loadSettings();
+      await loadSettings(process.env.NODE_ENV);
       await restartApplicationProcess();
       return;
     }
@@ -502,7 +502,7 @@ export default async (args = {}, options = {}) => {
   process.env.PORT = options?.port ? parseInt(options?.port) : 2600;
   process.env.IS_DEBUG_MODE = options?.debug;
 
-  const settings = await loadSettings();
+  const settings = await loadSettings(process.env.NODE_ENV);
   await startDatabases(databasePortStart);
 
   startWatcher(settings?.config?.build);

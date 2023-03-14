@@ -260,7 +260,7 @@ const startWatcher = async (buildSettings = {}) => {
       if (!isDirectory) {
         fs.writeFileSync(`./.joystick/build/${path2}`, fs.readFileSync(path2));
       }
-      await loadSettings();
+      await loadSettings(process.env.NODE_ENV);
       await restartApplicationProcess();
       return;
     }
@@ -374,7 +374,7 @@ var start_default = async (args = {}, options = {}) => {
   process.env.NODE_ENV = options?.environment || "development";
   process.env.PORT = options?.port ? parseInt(options?.port) : 2600;
   process.env.IS_DEBUG_MODE = options?.debug;
-  const settings = await loadSettings();
+  const settings = await loadSettings(process.env.NODE_ENV);
   await startDatabases(databasePortStart);
   startWatcher(settings?.config?.build);
   handleSignalEvents([]);
