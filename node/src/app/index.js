@@ -144,7 +144,7 @@ export class App {
 
   initDeploy() {
     if (process.env.NODE_ENV === 'production' && process.env.IS_PUSH_DEPLOYED) {
-      this.express.app.get('/api/_deploy/pre-version', async (req, res) => {
+      this.express.app.get('/api/_push/pre-version', async (req, res) => {
         const instanceToken = fs.readFileSync('/root/token.txt', 'utf-8');
 
         if (req?.headers['x-instance-token'] === instanceToken?.replace('\n', '')) {
@@ -163,7 +163,7 @@ export class App {
         return res.status(403).send('Sorry, you must pass a valid instance token to access this endpoint.');
       });
 
-      this.express.app.get('/api/_deploy/health', async (req, res) => {
+      this.express.app.get('/api/_push/health', async (req, res) => {
         const instanceToken = fs.readFileSync('/root/token.txt', 'utf-8');
 
         if (req?.headers['x-instance-token'] === instanceToken?.replace('\n', '')) {
@@ -173,7 +173,7 @@ export class App {
         return res.status(403).send('Sorry, you must pass a valid instance token to access this endpoint.');
       });
 
-      this.express.app.get('/api/_deploy/logs', async (req, res) => {
+      this.express.app.get('/api/_push/logs', async (req, res) => {
         const instanceToken = fs.readFileSync('/root/token.txt', 'utf-8');
         if (req?.headers['x-instance-token'] === instanceToken?.replace('\n', '')) {
           const logs = execSync(`export NODE_ENV=production && instance logs${req?.query?.before ? ` --before ${req?.query?.before}` : ''}${req?.query?.after ? ` --after ${req?.query?.after}` : ''}`);
