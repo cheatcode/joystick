@@ -72,7 +72,7 @@ class Queue {
 
     // NOTE: Do NOT change the nextRunAt as we want priority to remain intact. Oldest jobs
     // should still be FIFO.
-    return this.db.updateMany({ status: { $in: ['running', 'pending'] }, lockedBy: this.machineId }, {
+    return this.db.updateMany({ status: { $in: ['pending', 'running'] }, lockedBy: this.machineId }, {
       $set: {
         status: 'pending',
       },
@@ -80,8 +80,8 @@ class Queue {
       // for any machine to pick it up.
       $unset: {
         lockedBy: '',
-      },
-    });
+      }
+   });
   }
 
   run() {
@@ -98,11 +98,13 @@ class Queue {
               $or: [
                 {
                   status: 'pending',
+                  // NOTE: Do this to avoid accidentally running jobs intended for the future too early.
                   nextRunAt: { $lte: dayjs().format() },
                   lockedBy: { $exists: false }
                 },
                 {
                   status: 'pending',
+                  // NOTE: Do this to avoid accidentally running jobs intended for the future too early.
                   nextRunAt: { $lte: dayjs().format() },
                   lockedBy: null,
                 }

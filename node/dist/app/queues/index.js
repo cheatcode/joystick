@@ -50,7 +50,7 @@ class Queue {
         }
       });
     }
-    return this.db.updateMany({ status: { $in: ["running", "pending"] }, lockedBy: this.machineId }, {
+    return this.db.updateMany({ status: { $in: ["pending", "running"] }, lockedBy: this.machineId }, {
       $set: {
         status: "pending"
       },
