@@ -141,6 +141,14 @@ class App {
         }
         return res.status(403).send("Sorry, you must pass a valid instance token to access this endpoint.");
       });
+      this.express.app.get("/api/_push/metrics", async (req, res) => {
+        const instanceToken = fs.readFileSync("/root/token.txt", "utf-8");
+        if (req?.headers["x-instance-token"] === instanceToken?.replace("\n", "")) {
+          const metrics = execSync(`export NODE_ENV=production && instance metrics`);
+          return res.status(200).send(metrics);
+        }
+        return res.status(403).send("Sorry, you must pass a valid instance token to access this endpoint.");
+      });
     }
   }
   initAPI(api = {}) {
