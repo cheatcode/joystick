@@ -103,7 +103,10 @@ const getLanguagePreferenceRegexes = (userLanguage = "", browserLanguages = []) 
   if (userLanguage) {
     languagePreferences.push(userLanguage);
   }
-  languagePreferences.push(...browserLanguages);
+  const filteredBrowserLanguages = browserLanguages?.filter((language) => {
+    return !language?.includes("*");
+  });
+  languagePreferences.push(...filteredBrowserLanguages);
   languagePreferences.push(settings?.config?.i18n?.defaultLanguage);
   return languagePreferences?.flatMap((language) => {
     const variants = [language];
