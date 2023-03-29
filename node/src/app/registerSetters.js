@@ -14,6 +14,7 @@ export default (express, setters = [], context = {}, APIOptions = {}) => {
     for (const [setter_name, setter_options] of setters) {
       app.post(
         `/api/_setters/${getAPIURLComponent(setter_name)}`,
+        ...(Array.isArray(setter_options?.middleware) ? setter_options?.middleware : []),
         async (req, res) => {
           const setter_context = await getAPIContext({ req, res }, context);
           const input = req?.body?.input;

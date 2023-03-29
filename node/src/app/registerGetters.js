@@ -14,6 +14,7 @@ export default (express, getters = [], context = {}, APIOptions = {}) => {
     for (const [getter_name, getter_options] of getters) {
       app.get(
         `/api/_getters/${getAPIURLComponent(getter_name)}`,
+        ...(Array.isArray(getter_options?.middleware) ? getter_options?.middleware : []),
         async (req, res) => {
           const getter_context = await getAPIContext({ req, res }, context);
           const { query } = req;
