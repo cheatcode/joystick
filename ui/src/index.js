@@ -45,6 +45,9 @@ const joystick = {
   set,
   upload,
   timers: {},
+  // NOTE: Safe place to track state and data for third-party dependencies that
+  // directly manipulate the DOM.
+  _external: {},
 }
 
 attachJoystickToWindow(joystick);
