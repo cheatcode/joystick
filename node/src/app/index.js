@@ -4,6 +4,7 @@ import EventEmitter from 'events';
 import * as WebSocket from "ws";
 import queryString from 'query-string';
 import multer from 'multer';
+import cron from 'node-cron';
 import { execSync } from 'child_process';
 import initExpress from "./initExpress.js";
 import handleProcessErrors from "./handleProcessErrors";
@@ -59,6 +60,7 @@ export class App {
     this.initUploaders(options?.uploaders);
     this.initFixtures(options?.fixtures);
     this.initQueues(options?.queues);
+    this.initCronJobs(options?.cronJobs);
   }
 
   async invalidateCache() {
@@ -671,6 +673,27 @@ export class App {
           ...(process.queues || {}),
           [queueName]: new Queue(queueName, queueOptions),
         };
+      }
+    }
+  }
+
+  initCronJobs(cronJobs = null) {
+    if (cronJobs && typeof cronJobs === 'object' && !Array.isArray(cronJobs)) {
+      const cronJobDefinitions = Object.entries(cronJobs);
+      for (let i = 0; i < cronJobDefinitions.length; i += 1) {
+        const [cronJobName, cronJobOptions] = cronJobDefinitions[i];
+        if (cronJobOptions?.schedule && cronJobOptions?.run && typeof cronJobOptions?.run === 'function') {
+          process.cron = {
+            ...(process.queues || {}),
+            [cronJobName]: cron.schedule(cronJobOptions?.schedule, () => {
+              if (cronJobOptions?.logAtRunTime && typeof cronJobOptions?.logAtRunTime === 'string') {
+                console.log(cronJobOptions.logAtRunTime);
+              }
+
+              cronJobOptions.run();
+            })
+          };
+        }
       }
     }
   }
