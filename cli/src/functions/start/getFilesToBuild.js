@@ -22,8 +22,12 @@ const getFileListFromPath = (directoryPath = '', files = []) => {
 };
 
 
-export default (excludedPaths = []) => {
+export default (excludedPaths = [], context = null) => {
   const files = getFileListFromPath("./");
+  const masterIgnoreListFilteredForContext = context && context === 'start' ? masterIgnoreList?.filter((fileToIgnore) => {
+    return !fileToIgnore.includes('settings');
+  }) : masterIgnoreList;
+
   const filteredFiles = files
     .filter((path) => {
       const isExcluded = excludedPaths.some((excludedPath) => {
@@ -33,7 +37,7 @@ export default (excludedPaths = []) => {
       return !isExcluded;
     })
     .filter((path) => {
-      return !masterIgnoreList.some((excludedPath) => {
+      return !masterIgnoreListFilteredForContext.some((excludedPath) => {
         return path.includes(excludedPath);
       });
     })

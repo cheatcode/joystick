@@ -232,7 +232,7 @@ const initialBuild = async (buildSettings = {}) => {
   }
   process.loader.text("Building app...");
   await requiredFileCheck();
-  const filesToBuild = getFilesToBuild(buildSettings?.excludedPaths);
+  const filesToBuild = getFilesToBuild(buildSettings?.excludedPaths, "start");
   const fileResults = await buildFiles(filesToBuild, null, process.env.NODE_ENV);
   const hasErrors = [...fileResults].filter((result) => !!result).map(({ success }) => success).includes(false);
   if (!hasErrors) {
