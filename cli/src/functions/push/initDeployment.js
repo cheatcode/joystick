@@ -11,10 +11,10 @@ import checkIfValidJSON from '../../lib/checkIfValidJSON.js';
 import CLILog from '../../lib/CLILog.js';
 import build from '../build/index.js';
 
-const getAppSettings = () => {
+const getAppSettings = (environment = '') => {
   try {
-    if (fs.existsSync('settings.production.json')) {
-      const file = fs.readFileSync('settings.production.json', 'utf-8');
+    if (fs.existsSync(`settings.${environment}.json`)) {
+      const file = fs.readFileSync(`settings.${environment}.json`, 'utf-8');
       return file;
     }
 
@@ -25,22 +25,25 @@ const getAppSettings = () => {
 };
 
 const startDeployment = (
+  isInitialDeployment = false,
   loginSessionToken = '',
   deployment = {},
   deploymentTimestamp = '',
   appSettings = '',
+  environment = 'production'
 ) => {
   try {
     const formData = new FormData();
 
     formData.append('build_tar', fs.readFileSync(`.build/build.tar.xz`), `${deploymentTimestamp}.tar.xz`);
     formData.append('deployment', JSON.stringify({
-      ...deployment,
+      ...(deployment || {}),
       version: deploymentTimestamp,
       settings: appSettings,
+      environment,
     }));
 
-    return fetch(`${domains?.provision}/api/deployments/initial`, {
+    return fetch(`${domains?.provision}/api/deployments/${isInitialDeployment ? 'initial' : 'version'}`, {
       method: 'POST',
       headers: {
         ...formData.getHeaders(),
@@ -72,9 +75,9 @@ const startDeployment = (
   }
 };
 
-const buildApp = () => {
+const buildApp = (environment = 'production') => {
   try {
-    return build({}, { isDeploy: true, type: 'tar' });
+    return build({}, { isDeploy: true, type: 'tar', environment });
   } catch (exception) {
     throw new Error(`[initDeployment.buildApp] ${exception.message}`);
   }
@@ -84,7 +87,6 @@ const validateOptions = (options) => {
   try {
     if (!options) throw new Error('options object is required.');
     if (!options.loginSessionToken) throw new Error('options.loginSessionToken is required.');
-    if (!options.deployment) throw new Error('options.deployment is required.');
   } catch (exception) {
     throw new Error(`[initDeployment.validateOptions] ${exception.message}`);
   }
@@ -100,17 +102,21 @@ const initDeployment = async (options, { resolve, reject }) => {
     
     const deploymentTimestamp = new Date().toISOString();
 
-    await buildApp();
+    // NOTE: If we're just doing a version update and not an initial deployment, we want to respect the
+    // existing environment for the deployment. Otherwise, fallback to the --environment flag.
+    await buildApp(options?.deployment?.environment || options?.environment);
 
-    const appSettings = getAppSettings();
+    const appSettings = getAppSettings(options?.environment);
 
     loader.text("Starting deployment...");
   
     await startDeployment(
+      options?.isInitialDeployment,
       options?.loginSessionToken,
       options.deployment,
       deploymentTimestamp,
       appSettings,
+      options?.environment,
     );
 
     loader.stop();

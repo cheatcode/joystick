@@ -1,7 +1,10 @@
 var getArgs_default = (args = {}) => {
   return Object.entries(args).reduce((values, [argName, argData]) => {
-    if (argData && argData.value) {
-      values[argName] = argData.value && !argData.value.includes("-") ? argData.value : null;
+    if (argData && argData.value && argData.parent && argData.parent === "create") {
+      values[argName] = argData.value;
+    }
+    if (argData && argData.value && (!argData.parent || argData.parent !== "create")) {
+      values[argName] = !argData.value.includes("-") ? argData.value : null;
     }
     return values;
   }, {});

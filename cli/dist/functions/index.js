@@ -15,11 +15,13 @@ var functions_default = {
         flags: {
           "-e": {
             set: !!rawArgs.includes("-e"),
-            value: !!rawArgs.includes("-e") && rawArgs[rawArgs.indexOf("-e") + 1]
+            value: !!rawArgs.includes("-e") && rawArgs[rawArgs.indexOf("-e") + 1],
+            parent: "build"
           },
           "--environment": {
             set: !!rawArgs.includes("--environment"),
-            value: !!rawArgs.includes("--environment") && rawArgs[rawArgs.indexOf("--environment") + 1]
+            value: !!rawArgs.includes("--environment") && rawArgs[rawArgs.indexOf("--environment") + 1],
+            parent: "build"
           }
         },
         description: "The NODE_ENV you want to use for your build (default: production)."
@@ -28,11 +30,13 @@ var functions_default = {
         flags: {
           "-o": {
             set: !!rawArgs.includes("-o"),
-            value: !!rawArgs.includes("-o") && rawArgs[rawArgs.indexOf("-o") + 1]
+            value: !!rawArgs.includes("-o") && rawArgs[rawArgs.indexOf("-o") + 1],
+            parent: "build"
           },
           "--outputPath": {
             set: !!rawArgs.includes("--outputPath"),
-            value: !!rawArgs.includes("--outputPath") && rawArgs[rawArgs.indexOf("--outputPath") + 1]
+            value: !!rawArgs.includes("--outputPath") && rawArgs[rawArgs.indexOf("--outputPath") + 1],
+            parent: "build"
           }
         },
         description: "The path you want to build the output to."
@@ -41,11 +45,13 @@ var functions_default = {
         flags: {
           "-t": {
             set: !!rawArgs.includes("-t"),
-            value: !!rawArgs.includes("-t") && rawArgs[rawArgs.indexOf("-t") + 1]
+            value: !!rawArgs.includes("-t") && rawArgs[rawArgs.indexOf("-t") + 1],
+            parent: "build"
           },
           "--type": {
             set: !!rawArgs.includes("--type"),
-            value: !!rawArgs.includes("--type") && rawArgs[rawArgs.indexOf("--type") + 1]
+            value: !!rawArgs.includes("--type") && rawArgs[rawArgs.indexOf("--type") + 1],
+            parent: "build"
           }
         },
         description: "The type of build you want to generate (tar or folder)."
@@ -59,6 +65,7 @@ var functions_default = {
     args: {
       name: {
         set: !!rawArgs.includes("create") && !!rawArgs[rawArgs.indexOf("create") + 1],
+        parent: "create",
         value: !!rawArgs.includes("create") && rawArgs[rawArgs.indexOf("create") + 1],
         description: "The name of the app to create."
       }
@@ -82,11 +89,13 @@ var functions_default = {
         flags: {
           "-d": {
             set: !!rawArgs.includes("-d"),
-            value: !!rawArgs.includes("-d") && rawArgs[rawArgs.indexOf("-d") + 1]
+            value: !!rawArgs.includes("-d") && rawArgs[rawArgs.indexOf("-d") + 1],
+            parent: "push"
           },
           "--domain": {
             set: !!rawArgs.includes("--domain"),
-            value: !!rawArgs.includes("--domain") && rawArgs[rawArgs.indexOf("--domain") + 1]
+            value: !!rawArgs.includes("--domain") && rawArgs[rawArgs.indexOf("--domain") + 1],
+            parent: "push"
           }
         },
         description: "The domain name you want to deploy your app to."
@@ -95,11 +104,13 @@ var functions_default = {
         flags: {
           "-e": {
             set: !!rawArgs.includes("-e"),
-            value: !!rawArgs.includes("-e") && rawArgs[rawArgs.indexOf("-e") + 1]
+            value: !!rawArgs.includes("-e") && rawArgs[rawArgs.indexOf("-e") + 1],
+            parent: "push"
           },
           "--environment": {
             set: !!rawArgs.includes("--environment"),
-            value: !!rawArgs.includes("--environment") && rawArgs[rawArgs.indexOf("--environment") + 1]
+            value: !!rawArgs.includes("--environment") && rawArgs[rawArgs.indexOf("--environment") + 1],
+            parent: "push"
           }
         },
         description: "The value you want to use for NODE_ENV in the deployed app (e.g., staging or production). Default is production."
@@ -116,11 +127,13 @@ var functions_default = {
         flags: {
           "-e": {
             set: !!rawArgs.includes("-e"),
-            value: !!rawArgs.includes("-e") && rawArgs[rawArgs.indexOf("-e") + 1]
+            value: !!rawArgs.includes("-e") && rawArgs[rawArgs.indexOf("-e") + 1],
+            parent: "start"
           },
           "--environment": {
             set: !!rawArgs.includes("--environment"),
-            value: !!rawArgs.includes("--environment") && rawArgs[rawArgs.indexOf("--environment") + 1]
+            value: !!rawArgs.includes("--environment") && rawArgs[rawArgs.indexOf("--environment") + 1],
+            parent: "start"
           }
         },
         description: "Environment to set for process.env.NODE_ENV."
@@ -129,11 +142,13 @@ var functions_default = {
         flags: {
           "-l": {
             set: !!rawArgs.includes("-l"),
-            value: !!rawArgs.includes("-l") && rawArgs[rawArgs.indexOf("-l") + 1]
+            value: !!rawArgs.includes("-l") && rawArgs[rawArgs.indexOf("-l") + 1],
+            parent: "start"
           },
           "--logs": {
             set: !!rawArgs.includes("--logs"),
-            value: !!rawArgs.includes("--logs") && rawArgs[rawArgs.indexOf("--logs") + 1]
+            value: !!rawArgs.includes("--logs") && rawArgs[rawArgs.indexOf("--logs") + 1],
+            parent: "start"
           }
         },
         description: "Path for storing logs."
@@ -142,11 +157,13 @@ var functions_default = {
         flags: {
           "-p": {
             set: !!rawArgs.includes("-p"),
-            value: !!rawArgs.includes("-p") && parseInt(rawArgs[rawArgs.indexOf("-p") + 1], 10)
+            value: !!rawArgs.includes("-p") && parseInt(rawArgs[rawArgs.indexOf("-p") + 1], 10),
+            parent: "start"
           },
           "--port": {
             set: !!rawArgs.includes("--port"),
-            value: !!rawArgs.includes("--port") && parseInt(rawArgs[rawArgs.indexOf("--port") + 1], 10)
+            value: !!rawArgs.includes("--port") && parseInt(rawArgs[rawArgs.indexOf("--port") + 1], 10),
+            parent: "start"
           }
         },
         description: "Port number to run the app on."
@@ -155,11 +172,13 @@ var functions_default = {
         flags: {
           "-d": {
             set: !!rawArgs.includes("-d"),
-            value: !!rawArgs.includes("-d")
+            value: !!rawArgs.includes("-d"),
+            parent: "start"
           },
           "--debug": {
             set: !!rawArgs.includes("--debug"),
-            value: !!rawArgs.includes("--debug")
+            value: !!rawArgs.includes("--debug"),
+            parent: "start"
           }
         },
         description: "Run the Joystick app's Node.js process in debug mode with --inspect."
