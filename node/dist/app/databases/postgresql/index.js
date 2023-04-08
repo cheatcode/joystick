@@ -27,6 +27,16 @@ var postgresql_default = async (settings = {}, databasePortBaseIndex = 0) => {
         return pool.query(...args).then((response) => {
           return response?.rows || [];
         }).catch((error) => {
+          console.log(chalk.redBright(`
+Failed SQL Statement:
+`));
+          console.log(args[0]);
+          console.log(`
+`);
+          console.log(chalk.redBright(`
+Failed Values:
+`));
+          console.log(args[1]);
           throw error;
         });
       }

@@ -5,7 +5,7 @@ import runUserQuery from "./runUserQuery";
 import { isObject } from "../../validation/lib/typeValidators";
 import getOutput from "../getOutput";
 import typesMap from "../databases/typesMap";
-import getUsersDatabase from "./getUsersDatabase";
+import getTargetDatabase from "../databases/getTargetDatabase";
 const addSessionToUser = (userId = null, session = null) => {
   try {
     return runUserQuery("addSession", { userId, session });
@@ -29,7 +29,7 @@ const insertUserInDatabase = async (user = {}) => {
 };
 const getUserToCreate = async (options = {}) => {
   try {
-    const usersDatabase = getUsersDatabase();
+    const usersDatabase = getTargetDatabase("users");
     const usersDatabaseType = typesMap[usersDatabase];
     let user = {
       password: await hashString(options.password)

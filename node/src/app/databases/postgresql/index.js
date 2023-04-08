@@ -32,6 +32,12 @@ export default async (settings = {}, databasePortBaseIndex = 0) => {
         return pool.query(...args).then((response) => {
           return response?.rows || [];
         }).catch((error) => {
+          console.log(chalk.redBright(`\nFailed SQL Statement:\n`));
+          console.log(args[0]);
+          console.log(`\n`);
+          console.log(chalk.redBright(`\nFailed Values:\n`));
+          console.log(args[1]);
+
           throw error;
         });
       }
