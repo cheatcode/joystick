@@ -5,7 +5,10 @@ export default (databases = []) => {
   const databasesNotAsObjects = databases.filter(
     (database) => !isObject(database)
   );
+
   const userDatabases = databases.filter((database) => !!database.users);
+  const queueDatabases = databases.filter((database) => !!database.queues);
+
   const databasesWithDuplicateNames = databases
     .flatMap((database, index) => {
       return databases.map((currentDatabase, currentIndex) => {
@@ -29,6 +32,14 @@ export default (databases = []) => {
     CLILog(`Please select a single database for your user accounts and restart your app.`, {
       level: 'danger',
       docs: 'https://github.com/cheatcode/joystick#users-database',
+    });
+    process.exit(1);
+  }
+
+  if (queueDatabases && queueDatabases.length > 1) {
+    CLILog(`Please select a single database for your queues and restart your app.`, {
+      level: 'danger',
+      docs: 'https://github.com/cheatcode/joystick#queues-database',
     });
     process.exit(1);
   }
