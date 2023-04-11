@@ -30,11 +30,6 @@ export default async (settings = {}, databasePortBaseIndex = 0) => {
       connectionOptions.ca = fs.readFileSync(settings?.options?.ca);
     }
 
-    console.log({
-      connectionString,
-      connectionOptions,
-    });
-
     const client = await MongoClient.connect(connectionString, connectionOptions);
     const db = client.db(parsedURI.db);
 
