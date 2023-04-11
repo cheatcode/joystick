@@ -2,9 +2,7 @@ export default (connection = {}) => {
   let connectionString = "mongodb://";
 
   if (connection && (connection.username || connection.password)) {
-    connectionString = `${connectionString}${connection.username || ""}:${
-      connection.password || ""
-    }@`;
+    connectionString = `${connectionString}${connection.username || connection.password ? `${connection.username || ""}${!!connection.username && !!connection.password ? ':' : ''}${connection.password || ""}@` : ''}`;
   }
 
   if (connection && connection.hosts && Array.isArray(connection.hosts)) {

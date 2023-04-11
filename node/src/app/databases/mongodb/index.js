@@ -22,13 +22,18 @@ export default async (settings = {}, databasePortBaseIndex = 0) => {
     const connectionOptions = {
       useNewUrlParser: true,
       useUnifiedTopology: true,
-      ssl: process.env.NODE_ENV !== 'development',
+      ssl: !process.env.NODE_ENV?.includes('development'),
       ...(settings?.options || {})
     };
 
     if (settings?.options?.ca) {
       connectionOptions.ca = fs.readFileSync(settings?.options?.ca);
     }
+
+    console.log({
+      connectionString,
+      connectionOptions,
+    });
 
     const client = await MongoClient.connect(connectionString, connectionOptions);
     const db = client.db(parsedURI.db);
