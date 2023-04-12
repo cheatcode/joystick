@@ -16,6 +16,9 @@ export default (componentOptions = {}) => {
         translations: renderOptions?.translations,
         api: renderOptions?.api,
         req: renderOptions?.req,
+        // NOTE: See notes in class constructor for Component and in the component() render method definition to
+        // understand why this is passed.
+        parent: renderOptions?.parent,
       });
   
       return component;

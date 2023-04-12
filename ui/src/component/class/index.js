@@ -21,10 +21,15 @@ import replaceChildInVDOMTree from "../tree/replaceChildInVDOMTree";
 
 class Component {
   constructor(options = {}) {
+    // NOTE: Explicitly set the parent here so that references to parent in functions called
+    // in registerOptions() have access to it. Without this, the parent doesn't exist until
+    // after this constructor is called.
+    this.parent = options?.parent || null;
+    this.onUpdateChildComponent = this.handleUpdateChildComponentInVDOM;
+
     validateOptions(options);
     registerOptions(this, options);
     this.data = loadDataFromWindow(this);
-    this.onUpdateChildComponent = this.handleUpdateChildComponentInVDOM;
   }
 
   setDOMNodeOnInstance() {

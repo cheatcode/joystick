@@ -7,6 +7,7 @@ export default [
   "existingProps",
   "existingState",
   "instanceId",
+  "parent",
   "req",
   // NOTE: User-defined or standard methods.
   "css",

@@ -1,6 +1,10 @@
 import serializeEvents from "./serialize";
 import throwFrameworkError from "../../../lib/throwFrameworkError";
 import { isFunction } from "../../../lib/types";
+import compileRenderMethods from "../renderMethods/compile";
+import windowIsUndefined from "../../../lib/windowIsUndefined";
+import getExistingPropsMap from "../render/getExistingPropsMap";
+import getExistingStateMap from "../render/getExistingStateMap";
 
 const attachOnBeforeUnmount = (componentInstance = {}) => {
   try {
@@ -28,20 +32,35 @@ const serializeEventsFromInstances = (tree = {}, events = []) => {
   attachOnBeforeUnmount(tree.instance);
   
   if (hasEventsToAttach) {
+    const renderMethods = compileRenderMethods({
+      ...(tree?.instance),
+      getExistingPropsMap: {},
+      existingPropsMap: !windowIsUndefined() ? getExistingPropsMap(tree?.instance) : {},
+      existingStateMap: !windowIsUndefined() ? getExistingStateMap(tree?.instance) : {},
+      ssrTree: tree?.instance?.parent?.ssrTree,
+      translations: tree?.instance?.parent?.translations || tree?.instance.translations || {},
+      walkingTreeForSSR: tree?.instance?.parent?.walkingTreeForSSR,
+      renderingHTMLWithDataForSSR: tree?.instance?.parent?.renderingHTMLWithDataForSSR,
+      dataFromSSR: tree?.instance?.parent?.dataFromSSR,
+    });
+
     events.push({
       id: tree.id,
       instanceId: tree.instance.instanceId,
       events: serializeEvents(eventsToAttach).map((eventToAttach) => {
         const elementsByInstanceId = document.querySelectorAll(`body [js-i="${tree.instance.instanceId}"] ${eventToAttach.selector}`);
-        const elementsByComponentId = document.querySelectorAll(`body [js-c="${tree.id}"] ${eventToAttach.selector}`);
-      
+
         return {
           ...eventToAttach,
           eventListener: function listener(DOMEvent) {
             Object.defineProperty(DOMEvent, "target", {
               value: DOMEvent.composedPath()[0],
             });
-            eventToAttach.handler(DOMEvent, tree.instance);
+            eventToAttach.handler(DOMEvent, {
+              ...(tree.instance || {}),
+              setState: tree?.instance?.setState.bind(tree.instance),
+              ...(renderMethods || {}),
+            });
           },
           elements: elementsByInstanceId?.length > 0 ? elementsByInstanceId : [],
         };

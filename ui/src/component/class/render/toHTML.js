@@ -13,7 +13,7 @@ export default (componentInstance = {}, options = {}) => {
       componentInstance.data = findComponentDataFromSSR(options.dataFromSSR, componentInstance.id) || {};
     }
 
-    const renderOptions = {
+    const renderMethods = compileRenderMethods({
       ...componentInstance,
       getExistingPropsMap: {},
       existingPropsMap: !windowIsUndefined() ? getExistingPropsMap(componentInstance) : {},
@@ -23,9 +23,8 @@ export default (componentInstance = {}, options = {}) => {
       walkingTreeForSSR: options?.walkingTreeForSSR,
       renderingHTMLWithDataForSSR: options?.renderingHTMLWithDataForSSR,
       dataFromSSR: options?.dataFromSSR,
-    };
+    });
 
-    const renderMethods = compileRenderMethods(renderOptions);
     const html = componentInstance.options.render({
       ...(componentInstance || {}),
       setState: componentInstance.setState.bind(componentInstance),

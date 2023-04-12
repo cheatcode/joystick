@@ -133,6 +133,9 @@ const generateComponentFunction = function() {
       api: parent.options.api,
       req: parent.options.req,
       dataFromSSR: parent?.dataFromSSR,
+      // NOTE: Pass parent via options here so that we can assign it back to the instance in the
+      // constructor (see note in component class constructor to understand why).
+      parent,
     });
 
     component.parent = parent;
@@ -147,7 +150,10 @@ const generateComponentFunction = function() {
     });
 
     handleLifecycle(this, component);
-    handleAddComponentToParent(component);
+
+    if (component.parent) {
+      handleAddComponentToParent(component);
+    }
 
     // NOTE: If this is true, we're doing a first-pass for SSR so we can collection all of the
     // components/data functions into the tree. No expectation of rendering HTML so we can scoop and return.
