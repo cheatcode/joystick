@@ -19,7 +19,7 @@ const compileData = (dataFromWindow = {}, requestFromWindow = {}, componentInsta
 
         // NOTE: Keep data on window up to date so if a parent re-renders a child that's refetched it's data since
         // mount, the data rendered isn't stale.
-        window.__joystick_data__[componentInstance?.ssrId] = data;
+        window.__joystick_data__[componentInstance?.id] = data;
 
         componentInstance.render({
           afterRefetchDataRender: () => {
