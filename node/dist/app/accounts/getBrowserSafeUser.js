@@ -5,7 +5,8 @@ var getBrowserSafeUser_default = (user = null) => {
   }
   const unsafeFields = [
     "password",
-    "sessions"
+    "sessions",
+    "oauth"
   ];
   const browserSafeUser = Object.entries(user).filter(([field]) => {
     return !unsafeFields.includes(field);

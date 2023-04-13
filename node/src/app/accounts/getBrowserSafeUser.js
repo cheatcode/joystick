@@ -8,6 +8,7 @@ export default (user = null) => {
   const unsafeFields = [
     'password',
     'sessions',
+    'oauth',
   ];
 
   const browserSafeUser = Object.entries(user).filter(([field]) => {
