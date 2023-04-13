@@ -17,16 +17,43 @@ const table = new AsciiTable();
 export default {
   login: () => [
     {
+      name: 'loginType',
+      type: 'list',
+      prefix: '',
+      message: `\n ${chalk.greenBright('>')} How do you want to login?\n`,
+      choices: [
+        { name: `Email`, value: 'email' },
+        { name: `Github`, value: 'oauth' },
+        { name: `Bitbucket`, value: 'oauth' },
+        { name: `Gitlab`, value: 'oauth' },
+      ],
+    },
+    {
       name: 'emailAddress',
       type: 'text',
       prefix: '',
+      when: (answers = {}) => {
+        return answers?.loginType === 'email';
+      },
       message: `\n ${chalk.greenBright('>')} What is your Email Address?\n`,
     },
     {
       name: 'password',
       type: 'text',
       prefix: '',
+      when: (answers = {}) => {
+        return answers?.loginType === 'email' && !!answers?.emailAddress;
+      },
       message: `\n ${chalk.greenBright('>')} What is your Password?\n`,
+    },
+    {
+      name: 'oauth',
+      type: 'text',
+      prefix: `\n\n ${chalk.yellowBright('Visit http://localhost:2600/login?cli=true in your browser to login and then copy/paste the value displayed below:')}\n`,
+      when: (answers = {}) => {
+        return answers?.loginType === 'oauth';
+      },
+      message: `\n ${chalk.greenBright('>')} Paste the token displayed at the URL above:\n`,
     },
   ],
   token: () => [

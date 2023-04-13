@@ -87,6 +87,13 @@ var push_default = async (args = {}, options = {}) => {
     colorLog(`
 \u2714 Logged in as ${user?.emailAddress}
 `, "greenBright");
+    console.log(user);
+    if (!user?.onboardingComplete && user?.onboardingStep < 4) {
+      console.log(chalk.yellowBright(`
+Please visit push.cheatcode.co to finish setting up your account before deploying.
+`));
+      process.exit(0);
+    }
     let domain = options?.domain;
     if (!domain) {
       domain = await inquirer.prompt(prompts.domain()).then((answers) => answers?.domain);

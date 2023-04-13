@@ -11,7 +11,7 @@ var getSessionToken_default = async () => {
     return fs.readFileSync(sessionTokenPath, "utf-8");
   }
   const promptUserLogin = await inquirer.prompt(prompts.login());
-  const sessionToken = await loginToCheatCode(promptUserLogin?.emailAddress, promptUserLogin?.password);
+  const sessionToken = promptUserLogin?.oauth || await loginToCheatCode(promptUserLogin?.emailAddress, promptUserLogin?.password);
   if (!fs.existsSync(`${homeDirectory}/.cheatcode`)) {
     fs.mkdirSync(`${homeDirectory}/.cheatcode`);
   }

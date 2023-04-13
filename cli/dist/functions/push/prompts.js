@@ -15,9 +15,26 @@ const table = new AsciiTable();
 var prompts_default = {
   login: () => [
     {
+      name: "loginType",
+      type: "list",
+      prefix: "",
+      message: `
+ ${chalk.greenBright(">")} How do you want to login?
+`,
+      choices: [
+        { name: `Email`, value: "email" },
+        { name: `Github`, value: "oauth" },
+        { name: `Bitbucket`, value: "oauth" },
+        { name: `Gitlab`, value: "oauth" }
+      ]
+    },
+    {
       name: "emailAddress",
       type: "text",
       prefix: "",
+      when: (answers = {}) => {
+        return answers?.loginType === "email";
+      },
       message: `
  ${chalk.greenBright(">")} What is your Email Address?
 `
@@ -26,8 +43,25 @@ var prompts_default = {
       name: "password",
       type: "text",
       prefix: "",
+      when: (answers = {}) => {
+        return answers?.loginType === "email" && !!answers?.emailAddress;
+      },
       message: `
  ${chalk.greenBright(">")} What is your Password?
+`
+    },
+    {
+      name: "oauth",
+      type: "text",
+      prefix: `
+
+ ${chalk.yellowBright("Visit http://localhost:2600/login?cli=true in your browser to login and then copy/paste the value displayed below:")}
+`,
+      when: (answers = {}) => {
+        return answers?.loginType === "oauth";
+      },
+      message: `
+ ${chalk.greenBright(">")} Paste the token displayed at the URL above:
 `
     }
   ],

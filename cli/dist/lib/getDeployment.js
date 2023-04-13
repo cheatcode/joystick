@@ -21,6 +21,7 @@ var getDeployment_default = ({
     })
   }).then(async (response) => {
     const text = await response.text();
+    console.log(text);
     const data = checkIfValidJSON(text);
     if (data?.error) {
       CLILog(data?.error?.message, {

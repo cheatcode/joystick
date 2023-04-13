@@ -25,6 +25,7 @@ export default ({
     },
   ).then(async (response) => {
     const text = await response.text();
+    console.log(text);
     const data = checkIfValidJSON(text);
 
     if (data?.error) {

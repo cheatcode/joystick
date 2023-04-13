@@ -112,6 +112,13 @@ export default async (args = {}, options = {}) => {
 
     colorLog(`\n✔ Logged in as ${user?.emailAddress}\n`, 'greenBright');
 
+    console.log(user);
+
+    if (!user?.onboardingComplete && user?.onboardingStep < 4) {
+      console.log(chalk.yellowBright(`\nPlease visit push.cheatcode.co to finish setting up your account before deploying.\n`));
+      process.exit(0);
+    }
+
     let domain = options?.domain;
 
     if (!domain) {
