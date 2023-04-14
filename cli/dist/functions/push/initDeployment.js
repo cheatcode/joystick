@@ -41,7 +41,6 @@ const startDeployment = (isInitialDeployment = false, loginSessionToken = "", de
       const text = await response.text();
       const data = checkIfValidJSON(text);
       const isPayloadSizeError = text?.includes("payload");
-      console.log(data);
       if (data?.error || isPayloadSizeError) {
         CLILog(data.error?.message || text, {
           level: "danger",

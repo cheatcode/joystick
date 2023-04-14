@@ -1,10 +1,11 @@
+import buildQueryParameters from "./buildQueryParameters.js";
+import serializeQueryParameters from "../../../../lib/serializeQueryParameters.js";
+
 export default (connection = {}) => {
   let connectionString = "mongodb://";
 
   if (connection && (connection.username || connection.password)) {
-    connectionString = `${connectionString}${connection.username || ""}:${
-      connection.password || ""
-    }@`;
+    connectionString = `${connectionString}${connection.username || connection.password ? `${connection.username || ""}${!!connection.username && !!connection.password ? ':' : ''}${connection.password || ""}@` : ''}`;
   }
 
   if (connection && connection.hosts && Array.isArray(connection.hosts)) {
@@ -15,6 +16,12 @@ export default (connection = {}) => {
 
   if (connection && connection.database) {
     connectionString = `${connectionString}/${connection.database}`;
+  }
+
+  const queryParameters = buildQueryParameters(connection);
+
+  if (Object.keys(queryParameters)?.length > 0 ) {
+    connectionString = `${connectionString}?${serializeQueryParameters(queryParameters)}`;
   }
 
   return connectionString;

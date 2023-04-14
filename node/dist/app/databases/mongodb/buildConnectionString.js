@@ -1,3 +1,5 @@
+import buildQueryParameters from "./buildQueryParameters";
+import serializeQueryParameters from "../../../lib/serializeQueryParameters";
 var buildConnectionString_default = (connection = {}) => {
   let connectionString = "mongodb://";
   if (connection && (connection.username || connection.password)) {
@@ -9,8 +11,9 @@ var buildConnectionString_default = (connection = {}) => {
   if (connection && connection.database) {
     connectionString = `${connectionString}/${connection.database}`;
   }
-  if (connection && connection.replicaSet) {
-    connectionString = `${connectionString}?replicaSet=${connection.replicaSet}`;
+  const queryParameters = buildQueryParameters(connection);
+  if (Object.keys(queryParameters)?.length > 0) {
+    connectionString = `${connectionString}?${serializeQueryParameters(queryParameters)}`;
   }
   return connectionString;
 };
