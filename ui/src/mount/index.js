@@ -40,7 +40,7 @@ export default (Component = null, props = {}, target = null) => {
 
     // NOTE: Run event listener attachment before lifecycle methods in case onMount
     // triggers a re-render (potential for duplicate event listeners if we do this last).
-    registerEventListeners();
+    registerEventListeners(component.renderMethods);
     
     // NOTE: Run onMount for mounted component and all of its children.
     component.lifecycle.onMount();

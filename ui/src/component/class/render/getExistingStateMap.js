@@ -1,22 +1,24 @@
 import throwFrameworkError from "../../../lib/throwFrameworkError";
-import findComponentInTreeByField from "../../tree/findComponentInTreeByField";
 
-export default (componentInstance = {}) => {
+const buildMapForChildren = (children = {}) => {
   try {
-    const baseMap = {};
-    const componentInTree = findComponentInTreeByField(window.joystick._internal.tree, componentInstance.instanceId);
-  
-    if (componentInTree) {
-      baseMap[componentInTree?.instance?.instanceId] = componentInTree?.instance?.state;
-    }
+    return Object.entries(children)?.reduce((stateMap = {}, [componentId, childInstances] = {}) => {
+      stateMap[componentId] = childInstances?.map((childInstance = {}) => {
+        return {
+          state: childInstance?.state,
+          children: buildMapForChildren(childInstance?.children),
+        };
+      });
+      return stateMap;
+    }, {});
+  } catch (exception) {
+    throwFrameworkError('component.render.getExistingStateMap.buildMapForChildren', exception);
+  }
+};
 
-    return componentInTree?.children?.reduce((map = {}, childComponent) => {
-      if (!map[childComponent?.instance?.instanceId]) {
-        map[childComponent?.instance?.instanceId] = childComponent?.instance?.state;
-      }
-
-      return map;
-    }, baseMap);
+export default (children = {}) => {
+  try {
+    return buildMapForChildren(children);
   } catch (exception) {
     throwFrameworkError('component.render.getExistingStateMap', exception);
   }

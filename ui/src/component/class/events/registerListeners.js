@@ -1,10 +1,6 @@
 import serializeEvents from "./serialize";
 import throwFrameworkError from "../../../lib/throwFrameworkError";
 import { isFunction } from "../../../lib/types";
-import compileRenderMethods from "../renderMethods/compile";
-import windowIsUndefined from "../../../lib/windowIsUndefined";
-import getExistingPropsMap from "../render/getExistingPropsMap";
-import getExistingStateMap from "../render/getExistingStateMap";
 
 const attachOnBeforeUnmount = (componentInstance = {}) => {
   try {
@@ -25,25 +21,13 @@ const attachOnBeforeUnmount = (componentInstance = {}) => {
   }
 };
 
-const serializeEventsFromInstances = (tree = {}, events = []) => {
+const serializeEventsFromInstances = (tree = {}, events = [], renderMethods = {}) => {
   const eventsToAttach = tree.instance.options.events || {};
   const hasEventsToAttach = Object.keys(eventsToAttach).length > 0;
 
   attachOnBeforeUnmount(tree.instance);
   
   if (hasEventsToAttach) {
-    const renderMethods = compileRenderMethods({
-      ...(tree?.instance),
-      getExistingPropsMap: {},
-      existingPropsMap: !windowIsUndefined() ? getExistingPropsMap(tree?.instance) : {},
-      existingStateMap: !windowIsUndefined() ? getExistingStateMap(tree?.instance) : {},
-      ssrTree: tree?.instance?.parent?.ssrTree,
-      translations: tree?.instance?.parent?.translations || tree?.instance.translations || {},
-      walkingTreeForSSR: tree?.instance?.parent?.walkingTreeForSSR,
-      renderingHTMLWithDataForSSR: tree?.instance?.parent?.renderingHTMLWithDataForSSR,
-      dataFromSSR: tree?.instance?.parent?.dataFromSSR,
-    });
-
     events.push({
       id: tree.id,
       instanceId: tree.instance.instanceId,
@@ -72,18 +56,18 @@ const serializeEventsFromInstances = (tree = {}, events = []) => {
   if (tree?.children?.length > 0) {
     for (let i = 0; i < tree?.children?.length; i += 1) {
       const child = tree?.children[i];
-      serializeEventsFromInstances(child, events);
+      serializeEventsFromInstances(child, events, renderMethods);
     }
   }
 
   return events;
 };
 
-export default () => {
+export default (renderMethods = {}) => {
   // NOTE: Wrap with a 0 setTimeout to ensure this happens at end of call stack *after*
   // all elements are mounted to screen.
   setTimeout(() => {
-    const events = serializeEventsFromInstances(window.joystick._internal.tree, []);
+    const events = serializeEventsFromInstances(window.joystick._internal.tree, [], renderMethods);
 
     for (let eventDefinitionIndex = 0; eventDefinitionIndex < events?.length; eventDefinitionIndex += 1) {
       const eventDefinition = events[eventDefinitionIndex];

@@ -26,6 +26,9 @@ class Component {
     // after this constructor is called.
     this.parent = options?.parent || null;
     this.onUpdateChildComponent = this.handleUpdateChildComponentInVDOM;
+    
+    // NOTE: Set children array to track instances of child components between renders.
+    this.children = {};
 
     validateOptions(options);
     registerOptions(this, options);
@@ -74,7 +77,7 @@ class Component {
 
     // NOTE: Re-register events *before* calling any lifecycle methods on child components in case
     // they trigger their own re-render via a setState call.
-    registerEventListeners();
+    registerEventListeners(this.renderMethods);
 
     if (patchDOMNodes && isFunction(patchDOMNodes)) {
       processQueue('lifecycle.onBeforeMount', () => {

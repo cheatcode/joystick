@@ -1,8 +1,8 @@
 import throwFrameworkError from "../../../lib/throwFrameworkError";
-import windowIsUndefined from "../../../lib/windowIsUndefined";
 import findComponentDataFromSSR from "../data/findComponentDataFromSSR";
 import compileRenderMethods from "../renderMethods/compile";
-import getExistingPropsMap from "./getExistingPropsMap";
+import compileLifecycle from "../lifecycle/compile";
+import compileMethods from "../methods/compile";
 import getExistingStateMap from "./getExistingStateMap";
 import sanitizeHTML from "./sanitizeHTML";
 import wrapHTML from "./wrapHTML";
@@ -12,23 +12,34 @@ export default (componentInstance = {}, options = {}) => {
     if (options?.dataFromSSR) {
       componentInstance.data = findComponentDataFromSSR(options.dataFromSSR, componentInstance.id) || {};
     }
+    
+    // NOTE: Get the existing state map for child components and then dump the array.
+    const existingStateMap = getExistingStateMap(options?.existingChildren || componentInstance?.children) || {};
+    componentInstance.children = {};
 
-    const renderMethods = compileRenderMethods({
+    // NOTE: Set these on the component instance so we can hand them to registerEventListeners in render() function
+    // of component/class/index.js.
+    componentInstance.renderMethods = compileRenderMethods({
       ...componentInstance,
-      getExistingPropsMap: {},
-      existingPropsMap: !windowIsUndefined() ? getExistingPropsMap(componentInstance) : {},
-      existingStateMap: !windowIsUndefined() ? getExistingStateMap(componentInstance) : {},
-      ssrTree: options?.ssrTree,
+      existingStateMap,
       translations: options?.translations || componentInstance.translations || {},
+      // NOTE: renderToHTML() is called directly via @joystick.js/node when rendering for SSR.
+      // These values do not get passed on the client.
+      ssrTree: options?.ssrTree,
       walkingTreeForSSR: options?.walkingTreeForSSR,
       renderingHTMLWithDataForSSR: options?.renderingHTMLWithDataForSSR,
       dataFromSSR: options?.dataFromSSR,
     });
 
+    // NOTE: Before running a render, make sure to update the component instance and render
+    // methods passed to lifecycle functions and methods to ensure they don't have stale data.
+    // componentInstance.lifecycle = compileLifecycle(componentInstance, componentInstance.options.lifecycle);
+    componentInstance.methods = compileMethods(componentInstance, componentInstance.options.methods);
+
     const html = componentInstance.options.render({
       ...(componentInstance || {}),
       setState: componentInstance.setState.bind(componentInstance),
-      ...(renderMethods || {}),
+      ...(componentInstance.renderMethods || {}),
     });
 
     const sanitizedHTML = sanitizeHTML(html);

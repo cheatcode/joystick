@@ -3,10 +3,15 @@ import throwFrameworkError from "../../../lib/throwFrameworkError";
 import addToQueue from "../../../lib/addToQueue";
 import getUpdatedDOM from '../render/getUpdatedDOM';
 import addChildToParent from '../../tree/addChildToParent';
+import compileLifecycle from '../lifecycle/compile';
+import compileMethods from '../methods/compile';
 
-const renderForClient = (component = {}, componentMethodInstance = {}) => {
+const renderForClient = (component = {}, componentMethodInstance = {}, existingChildren = null) => {
   try {
-    const dom = getUpdatedDOM(component, { includeActual: true });
+    const dom = getUpdatedDOM(component, {
+      includeActual: true,
+      existingChildren,
+    });
 
     component.dom = dom;
     component.setDOMNodeOnInstance();
@@ -125,9 +130,6 @@ const generateComponentFunction = function() {
   return function componentRenderMethod(Component = null, props = {}, parent = {}) {
     const component = Component({
       props,
-      // NOTE: To prevent a parent re-render wiping out the state of a child, pass the existingStateMap
-      // so the component can check for itself and load any existing state as necessary.
-      existingStateMap: !parent.walkingTreeForSSR && parent?.existingStateMap,
       url: parent.url,
       translations: parent.translations,
       api: parent.options.api,
@@ -137,6 +139,18 @@ const generateComponentFunction = function() {
       // constructor (see note in component class constructor to understand why).
       parent,
     });
+
+    // NOTE: Get this component's existing state map by its fixed ID (unique to component but not instance)
+    // and then get its existing state by referencing the index at which it will be placed in the new children
+    // array on the old array (i.e., we assume that the order of the instance doesn't change between renders
+    // and so we can trust the current length of the parent as the matching index).
+
+    const existingStateMapForComponent = parent?.existingStateMap[component.id] || {};
+    const childrenForComponentIdOnParent = parent.children[component.id] || [];
+    const componentInExistingStateMap = existingStateMapForComponent[childrenForComponentIdOnParent?.length];
+
+    component.state = componentInExistingStateMap?.state || component.state;
+    parent.children[component.id] = [...(parent.children[component.id] || []), component];
 
     component.parent = parent;
 
@@ -167,7 +181,7 @@ const generateComponentFunction = function() {
       return renderToHTMLForSSR(component);
     }
 
-    return renderForClient(component, this);
+    return renderForClient(component, this, componentInExistingStateMap?.children);
   };
 };
 

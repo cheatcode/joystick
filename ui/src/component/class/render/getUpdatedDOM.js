@@ -5,7 +5,9 @@ import throwFrameworkError from "../../../lib/throwFrameworkError";
 
 export default (componentInstance = {}, options = {}) => {
   try {
-    const html = renderToHTML(componentInstance);
+    const html = renderToHTML(componentInstance, {
+      existingChildren: options?.existingChildren,
+    });
     const virtualDOMTree = buildVirtualDOM(html.unwrapped, componentInstance.id);
     const DOMInMemory = options.includeActual && virtualDOMTree ? renderTreeToDOM(virtualDOMTree) : null;
 
