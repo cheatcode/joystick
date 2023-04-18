@@ -1457,7 +1457,7 @@ export default Books;
 
 #### i18n() and i()
 
-When using [internationalization]() in `@joystick.js/node`, internationalization values (or i18n for short) can be rendered via the `i18n()` render function:
+When using [internationalization](#internationalization) in `@joystick.js/node`, internationalization values (or i18n for short) can be rendered via the `i18n()` render function:
 
 ```javascript
 import ui from "@joystick.js/ui";
@@ -3419,5 +3419,5 @@ joystick.app({ ... }).then(async () => {
 
 In the example above, on startup, an email is being sent to "somebody," and the URL for the app is intended to be referenced in the email. Instead of hard-coding the URL like `url: `https://myapp.com/admin/users`, we utilize the `origin` variable exported from `@joystick.js/node` so that our code works in any environment.
 
-### Joystick Deploy
-Joystick Deploy is a deployment service for Joystick apps that is currently under development and will be available in 2023.
+### Joystick Push
+Joystick Push is a deployment service for Joystick apps that is currently under development and will be available in 2023.
