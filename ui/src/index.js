@@ -8,7 +8,6 @@ import mount from "./mount";
 import api from "./api";
 import QueueArray from "./lib/queueArray";
 import attachJoystickToWindow from "./attachJoystickToWindow";
-import overrideTimers from "./overrideTimers";
 import generateId from "./lib/generateId";
 
 export const get = api.get;

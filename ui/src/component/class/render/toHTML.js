@@ -6,6 +6,7 @@ import compileMethods from "../methods/compile";
 import getExistingStateMap from "./getExistingStateMap";
 import sanitizeHTML from "./sanitizeHTML";
 import wrapHTML from "./wrapHTML";
+import clearTimersOnChildren from "./clearTimersOnChildren";
 
 export default (componentInstance = {}, options = {}) => {
   try {
@@ -14,6 +15,7 @@ export default (componentInstance = {}, options = {}) => {
     }
     
     // NOTE: Get the existing state map for child components and then dump the array.
+    clearTimersOnChildren(componentInstance?.children);
     const existingStateMap = getExistingStateMap(options?.existingChildren || componentInstance?.children) || {};
     componentInstance.children = {};
 

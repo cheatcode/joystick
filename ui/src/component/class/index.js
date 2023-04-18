@@ -18,6 +18,7 @@ import registerEventListeners from "./events/registerListeners";
 import findComponentInTreeByField from "../tree/findComponentInTreeByField";
 import buildVirtualDOMTree from "./virtualDOM/buildTree";
 import replaceChildInVDOMTree from "../tree/replaceChildInVDOMTree";
+import generateId from "../../lib/generateId";
 
 class Component {
   constructor(options = {}) {
@@ -27,7 +28,8 @@ class Component {
     this.parent = options?.parent || null;
     this.onUpdateChildComponent = this.handleUpdateChildComponentInVDOM;
     
-    // NOTE: Set children array to track instances of child components between renders.
+    // NOTE: Set timers and children objects to track timers and instances of child components between renders.
+    this.timers = {};
     this.children = {};
 
     validateOptions(options);
@@ -138,6 +140,18 @@ class Component {
         }
       },
     });
+  }
+
+  setTimeout(callback = null, delay = 0) {
+    if (callback) {
+      this.timers[generateId()] = window.setTimeout(callback, delay);
+    }
+  }
+
+  setInterval(callback = null, delay = 0) {
+    if (callback) {
+      this.timers[generateId()] = window.setInterval(callback, delay);
+    }
   }
 
   handleUpdateChildComponentInVDOM(componentId = '', instanceId = '') {
