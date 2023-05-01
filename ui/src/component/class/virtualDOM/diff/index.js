@@ -26,7 +26,7 @@ const getRemoveNodePatch = () => {
 };
 
 const diff = (oldVirtualNode = undefined, newVirtualNode = undefined) => {
-  if (oldVirtualNode === undefined || newVirtualNode === undefined) {
+  if (oldVirtualNode === undefined || newVirtualNode === undefined) {    
     return getRemoveNodePatch();
   }
 

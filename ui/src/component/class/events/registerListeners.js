@@ -2,6 +2,33 @@ import serializeEvents from "./serialize";
 import throwFrameworkError from "../../../lib/throwFrameworkError";
 import { isFunction } from "../../../lib/types";
 
+const trackListenerOnElement = (element = {}, event = {}) => {
+  try {
+    element._joystick = {
+      ...(element?._joystick || {}),
+      listeners: [
+        ...(element?._joystick?.listeners || []),
+        event,
+      ],
+    };
+  } catch (exception) {
+    throwFrameworkError('component.events.registerListeners.trackListenerOnElement', exception);
+  }
+};
+
+const untrackListenerOnElement = (element = {}, event = {}) => {
+  try {
+    element._joystick = {
+      ...(element?._joystick || {}),
+      listeners: element?._joystick?.listeners?.filter((listener = {}) => {
+        return listener?.event?.type === event?.type;
+      }),
+    };
+  } catch (exception) {
+    throwFrameworkError('component.events.registerListeners.trackListenerOnElement', exception);
+  }
+};
+
 const attachOnBeforeUnmount = (componentInstance = {}) => {
   try {
     if (
@@ -22,7 +49,11 @@ const attachOnBeforeUnmount = (componentInstance = {}) => {
 };
 
 const serializeEventsFromInstances = (tree = {}, events = [], renderMethods = {}) => {
-  const eventsToAttach = tree.instance.options.events || {};
+  const eventsToAttach = tree.instance.options.events || tree.instance.dragDrop ? {
+    ...(tree.instance.options?.events || {}),
+    ...(tree.instance.dragDrop?.events || {}),
+  } : {};
+
   const hasEventsToAttach = Object.keys(eventsToAttach).length > 0;
 
   attachOnBeforeUnmount(tree.instance);
@@ -68,7 +99,6 @@ export default (renderMethods = {}) => {
   // all elements are mounted to screen.
   setTimeout(() => {
     const events = serializeEventsFromInstances(window.joystick._internal.tree, [], renderMethods);
-
     for (let eventDefinitionIndex = 0; eventDefinitionIndex < events?.length; eventDefinitionIndex += 1) {
       const eventDefinition = events[eventDefinitionIndex];
   
@@ -77,7 +107,21 @@ export default (renderMethods = {}) => {
   
         for (let elementIndex = 0; elementIndex < event?.elements?.length; elementIndex += 1) {
           const element = event.elements[elementIndex];
+
+          const existingListeners = element?._joystick?.listeners?.filter((listener = {}) => {
+            return listener?.type === event?.type;
+          });
+
+          if (existingListeners?.length > 0) {
+            for (let i = 0; i < existingListeners?.length; i += 1) {
+              const existingListener = existingListeners[i];
+              element.removeEventListener(existingListener?.type, existingListener?.eventListener);
+              untrackListenerOnElement(element, existingListener);
+            }
+          }
+
           element.addEventListener(event.type, event.eventListener);
+          trackListenerOnElement(element, event);
         }
       }
     }

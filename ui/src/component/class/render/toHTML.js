@@ -19,6 +19,8 @@ export default (componentInstance = {}, options = {}) => {
     const existingStateMap = getExistingStateMap(options?.existingChildren || componentInstance?.children) || {};
     componentInstance.children = {};
 
+    // TODO: Call onBeforeUnmount() on all child instances.
+
     // NOTE: Set these on the component instance so we can hand them to registerEventListeners in render() function
     // of component/class/index.js.
     componentInstance.renderMethods = compileRenderMethods({

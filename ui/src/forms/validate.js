@@ -111,8 +111,18 @@ class ValidateForm {
         }
       };
 
-      this.form.removeEventListener("submit", submitEventListener);
+      if (this.form.listeners?.length > 0) {
+        for (let i = 0; i < this.form.listeners.length; i += 1) {
+          const listener = this.form.listeners[i];
+          this.form.removeEventListener("submit", listener);
+        }
+      }
+
       this.form.addEventListener("submit", submitEventListener);
+      this.form.listeners = [
+        ...(this.form.listeners || []),
+        submitEventListener,
+      ];
     }
 
     this.fields.forEach((field) => {

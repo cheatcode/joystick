@@ -22,6 +22,12 @@ const getNewChildrenFunctions = (oldVirtualChildren = [], newVirtualChildren = [
   const newChildrenFunctions = [];
   const newChildren = newVirtualChildren.slice(oldVirtualChildren.length);
 
+  console.log({
+    oldVirtualChildren,
+    newVirtualChildren,
+    newChildren,
+  });
+
   newChildren.forEach((newChild) => {
     const newChildFunction = (node) => {
       const newDOMNode = render(newChild);

@@ -71,15 +71,10 @@ class Component {
 
     const onBeforeRenderData = this.onBeforeRender();
 
-    unregisterEventListeners();
     clearChildrenOnParent(this.instanceId);
 
     const updatedDOM = getUpdatedDOM(this, {});
     const patchDOMNodes = diffVirtualDOMNodes(this.dom.virtual, updatedDOM.virtual);
-
-    // NOTE: Re-register events *before* calling any lifecycle methods on child components in case
-    // they trigger their own re-render via a setState call.
-    registerEventListeners(this.renderMethods);
 
     if (patchDOMNodes && isFunction(patchDOMNodes)) {
       processQueue('lifecycle.onBeforeMount', () => {
@@ -88,8 +83,16 @@ class Component {
         this.dom.actual = patchedDOM;
         this.dom.virtual = updatedDOM.virtual;
 
-        processQueue('lifecycle.onMount', () => {
-          this.onAfterRender(onBeforeRenderData, options);
+        // NOTE: Re-register events *before* calling any lifecycle methods on child components in case
+        // they trigger their own re-render via a setState call.
+        registerEventListeners(this.renderMethods);
+
+        this.setDOMNodeOnInstance();
+        
+        processQueue('domNodes', () => {
+          processQueue('lifecycle.onMount', () => {
+            this.onAfterRender(onBeforeRenderData, options);
+          });
         });
       });
     }
@@ -101,12 +104,9 @@ class Component {
 
   onAfterRender(onBeforeRenderData = {}, renderOptions = {}) {
     if (!windowIsUndefined()) {
-      this.setDOMNodeOnInstance();
-
       updateParentInstanceInTree(onBeforeRenderData.instanceId, this);
 
       this.appendCSSToHead();
-      processQueue('domNodes');
       processQueue('lifecycle.onUpdateProps');
 
       // NOTE: Prevent a callback passed to setState() being called before or at the same time as

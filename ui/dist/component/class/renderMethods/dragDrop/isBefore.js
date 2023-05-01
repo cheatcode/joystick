@@ -1,0 +1,1 @@
+var t=(o="",r={})=>{throw new Error(`[joystick${o?`.${o}`:""}] ${r.message||r.reason||r}`)};var m=(o,r)=>{try{return r.compareDocumentPosition(o)===Node.DOCUMENT_POSITION_PRECEDING}catch(e){t("component.renderMethods.dragDrop.isBefore",e)}};export{m as default};
