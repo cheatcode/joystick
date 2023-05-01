@@ -38,11 +38,11 @@ export default (parent = {}, type = '', id = '', options = {}) => {
         [`dragover [data-${type}="${id}"]`]: (event = {}, instance = {}) => {
           if (type === 'droppable' && options.sortable && event.target.parentNode.hasAttribute('data-droppable')) {
             const result = draggingElement.compareDocumentPosition(event.target);
-
+            
             if (result === Node.DOCUMENT_POSITION_PRECEDING) {
               event.target.parentNode.insertBefore(draggingElement, event.target);
             } else {
-              event.target.parentNode.insertBefore(draggingElement, event.target.nextSibling)
+              event.target.parentNode.insertBefore(draggingElement, event.target.nextSibling);
             }
           }
 

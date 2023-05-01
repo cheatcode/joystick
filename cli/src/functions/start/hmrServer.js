@@ -31,6 +31,7 @@ export default (() => {
           "i18n",
         ].forEach((fileToWatch) => {
           if (fs.existsSync(`./${fileToWatch}`)) {
+            // TODO: Why not just watch any changes to .joystick/build?
             const watcher = watch(`./.joystick/build/${fileToWatch}`, { recursive: true });
             fileWatchers.push(watcher);
             watcher.on("change", () => {

@@ -20,7 +20,7 @@ export default async (args = {}, options = {}) => {
   loader.text("Building app...");
 
   const environment = options?.environment || 'production';
-  const settings = await loadSettings(environment);
+  const settings = !options?.continuousIntegration ? await loadSettings(environment) : null;
   const filesToBuild = getFilesToBuild(settings?.config?.build?.excludedPaths);
   const outputPath = '.build';
   const outputPathForBuildType = options?.type === 'tar' ? `${outputPath}/.tar` : outputPath;
