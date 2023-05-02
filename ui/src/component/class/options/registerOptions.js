@@ -11,6 +11,7 @@ import compileUrl from "../url/compile";
 import windowIsUndefined from "../../../lib/windowIsUndefined";
 import { isFunction, isObject } from "../../../lib/types";
 import websocketClient from "../../../websockets/client";
+import compileDefaultProps from "../props/compileDefault";
 
 export default (componentInstance = {}, componentOptions = {}) => {
   try {
@@ -20,8 +21,8 @@ export default (componentInstance = {}, componentOptions = {}) => {
     componentInstance.ssrId = componentOptions?._ssrId || null;
     componentInstance.css = compileCSS();
     componentInstance.data = findComponentDataFromSSR(componentOptions?.dataFromSSR, componentOptions?._componentId);
-    componentInstance.defaultProps = componentOptions?.defaultProps || {};
-    componentInstance.props = compileProps(componentOptions?.defaultProps, componentOptions?.props);
+    componentInstance.defaultProps = compileDefaultProps(componentInstance, componentOptions?.defaultProps);
+    componentInstance.props = compileProps(componentInstance?.defaultProps, componentOptions?.props);
     componentInstance.state = compileState(componentInstance, componentOptions?.state);
     componentInstance.events = componentOptions?.events || {};
     componentInstance.lifecycle = compileLifecycle(componentInstance, componentOptions?.lifecycle);

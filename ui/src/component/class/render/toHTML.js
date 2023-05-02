@@ -1,7 +1,6 @@
 import throwFrameworkError from "../../../lib/throwFrameworkError";
 import findComponentDataFromSSR from "../data/findComponentDataFromSSR";
 import compileRenderMethods from "../renderMethods/compile";
-import compileLifecycle from "../lifecycle/compile";
 import compileMethods from "../methods/compile";
 import getExistingStateMap from "./getExistingStateMap";
 import sanitizeHTML from "./sanitizeHTML";

@@ -8,7 +8,7 @@ export default (componentInstance = {}, options = {}) => {
     const html = renderToHTML(componentInstance, {
       existingChildren: options?.existingChildren,
     });
-    const virtualDOMTree = buildVirtualDOM(html.unwrapped, componentInstance.id);
+    const virtualDOMTree = buildVirtualDOM(html.wrapped);
     const DOMInMemory = options.includeActual && virtualDOMTree ? renderTreeToDOM(virtualDOMTree) : null;
 
     return {

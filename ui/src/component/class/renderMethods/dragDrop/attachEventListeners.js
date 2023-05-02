@@ -36,9 +36,19 @@ export default (parent = {}, type = '', id = '', options = {}) => {
           }
         },
         [`dragover [data-${type}="${id}"]`]: (event = {}, instance = {}) => {
-          if (type === 'droppable' && options.sortable && event.target.parentNode.hasAttribute('data-droppable')) {
+          event.preventDefault();
+
+          if (type === 'droppable' && options.sortable) {
             const result = draggingElement.compareDocumentPosition(event.target);
             
+            /*
+              TODO:
+
+              - This isn't a stable API. It half works, but often gets tripped up and is clunky.
+              - Ideal would be to calculate an index of an item or something like that and then render it back.
+              - Consider just making this render method a wrapper around something like sortablejs? That would
+                allow us to avoid re-implementing, but, take advantage of the nested structure for re-renders.
+            */
             if (result === Node.DOCUMENT_POSITION_PRECEDING) {
               event.target.parentNode.insertBefore(draggingElement, event.target);
             } else {
@@ -58,7 +68,10 @@ export default (parent = {}, type = '', id = '', options = {}) => {
             event.target.classList.add('is-dragging');
 
             event.dataTransfer.setData('text/plain', null);
-            event.dataTransfer.setDragImage(new Image(), 0, 0);
+
+            const dragImage = new Image();
+            dragImage.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=';
+            event.dataTransfer.setDragImage(dragImage, 1, 1);
           }
 
           if (options?.events?.onDragStart && isFunction(options.events.onDragStart)) {

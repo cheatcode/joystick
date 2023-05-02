@@ -13,7 +13,6 @@ import { isFunction } from "../../lib/types";
 import compileState from "./state/compile";
 import clearChildrenOnParent from "../tree/clearChildrenOnParent";
 import updateParentInstanceInTree from "../tree/updateParentInstanceInTree";
-import unregisterEventListeners from "./events/unregisterListeners";
 import registerEventListeners from "./events/registerListeners";
 import findComponentInTreeByField from "../tree/findComponentInTreeByField";
 import buildVirtualDOMTree from "./virtualDOM/buildTree";
@@ -27,6 +26,7 @@ class Component {
     // after this constructor is called.
     this.parent = options?.parent || null;
     this.onUpdateChildComponent = this.handleUpdateChildComponentInVDOM;
+    this.updateVirtualDOM = this.handleUpdateVirtualDOM;
     
     // NOTE: Set timers and children objects to track timers and instances of child components between renders.
     this.timers = {};
@@ -53,6 +53,23 @@ class Component {
 
   handleGetInstance() {
     return this;
+  }
+
+  handleUpdateVirtualDOM() {
+    // NOTE: For usage with third-party libraries. This allows us to manually signal
+    // a DOM update to the virtualDOM of this component and its ancestors. This
+    // ensures that DOM changes by another library don't break renders for Joystick.
+
+    if (this.DOMNode) {
+      const vdom = buildVirtualDOMTree(this.DOMNode);
+      this.dom.virtual = vdom;
+    }
+
+    const parent = this.parent ? findComponentInTreeByField(window.joystick._internal.tree, this.parent?.instanceId, 'instanceId') : null;
+
+    if (parent?.instance) {
+      parent.instance.updateVirtualDOM();
+    }
   }
 
   onBeforeRender() {
@@ -86,7 +103,6 @@ class Component {
         // NOTE: Re-register events *before* calling any lifecycle methods on child components in case
         // they trigger their own re-render via a setState call.
         registerEventListeners(this.renderMethods);
-
         this.setDOMNodeOnInstance();
         
         processQueue('domNodes', () => {
