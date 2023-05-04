@@ -13,11 +13,12 @@ import { isFunction } from "../../lib/types";
 import compileState from "./state/compile";
 import clearChildrenOnParent from "../tree/clearChildrenOnParent";
 import updateParentInstanceInTree from "../tree/updateParentInstanceInTree";
-import registerEventListeners from "./events/registerListeners";
 import findComponentInTreeByField from "../tree/findComponentInTreeByField";
 import buildVirtualDOMTree from "./virtualDOM/buildTree";
 import replaceChildInVDOMTree from "../tree/replaceChildInVDOMTree";
 import generateId from "../../lib/generateId";
+import registerListeners from "./events/registerListeners";
+import unregisterListeners from "./events/unregisterListeners";
 
 class Component {
   constructor(options = {}) {
@@ -89,6 +90,7 @@ class Component {
     const onBeforeRenderData = this.onBeforeRender();
 
     clearChildrenOnParent(this.instanceId);
+    unregisterListeners(this);
 
     const updatedDOM = getUpdatedDOM(this, {});
     const patchDOMNodes = diffVirtualDOMNodes(this.dom.virtual, updatedDOM.virtual);
@@ -100,9 +102,8 @@ class Component {
         this.dom.actual = patchedDOM;
         this.dom.virtual = updatedDOM.virtual;
 
-        // NOTE: Re-register events *before* calling any lifecycle methods on child components in case
-        // they trigger their own re-render via a setState call.
-        registerEventListeners(this.renderMethods);
+        registerListeners(this, this.renderMethods);
+
         this.setDOMNodeOnInstance();
         
         processQueue('domNodes', () => {

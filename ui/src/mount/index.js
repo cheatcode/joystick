@@ -3,7 +3,8 @@ import throwFrameworkError from "../lib/throwFrameworkError";
 import initializeJoystickComponentTree from './initializeJoystickComponentTree';
 import processQueue from "../lib/processQueue";
 import appendToTarget from "./appendToTarget";
-import registerEventListeners from "../component/class/events/registerListeners";
+import registerEventListeners from "../component/class/events/_registerListeners";
+import registerListenersFix from "../component/class/events/registerListeners";
 
 export default (Component = null, props = {}, target = null) => {
   try {
@@ -40,7 +41,7 @@ export default (Component = null, props = {}, target = null) => {
 
     // NOTE: Run event listener attachment before lifecycle methods in case onMount
     // triggers a re-render (potential for duplicate event listeners if we do this last).
-    registerEventListeners(component.renderMethods);
+    registerListenersFix(component, component.renderMethods);
     
     // NOTE: Run onMount for mounted component and all of its children.
     component.lifecycle.onMount();
