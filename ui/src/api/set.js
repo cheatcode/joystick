@@ -56,6 +56,8 @@ export default (setterName = "", setterOptions = {}) => {
         });
       });
     }
+
+    return Promise.resolve();
   } catch (exception) {
     throwFrameworkError(`set request`, exception);
   }

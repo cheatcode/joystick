@@ -89,8 +89,8 @@ class Component {
 
     const onBeforeRenderData = this.onBeforeRender();
 
-    clearChildrenOnParent(this.instanceId);
     unregisterListeners(this);
+    clearChildrenOnParent(this.instanceId);
 
     const updatedDOM = getUpdatedDOM(this, {});
     const patchDOMNodes = diffVirtualDOMNodes(this.dom.virtual, updatedDOM.virtual);

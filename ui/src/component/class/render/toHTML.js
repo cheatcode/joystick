@@ -13,12 +13,10 @@ export default (componentInstance = {}, options = {}) => {
       componentInstance.data = findComponentDataFromSSR(options.dataFromSSR, componentInstance.id) || {};
     }
     
-    // NOTE: Get the existing state map for child components and then dump the array.
+    // NOTE: Get the existing state map for child components and then dump the object.
     clearTimersOnChildren(componentInstance?.children);
     const existingStateMap = getExistingStateMap(options?.existingChildren || componentInstance?.children) || {};
     componentInstance.children = {};
-
-    // TODO: Call onBeforeUnmount() on all child instances.
 
     // NOTE: Set these on the component instance so we can hand them to registerEventListeners in render() function
     // of component/class/index.js.

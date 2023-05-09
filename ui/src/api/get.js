@@ -47,6 +47,8 @@ export default (getterName = "", getterOptions = {}) => {
         });
       });
     }
+
+    return Promise.resolve();
   } catch (exception) {
     throwFrameworkError(`get request`, exception);
   }

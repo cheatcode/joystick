@@ -2,7 +2,7 @@
   "name": "@joystick.js/ui",
   "type": "module",
   "version": "1.0.0-beta.71",
-  "developmentVersion": "1.0.0-beta.3267",
+  "developmentVersion": "1.0.0-beta.3341",
   "description": "A JavaScript framework for building user interfaces.",
   "main": "./dist/index.js",
   "scripts": {
@@ -16,6 +16,7 @@
   "author": "",
   "license": "SAUCR",
   "dependencies": {
+    "lodash": "^4.17.21",
     "nested-object-diff": "^1.1.0"
   },
   "devDependencies": {
