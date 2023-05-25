@@ -102,8 +102,7 @@ class Component {
         this.dom.actual = patchedDOM;
         this.dom.virtual = updatedDOM.virtual;
 
-        registerListeners(this, this.renderMethods);
-
+        
         this.setDOMNodeOnInstance();
         
         processQueue('domNodes', () => {
@@ -141,6 +140,8 @@ class Component {
       if (this.parent) {
         this.parent.onUpdateChildComponent(this.id, this.instanceId);
       }
+
+      registerListeners(this, this.renderMethods);
     }
   }
 
