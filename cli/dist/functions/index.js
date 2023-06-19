@@ -55,6 +55,21 @@ var functions_default = {
           }
         },
         description: "The type of build you want to generate (tar or folder)."
+      },
+      continuousIntegration: {
+        flags: {
+          "-ci": {
+            set: !!rawArgs.includes("-ci"),
+            value: !!rawArgs.includes("-ci"),
+            parent: "build"
+          },
+          "--continuousIntegration": {
+            set: !!rawArgs.includes("--continuousIntegration"),
+            value: !!rawArgs.includes("--continuousIntegration"),
+            parent: "build"
+          }
+        },
+        description: "Is this build being run in a continuous integration environment?"
       }
     },
     function: build

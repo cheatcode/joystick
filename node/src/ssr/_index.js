@@ -142,6 +142,7 @@ export default async ({
             ? `<script type="module" src="/_joystick/${layout}"></script>`
             : ""
         }
+        ${process.env.NODE_ENV === 'development' ? `window.__joystick__hmr_port = ${parseInt(process.env.PORT, 10) + 1}` : ''}
         ${process.env.NODE_ENV === 'development' ? `<script type="module" src="/_joystick/hmr/client.js"></script>` : ''}
         `
       );

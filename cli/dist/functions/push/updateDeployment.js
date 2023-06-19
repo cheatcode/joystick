@@ -24,10 +24,13 @@ const checkDeploymentStatus = (deploymentId = "", loginSessionToken = "", domain
       const text = await response.text();
       const data = checkIfValidJSON(text);
       if (data?.error) {
-        CLILog(data.error, {
-          level: "danger",
-          docs: "https://cheatcode.co/docs/push"
-        });
+        CLILog(
+          data.error,
+          {
+            level: "danger",
+            docs: "https://cheatcode.co/docs/push"
+          }
+        );
         process.exit(0);
       }
       if (data.error) {
@@ -72,10 +75,13 @@ const startDeployment = (loginSessionToken = "", deployment = {}, domain = "", d
       const data = checkIfValidJSON(text);
       console.log({ data });
       if (data?.error) {
-        CLILog(data.error, {
-          level: "danger",
-          docs: "https://cheatcode.co/docs/push"
-        });
+        CLILog(
+          data.error,
+          {
+            level: "danger",
+            docs: "https://cheatcode.co/docs/push"
+          }
+        );
         process.exit(0);
       }
       if (data.error) {
@@ -145,7 +151,7 @@ const updateDeployment = async (options, { resolve, reject }) => {
     validateOptions(options);
     const loader = new Loader({ padding: "  ", defaultMessage: "Deploying app..." });
     loader.text("Deploying app...");
-    const deploymentTimestamp = new Date().toISOString();
+    const deploymentTimestamp = (/* @__PURE__ */ new Date()).toISOString();
     await buildApp();
     loader.text("Encrypting build...");
     console.log("DEPLOYMENT", options?.deployment);
@@ -153,19 +159,35 @@ const updateDeployment = async (options, { resolve, reject }) => {
     loader.text("Uploading built app to version control...");
     const appSettings = getAppSettings();
     const encryptedAppSettings = encryptText(appSettings || "{}", options?.deployment?.encryptionToken);
-    const uploadReponse = await uploadBuildToObjectStorage(deploymentTimestamp, options);
+    const uploadReponse = await uploadBuildToObjectStorage(
+      deploymentTimestamp,
+      options
+    );
     if (uploadReponse?.error) {
       loader.stop();
-      CLILog(uploadReponse?.error, {
-        padding: "  ",
-        level: "danger",
-        docs: "https://cheatcode.co/docs/push/hosting-providers"
-      });
+      CLILog(
+        uploadReponse?.error,
+        {
+          padding: "  ",
+          level: "danger",
+          docs: "https://cheatcode.co/docs/push/hosting-providers"
+        }
+      );
     }
     loader.text("Pushing version to instances...");
-    await startDeployment(options?.loginSessionToken, options.deployment, options?.domain, deploymentTimestamp, encryptedAppSettings);
+    await startDeployment(
+      options?.loginSessionToken,
+      options.deployment,
+      options?.domain,
+      deploymentTimestamp,
+      encryptedAppSettings
+    );
     checkDeploymentInterval = setInterval(async () => {
-      const deploymentStatus = await checkDeploymentStatus(options?.deployment?.deploymentId, options?.loginSessionToken, options?.domain);
+      const deploymentStatus = await checkDeploymentStatus(
+        options?.deployment?.deploymentId,
+        options?.loginSessionToken,
+        options?.domain
+      );
       loader.text(deploymentStatus?.log?.message);
       if (deploymentStatus?.deployment?.status === "deployed") {
         clearInterval(checkDeploymentInterval);

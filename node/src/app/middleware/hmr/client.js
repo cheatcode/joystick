@@ -1,3 +1,15 @@
+const assignPreviousComponentIdsToElements = () => {
+  const joystickDOMNodes = Array.from(document.querySelectorAll('[js-c]'));
+  console.log(joystickDOMNodes);
+  for (let i = 0; i < joystickDOMNodes?.length; i += 1) {
+    const node = joystickDOMNodes[i];
+
+    if (node) {
+      node.setAttribute('js-pid', node.getAttribute('js-c'));
+    }
+  }
+};
+
 const serverAvailable = (callback = null) => {
   fetch(`${window.location.origin}/_joystick/heartbeat`)
     .then(async (response) => {
@@ -49,7 +61,7 @@ let reconnectAttempts = 0;
 
 const websocketClient = (options = {}, onConnect = null) => {
   let client = new WebSocket(
-    `ws://localhost:${process.env.PORT}/_joystick/hmr`
+    `ws://localhost:${window.__joystick__hmr_port}/_joystick/hmr`
   );
 
   if (reconnectInterval) {
@@ -116,66 +128,127 @@ export default (() =>
     {
       autoReconnect: true,
       onMessage: (message = {}) => {
-        if (message && message.type && message.type === "FILE_CHANGE") {
-          window.__joystick_hmr_update__ = true;
+        // NOTE: Do this so we have a mappable reference back to the previous component IDs
+        // before we re-mount.
+        assignPreviousComponentIdsToElements();
 
-          const path = message?.path;
-          const scriptPath = `/_joystick/${path}`;
-          const script = document.querySelector(`script[src="${scriptPath}"]`);
-          const isCSS = scriptPath.includes("index.css");
-          const isHTML = scriptPath.includes("index.html");
-          const isSettings = scriptPath.includes("settings.");
-          const stylesheet = isCSS
-            ? document.querySelector(`link[href="${scriptPath}"]`)
-            : null;
+        const isFileChange = message && message.type && message.type === "FILE_CHANGE";
+        const isPageInLayout = !!window.__joystick_layout_page__;
 
-          if (isHTML || isSettings) {
-            location.reload();
-          }
+        /*
+          TODO:
 
-          if (stylesheet) {
-            serverAvailable(() => {
-              const newStylesheet = document.createElement("link");
-              newStylesheet.rel = "stylesheet";
-              newStylesheet.href = scriptPath;
-              stylesheet.parentNode.removeChild(stylesheet);
-              document.body.appendChild(newStylesheet);
-            });
-          }
+          - state tree (child tree doesn't work because component IDs change).
+            - Before and hmr update, get all elements with a js-c ID and generate an HMR ID.
+            - Use that HMR ID to create the state tree map.
+            - When "restoring" after update, find the new js-c ID on the element and replace
+              the HMR ID in the corresponding slot with that ID.
 
-          if (script && scriptPath.includes("ui/pages")) {
-            cleanup();
-          }
+          I think best path for this stuff is to have a watcher in the HMR server that pings on
+          these specific files. That way we can selectively decide whether to reload or hot patch.
 
-          if (script) {
-            serverAvailable(() => {
-              location.reload();
-              // TODO: Figure out why type="module" is caching this even with max-age
-              // header set on the server.
-              // script.parentNode.removeChild(script);
-              // const newScript = document.createElement("script");
-              // newScript.type = "module";
-              // newScript.src = scriptPath;
-              // document.body.appendChild(newScript);
-            });
-          }
+          - index.css
+          - index.html
+          - settings
+          - index.client.js (eval?)
+          - node modules?
+        */
 
-          if (window.__joystick_layout__ && path && path.includes("pages")) {
-            serverAvailable(() => {
-              location.reload();
-              // TODO: Figure out why type="module" is caching this even with max-age
-              // header set on the server.
-              // const layoutScript = document.querySelector(
-              //   `script[src="${window.__joystick_layout__}"]`
-              // );
-              // layoutScript.parentNode.removeChild(layoutScript);
-              // const newScript = document.createElement("script");
-              // newScript.type = "module";
-              // newScript.src = window.__joystick_layout__;
-              // document.body.appendChild(newScript);
-            });
-          }
+        if (isFileChange && isPageInLayout) {
+          (async () => {
+            // NOTE: Import the layout and page file from the server. This works because we delay restarting the
+            // server in the CLI until the HMR update event has been sent to trigger this.
+            window.__joystick_childrenBeforeHMRUpdate__ = window.joystick?._internal?.tree?.instance?.children;
+
+            const layoutComponentFile = await import(`${window.__joystick_layout__}?t=${new Date().getTime()}`);
+            const pageComponentFile = await import(`${window.window.__joystick_layout_page_url__}?t=${new Date().getTime()}`);
+            const layout = layoutComponentFile.default;
+            const page = pageComponentFile.default;
+
+            window.joystick.mount(
+              layout,
+              Object.assign({ page }, window.__joystick_ssr_props__),
+              document.getElementById('app'),
+              true,
+            );
+          })();
         }
+
+        if (isFileChange && !isPageInLayout) {
+          (async () => {
+            // NOTE: Import the page file from the server. This works because we delay restarting the
+            // server in the CLI until the HMR update event has been sent to trigger this.
+            window.__joystick_childrenBeforeHMRUpdate__ = window.joystick?._internal?.tree?.instance?.children;
+
+            const pageComponentFile = await import(`${window.__joystick_page_url__}?t=${new Date().getTime()}`);
+            const page = pageComponentFile.default;
+
+            window.joystick.mount(
+              page,
+              Object.assign({}, window.__joystick_ssr_props__),
+              document.getElementById('app'),
+              true,
+            );
+          })();
+        }
+
+          // const path = message?.path;
+          // const scriptPath = `/_joystick/${path}`;
+          // const script = document.querySelector(`script[src="${scriptPath}"]`);
+          // const isCSS = scriptPath.includes("index.css");
+          // const isHTML = scriptPath.includes("index.html");
+          // const isSettings = scriptPath.includes("settings.");
+          // const stylesheet = isCSS
+          //   ? document.querySelector(`link[href="${scriptPath}"]`)
+          //   : null;
+
+          // if (isHTML || isSettings) {
+          //   location.reload();
+          // }
+
+          // if (stylesheet) {
+          //   serverAvailable(() => {
+          //     const newStylesheet = document.createElement("link");
+          //     newStylesheet.rel = "stylesheet";
+          //     newStylesheet.href = scriptPath;
+          //     stylesheet.parentNode.removeChild(stylesheet);
+          //     document.body.appendChild(newStylesheet);
+          //   });
+          // }
+
+          // if (script && scriptPath.includes("ui/pages")) {
+          //   cleanup();
+          // }
+
+          // if (script) {
+          //   serverAvailable(() => {
+          //     location.reload();
+          //     // TODO: Figure out why type="module" is caching this even with max-age
+          //     // header set on the server.
+          //     // script.parentNode.removeChild(script);
+          //     // const newScript = document.createElement("script");
+          //     // newScript.type = "module";
+          //     // newScript.src = scriptPath;
+          //     // document.body.appendChild(newScript);
+          //   });
+          // }
+
+          // if (window.__joystick_layout__ && path && path.includes("pages")) {
+          //   serverAvailable(() => {
+          //     location.reload();
+          //     // TODO: Figure out why type="module" is caching this even with max-age
+          //     // header set on the server.
+          //     // const layoutScript = document.querySelector(
+          //     //   `script[src="${window.__joystick_layout__}"]`
+          //     // );
+          //     // layoutScript.parentNode.removeChild(layoutScript);
+          //     // const newScript = document.createElement("script");
+          //     // newScript.type = "module";
+          //     // newScript.src = window.__joystick_layout__;
+          //     // document.body.appendChild(newScript);
+          //   });
+          // }
+        //}
       },
     },
     (connection) => {

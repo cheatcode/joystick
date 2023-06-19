@@ -56,7 +56,8 @@ export default async (file = "", platform = "", outputPath = '', environment = '
           success: true,
         });
       } catch (exception) {
-        const error = exception?.errors[0];
+        console.warn(exception);
+        const error = exception?.errors && exception?.errors[0];
 
         const snippet = fs.existsSync(file) ? getCodeFrame(file, {
           line: error?.location?.line,

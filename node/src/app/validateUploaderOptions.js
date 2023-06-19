@@ -5,6 +5,8 @@ const allowedOptions = [
   'providers',
   'local',
   's3',
+  'onBeforeUpload',
+  'onAfterUpload',
 ];
 
 const allowedLocalOptions = [

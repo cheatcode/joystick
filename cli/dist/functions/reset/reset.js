@@ -41,7 +41,11 @@ const getConnectionOptions = () => {
   const mongodbSettings = settings && settings.databases && settings.databases.mongodb;
   const uri = mongodbSettings && mongodbSettings.uri;
   if (!mongodbSettings || mongodbSettings && !uri) {
-    throw new Error(chalk.redBright("Must have a valid databases.mongodb.uri value in your settings-<env>.json file to connect to MongoDB."));
+    throw new Error(
+      chalk.redBright(
+        "Must have a valid databases.mongodb.uri value in your settings-<env>.json file to connect to MongoDB."
+      )
+    );
   }
   return {
     uri,
@@ -74,7 +78,9 @@ const startMongoDB = async () => {
   if (!dataDirectoryExists) {
     fs.mkdirSync(".data/mongodb", { recursive: true });
   }
-  const { stdout } = await exec("mongod --port 27017 --dbpath ./.data/mongodb --quiet --fork --logpath ./.data/mongodb/log");
+  const { stdout } = await exec(
+    "mongod --port 27017 --dbpath ./.data/mongodb --quiet --fork --logpath ./.data/mongodb/log"
+  );
   const mongoProcessId = getMongoProcessId(stdout);
   process.mongoProcessId = mongoProcessId;
   return mongoProcessId;
@@ -83,7 +89,9 @@ const warnMongoDBMissing = () => {
   console.warn(`
   ${chalk.red("MongoDB not installed.")}
 
-  ${chalk.green("Download MongoDB at https://www.mongodb.com/try/download/community")}
+  ${chalk.green(
+    "Download MongoDB at https://www.mongodb.com/try/download/community"
+  )}
 
   After installation, try to run this command again to start MongoDB alongside your app.
 
@@ -91,7 +99,11 @@ const warnMongoDBMissing = () => {
 };
 const reset = async () => {
   if (process.env.NODE_ENV !== "development") {
-    console.log(chalk.redBright("To prevent catastrophic data loss, reset is disabled outside of your development environment."));
+    console.log(
+      chalk.redBright(
+        "To prevent catastrophic data loss, reset is disabled outside of your development environment."
+      )
+    );
     process.exit(1);
   }
   process.isReset = true;

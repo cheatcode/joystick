@@ -1,10 +1,10 @@
-import throwFrameworkError from "./throwFrameworkError";
-
 export default (json = '{}') => {
   try {
     const parsedJSON = JSON.parse(json);
     return parsedJSON;
-  } catch (exception) {
-    throwFrameworkError('parseJSON', exception);
+  } catch {
+    // NOTE: If the above catches, we didn't get valid JSON. Just return
+    // whatever we got to the request (e.g., a string).
+    return json;
   }
 };

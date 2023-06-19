@@ -53,7 +53,8 @@ var buildFile_default = async (file = "", platform = "", outputPath = "", enviro
           success: true
         });
       } catch (exception) {
-        const error = exception?.errors[0];
+        console.warn(exception);
+        const error = exception?.errors && exception?.errors[0];
         const snippet = fs.existsSync(file) ? getCodeFrame(file, {
           line: error?.location?.line,
           column: error?.location?.column

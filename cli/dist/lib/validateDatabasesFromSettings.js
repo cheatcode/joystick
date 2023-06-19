@@ -1,7 +1,9 @@
 import CLILog from "./CLILog.js";
 import isObject from "./isObject.js";
 var validateDatabasesFromSettings_default = (databases = []) => {
-  const databasesNotAsObjects = databases.filter((database) => !isObject(database));
+  const databasesNotAsObjects = databases.filter(
+    (database) => !isObject(database)
+  );
   const userDatabases = databases.filter((database) => !!database.users);
   const queueDatabases = databases.filter((database) => !!database.queues);
   const databasesWithDuplicateNames = databases.flatMap((database, index) => {
@@ -35,10 +37,13 @@ var validateDatabasesFromSettings_default = (databases = []) => {
     process.exit(1);
   }
   if (databasesWithDuplicateNames && databasesWithDuplicateNames.length > 1) {
-    CLILog(`Please only specify a database provider once. Remove any duplicates from the config.databases array in your settings.${process.env.NODE_ENV}.json and restart your app.`, {
-      level: "danger",
-      docs: "https://github.com/cheatcode/joystick#databases"
-    });
+    CLILog(
+      `Please only specify a database provider once. Remove any duplicates from the config.databases array in your settings.${process.env.NODE_ENV}.json and restart your app.`,
+      {
+        level: "danger",
+        docs: "https://github.com/cheatcode/joystick#databases"
+      }
+    );
     process.exit(1);
   }
   return true;

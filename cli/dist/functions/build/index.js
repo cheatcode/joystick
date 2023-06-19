@@ -17,11 +17,16 @@ var build_default = async (args = {}, options = {}) => {
   const loader = new Loader({ padding: options?.isDeploy ? "  " : "", defaultMessage: "Building app..." });
   loader.text("Building app...");
   const environment = options?.environment || "production";
-  const settings = await loadSettings(environment);
+  const settings = !options?.continuousIntegration ? await loadSettings(environment) : null;
   const filesToBuild = getFilesToBuild(settings?.config?.build?.excludedPaths);
   const outputPath = ".build";
   const outputPathForBuildType = options?.type === "tar" ? `${outputPath}/.tar` : outputPath;
-  await buildFiles(filesToBuild, outputPathForBuildType, environment).catch((error) => {
+  await buildFiles(
+    filesToBuild,
+    outputPathForBuildType,
+    // NOTE: Treat standalone builds as being for production by default.
+    environment
+  ).catch((error) => {
     console.warn(error);
   });
   if (options?.type === "tar") {

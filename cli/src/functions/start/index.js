@@ -4,8 +4,7 @@ import child_process from "child_process";
 import path, { dirname } from "path";
 import { fileURLToPath } from "url";
 import ps from "ps-node";
-import { kill as killPortProcess } from 'cross-port-killer';
-import watch from "node-watch";
+import { killPortProcess } from 'kill-port-process';
 import fs from "fs";
 import chokidar from 'chokidar';
 import Loader from "../../lib/loader.js";
@@ -19,6 +18,8 @@ import startDatabaseProvider from "./databases/startProvider.js";
 import CLILog from "../../lib/CLILog.js";
 import removeDeletedDependenciesFromMap from './removeDeletedDependenciesFromMap.js';
 import validateDatabasesFromSettings from "../../lib/validateDatabasesFromSettings.js";
+
+const majorVersion = parseInt(process?.version?.split('.')[0]?.replace('v', ''), 10);
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -97,6 +98,14 @@ const handleCleanup = async (processIds = [
 ]) => {
   process.loader.text('Shutting down...');
 
+  for (let i = 0; i < processIds?.length; i += 1) {
+    const processId = processIds[i];
+
+    if (processId) {
+      await killProcess(processId);
+    }
+  }
+  
   const databases = Object.entries(process.env.DATABASES || {});
 
   for (let i = 0; i < databases?.length; i += 1) {
@@ -104,14 +113,6 @@ const handleCleanup = async (processIds = [
 
     if (databaseInstance?.pid) {
       await killProcess(databaseInstance.pid);
-    }
-  }
-
-  for (let i = 0; i < processIds?.length; i += 1) {
-    const processId = processIds[i];
-
-    if (processId) {
-      await killProcess(processId);
     }
   }
 
@@ -167,11 +168,19 @@ const handleHMRProcessSTDIO = () => {
 };
 
 const startHMRProcess = () => {
+  const execArgv = [
+    "--no-warnings",
+  ];
+
+  if (majorVersion < 19) {
+    execArgv.push("--experimental-specifier-resolution=node");
+  }
+
   const hmrProcess = child_process.fork(
     path.resolve(`${__dirname}/hmrServer.js`),
     [],
     {
-      execArgv: ["--no-warnings", "--experimental-specifier-resolution=node"],
+      execArgv,
       // NOTE: Pipe stdin, stdout, and stderr. IPC establishes a message channel so we
       // communicate with the child_process.
       silent: true,
@@ -182,6 +191,16 @@ const startHMRProcess = () => {
 
   handleHMRProcessSTDIO();
   handleHMRProcessMessages();
+};
+
+const notifyHMRClients = (callback) => {
+  process.hmrProcess.send(
+    JSON.stringify({
+      type: 'RESTART_SERVER',
+    }), () => {
+      callback();
+    },
+  );
 };
 
 const handleServerProcessMessages = () => {
@@ -229,8 +248,11 @@ const handleServerProcessSTDIO = () => {
 const startApplicationProcess = () => {
   const execArgv = [
     "--no-warnings",
-    "--experimental-specifier-resolution=node",
   ];
+
+  if (majorVersion < 19) {
+    execArgv.push("--experimental-specifier-resolution=node");
+  }
 
   if (process.env.NODE_ENV === 'development' && process.env.IS_DEBUG_MODE === 'true') {
     execArgv.push('--inspect');
@@ -259,23 +281,41 @@ const startApplicationProcess = () => {
 
   handleServerProcessSTDIO();
   handleServerProcessMessages();
+
+  return serverProcess;
 };
 
 const restartApplicationProcess = async () => {
   if (process.serverProcess && process.serverProcess.pid) {
     process.loader.text("Restarting app...");
-    // NOTE: Kill the Express server first and THEN take down the
-    // child process for the app.
-    killPortProcess(process.env.PORT);
-    killProcess(process.serverProcess.pid);
 
-    return startApplicationProcess();
+    // NOTE: Notify the connected HMR clients of the change first so they can pull
+    // updated from the server *before* we stop and restart it. Without this, we
+    // get fetch errors in the browser because the server is unavailable.
+    notifyHMRClients(() => {
+      setTimeout(() => {
+        // NOTE: Use IPC to tell Express server to stop itself before killing the
+        // node child process. Do it this way so we don't have to use a slower
+        // port killer utility.
+        process.serverProcess.send(JSON.stringify({
+          type: 'RESTART_SERVER',
+        }), () => {
+          process.serverProcess.kill();
+          startApplicationProcess();
+        });
+      }, 1000);
+    });
+
+    return Promise.resolve();
   }
 
   // NOTE: Original process was never initialized due to an error.
   process.loader.text("Starting app...");
   startApplicationProcess();
-  startHMRProcess();
+
+  if (!process.hmrProcess) {
+    startHMRProcess();
+  }
 };
 
 const initialBuild = async (buildSettings = {}) => {
@@ -348,19 +388,14 @@ const startWatcher = async (buildSettings = {}) => {
 
     if (['add', 'change'].includes(event) && fs.existsSync(path)) {
       const codependencies = getCodependenciesForFile(path);
-      const fileResults = await buildFiles([path], null, process.env.NODE_ENV);
+      const fileResults = await buildFiles([path, ...(codependencies?.existing || [])], null, process.env.NODE_ENV);
       const fileResultsHaveErrors = fileResults.filter((result) => !!result)
         .map(({ success }) => success)
         .includes(false);
 
       removeDeletedDependenciesFromMap(codependencies.deleted);
 
-      const codependencyResult = fileResultsHaveErrors ? [] : await buildFiles(codependencies.existing, null, process.env.NODE_ENV);
-      const codependencyResultsHaveErrors = codependencyResult.filter((result) => !!result)
-        .map(({ success }) => success)
-        .includes(false);
-
-      const hasErrors = fileResultsHaveErrors || codependencyResultsHaveErrors;
+      const hasErrors = fileResultsHaveErrors;
 
       if (process.serverProcess && hasErrors) {
         process.serverProcess.send(
@@ -371,6 +406,8 @@ const startWatcher = async (buildSettings = {}) => {
               .map(({ path: pathWithError, error }) => ({ path: pathWithError, error })),
           })
         );
+
+        return;
       }
 
       if (!hasErrors) {
@@ -494,7 +531,7 @@ export default async (args = {}, options = {}) => {
     process.exit(0);
   }
 
-  await killPortProcess(port);
+  await killPortProcess([port, port + 1]);
 
   process.title = 'joystick';
   process.env.LOGS_PATH = options?.logs || null;

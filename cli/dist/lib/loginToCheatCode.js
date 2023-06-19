@@ -16,10 +16,13 @@ var loginToCheatCode_default = (emailAddress = "", password = "") => {
     const text = await response.text();
     const data = checkIfValidJSON(text);
     if (data?.error) {
-      CLILog(data?.error?.message, {
-        level: "danger",
-        docs: "https://cheatcode.co/docs/push/authentication"
-      });
+      CLILog(
+        data?.error?.message,
+        {
+          level: "danger",
+          docs: "https://cheatcode.co/docs/push/authentication"
+        }
+      );
       process.exit(0);
     }
     return data?.data?.token;

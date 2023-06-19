@@ -42,10 +42,13 @@ const startDeployment = (isInitialDeployment = false, loginSessionToken = "", de
       const data = checkIfValidJSON(text);
       const isPayloadSizeError = text?.includes("payload");
       if (data?.error || isPayloadSizeError) {
-        CLILog(data.error?.message || text, {
-          level: "danger",
-          docs: isPayloadSizeError ? "https://cheatcode.co/docs/push/considerations/payload-size" : "https://cheatcode.co/docs/push"
-        });
+        CLILog(
+          data.error?.message || text,
+          {
+            level: "danger",
+            docs: isPayloadSizeError ? "https://cheatcode.co/docs/push/considerations/payload-size" : "https://cheatcode.co/docs/push"
+          }
+        );
         process.exit(0);
       }
       return data?.data;
@@ -77,11 +80,18 @@ const initDeployment = async (options, { resolve, reject }) => {
     console.log("");
     const loader = new Loader({ padding: "  ", defaultMessage: "Deploying app..." });
     loader.text("Deploying app...");
-    const deploymentTimestamp = new Date().toISOString();
+    const deploymentTimestamp = (/* @__PURE__ */ new Date()).toISOString();
     await buildApp(options?.deployment?.environment || options?.environment);
     const appSettings = getAppSettings(options?.environment);
     loader.text("Starting deployment...");
-    await startDeployment(options?.isInitialDeployment, options?.loginSessionToken, options.deployment, deploymentTimestamp, appSettings, options?.environment);
+    await startDeployment(
+      options?.isInitialDeployment,
+      options?.loginSessionToken,
+      options.deployment,
+      deploymentTimestamp,
+      appSettings,
+      options?.environment
+    );
     loader.stop();
     console.log(chalk.greenBright(`Your app is deploying! To monitor progress, head to ${domains?.push}/deployments/${options?.deployment?.domain}
 `));

@@ -12,10 +12,13 @@ const getPostgreSQLProcessId = async (port = 2610) => {
   return pids.tcp && pids.tcp[0];
 };
 const warnPostgreSQLIsMissing = () => {
-  CLILog("PostgreSQL is not installed on this computer. You can download PostgreSQL at https://www.postgresql.org/download. After you've installed PostgreSQL, run joystick start again, or, remove PostgreSQL from your databases list in your settings.development.json file to skip startup.", {
-    level: "danger",
-    docs: "https://cheatcode.co/docs/joystick/cli#databases"
-  });
+  CLILog(
+    "PostgreSQL is not installed on this computer. You can download PostgreSQL at https://www.postgresql.org/download. After you've installed PostgreSQL, run joystick start again, or, remove PostgreSQL from your databases list in your settings.development.json file to skip startup.",
+    {
+      level: "danger",
+      docs: "https://cheatcode.co/docs/joystick/cli#databases"
+    }
+  );
 };
 const checkIfPostgreSQLExists = () => {
   return commandExists.sync("psql");
@@ -33,24 +36,32 @@ const startPostgreSQL = async (port = 2610) => {
   const dataDirectoryExists = fs.existsSync(".joystick/data/postgresql");
   const postgreSQLControlExists = checkIfPostgreSQLControlExists();
   if (!postgreSQLControlExists) {
-    CLILog("PostgreSQL is installed on this computer, but pg_ctl (what Joystick uses to start and manage PostgreSQL) is not in your command line's PATH variable. Add pg_ctl to your command line's PATH, restart your command line, and try again.", {
-      level: "danger",
-      docs: "https://cheatcode.co/docs/joystick/postgresql#path"
-    });
+    CLILog(
+      "PostgreSQL is installed on this computer, but pg_ctl (what Joystick uses to start and manage PostgreSQL) is not in your command line's PATH variable. Add pg_ctl to your command line's PATH, restart your command line, and try again.",
+      {
+        level: "danger",
+        docs: "https://cheatcode.co/docs/joystick/postgresql#path"
+      }
+    );
   }
   if (!dataDirectoryExists && postgreSQLControlExists) {
-    await exec(`pg_ctl init -D .joystick/data/postgresql`);
+    await exec(
+      `pg_ctl init -D .joystick/data/postgresql`
+    );
   }
   try {
     const postgreSQLPort = port;
     await killPortProcess(postgreSQLPort);
-    const databaseProcess = child_process.spawn(`pg_ctl`, [
-      "-o",
-      `"-p ${postgreSQLPort}"`,
-      "-D",
-      ".joystick/data/postgresql",
-      "start"
-    ].filter((command) => !!command));
+    const databaseProcess = child_process.spawn(
+      `pg_ctl`,
+      [
+        "-o",
+        `"-p ${postgreSQLPort}"`,
+        "-D",
+        ".joystick/data/postgresql",
+        "start"
+      ].filter((command) => !!command)
+    );
     return new Promise((resolve) => {
       databaseProcess.stdout.on("data", async (data) => {
         const stdout = data?.toString();

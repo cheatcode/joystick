@@ -40,7 +40,7 @@ const login = async (options, { resolve, reject }) => {
       }, options?.output)
     });
   } catch (error) {
-    reject(formatErrorString("login", error));
+    reject(new Error(formatErrorString("login", error)));
   }
 };
 var login_default = (options) => new Promise((resolve, reject) => {

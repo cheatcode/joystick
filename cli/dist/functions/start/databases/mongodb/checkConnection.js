@@ -24,8 +24,12 @@ var checkConnection_default = async (connection = {}, options = {}) => {
     return true;
   } catch (exception) {
     console.warn(exception);
-    console.warn(chalk.yellowBright(`
-Failed to connect to MongoDB. Please double-check connection settings and try again.`));
+    console.warn(
+      chalk.yellowBright(
+        `
+Failed to connect to MongoDB. Please double-check connection settings and try again.`
+      )
+    );
     process.exit(1);
   }
 };

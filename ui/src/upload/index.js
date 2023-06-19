@@ -38,24 +38,25 @@ export default (uploaderName = '', uploaderOptions = {}) => {
             formData.append('files', file, file.name);
           });
         }
-      
-        const request = new XMLHttpRequest();
-  
-        request.onload = () => {
-          const response = request.responseText ? JSON.parse(request.responseText) : null;
+
+        fetch(`${window.location.origin}/api/_uploaders/${uploaderName}`, {
+          method: 'POST',
+          headers: {
+            'x-joystick-upload-id': uploadId,
+            'x-joystick-upload-input': JSON.stringify(uploaderOptions?.input || {}),
+          },
+          body: formData,
+        }).then(async (data) => {
+          const response = await data.json();
+          console.log(response);
+          
           if (response && response.errors) {
             logRequestErrors('upload', response.errors);
-            reject(response.errors);
+            reject({ errors: response.errors });
           } else {
             resolve(response?.uploads);
           }
-        };
-        
-        request.open('POST', `${window.location.origin}/api/_uploaders/${uploaderName}`);
-        request.setRequestHeader('x-joystick-upload-id', uploadId);
-        request.setRequestHeader('x-joystick-upload-input', JSON.stringify(uploaderOptions?.input || {}));
-  
-        request.send(formData);
+        });
       });
     });
   } catch (exception) {

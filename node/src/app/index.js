@@ -32,6 +32,7 @@ import Queue from './queues/index.js';
 import readDirectory from '../lib/readDirectory.js';
 import getBuildPath from '../lib/getBuildPath.js';
 import generateMachineId from '../lib/generateMachineId.js';
+import emitWebsocketEvent from '../websockets/emitWebsocketEvent.js';
 
 process.setMaxListeners(0); 
 
@@ -61,6 +62,16 @@ export class App {
     this.initFixtures(options?.fixtures);
     this.initQueues(options?.queues);
     this.initCronJobs(options?.cronJobs);
+
+    if (process.env.NODE_ENV === 'development') {
+      process.on('message', (message) => {
+        const parsedMessage = JSON.parse(message);
+
+        if (parsedMessage?.type === ' RESTART_SERVER') {
+          this.express?.server?.close();
+        }
+      });
+    }
   }
 
   async invalidateCache() {
@@ -380,6 +391,8 @@ export class App {
     Object.entries(websocketServers).forEach(([websocketName, websocketDefinition]) => {
       websocketDefinition.server.on("connection", function connection(websocketConnection, connectionRequest) {
         try {
+          // TODO: Check and see if connectionRequest receives cookies. If it does, parse and get the user so that
+          // we can add them to the connection.
           const [_path, params] = connectionRequest?.url?.split("?");
           const connectionParams = queryString.parse(params);
 
@@ -608,33 +621,47 @@ export class App {
         const multerMiddleware = upload.array('files', 12);
 
         app.post(`/api/_uploaders/${formattedUploaderName}`, (req, res, next) => {
-          if (!uploaderOptions?.providers?.includes('local')) {
-            return next();
-          }
-
           let progress = 0;
+
+          // NOTE: Content length is total upload size across all uploads. We want to multiply this by the number
+          // of providers to figure out the total amount of work to do, which we can derive a percentage complete from.
           const fileSize = parseInt(req.headers["content-length"], 10);
-          const totalFileSizeAllProviders =  fileSize * (uploaderOptions?.providers?.length);
-          const emitter = joystick?.emitters[req?.headers['x-joystick-upload-id']];
-          
+          const providers = uploaderOptions?.providers?.includes('local') ? uploaderOptions?.providers.length : uploaderOptions?.providers?.length + 1;
+          const totalFileSizeAllProviders =  fileSize * (providers);
+
           req.on("data", (chunk) => {
             progress += chunk.length;
             const percentage = Math.round((progress / totalFileSizeAllProviders) * 100);
 
-            if (emitter) {
-              emitter.emit('progress', { provider: 'local', progress: percentage });
-            }
+            emitWebsocketEvent(
+              `uploaders_${req?.headers['x-joystick-upload-id']}`,
+              'progress',
+              { provider: 'uploadToServer', progress: percentage }
+            );
           });
 
           next();
         }, multerMiddleware, async (req, res) => {
           const input = req?.headers['x-joystick-upload-input'] ? JSON.parse(req?.headers['x-joystick-upload-input']) : {};
+
           validateUploads({ files: req?.files, input, uploaderName, uploaderOptions })
             .then(async (validatedUploads = []) => {
+              if (typeof uploaderOptions?.onBeforeUpload === 'function') {
+                // NOTE: IF this throws an error, abort upload.
+                await uploaderOptions?.onBeforeUpload({
+                  input,
+                  req,
+                  uploads: validatedUploads,
+                });
+              }
+
               const fileSize = parseInt(req.headers["content-length"], 10);
-              const totalFileSizeAllProviders = fileSize * (uploaderOptions?.providers?.length);
+              const providers = uploaderOptions?.providers?.includes('local') ? uploaderOptions?.providers.length : uploaderOptions?.providers?.length + 1;
+              const totalFileSizeAllProviders = fileSize * (providers);
               const uploads = await runUploader({
-                progress: uploaderOptions?.providers?.includes('local') ? fileSize : 0,
+                // NOTE: This accounts for the file being uploaded to the server which should factor in to
+                // the current upload progress. More important for big files or multiple files.
+                alreadyUploaded: fileSize,
                 totalFileSizeAllProviders,
                 uploads: validatedUploads,
                 input,
@@ -647,10 +674,28 @@ export class App {
               }));
             })
             .catch((errors) => {
-              res.status(403).send(
+              if (typeof errors === 'string') {
+                return res.status(403).send(
+                  JSON.stringify({
+                    errors: [formatAPIError(new Error(errors))],
+                  }),
+                );
+              }
+
+              if (errors instanceof Error) {
+                return res.status(403).send(
+                  JSON.stringify({
+                    errors: [formatAPIError(errors)],
+                  }),
+                );
+              }
+
+              return res.status(403).send(
                 JSON.stringify({
-                  errors,
-                })
+                  errors: (errors || []).map((error) => {
+                    return formatAPIError(new Error(error?.message, "validation"));
+                  }),
+                }),
               );
             });
         });

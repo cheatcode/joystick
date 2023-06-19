@@ -59,8 +59,7 @@ const formatUploads = ({
   input = {},
 }) => {
   try {
-    return uploads.map((upload) => {
-      // TODO: This isn't working when passed to file name?
+    return Promise.all(uploads.map(async (upload) => {
       const fileExtension = upload?.mimeType?.split('/').pop();
 
       return {
@@ -68,7 +67,7 @@ const formatUploads = ({
         providers: uploaderOptions?.providers,
         local: uploaderOptions?.local,
         s3: uploaderOptions?.s3,
-        maxSizeInMegabytes: uploaderOptions?.maxSizeInMegabytes,
+        maxSizeInMegabytes: typeof uploaderOptions?.maxSizeInMegabytes === 'function' ? await uploaderOptions?.maxSizeInMegabytes({ input, upload }) : uploaderOptions?.maxSizeInMegabytes,
         mimeTypes: uploaderOptions?.mimeTypes,
         fileName: typeof uploaderOptions?.fileName === 'function' ?
           uploaderOptions.fileName({ input, fileName: upload?.originalname, fileSize: upload?.size, fileExtension, mimeType: upload?.mimetype }) :
@@ -78,7 +77,7 @@ const formatUploads = ({
         mimeType: upload?.mimetype,
         content: upload?.buffer,
       };
-    });
+    }));
   } catch (exception) {
     throw new Error(`[validateUploads.formatUploads] ${exception.message}`);
   }
@@ -95,11 +94,11 @@ const validateOptions = (options) => {
   }
 };
 
-const validateUploads = (options, promise = {}) => {
+const validateUploads = async (options, promise = {}) => {
   try {
     validateOptions(options);
 
-    const formattedUploads = formatUploads(options);
+    const formattedUploads = await formatUploads(options);
     const errors = handleCheckUploads(formattedUploads);
 
     if (errors?.length > 0) {

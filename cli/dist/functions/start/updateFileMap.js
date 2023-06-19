@@ -40,7 +40,10 @@ const parseFileToAST = (source = "") => {
 const readFileDependencyMap = () => {
   const fileDependencyMapPath = `.joystick/build/fileMap.json`;
   if (fs.existsSync(fileDependencyMapPath)) {
-    const fileDependencyMapAsJSON = fs.readFileSync(fileDependencyMapPath, "utf-8");
+    const fileDependencyMapAsJSON = fs.readFileSync(
+      fileDependencyMapPath,
+      "utf-8"
+    );
     const fileMap = fileDependencyMapAsJSON ? JSON.parse(fileDependencyMapAsJSON) : {};
     return fileMap;
   }
@@ -52,7 +55,10 @@ var updateFileMap_default = (path = "", source = "") => {
     const fileAST = parseFileToAST(source);
     const imports = fileAST ? getImportsAndRequires(fileAST) : [];
     fileDependencyMap[path] = imports;
-    fs.writeFileSync(`.joystick/build/fileMap.json`, JSON.stringify(fileDependencyMap, null, 2));
+    fs.writeFileSync(
+      `.joystick/build/fileMap.json`,
+      JSON.stringify(fileDependencyMap, null, 2)
+    );
   } catch (exception) {
   }
 };

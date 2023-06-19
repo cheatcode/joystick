@@ -47,17 +47,27 @@ const isNotJavaScript = (path = "") => {
   return extension && !extension.match(/\js$/);
 };
 var buildFiles_default = async (filesToBuild = [], outputPath = null, environment = "development") => {
-  return Promise.all(filesToBuild.map((fileToBuild) => {
-    const platform = getFilePlatform(fileToBuild);
-    const isFileToCopy = platform === "copy" || isNotJavaScript(fileToBuild) || filesToCopy.some((fileToCopy) => {
-      return fileToCopy.regex.test(fileToBuild);
-    });
-    if (isFileToCopy) {
-      fs.outputFileSync(`${outputPath || "./.joystick/build"}/${fileToBuild}`, fs.readFileSync(fileToBuild));
-      return fileToBuild;
-    }
-    return buildFile(fileToBuild, platform, outputPath, environment);
-  }));
+  return Promise.all(
+    filesToBuild.map((fileToBuild) => {
+      const platform = getFilePlatform(fileToBuild);
+      const isFileToCopy = platform === "copy" || isNotJavaScript(fileToBuild) || filesToCopy.some((fileToCopy) => {
+        return fileToCopy.regex.test(fileToBuild);
+      });
+      if (isFileToCopy) {
+        fs.outputFileSync(
+          `${outputPath || "./.joystick/build"}/${fileToBuild}`,
+          fs.readFileSync(fileToBuild)
+        );
+        return fileToBuild;
+      }
+      return buildFile(
+        fileToBuild,
+        platform,
+        outputPath,
+        environment
+      );
+    })
+  );
 };
 export {
   buildFiles_default as default

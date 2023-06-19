@@ -5,7 +5,7 @@ import processQueue from "../lib/processQueue";
 import appendToTarget from "./appendToTarget";
 import registerListeners from "../component/class/events/registerListeners";
 
-export default (Component = null, props = {}, target = null) => {
+export default (Component = null, props = {}, target = null, isHMRUpdate = false) => {
   try {
     if (!isFunction(Component)) {
       throwFrameworkError('mount', `Component to mount must be a function.`);
@@ -21,7 +21,7 @@ export default (Component = null, props = {}, target = null) => {
   
     const component = Component({ props });
     initializeJoystickComponentTree(component);
-    const componentAsDOM = component.render({ mounting: true });
+    const componentAsDOM = component.render({ mounting: true, existingChildren: window.__joystick_childrenBeforeHMRUpdate__ || null });
 
     if (componentAsDOM) {
       componentAsDOM.setAttribute('js-ssrId', component.ssrId);
@@ -36,7 +36,7 @@ export default (Component = null, props = {}, target = null) => {
     appendToTarget(target, componentAsDOM);
   
     component.setDOMNodeOnInstance();
-    component.appendCSSToHead();
+    component.appendCSSToHead(isHMRUpdate);
 
     // NOTE: Run event listener attachment before lifecycle methods in case onMount
     // triggers a re-render (potential for duplicate event listeners if we do this last).

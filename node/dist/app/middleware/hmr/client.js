@@ -1,43 +1,18 @@
 // src/app/middleware/hmr/client.js
-var serverAvailable = (callback = null) => {
-  fetch(`${window.location.origin}/_joystick/heartbeat`).then(async (response) => {
-    const data = await response.text();
-    if (data && data === "<3" && callback) {
-      console.log("[hmr] Listening for changes...");
-      setTimeout(() => {
-        callback();
-      }, 1e3);
-    }
-  }).catch(async (error) => {
-    console.log("Server unavailable. Trying again...");
-    setTimeout(() => {
-      serverAvailable(callback);
-    }, 500);
-  });
-};
-var cleanup = () => {
-  if (typeof window !== "undefined" && window.__joystick__) {
-    const eventListeners = window.__joystick__?._internal?.eventListeners?.attached;
-    const timers = window.__joystick__?._internal?.timers;
-    if (eventListeners && eventListeners.length > 0) {
-      window.__joystick__?._utils?.removeEventListeners(eventListeners);
-    }
-    if (timers && timers.length > 0) {
-      timers.forEach(({ type, id }) => {
-        if (type === "timeout") {
-          window.clearTimeout(id);
-        }
-        if (type === "interval") {
-          window.clearInterval(id);
-        }
-      });
+var assignPreviousComponentIdsToElements = () => {
+  const joystickDOMNodes = Array.from(document.querySelectorAll("[js-c]"));
+  console.log(joystickDOMNodes);
+  for (let i = 0; i < joystickDOMNodes?.length; i += 1) {
+    const node = joystickDOMNodes[i];
+    if (node) {
+      node.setAttribute("js-pid", node.getAttribute("js-c"));
     }
   }
 };
 var reconnectInterval = null;
 var reconnectAttempts = 0;
 var websocketClient = (options = {}, onConnect = null) => {
-  let client = new WebSocket(`ws://localhost:${process.env.PORT}/_joystick/hmr`);
+  let client = new WebSocket(`ws://localhost:${window.__joystick__hmr_port}/_joystick/hmr`);
   if (reconnectInterval) {
     clearInterval(reconnectInterval);
     reconnectInterval = null;
@@ -84,40 +59,26 @@ var websocketClient = (options = {}, onConnect = null) => {
 var client_default = (() => websocketClient({
   autoReconnect: true,
   onMessage: (message = {}) => {
-    if (message && message.type && message.type === "FILE_CHANGE") {
-      window.__joystick_hmr_update__ = true;
-      const path = message?.path;
-      const scriptPath = `/_joystick/${path}`;
-      const script = document.querySelector(`script[src="${scriptPath}"]`);
-      const isCSS = scriptPath.includes("index.css");
-      const isHTML = scriptPath.includes("index.html");
-      const isSettings = scriptPath.includes("settings.");
-      const stylesheet = isCSS ? document.querySelector(`link[href="${scriptPath}"]`) : null;
-      if (isHTML || isSettings) {
-        location.reload();
-      }
-      if (stylesheet) {
-        serverAvailable(() => {
-          const newStylesheet = document.createElement("link");
-          newStylesheet.rel = "stylesheet";
-          newStylesheet.href = scriptPath;
-          stylesheet.parentNode.removeChild(stylesheet);
-          document.body.appendChild(newStylesheet);
-        });
-      }
-      if (script && scriptPath.includes("ui/pages")) {
-        cleanup();
-      }
-      if (script) {
-        serverAvailable(() => {
-          location.reload();
-        });
-      }
-      if (window.__joystick_layout__ && path && path.includes("pages")) {
-        serverAvailable(() => {
-          location.reload();
-        });
-      }
+    assignPreviousComponentIdsToElements();
+    const isFileChange = message && message.type && message.type === "FILE_CHANGE";
+    const isPageInLayout = !!window.__joystick_layout_page__;
+    if (isFileChange && isPageInLayout) {
+      (async () => {
+        window.__joystick_childrenBeforeHMRUpdate__ = window.joystick?._internal?.tree?.instance?.children;
+        const layoutComponentFile = await import(`${window.__joystick_layout__}?t=${new Date().getTime()}`);
+        const pageComponentFile = await import(`${window.window.__joystick_layout_page_url__}?t=${new Date().getTime()}`);
+        const layout = layoutComponentFile.default;
+        const page = pageComponentFile.default;
+        window.joystick.mount(layout, Object.assign({ page }, window.__joystick_ssr_props__), document.getElementById("app"), true);
+      })();
+    }
+    if (isFileChange && !isPageInLayout) {
+      (async () => {
+        window.__joystick_childrenBeforeHMRUpdate__ = window.joystick?._internal?.tree?.instance?.children;
+        const pageComponentFile = await import(`${window.__joystick_page_url__}?t=${new Date().getTime()}`);
+        const page = pageComponentFile.default;
+        window.joystick.mount(page, Object.assign({}, window.__joystick_ssr_props__), document.getElementById("app"), true);
+      })();
     }
   }
 }, (connection) => {

@@ -19,7 +19,10 @@ const createFolders = (projectName, folders = []) => {
   });
 };
 const createPackageJSON = (projectName = "") => {
-  fs.writeFileSync(`./${projectName}/package.json`, buildPackageJSON(projectName));
+  fs.writeFileSync(
+    `./${projectName}/package.json`,
+    buildPackageJSON(projectName)
+  );
 };
 const createJoystickFolder = (projectName = "") => {
   fs.mkdirSync(`./${projectName}/.joystick`);
@@ -61,15 +64,23 @@ var create_default = (args = {}) => {
     createFiles(projectName, [
       {
         name: "api/index.js",
-        content: fs.readFileSync(`${__dirname}/templates/api/index.js`, "utf-8")
+        content: fs.readFileSync(
+          `${__dirname}/templates/api/index.js`,
+          "utf-8"
+        )
       },
       {
         name: "i18n/en-US.js",
-        content: fs.readFileSync(`${__dirname}/templates/i18n/en-US.js`, "utf-8")
+        content: fs.readFileSync(
+          `${__dirname}/templates/i18n/en-US.js`,
+          "utf-8"
+        )
       },
       {
         name: "public/apple-touch-icon-152x152.png",
-        content: fs.readFileSync(`${__dirname}/templates/public/apple-touch-icon-152x152.png`)
+        content: fs.readFileSync(
+          `${__dirname}/templates/public/apple-touch-icon-152x152.png`
+        )
       },
       {
         name: "public/favicon.ico",
@@ -81,31 +92,50 @@ var create_default = (args = {}) => {
       },
       {
         name: "public/service-worker.js",
-        content: fs.readFileSync(`${__dirname}/templates/public/service-worker.js`)
+        content: fs.readFileSync(
+          `${__dirname}/templates/public/service-worker.js`
+        )
       },
       {
         name: "public/splash-screen-1024x1024.png",
-        content: fs.readFileSync(`${__dirname}/templates/public/splash-screen-1024x1024.png`)
+        content: fs.readFileSync(
+          `${__dirname}/templates/public/splash-screen-1024x1024.png`
+        )
       },
       {
         name: "ui/components/quote/index.js",
-        content: fs.readFileSync(`${__dirname}/templates/ui/components/quote/index.js`, "utf-8")
+        content: fs.readFileSync(
+          `${__dirname}/templates/ui/components/quote/index.js`,
+          "utf-8"
+        )
       },
       {
         name: "ui/layouts/app/index.js",
-        content: fs.readFileSync(`${__dirname}/templates/ui/layouts/app/index.js`, "utf-8")
+        content: fs.readFileSync(
+          `${__dirname}/templates/ui/layouts/app/index.js`,
+          "utf-8"
+        )
       },
       {
         name: "ui/pages/error/index.js",
-        content: fs.readFileSync(`${__dirname}/templates/ui/pages/error/index.js`, "utf-8")
+        content: fs.readFileSync(
+          `${__dirname}/templates/ui/pages/error/index.js`,
+          "utf-8"
+        )
       },
       {
         name: "ui/pages/index/index.js",
-        content: fs.readFileSync(`${__dirname}/templates/ui/pages/index/index.js`, "utf-8")
+        content: fs.readFileSync(
+          `${__dirname}/templates/ui/pages/index/index.js`,
+          "utf-8"
+        )
       },
       {
         name: "index.client.js",
-        content: fs.readFileSync(`${__dirname}/templates/index.client.js`, "utf-8")
+        content: fs.readFileSync(
+          `${__dirname}/templates/index.client.js`,
+          "utf-8"
+        )
       },
       {
         name: "index.css",
@@ -117,26 +147,39 @@ var create_default = (args = {}) => {
       },
       {
         name: "index.server.js",
-        content: fs.readFileSync(`${__dirname}/templates/index.server.js`, "utf-8")
+        content: fs.readFileSync(
+          `${__dirname}/templates/index.server.js`,
+          "utf-8"
+        )
       },
       {
         name: "settings.development.json",
-        content: fs.readFileSync(`${__dirname}/templates/settings.development.json`, "utf-8")
+        content: fs.readFileSync(
+          `${__dirname}/templates/settings.development.json`,
+          "utf-8"
+        )
       }
     ]);
     setTimeout(() => {
       process.loader.text("Installing dependencies...");
     }, 1500);
-    exec(`cd ./${projectName} && npm install --save @joystick.js/ui @joystick.js/node ${npmRegistry}`, (stderr, stdout) => {
-      if (stderr) {
-        process.loader.stop();
-        console.warn(stderr);
-      } else {
-        process.loader.stop();
-        console.log(`${chalk.green("Project created! To get started, run:")}
-cd ${projectName} && joystick start`);
+    exec(
+      `cd ./${projectName} && npm install --save @joystick.js/ui @joystick.js/node ${npmRegistry}`,
+      (stderr, stdout) => {
+        if (stderr) {
+          process.loader.stop();
+          console.warn(stderr);
+        } else {
+          process.loader.stop();
+          console.log(
+            `${chalk.green(
+              "Project created! To get started, run:"
+            )}
+cd ${projectName} && joystick start`
+          );
+        }
       }
-    });
+    );
   } catch (exception) {
     console.warn(exception);
   }

@@ -28,7 +28,9 @@ const logError = (warning = {}) => {
     console.log(chalk.yellow(`   ${removeLocationDataFromStackTrace(warning?.stack)}
 `));
   }
-  process.loader.error("Build error. Fix the error above to continue building your app.");
+  process.loader.error(
+    "Build error. Fix the error above to continue building your app."
+  );
   console.log("\n");
   console.log(`${rainbowRoad()}
 `);

@@ -9,10 +9,13 @@ var pingProvisionAPI_default = (provider = "", loginSessionToken = "") => {
     const text = await response.text();
     const data = checkIfValidJSON(text);
     if (data?.error) {
-      CLILog(data.error?.message, {
-        level: "danger",
-        docs: "https://cheatcode.co/docs/push/deployment-tokens"
-      });
+      CLILog(
+        data.error?.message,
+        {
+          level: "danger",
+          docs: "https://cheatcode.co/docs/push/deployment-tokens"
+        }
+      );
       process.exit(0);
     }
     return data?.data?.ping;

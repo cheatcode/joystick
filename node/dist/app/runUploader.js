@@ -2,14 +2,7 @@ import fs from "fs";
 import AWS from "aws-sdk";
 import path from "path";
 import emitWebsocketEvent from "../websockets/emitWebsocketEvent";
-function writeFile(path2, contents, cb) {
-  fs.mkdir(getDirName(path2), { recursive: true }, function(err) {
-    if (err)
-      return cb(err);
-    fs.writeFile(path2, contents, cb);
-  });
-}
-const uploadToS3 = (upload = {}, options = {}) => {
+const uploadToS3 = (upload = {}, options = {}, onUploadProgress) => {
   try {
     return new Promise((resolve) => {
       const temporaryFilePath = `.joystick/uploads/_tmp/${upload?.fileName}`;
@@ -36,13 +29,10 @@ const uploadToS3 = (upload = {}, options = {}) => {
         partSize: 5 * 1024 * 1024,
         queueSize: 3
       });
-      let uploaded = options?.progress;
       let previous = 0;
-      s3Upload.on("httpUploadProgress", (progress) => {
-        uploaded += progress?.loaded - previous;
-        previous = progress?.loaded;
-        const percentage = Math.round(uploaded / options?.totalFileSizeAllProviders * 100);
-        emitWebsocketEvent(`uploaders_${options?.req?.headers["x-joystick-upload-id"]}`, "progress", { provider: "s3", progress: percentage });
+      s3Upload.on("httpUploadProgress", (s3UploadProgress) => {
+        onUploadProgress("s3", s3UploadProgress?.loaded - previous);
+        previous = s3UploadProgress?.loaded;
       });
       s3Upload.send((error, data) => {
         if (error) {
@@ -52,7 +42,11 @@ const uploadToS3 = (upload = {}, options = {}) => {
           const response = {
             id: options?.req?.headers["x-joystick-upload-id"],
             provider: "s3",
-            url: data?.Location
+            url: data?.Location,
+            size: upload?.fileSize,
+            fileName: upload?.fileName,
+            originalFileName: upload?.originalFileName,
+            mimeType: upload?.mimeType
           };
           if (error) {
             response.error = error?.message || "There was an error uploading your file to Amazon S3. Check the server logs for more information.";
@@ -81,7 +75,11 @@ const uploadToLocal = (upload = {}, options = {}) => {
           resolve({
             id: options?.req?.headers["x-joystick-upload-id"],
             provider: "local",
-            url: filePath
+            url: filePath,
+            size: upload?.fileSize,
+            fileName: upload?.fileName,
+            originalFileName: upload?.originalFileName,
+            mimeType: upload?.mimeType
           });
         });
       }
@@ -90,18 +88,28 @@ const uploadToLocal = (upload = {}, options = {}) => {
     throw new Error(`[runUploader.uploadToLocal] ${exception.message}`);
   }
 };
-const handleUploads = (options = {}) => {
+const handleUploads = async (options = {}) => {
   try {
-    return Promise.all(options?.uploads.flatMap((upload) => {
-      const uploaders = [];
-      if (upload?.providers.includes("local")) {
-        uploaders.push(uploadToLocal(upload, options));
+    const uploads = [];
+    let alreadyUploaded = options?.alreadyUploaded;
+    const onUploadProgress = (provider = "", chunk = 0) => {
+      const progress = alreadyUploaded + chunk;
+      const percentage = Math.round(progress / options?.totalFileSizeAllProviders * 100);
+      emitWebsocketEvent(`uploaders_${options?.req?.headers["x-joystick-upload-id"]}`, "progress", { provider, progress: percentage });
+      alreadyUploaded += chunk;
+    };
+    for (let i = 0; i < options?.uploads?.length; i += 1) {
+      const upload = options?.uploads[i];
+      if (upload?.providers?.includes("local")) {
+        const result = await uploadToLocal(upload, { ...options });
+        uploads.push(result);
       }
-      if (upload?.providers.includes("s3")) {
-        uploaders.push(uploadToS3(upload, options));
+      if (upload?.providers?.includes("s3")) {
+        const result = await uploadToS3(upload, { ...options }, onUploadProgress);
+        uploads.push(result);
       }
-      return uploaders;
-    }));
+    }
+    return uploads;
   } catch (exception) {
     throw new Error(`[runUploader.handleUploads] ${exception.message}`);
   }

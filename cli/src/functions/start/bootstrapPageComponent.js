@@ -27,8 +27,6 @@ export default () => {
         const componentName = matchParts.pop();
 
         if (componentName) {
-          // TODO: Add a check for window.__joystick_layout_page__ below, avoiding a mount if
-          // it exists. This allows the layout mount to takeover.
           return {
             code: code.replace(
               `${match};`,

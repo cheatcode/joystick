@@ -10,14 +10,17 @@ const getMongoProcessId = async (port = 2601) => {
   return pids.tcp && pids.tcp[0];
 };
 const warnMongoDBMissing = () => {
-  CLILog(`MongoDB is not installed on this computer.
+  CLILog(
+    `MongoDB is not installed on this computer.
 
  Download MongoDB at https://www.mongodb.com/try/download/community
 
- After you've installed MongoDB, run joystick start again, or, remove MongoDB from your config.databases array in your settings.development.json file to skip starting it up.`, {
-    level: "danger",
-    docs: "https://github.com/cheatcode/joystick#databases"
-  });
+ After you've installed MongoDB, run joystick start again, or, remove MongoDB from your config.databases array in your settings.development.json file to skip starting it up.`,
+    {
+      level: "danger",
+      docs: "https://github.com/cheatcode/joystick#databases"
+    }
+  );
 };
 const checkIfMongoDBExists = () => {
   if (isWindows) {
@@ -37,7 +40,10 @@ const startMongoDBProcess = (mongodbPort = 2610, dataDirectoryExists = false, re
       "--replSet",
       `joystick_${mongodbPort}`
     ];
-    const databaseProcess = child_process.spawn(`mongod`, databaseProcessFlags.filter((command) => !!command));
+    const databaseProcess = child_process.spawn(
+      `mongod`,
+      databaseProcessFlags.filter((command) => !!command)
+    );
     databaseProcess.stdout.on("data", async (data) => {
       const stdout = data?.toString();
       if (stdout.includes("Waiting for connections")) {

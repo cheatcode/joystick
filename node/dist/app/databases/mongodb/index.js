@@ -13,9 +13,6 @@ var mongodb_default = async (settings = {}, databasePortBaseIndex = 0) => {
     replicaSet: `joystick_${databasePort}`
   };
   const connectionString = buildConnectionString(connection);
-  console.log({
-    connectionString
-  });
   const parsedURI = mongoUri.parseUri(connectionString);
   try {
     const connectionOptions = {

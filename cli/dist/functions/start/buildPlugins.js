@@ -4,6 +4,7 @@ import updateFileMap from "./updateFileMap.js";
 import { JOYSTICK_UI_REGEX, EXPORT_DEFAULT_REGEX, JOYSTICK_COMPONENT_REGEX, JOYSTICK_COMMENT_REGEX } from "../../lib/regexes.js";
 import generateId from "./generateId.js";
 import getPlatformSafePath from "../../lib/getPlatformSafePath.js";
+import setComponentId from "./setComponentId.js";
 var buildPlugins_default = {
   warnNodeEnvironment: {
     name: "warnNodeEnvironment",
@@ -42,7 +43,11 @@ var buildPlugins_default = {
             const exportDefaultMatch = exportDefaultMatches && exportDefaultMatches[0];
             if (joystickUIMatch && !exportDefaultMatch) {
               console.log(" ");
-              console.warn(chalk.yellowBright(`All Joystick components in the ui directory must have an export default statement (e.g., export default MyComponent, export default MyLayout, or export default MyPage). Please check the file at ${args.path}.`));
+              console.warn(
+                chalk.yellowBright(
+                  `All Joystick components in the ui directory must have an export default statement (e.g., export default MyComponent, export default MyLayout, or export default MyPage). Please check the file at ${args.path}.`
+                )
+              );
               console.log(" ");
               return;
             }
@@ -52,7 +57,9 @@ var buildPlugins_default = {
             const exportDefaultMatchParts = exportDefaultMatch && exportDefaultMatch.split(" ") || [];
             const componentName = exportDefaultMatchParts.pop();
             if (componentName && isLayoutComponent) {
-              contents = contents.replace(`${exportDefaultMatch};`, `if (
+              contents = contents.replace(
+                `${exportDefaultMatch};`,
+                `if (
                   typeof window !== 'undefined' &&
                   window.__joystick_ssr__ === true &&
                   window.__joystick_layout_page__ &&
@@ -69,10 +76,13 @@ var buildPlugins_default = {
                 }
               
               export default ${componentName};
-                `);
+                `
+              );
             }
             if (componentName && isPageComponent) {
-              contents = contents.replace(`${exportDefaultMatch};`, `if (
+              contents = contents.replace(
+                `${exportDefaultMatch};`,
+                `if (
                   typeof window !== 'undefined' &&
                   window.__joystick_ssr__ === true &&
                   !window.__joystick_layout_page__ &&
@@ -83,7 +93,8 @@ var buildPlugins_default = {
                 }
                 
                 export default ${componentName};
-                `);
+                `
+              );
             }
             return {
               contents,
@@ -106,10 +117,7 @@ var buildPlugins_default = {
             const file = fs.readFileSync(build.initialOptions.outfile, "utf-8");
             const joystickUIMatches = file?.match(JOYSTICK_COMPONENT_REGEX) || [];
             if (joystickUIMatches?.length > 0) {
-              let contents = file.replace(/\.component\(\{/g, () => {
-                return `.component({
-  _componentId: '${generateId()}',`;
-              }).replace(/\.component\(\/\*\*\//g, ".component(");
+              let contents = setComponentId(file)?.replace(/\.component\(\/\*\*\//g, ".component(");
               fs.writeFileSync(build.initialOptions.outfile, contents);
             }
           }

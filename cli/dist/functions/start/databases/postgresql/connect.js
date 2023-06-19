@@ -16,6 +16,7 @@ var connect_default = async (settings = {}, port = 2610) => {
         }
       ],
       database: "app",
+      // NOTE: PostgreSQL creates a default superuser based on the OS username.
       username: (os.userInfo() || {}).username || "",
       password: ""
     }

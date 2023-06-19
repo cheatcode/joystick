@@ -46,7 +46,10 @@ const getPathVariations = (path = "") => {
 var getCodependenciesForFile_default = (pathToFind = "") => {
   const pathVariations = getPathVariations(pathToFind);
   const fileDependencyMap = readFileDependencyMap();
-  const codpendencies = findCodependenciesInMap(pathVariations, fileDependencyMap);
+  const codpendencies = findCodependenciesInMap(
+    pathVariations,
+    fileDependencyMap
+  );
   return {
     existing: codpendencies.filter((codependency) => {
       return !!fs.existsSync(codependency);

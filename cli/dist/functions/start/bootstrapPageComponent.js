@@ -11,7 +11,11 @@ var bootstrapPageComponent_default = () => {
         const match = matches && matches[0];
         if (!match) {
           console.log(" ");
-          console.warn(chalk.yellowBright(`All components in the ui/pages directory must have an export default statement (e.g., export default MyPage). Please check the file at ${id}.`));
+          console.warn(
+            chalk.yellowBright(
+              `All components in the ui/pages directory must have an export default statement (e.g., export default MyPage). Please check the file at ${id}.`
+            )
+          );
           console.log(" ");
           return null;
         }
@@ -19,7 +23,9 @@ var bootstrapPageComponent_default = () => {
         const componentName = matchParts.pop();
         if (componentName) {
           return {
-            code: code.replace(`${match};`, `            
+            code: code.replace(
+              `${match};`,
+              `            
             if (
               typeof window !== 'undefined' &&
               window.__joystick_ssr__ === true &&
@@ -31,7 +37,8 @@ var bootstrapPageComponent_default = () => {
             }
             
             export default ${componentName};
-              `)
+              `
+            )
           };
         }
       }

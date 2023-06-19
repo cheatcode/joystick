@@ -11,7 +11,11 @@ var bootstrapLayoutComponent_default = () => {
         const match = matches && matches[0];
         if (!match) {
           console.log(" ");
-          console.warn(chalk.yellowBright(`All components in the ui/layouts directory must have an export default statement (e.g., export default MyLayout). Please check the file at ${id}.`));
+          console.warn(
+            chalk.yellowBright(
+              `All components in the ui/layouts directory must have an export default statement (e.g., export default MyLayout). Please check the file at ${id}.`
+            )
+          );
           console.log(" ");
           return null;
         }
@@ -19,7 +23,9 @@ var bootstrapLayoutComponent_default = () => {
         const componentName = matchParts.pop();
         if (componentName) {
           return {
-            code: code.replace(`${match};`, `if (
+            code: code.replace(
+              `${match};`,
+              `if (
                 typeof window !== 'undefined' &&
                 window.__joystick_ssr__ === true &&
                 window.__joystick_layout_page__ &&
@@ -34,7 +40,8 @@ var bootstrapLayoutComponent_default = () => {
               }
             
             export default ${componentName};
-              `)
+              `
+            )
           };
         }
       }

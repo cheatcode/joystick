@@ -102,9 +102,7 @@ const signup = async (options, { resolve, reject }) => {
 
     if (existingUser) {
       throw new Error(
-        `A user with the ${
-          existingUser.existingUsername ? "username" : "email address"
-        } ${
+        `A user with the ${existingUser.existingUsername ? "username" : "email address"} ${
           existingUser.existingUsername || existingUser.existingEmailAddress
         } already exists.`
       );
@@ -126,8 +124,7 @@ const signup = async (options, { resolve, reject }) => {
       user: getOutput(user, options?.output),
     });
   } catch (exception) {
-    console.log(exception);
-    reject(formatErrorString("signup", exception));
+    reject(new Error(formatErrorString("signup", exception)));
   }
 };
 

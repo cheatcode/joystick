@@ -8,7 +8,10 @@ var removeDeletedDependenciesFromMap_default = (deletedDependencies = []) => {
       delete fileDependencyMap[match];
     }
   });
-  fs.writeFileSync(`.joystick/build/fileMap.json`, JSON.stringify(fileDependencyMap, null, 2));
+  fs.writeFileSync(
+    `.joystick/build/fileMap.json`,
+    JSON.stringify(fileDependencyMap, null, 2)
+  );
 };
 export {
   removeDeletedDependenciesFromMap_default as default

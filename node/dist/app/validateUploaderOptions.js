@@ -4,7 +4,9 @@ const allowedOptions = [
   "fileName",
   "providers",
   "local",
-  "s3"
+  "s3",
+  "onBeforeUpload",
+  "onAfterUpload"
 ];
 const allowedLocalOptions = [
   "path"

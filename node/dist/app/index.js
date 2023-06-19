@@ -32,6 +32,7 @@ import Queue from "./queues/index.js";
 import readDirectory from "../lib/readDirectory.js";
 import getBuildPath from "../lib/getBuildPath.js";
 import generateMachineId from "../lib/generateMachineId.js";
+import emitWebsocketEvent from "../websockets/emitWebsocketEvent.js";
 process.setMaxListeners(0);
 class App {
   constructor(options = {}) {
@@ -55,6 +56,14 @@ class App {
     this.initFixtures(options?.fixtures);
     this.initQueues(options?.queues);
     this.initCronJobs(options?.cronJobs);
+    if (process.env.NODE_ENV === "development") {
+      process.on("message", (message) => {
+        const parsedMessage = JSON.parse(message);
+        if (parsedMessage?.type === " RESTART_SERVER") {
+          this.express?.server?.close();
+        }
+      });
+    }
   }
   async invalidateCache() {
     const uiFiles = fs.existsSync(`${getBuildPath()}ui`) ? await readDirectory(`${getBuildPath()}ui`) : [];
@@ -472,28 +481,31 @@ class App {
         const upload = multer();
         const multerMiddleware = upload.array("files", 12);
         app.post(`/api/_uploaders/${formattedUploaderName}`, (req, res, next) => {
-          if (!uploaderOptions?.providers?.includes("local")) {
-            return next();
-          }
           let progress = 0;
           const fileSize = parseInt(req.headers["content-length"], 10);
-          const totalFileSizeAllProviders = fileSize * uploaderOptions?.providers?.length;
-          const emitter = joystick?.emitters[req?.headers["x-joystick-upload-id"]];
+          const providers = uploaderOptions?.providers?.includes("local") ? uploaderOptions?.providers.length : uploaderOptions?.providers?.length + 1;
+          const totalFileSizeAllProviders = fileSize * providers;
           req.on("data", (chunk) => {
             progress += chunk.length;
             const percentage = Math.round(progress / totalFileSizeAllProviders * 100);
-            if (emitter) {
-              emitter.emit("progress", { provider: "local", progress: percentage });
-            }
+            emitWebsocketEvent(`uploaders_${req?.headers["x-joystick-upload-id"]}`, "progress", { provider: "uploadToServer", progress: percentage });
           });
           next();
         }, multerMiddleware, async (req, res) => {
           const input = req?.headers["x-joystick-upload-input"] ? JSON.parse(req?.headers["x-joystick-upload-input"]) : {};
           validateUploads({ files: req?.files, input, uploaderName, uploaderOptions }).then(async (validatedUploads = []) => {
+            if (typeof uploaderOptions?.onBeforeUpload === "function") {
+              await uploaderOptions?.onBeforeUpload({
+                input,
+                req,
+                uploads: validatedUploads
+              });
+            }
             const fileSize = parseInt(req.headers["content-length"], 10);
-            const totalFileSizeAllProviders = fileSize * uploaderOptions?.providers?.length;
+            const providers = uploaderOptions?.providers?.includes("local") ? uploaderOptions?.providers.length : uploaderOptions?.providers?.length + 1;
+            const totalFileSizeAllProviders = fileSize * providers;
             const uploads = await runUploader({
-              progress: uploaderOptions?.providers?.includes("local") ? fileSize : 0,
+              alreadyUploaded: fileSize,
               totalFileSizeAllProviders,
               uploads: validatedUploads,
               input,
@@ -504,8 +516,20 @@ class App {
               uploads
             }));
           }).catch((errors2) => {
-            res.status(403).send(JSON.stringify({
-              errors: errors2
+            if (typeof errors2 === "string") {
+              return res.status(403).send(JSON.stringify({
+                errors: [formatAPIError(new Error(errors2))]
+              }));
+            }
+            if (errors2 instanceof Error) {
+              return res.status(403).send(JSON.stringify({
+                errors: [formatAPIError(errors2)]
+              }));
+            }
+            return res.status(403).send(JSON.stringify({
+              errors: (errors2 || []).map((error) => {
+                return formatAPIError(new Error(error?.message, "validation"));
+              })
             }));
           });
         });

@@ -1,39 +1,48 @@
-import { WebSocketServer } from "ws";
-import watch from "node-watch";
 import fs from "fs";
+import { WebSocketServer } from "ws";
+import generateId from "./generateId";
 var hmrServer_default = (() => {
-  let fileWatchers = [];
   const websocketServer = new WebSocketServer({
     port: parseInt(process.env.PORT, 10) + 1,
     path: "/_joystick/hmr"
   });
+  process.on("message", (message) => {
+    if (typeof process.HMR_CONNECTIONS === "object") {
+      const connections = Object.values(process.HMR_CONNECTIONS);
+      for (let i = 0; i < connections?.length; i += 1) {
+        const connection = connections[i];
+        if (connection?.connection?.send) {
+          connection.connection.send(
+            JSON.stringify({
+              type: "FILE_CHANGE",
+              files: connection?.watchlist?.reduce((files = {}, file = "") => {
+                files[file] = fs.readFileSync(`./.joystick/build/${file}`, "utf-8");
+                return files;
+              }, {})
+            })
+          );
+        }
+      }
+    }
+  });
   websocketServer.on("connection", function connection(websocketConnection) {
+    const connectionId = generateId();
+    process.HMR_CONNECTIONS = {
+      ...process.HMR_CONNECTIONS || {},
+      [connectionId]: {
+        connection: websocketConnection,
+        watchlist: []
+      }
+    };
     websocketConnection.on("message", (message) => {
       const parsedMessage = JSON.parse(message);
-      const isWatchlistMessage = parsedMessage && parsedMessage.type && parsedMessage.type === "HMR_WATCHLIST";
-      if (isWatchlistMessage && parsedMessage.tags) {
-        [
-          ...parsedMessage.tags,
-          "index.css",
-          "index.html",
-          "package.json",
-          "settings.test.json",
-          "settings.development.json",
-          "settings.staging.json",
-          "settings.production.json",
-          "i18n"
-        ].forEach((fileToWatch) => {
-          if (fs.existsSync(`./${fileToWatch}`)) {
-            const watcher = watch(`./.joystick/build/${fileToWatch}`, { recursive: true });
-            fileWatchers.push(watcher);
-            watcher.on("change", () => {
-              websocketConnection.send(JSON.stringify({
-                type: "FILE_CHANGE",
-                path: fileToWatch
-              }));
-            });
-          }
-        });
+      if (parsedMessage?.type === "HMR_WATCHLIST") {
+        process.HMR_CONNECTIONS[connectionId]?.watchlist?.push(...parsedMessage?.tags || []);
+      }
+    });
+    websocketConnection.on("close", () => {
+      if (process.HMR_CONNECTIONS[connectionId]) {
+        delete process.HMR_CONNECTIONS[connectionId];
       }
     });
   });

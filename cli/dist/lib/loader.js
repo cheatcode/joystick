@@ -65,7 +65,9 @@ class Loader {
     this.interval = null;
     const freezeFrame = this.freezeFrames[frame];
     readline.cursorTo(process.stdout, 0);
-    process.stdout.write(`${freezeFrame ? `${freezeFrame} ` : ""}${this.message}`);
+    process.stdout.write(
+      `${freezeFrame ? `${freezeFrame} ` : ""}${this.message}`
+    );
   }
   stable(message = "") {
     this.pause(message);

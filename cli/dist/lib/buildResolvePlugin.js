@@ -1,6 +1,7 @@
 function myExample() {
   return {
     name: "joystick-build-resolve",
+    // this name will show up in warnings and errors
     buildEnd() {
       const moduleIds = Array.from(this.getModuleIds());
       const modules = moduleIds.map((moduleId) => this.getModuleInfo(moduleId)).filter(({ id }) => {

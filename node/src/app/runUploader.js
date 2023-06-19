@@ -5,15 +5,7 @@ import AWS from 'aws-sdk';
 import path from 'path';
 import emitWebsocketEvent from '../websockets/emitWebsocketEvent';
 
-function writeFile(path, contents, cb) {
-  fs.mkdir(getDirName(path), { recursive: true}, function (err) {
-    if (err) return cb(err);
-
-    fs.writeFile(path, contents, cb);
-  });
-}
-
-const uploadToS3 = (upload = {}, options = {}) => {
+const uploadToS3 = (upload = {}, options = {}, onUploadProgress) => {
   try {
     return new Promise((resolve) => {
       const temporaryFilePath = `.joystick/uploads/_tmp/${upload?.fileName}`;
@@ -48,20 +40,11 @@ const uploadToS3 = (upload = {}, options = {}) => {
         queueSize: 3,
       });
 
-      let uploaded = options?.progress;
       let previous = 0;
 
-      s3Upload.on('httpUploadProgress', (progress) => {
-        uploaded += progress?.loaded - previous;
-        previous = progress?.loaded;
-
-        const percentage = Math.round((uploaded / options?.totalFileSizeAllProviders) * 100);
-
-        emitWebsocketEvent(
-          `uploaders_${options?.req?.headers['x-joystick-upload-id']}`,
-          'progress',
-          { provider: 's3', progress: percentage }
-        );
+      s3Upload.on('httpUploadProgress', (s3UploadProgress) => {
+        onUploadProgress('s3', s3UploadProgress?.loaded - previous);
+        previous = s3UploadProgress?.loaded;
       });
 
       s3Upload.send((error, data) => {
@@ -76,6 +59,10 @@ const uploadToS3 = (upload = {}, options = {}) => {
             id: options?.req?.headers['x-joystick-upload-id'],
             provider: 's3',
             url: data?.Location,
+            size: upload?.fileSize,
+            fileName: upload?.fileName,
+            originalFileName: upload?.originalFileName,
+            mimeType: upload?.mimeType,
           };
 
           if (error) {
@@ -111,7 +98,11 @@ const uploadToLocal = (upload = {}, options = {}) => {
           resolve({
             id: options?.req?.headers['x-joystick-upload-id'],
             provider: 'local',
-            url: filePath
+            url: filePath,
+            size: upload?.fileSize,
+            fileName: upload?.fileName,
+            originalFileName: upload?.originalFileName,
+            mimeType: upload?.mimeType,
           });
         });
       }
@@ -121,25 +112,44 @@ const uploadToLocal = (upload = {}, options = {}) => {
   }
 };
 
-const handleUploads = (options = {}) => {
+const handleUploads = async (options = {}) => {
   try {
-    // uploads = [], req = {}
-    // What is the file size * the number of providers?
-    // Then, progress is handed off between providers (local -> s3 -> etc)
+    const uploads = [];
+    let alreadyUploaded = options?.alreadyUploaded; // 100/200
 
-    return Promise.all(options?.uploads.flatMap((upload) => {
-      const uploaders = [];
+    // NOTE: Use a closure here so we can pass it into the provider uploaders and avoid the
+    // alreadyUploaded value being cached (leading to incorrect progress percentage).
+    const onUploadProgress = (provider = '', chunk = 0) => {
+      const progress = alreadyUploaded + chunk;
+      const percentage = Math.round(((progress) / options?.totalFileSizeAllProviders) * 100);
 
-      if (upload?.providers.includes('local')) {
-        uploaders.push(uploadToLocal(upload, options));
+      emitWebsocketEvent(
+        `uploaders_${options?.req?.headers['x-joystick-upload-id']}`,
+        'progress',
+        { provider, progress: percentage }
+      );
+
+      alreadyUploaded += chunk;
+    };
+
+    for (let i = 0; i < options?.uploads?.length; i += 1) {
+      const upload = options?.uploads[i];
+
+      if (upload?.providers?.includes('local')) {
+        // NOTE: Do not pass alreadyUploaded or onProgress to uploadToLocal as the existing total reflects
+        // the transfer from the browser to the server (we assume that value is 1:1 with writing to disk
+        // as the disk write is near-instant).
+        const result = await uploadToLocal(upload, { ...options });
+        uploads.push(result);
       }
 
-      if (upload?.providers.includes('s3')) {
-        uploaders.push(uploadToS3(upload, options));
+      if (upload?.providers?.includes('s3')) {
+        const result = await uploadToS3(upload, { ...options }, onUploadProgress);
+        uploads.push(result);
       }
+    }
 
-      return uploaders;
-    }));
+    return uploads;
   } catch (exception) {
     throw new Error(`[runUploader.handleUploads] ${exception.message}`);
   }

@@ -26,7 +26,12 @@ const handleDeployment = async ({
     let deploymentToExecuteWithDefaults = null;
     if (isInitialDeployment) {
       const loader = new Loader({ padding: " ", defaultMessage: "" });
-      const deploymentToExecute = await inquirer.prompt(prompts.initialDeployment(user, loginSessionToken));
+      const deploymentToExecute = await inquirer.prompt(
+        prompts.initialDeployment(
+          user,
+          loginSessionToken
+        )
+      );
       deploymentToExecuteWithDefaults = {
         ...deploymentToExecute,
         loadBalancerInstances: deploymentToExecute?.loadBalancerInstances || 1,
@@ -49,7 +54,9 @@ const handleDeployment = async ({
         });
         process.exit(0);
       }
-      const response = await inquirer.prompt(prompts.confirmInitialDeployment(deploymentToExecuteWithDefaults, deploymentSummary?.costs));
+      const response = await inquirer.prompt(
+        prompts.confirmInitialDeployment(deploymentToExecuteWithDefaults, deploymentSummary?.costs)
+      );
       confirmation = response.confirmation;
     }
     if (!isInitialDeployment || confirmation) {

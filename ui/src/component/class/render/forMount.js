@@ -1,9 +1,9 @@
 import throwFrameworkError from "../../../lib/throwFrameworkError";
 import getUpdatedDOM from "./getUpdatedDOM";
 
-export default (componentInstance = {}) => {
+export default (componentInstance = {}, options = {}) => {
   try {
-    const updatedDOM = getUpdatedDOM(componentInstance, { includeActual: true });
+    const updatedDOM = getUpdatedDOM(componentInstance, { includeActual: true, existingChildren: options?.existingChildren });
     componentInstance.dom = updatedDOM;
     return updatedDOM.actual;
   } catch (exception) {

@@ -61,7 +61,7 @@ const login = async (options, { resolve, reject }) => {
       }, options?.output),
     });
   } catch (error) {
-    reject(formatErrorString("login", error));
+    reject(new Error(formatErrorString("login", error)));
   }
 };
 

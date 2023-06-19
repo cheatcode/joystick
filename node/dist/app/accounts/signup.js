@@ -86,8 +86,7 @@ const signup = async (options, { resolve, reject }) => {
       user: getOutput(user, options?.output)
     });
   } catch (exception) {
-    console.log(exception);
-    reject(formatErrorString("signup", exception));
+    reject(new Error(formatErrorString("signup", exception)));
   }
 };
 var signup_default = (options) => new Promise((resolve, reject) => {

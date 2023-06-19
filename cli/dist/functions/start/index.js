@@ -2,8 +2,7 @@ import child_process from "child_process";
 import path, { dirname } from "path";
 import { fileURLToPath } from "url";
 import ps from "ps-node";
-import { kill as killPortProcess } from "cross-port-killer";
-import watch from "node-watch";
+import { killPortProcess } from "kill-port-process";
 import fs from "fs";
 import chokidar from "chokidar";
 import Loader from "../../lib/loader.js";
@@ -17,6 +16,7 @@ import startDatabaseProvider from "./databases/startProvider.js";
 import CLILog from "../../lib/CLILog.js";
 import removeDeletedDependenciesFromMap from "./removeDeletedDependenciesFromMap.js";
 import validateDatabasesFromSettings from "../../lib/validateDatabasesFromSettings.js";
+const majorVersion = parseInt(process?.version?.split(".")[0]?.replace("v", ""), 10);
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const killProcess = (pid = 0) => {
@@ -85,17 +85,17 @@ const handleCleanup = async (processIds = [
   process?.hmrProcess?.pid
 ]) => {
   process.loader.text("Shutting down...");
+  for (let i = 0; i < processIds?.length; i += 1) {
+    const processId = processIds[i];
+    if (processId) {
+      await killProcess(processId);
+    }
+  }
   const databases = Object.entries(process.env.DATABASES || {});
   for (let i = 0; i < databases?.length; i += 1) {
     const databaseInstance = databases[i] && databases[i][1];
     if (databaseInstance?.pid) {
       await killProcess(databaseInstance.pid);
-    }
-  }
-  for (let i = 0; i < processIds?.length; i += 1) {
-    const processId = processIds[i];
-    if (processId) {
-      await killProcess(processId);
     }
   }
   process.loader.stop();
@@ -142,13 +142,35 @@ const handleHMRProcessSTDIO = () => {
   }
 };
 const startHMRProcess = () => {
-  const hmrProcess = child_process.fork(path.resolve(`${__dirname}/hmrServer.js`), [], {
-    execArgv: ["--no-warnings", "--experimental-specifier-resolution=node"],
-    silent: true
-  });
+  const execArgv = [
+    "--no-warnings"
+  ];
+  if (majorVersion < 19) {
+    execArgv.push("--experimental-specifier-resolution=node");
+  }
+  const hmrProcess = child_process.fork(
+    path.resolve(`${__dirname}/hmrServer.js`),
+    [],
+    {
+      execArgv,
+      // NOTE: Pipe stdin, stdout, and stderr. IPC establishes a message channel so we
+      // communicate with the child_process.
+      silent: true
+    }
+  );
   process.hmrProcess = hmrProcess;
   handleHMRProcessSTDIO();
   handleHMRProcessMessages();
+};
+const notifyHMRClients = (callback) => {
+  process.hmrProcess.send(
+    JSON.stringify({
+      type: "RESTART_SERVER"
+    }),
+    () => {
+      callback();
+    }
+  );
 };
 const handleServerProcessMessages = () => {
   process.serverProcess.on("message", (message) => {
@@ -188,38 +210,57 @@ const handleServerProcessSTDIO = () => {
 };
 const startApplicationProcess = () => {
   const execArgv = [
-    "--no-warnings",
-    "--experimental-specifier-resolution=node"
+    "--no-warnings"
   ];
+  if (majorVersion < 19) {
+    execArgv.push("--experimental-specifier-resolution=node");
+  }
   if (process.env.NODE_ENV === "development" && process.env.IS_DEBUG_MODE === "true") {
     execArgv.push("--inspect");
   }
-  const serverProcess = child_process.fork(path.resolve(".joystick/build/index.server.js"), [], {
-    execArgv,
-    silent: true,
-    env: {
-      FORCE_COLOR: "1",
-      LOGS_PATH: process.env.LOGS_PATH,
-      NODE_ENV: process.env.NODE_ENV,
-      ROOT_URL: process.env.ROOT_URL,
-      PORT: process.env.PORT,
-      JOYSTICK_SETTINGS: process.env.JOYSTICK_SETTINGS
+  const serverProcess = child_process.fork(
+    path.resolve(".joystick/build/index.server.js"),
+    [],
+    {
+      execArgv,
+      // NOTE: Pipe stdin, stdout, and stderr. IPC establishes a message channel so we
+      // communicate with the child_process.
+      silent: true,
+      env: {
+        FORCE_COLOR: "1",
+        LOGS_PATH: process.env.LOGS_PATH,
+        NODE_ENV: process.env.NODE_ENV,
+        ROOT_URL: process.env.ROOT_URL,
+        PORT: process.env.PORT,
+        JOYSTICK_SETTINGS: process.env.JOYSTICK_SETTINGS
+      }
     }
-  });
+  );
   process.serverProcess = serverProcess;
   handleServerProcessSTDIO();
   handleServerProcessMessages();
+  return serverProcess;
 };
 const restartApplicationProcess = async () => {
   if (process.serverProcess && process.serverProcess.pid) {
     process.loader.text("Restarting app...");
-    killPortProcess(process.env.PORT);
-    killProcess(process.serverProcess.pid);
-    return startApplicationProcess();
+    notifyHMRClients(() => {
+      setTimeout(() => {
+        process.serverProcess.send(JSON.stringify({
+          type: "RESTART_SERVER"
+        }), () => {
+          process.serverProcess.kill();
+          startApplicationProcess();
+        });
+      }, 1e3);
+    });
+    return Promise.resolve();
   }
   process.loader.text("Starting app...");
   startApplicationProcess();
-  startHMRProcess();
+  if (!process.hmrProcess) {
+    startHMRProcess();
+  }
 };
 const initialBuild = async (buildSettings = {}) => {
   const buildPath = `.joystick/build`;
@@ -266,17 +307,18 @@ const startWatcher = async (buildSettings = {}) => {
     }
     if (["add", "change"].includes(event) && fs.existsSync(path2)) {
       const codependencies = getCodependenciesForFile(path2);
-      const fileResults = await buildFiles([path2], null, process.env.NODE_ENV);
+      const fileResults = await buildFiles([path2, ...codependencies?.existing || []], null, process.env.NODE_ENV);
       const fileResultsHaveErrors = fileResults.filter((result) => !!result).map(({ success }) => success).includes(false);
       removeDeletedDependenciesFromMap(codependencies.deleted);
-      const codependencyResult = fileResultsHaveErrors ? [] : await buildFiles(codependencies.existing, null, process.env.NODE_ENV);
-      const codependencyResultsHaveErrors = codependencyResult.filter((result) => !!result).map(({ success }) => success).includes(false);
-      const hasErrors = fileResultsHaveErrors || codependencyResultsHaveErrors;
+      const hasErrors = fileResultsHaveErrors;
       if (process.serverProcess && hasErrors) {
-        process.serverProcess.send(JSON.stringify({
-          error: "BUILD_ERROR",
-          paths: [...fileResults, ...codependencyResult].filter(({ success }) => !success).map(({ path: pathWithError, error }) => ({ path: pathWithError, error }))
-        }));
+        process.serverProcess.send(
+          JSON.stringify({
+            error: "BUILD_ERROR",
+            paths: [...fileResults, ...codependencyResult].filter(({ success }) => !success).map(({ path: pathWithError, error }) => ({ path: pathWithError, error }))
+          })
+        );
+        return;
       }
       if (!hasErrors) {
         process.initialBuildComplete = true;
@@ -368,7 +410,7 @@ var start_default = async (args = {}, options = {}) => {
     });
     process.exit(0);
   }
-  await killPortProcess(port);
+  await killPortProcess([port, port + 1]);
   process.title = "joystick";
   process.env.LOGS_PATH = options?.logs || null;
   process.env.NODE_ENV = options?.environment || "development";

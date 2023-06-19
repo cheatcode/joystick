@@ -4,6 +4,7 @@ import updateFileMap from "./updateFileMap.js";
 import { JOYSTICK_UI_REGEX, EXPORT_DEFAULT_REGEX, JOYSTICK_COMPONENT_REGEX, JOYSTICK_COMMENT_REGEX } from "../../lib/regexes.js";
 import generateId from "./generateId.js";
 import getPlatformSafePath from '../../lib/getPlatformSafePath.js';
+import setComponentId from "./setComponentId.js";
 
 export default {
   warnNodeEnvironment: {
@@ -133,16 +134,9 @@ export default {
           if (shouldSetComponentId) {
             const file = fs.readFileSync(build.initialOptions.outfile, 'utf-8');
             const joystickUIMatches = file?.match(JOYSTICK_COMPONENT_REGEX) || [];
-    
+
             if (joystickUIMatches?.length > 0) {
-              // NOTE: Regex/replace of /\.component\(\/\*\*\//g is a total fluke. This prevents
-              // sample code in Joystick from receiving a _componentId. We use the line .component(/**
-              // to escape the replacement and then automatically clear the escape after _componentId
-              // is set correctly in the file.
-              let contents = file.replace(/\.component\(\{/g, () => {
-                return `.component({\n  _componentId: '${generateId()}',`;
-              }).replace(/\.component\(\/\*\*\//g, '.component(');
-  
+              let contents = setComponentId(file)?.replace(/\.component\(\/\*\*\//g, '.component(');
               fs.writeFileSync(build.initialOptions.outfile, contents);
             }
           }

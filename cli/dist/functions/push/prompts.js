@@ -186,7 +186,10 @@ var prompts_default = {
         loop: false,
         choices: async (answers = {}) => {
           await checkIfProvisionAvailable();
-          const regions = await getProviderRegions(answers?.provider, loginSessionToken);
+          const regions = await getProviderRegions(
+            answers?.provider,
+            loginSessionToken
+          );
           return (regions || []).map((region) => {
             return {
               name: `${chalk.blue(`[${region?.id}]`)} -- ${region?.name} ${chalk.magentaBright(`(${region?.continent?.name})`)}`,
@@ -240,7 +243,10 @@ var prompts_default = {
         loop: false,
         choices: async (answers = {}) => {
           await checkIfProvisionAvailable();
-          const regions = await getProviderRegions(answers?.provider, loginSessionToken);
+          const regions = await getProviderRegions(
+            answers?.provider,
+            loginSessionToken
+          );
           return (regions || []).map((region) => {
             return {
               name: `${chalk.blue(`[${region?.id}]`)} -- ${region?.name} ${chalk.magentaBright(`(${region?.continent?.name})`)}`,

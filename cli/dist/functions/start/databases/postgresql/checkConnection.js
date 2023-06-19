@@ -27,8 +27,12 @@ var checkConnection_default = async (connection) => {
     await testQuery(client);
     return true;
   } catch (exception) {
-    console.warn(chalk.yellowBright(`
-Failed to connect to PostgreSQL. Please double-check connection settings and try again.`));
+    console.warn(
+      chalk.yellowBright(
+        `
+Failed to connect to PostgreSQL. Please double-check connection settings and try again.`
+      )
+    );
     process.exit(1);
   }
 };

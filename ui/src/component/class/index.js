@@ -42,8 +42,8 @@ class Component {
     this.DOMNode = document.querySelector(`body [js-i="${this.instanceId}"]`);
   }
 
-  appendCSSToHead() {
-    appendCSSToHead(this);
+  appendCSSToHead(isHMRUpdate = false) {
+    appendCSSToHead(this, isHMRUpdate);
   }
 
   async handleFetchData(api = {}, req = {}, input = {}, componentInstance = this) {
@@ -84,7 +84,7 @@ class Component {
 
   render(options = {}) {
     if (options?.mounting) {
-      return renderForMount(this);
+      return renderForMount(this, options);
     }
 
     const onBeforeRenderData = this.onBeforeRender();
@@ -102,7 +102,8 @@ class Component {
         this.dom.actual = patchedDOM;
         this.dom.virtual = updatedDOM.virtual;
 
-        
+        registerListeners(this, this.renderMethods);
+
         this.setDOMNodeOnInstance();
         
         processQueue('domNodes', () => {
@@ -140,8 +141,6 @@ class Component {
       if (this.parent) {
         this.parent.onUpdateChildComponent(this.id, this.instanceId);
       }
-
-      registerListeners(this, this.renderMethods);
     }
   }
 

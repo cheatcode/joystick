@@ -2,11 +2,11 @@ import compileCSS from "./compile";
 import prefixCSS from "./prefix";
 import throwFrameworkError from "../../../lib/throwFrameworkError";
 
-export default (componentInstance = {}) => {
+export default (componentInstance = {}, isHMRUpdate = false) => {
   try {
     const hasSSRStylesForComponent = document.head.querySelector(`style[js-ssr]`)?.innerText?.includes(componentInstance.id);
 
-    if (hasSSRStylesForComponent) {
+    if (hasSSRStylesForComponent && !isHMRUpdate) {
       // NOTE: SSR'd CSS has complete tree in one tag. No need to add individual
       // styles back onto page.
       return;
