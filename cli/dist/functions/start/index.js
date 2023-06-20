@@ -313,7 +313,7 @@ const startWatcher = async (buildSettings = {}) => {
         process.serverProcess.send(
           JSON.stringify({
             error: "BUILD_ERROR",
-            paths: [...fileResults, ...codependencyResult].filter(({ success }) => !success).map(({ path: pathWithError, error }) => ({ path: pathWithError, error }))
+            paths: fileResults.filter(({ success }) => !success).map(({ path: pathWithError, error }) => ({ path: pathWithError, error }))
           })
         );
         return;
