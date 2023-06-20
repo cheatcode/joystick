@@ -70,6 +70,7 @@ export default (() =>
     {
       autoReconnect: true,
       onMessage: async (message = {}, connection = {}) => {
+        const previous = Object.assign({}, { scrollTop: window.scrollY });
         const isFileChange = message && message.type && message.type === "FILE_CHANGE";
         const isPageInLayout = !!window.__joystick_layout_page__;
         const CSS = document.head.querySelector('link[href="/_joystick/index.css"]');
@@ -95,8 +96,6 @@ export default (() =>
         }
 
         if (CSS) {
-          CSS.parentNode.removeChild(CSS);
-
           const updatedCSS = document.createElement('link');
 
           updatedCSS.setAttribute('rel', 'stylesheet');
@@ -150,6 +149,16 @@ export default (() =>
             }
           })();
         }
+
+        if (CSS) {
+          // NOTE: Queue this at 1s delay to avoid FOUC.
+          setTimeout(() => {
+            CSS.parentNode.removeChild(CSS);
+          }, 1000);
+        }
+
+        // NOTE: Set scroll back to what it was before the HMR update.
+        window.scrollTo(0, previous.scrollTop);
       },
     },
   ))();

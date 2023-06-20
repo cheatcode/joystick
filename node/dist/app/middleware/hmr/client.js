@@ -49,6 +49,7 @@ var websocketClient = (options = {}, onConnect = null) => {
 var client_default = (() => websocketClient({
   autoReconnect: true,
   onMessage: async (message = {}, connection = {}) => {
+    const previous = Object.assign({}, { scrollTop: window.scrollY });
     const isFileChange = message && message.type && message.type === "FILE_CHANGE";
     const isPageInLayout = !!window.__joystick_layout_page__;
     const CSS = document.head.querySelector('link[href="/_joystick/index.css"]');
@@ -68,7 +69,6 @@ var client_default = (() => websocketClient({
       document.body.appendChild(updatedClientIndex);
     }
     if (CSS) {
-      CSS.parentNode.removeChild(CSS);
       const updatedCSS = document.createElement("link");
       updatedCSS.setAttribute("rel", "stylesheet");
       updatedCSS.setAttribute("href", "/_joystick/index.css");
@@ -98,6 +98,12 @@ var client_default = (() => websocketClient({
         }
       })();
     }
+    if (CSS) {
+      setTimeout(() => {
+        CSS.parentNode.removeChild(CSS);
+      }, 1e3);
+    }
+    window.scrollTo(0, previous.scrollTop);
   }
 }))();
 export {
