@@ -121,6 +121,7 @@ export default async ({
             global: joystick?.settings?.global,
             public: joystick?.settings?.public,
           })};
+
           window.__joystick_url__ = ${JSON.stringify(url)};
           window.__joystick_layout__ = ${
             layout ? `"/_joystick/${layout}"` : null

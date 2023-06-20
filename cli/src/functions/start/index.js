@@ -132,10 +132,19 @@ const handleSignalEvents = (processIds = []) => {
 
 const handleHMRProcessMessages = () => {
   process.hmrProcess.on("message", (message) => {
-    const processMessages = ["server_closed"];
+    const processMessages = ["server_closed", "HMR_UPDATE_COMPLETED"];
 
     if (!processMessages.includes(message)) {
       process.loader.stable(message);
+    }
+
+    if (message === 'HMR_UPDATE_COMPLETED') {
+      // NOTE: Do a setTimeout to ensure that server is still available while the HMR update completes.
+      // Necessary because some updates are instance, but others might mount a UI that needs a server
+      // available (e.g., runs API requests).
+      setTimeout(() => {
+        restartApplicationProcess();
+      }, 500);
     }
   });
 };
@@ -193,13 +202,14 @@ const startHMRProcess = () => {
   handleHMRProcessMessages();
 };
 
-const notifyHMRClients = (callback) => {
+const notifyHMRClients = (indexHTMLChanged = false) => {
+  const settings = loadSettings(process.env.NODE_ENV);
   process.hmrProcess.send(
     JSON.stringify({
       type: 'RESTART_SERVER',
-    }), () => {
-      callback();
-    },
+      settings,
+      indexHTMLChanged,
+    })
   );
 };
 
@@ -288,23 +298,25 @@ const startApplicationProcess = () => {
 const restartApplicationProcess = async () => {
   if (process.serverProcess && process.serverProcess.pid) {
     process.loader.text("Restarting app...");
+    process.serverProcess.kill();
+    startApplicationProcess();
 
     // NOTE: Notify the connected HMR clients of the change first so they can pull
     // updated from the server *before* we stop and restart it. Without this, we
     // get fetch errors in the browser because the server is unavailable.
-    notifyHMRClients(() => {
-      setTimeout(() => {
-        // NOTE: Use IPC to tell Express server to stop itself before killing the
-        // node child process. Do it this way so we don't have to use a slower
-        // port killer utility.
-        process.serverProcess.send(JSON.stringify({
-          type: 'RESTART_SERVER',
-        }), () => {
-          process.serverProcess.kill();
-          startApplicationProcess();
-        });
-      }, 1000);
-    });
+    // notifyHMRClients(() => {
+    //   setTimeout(() => {
+    //     // NOTE: Use IPC to tell Express server to stop itself before killing the
+    //     // node child process. Do it this way so we don't have to use a slower
+    //     // port killer utility.
+    //     process.serverProcess.send(JSON.stringify({
+    //       type: 'RESTART_SERVER',
+    //     }), () => {
+    //       process.serverProcess.kill();
+    //       startApplicationProcess();
+    //     });
+    //   }, 1000);
+    // });
 
     return Promise.resolve();
   }
@@ -359,6 +371,7 @@ const startWatcher = async (buildSettings = {}) => {
   watcher.on('all', async (event, path) => {
     await requiredFileCheck();
     process.loader.text("Rebuilding app...");
+    const isHTMLUpdate = path?.includes('index.html');
 
     if (
       ['addDir'].includes(event) &&
@@ -367,7 +380,8 @@ const startWatcher = async (buildSettings = {}) => {
       !fs.existsSync(`./.joystick/build/${path}`)
     ) {
       fs.mkdirSync(`./.joystick/build/${path}`);
-      await restartApplicationProcess();
+      notifyHMRClients(isHTMLUpdate);
+      // await restartApplicationProcess();
     }
 
     if (!!filesToCopy.find((fileToCopy) => fileToCopy.path === path)) {
@@ -381,8 +395,9 @@ const startWatcher = async (buildSettings = {}) => {
         fs.writeFileSync(`./.joystick/build/${path}`, fs.readFileSync(path));
       }
 
-      await loadSettings(process.env.NODE_ENV);
-      await restartApplicationProcess();
+      loadSettings(process.env.NODE_ENV);
+      notifyHMRClients(isHTMLUpdate);
+      // await restartApplicationProcess();
       return;
     }
 
@@ -412,13 +427,15 @@ const startWatcher = async (buildSettings = {}) => {
 
       if (!hasErrors) {
         process.initialBuildComplete = true;
-        await restartApplicationProcess();
+        notifyHMRClients(isHTMLUpdate);
+        // await restartApplicationProcess();
         return;
       }
     }
 
     if (['unlink', 'unlinkDir'].includes(event) && !fs.existsSync(`./.joystick/build/${path}`)) {
-      await restartApplicationProcess();
+      notifyHMRClients(isHTMLUpdate);
+      // await restartApplicationProcess();
       return;
     }
 
@@ -434,7 +451,8 @@ const startWatcher = async (buildSettings = {}) => {
         fs.unlinkSync(pathToUnlink);
       }
 
-      await restartApplicationProcess();
+      notifyHMRClients(isHTMLUpdate);
+      // await restartApplicationProcess();
       return;
     }
   });
@@ -472,7 +490,7 @@ const startDatabases = async (databasePortStart = 2610) => {
   }
 };
 
-const loadSettings = async () => {
+const loadSettings = () => {
   const environment = process.env.NODE_ENV;
   const settingsFilePath = `${process.cwd()}/settings.${environment}.json`;
   const hasSettingsFile = fs.existsSync(settingsFilePath);
@@ -539,7 +557,7 @@ export default async (args = {}, options = {}) => {
   process.env.PORT = options?.port ? parseInt(options?.port) : 2600;
   process.env.IS_DEBUG_MODE = options?.debug;
 
-  const settings = await loadSettings(process.env.NODE_ENV);
+  const settings = loadSettings(process.env.NODE_ENV);
   await startDatabases(databasePortStart);
 
   startWatcher(settings?.config?.build);

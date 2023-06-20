@@ -8,6 +8,7 @@ var hmrServer_default = (() => {
   });
   process.on("message", (message) => {
     if (typeof process.HMR_CONNECTIONS === "object") {
+      const parsedMessage = JSON.parse(message);
       const connections = Object.values(process.HMR_CONNECTIONS);
       for (let i = 0; i < connections?.length; i += 1) {
         const connection = connections[i];
@@ -15,10 +16,11 @@ var hmrServer_default = (() => {
           connection.connection.send(
             JSON.stringify({
               type: "FILE_CHANGE",
-              files: connection?.watchlist?.reduce((files = {}, file = "") => {
-                files[file] = fs.readFileSync(`./.joystick/build/${file}`, "utf-8");
-                return files;
-              }, {})
+              settings: {
+                global: parsedMessage?.settings?.global,
+                public: parsedMessage?.settings?.public
+              },
+              indexHTMLChanged: parsedMessage?.indexHTMLChanged
             })
           );
         }
@@ -36,6 +38,9 @@ var hmrServer_default = (() => {
     };
     websocketConnection.on("message", (message) => {
       const parsedMessage = JSON.parse(message);
+      if (parsedMessage?.type === "HMR_UPDATE_COMPLETE") {
+        process.send("HMR_UPDATE_COMPLETED");
+      }
       if (parsedMessage?.type === "HMR_WATCHLIST") {
         process.HMR_CONNECTIONS[connectionId]?.watchlist?.push(...parsedMessage?.tags || []);
       }

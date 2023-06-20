@@ -111,9 +111,14 @@ const handleSignalEvents = (processIds = []) => {
 };
 const handleHMRProcessMessages = () => {
   process.hmrProcess.on("message", (message) => {
-    const processMessages = ["server_closed"];
+    const processMessages = ["server_closed", "HMR_UPDATE_COMPLETED"];
     if (!processMessages.includes(message)) {
       process.loader.stable(message);
+    }
+    if (message === "HMR_UPDATE_COMPLETED") {
+      setTimeout(() => {
+        restartApplicationProcess();
+      }, 500);
     }
   });
 };
@@ -162,14 +167,14 @@ const startHMRProcess = () => {
   handleHMRProcessSTDIO();
   handleHMRProcessMessages();
 };
-const notifyHMRClients = (callback) => {
+const notifyHMRClients = (indexHTMLChanged = false) => {
+  const settings = loadSettings(process.env.NODE_ENV);
   process.hmrProcess.send(
     JSON.stringify({
-      type: "RESTART_SERVER"
-    }),
-    () => {
-      callback();
-    }
+      type: "RESTART_SERVER",
+      settings,
+      indexHTMLChanged
+    })
   );
 };
 const handleServerProcessMessages = () => {
@@ -244,16 +249,8 @@ const startApplicationProcess = () => {
 const restartApplicationProcess = async () => {
   if (process.serverProcess && process.serverProcess.pid) {
     process.loader.text("Restarting app...");
-    notifyHMRClients(() => {
-      setTimeout(() => {
-        process.serverProcess.send(JSON.stringify({
-          type: "RESTART_SERVER"
-        }), () => {
-          process.serverProcess.kill();
-          startApplicationProcess();
-        });
-      }, 1e3);
-    });
+    process.serverProcess.kill();
+    startApplicationProcess();
     return Promise.resolve();
   }
   process.loader.text("Starting app...");
@@ -289,9 +286,10 @@ const startWatcher = async (buildSettings = {}) => {
   watcher.on("all", async (event, path2) => {
     await requiredFileCheck();
     process.loader.text("Rebuilding app...");
+    const isHTMLUpdate = path2?.includes("index.html");
     if (["addDir"].includes(event) && fs.existsSync(path2) && fs.lstatSync(path2).isDirectory() && !fs.existsSync(`./.joystick/build/${path2}`)) {
       fs.mkdirSync(`./.joystick/build/${path2}`);
-      await restartApplicationProcess();
+      notifyHMRClients(isHTMLUpdate);
     }
     if (!!filesToCopy.find((fileToCopy) => fileToCopy.path === path2)) {
       const isDirectory = fs.statSync(path2).isDirectory();
@@ -301,8 +299,8 @@ const startWatcher = async (buildSettings = {}) => {
       if (!isDirectory) {
         fs.writeFileSync(`./.joystick/build/${path2}`, fs.readFileSync(path2));
       }
-      await loadSettings(process.env.NODE_ENV);
-      await restartApplicationProcess();
+      loadSettings(process.env.NODE_ENV);
+      notifyHMRClients(isHTMLUpdate);
       return;
     }
     if (["add", "change"].includes(event) && fs.existsSync(path2)) {
@@ -322,12 +320,12 @@ const startWatcher = async (buildSettings = {}) => {
       }
       if (!hasErrors) {
         process.initialBuildComplete = true;
-        await restartApplicationProcess();
+        notifyHMRClients(isHTMLUpdate);
         return;
       }
     }
     if (["unlink", "unlinkDir"].includes(event) && !fs.existsSync(`./.joystick/build/${path2}`)) {
-      await restartApplicationProcess();
+      notifyHMRClients(isHTMLUpdate);
       return;
     }
     if (["unlink", "unlinkDir"].includes(event) && fs.existsSync(`./.joystick/build/${path2}`)) {
@@ -339,7 +337,7 @@ const startWatcher = async (buildSettings = {}) => {
       if (stats.isFile()) {
         fs.unlinkSync(pathToUnlink);
       }
-      await restartApplicationProcess();
+      notifyHMRClients(isHTMLUpdate);
       return;
     }
   });
@@ -368,7 +366,7 @@ const startDatabases = async (databasePortStart = 2610) => {
     console.warn(exception);
   }
 };
-const loadSettings = async () => {
+const loadSettings = () => {
   const environment = process.env.NODE_ENV;
   const settingsFilePath = `${process.cwd()}/settings.${environment}.json`;
   const hasSettingsFile = fs.existsSync(settingsFilePath);
@@ -416,7 +414,7 @@ var start_default = async (args = {}, options = {}) => {
   process.env.NODE_ENV = options?.environment || "development";
   process.env.PORT = options?.port ? parseInt(options?.port) : 2600;
   process.env.IS_DEBUG_MODE = options?.debug;
-  const settings = await loadSettings(process.env.NODE_ENV);
+  const settings = loadSettings(process.env.NODE_ENV);
   await startDatabases(databasePortStart);
   startWatcher(settings?.config?.build);
   handleSignalEvents([]);

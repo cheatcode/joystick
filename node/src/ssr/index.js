@@ -46,6 +46,15 @@ const handleHTMLReplacementsForApp = ({
         `
         <div id="app">${componentHTML}</div>
         <script>
+          window.joystick = {};
+          
+          if (window.joystick) {
+            window.joystick.settings = {
+              global: ${JSON.stringify(joystick?.settings?.global)},
+              public: ${JSON.stringify(joystick?.settings?.public)},
+            };
+          }
+
           window.__joystick_ssr__ = true;
           ${process.env.NODE_ENV === 'development' ? `window.__joystick__hmr_port = ${parseInt(process.env.PORT, 10) + 1}` : ''}
           window.__joystick_data__ = ${

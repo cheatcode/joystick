@@ -1,14 +1,4 @@
 // src/app/middleware/hmr/client.js
-var assignPreviousComponentIdsToElements = () => {
-  const joystickDOMNodes = Array.from(document.querySelectorAll("[js-c]"));
-  console.log(joystickDOMNodes);
-  for (let i = 0; i < joystickDOMNodes?.length; i += 1) {
-    const node = joystickDOMNodes[i];
-    if (node) {
-      node.setAttribute("js-pid", node.getAttribute("js-c"));
-    }
-  }
-};
 var reconnectInterval = null;
 var reconnectAttempts = 0;
 var websocketClient = (options = {}, onConnect = null) => {
@@ -34,7 +24,7 @@ var websocketClient = (options = {}, onConnect = null) => {
   });
   client.addEventListener("message", (event) => {
     if (event?.data && options.onMessage) {
-      options.onMessage(JSON.parse(event.data));
+      options.onMessage(JSON.parse(event.data), connection);
     }
   });
   client.addEventListener("close", () => {
@@ -58,10 +48,32 @@ var websocketClient = (options = {}, onConnect = null) => {
 };
 var client_default = (() => websocketClient({
   autoReconnect: true,
-  onMessage: (message = {}) => {
-    assignPreviousComponentIdsToElements();
+  onMessage: async (message = {}, connection = {}) => {
     const isFileChange = message && message.type && message.type === "FILE_CHANGE";
     const isPageInLayout = !!window.__joystick_layout_page__;
+    const CSS = document.head.querySelector('link[href="/_joystick/index.css"]');
+    const clientIndex = document.body.querySelector('script[src^="/_joystick/index.client.js"]');
+    if (message?.indexHTMLChanged) {
+      location.reload();
+    }
+    if (message?.settings) {
+      window.__joystick_settings__ = JSON.stringify(message?.settings);
+      window.joystick.settings = message?.settings;
+    }
+    if (clientIndex) {
+      clientIndex.parentNode.removeChild(clientIndex);
+      const updatedClientIndex = document.createElement("script");
+      updatedClientIndex.setAttribute("type", "text/javascript");
+      updatedClientIndex.setAttribute("src", `/_joystick/index.client.js?v=${new Date().getTime()}`);
+      document.body.appendChild(updatedClientIndex);
+    }
+    if (CSS) {
+      CSS.parentNode.removeChild(CSS);
+      const updatedCSS = document.createElement("link");
+      updatedCSS.setAttribute("rel", "stylesheet");
+      updatedCSS.setAttribute("href", "/_joystick/index.css");
+      document.head.appendChild(updatedCSS);
+    }
     if (isFileChange && isPageInLayout) {
       (async () => {
         window.__joystick_childrenBeforeHMRUpdate__ = window.joystick?._internal?.tree?.instance?.children;
@@ -70,6 +82,9 @@ var client_default = (() => websocketClient({
         const layout = layoutComponentFile.default;
         const page = pageComponentFile.default;
         window.joystick.mount(layout, Object.assign({ page }, window.__joystick_ssr_props__), document.getElementById("app"), true);
+        if (connection.send) {
+          connection.send({ type: "HMR_UPDATE_COMPLETE" });
+        }
       })();
     }
     if (isFileChange && !isPageInLayout) {
@@ -78,19 +93,12 @@ var client_default = (() => websocketClient({
         const pageComponentFile = await import(`${window.__joystick_page_url__}?t=${new Date().getTime()}`);
         const page = pageComponentFile.default;
         window.joystick.mount(page, Object.assign({}, window.__joystick_ssr_props__), document.getElementById("app"), true);
+        if (connection.send) {
+          connection.send({ type: "HMR_UPDATE_COMPLETE" });
+        }
       })();
     }
   }
-}, (connection) => {
-  const joystickScriptTags = [].map.call(document.querySelectorAll("script"), (scriptTag) => {
-    return scriptTag && scriptTag.src;
-  }).filter((scriptPath) => scriptPath.includes("/_joystick")).filter((scriptPath) => !scriptPath.includes("/hmr")).filter((scriptPath) => !scriptPath.includes("/_joystick/utils/process.js")).map((scriptPath) => {
-    return scriptPath.replace(`${window.location.origin}/`, "").replace("_joystick/", "");
-  });
-  connection.send({
-    type: "HMR_WATCHLIST",
-    tags: joystickScriptTags
-  });
 }))();
 export {
   client_default as default
