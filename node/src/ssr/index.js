@@ -1,31 +1,31 @@
 /* eslint-disable consistent-return */
 
-import fs from 'fs';
-import joystick from '@joystick.js/node';
-import get from '../api/get';
-import set from '../api/set';
+import fs from "fs";
+import joystick from "@joystick.js/node";
+import get from "../api/get";
+import set from "../api/set";
 import getBrowserSafeRequest from "../app/getBrowserSafeRequest";
 import formatCSS from "./formatCSS";
 import getCSSFromTree from "./getCSSFromTree";
 import replaceWhenTags from "./replaceWhenTags";
 import setHeadTagsInHTML from "./setHeadTagsInHTML";
-import { parseHTML } from 'linkedom';
+import { parseHTML } from "linkedom";
 
-const injectCSSIntoHTML = (html, baseCSS = '', css = '') => {
+const injectCSSIntoHTML = (html, baseCSS = "", css = "") => {
   try {
     return html
       .replace("${css}", css)
-      .replace('${globalCSS}', `<style>${baseCSS || ''}</style>`)
-      .replace('${componentCSS}', css);
+      .replace("${globalCSS}", `<style>${baseCSS || ""}</style>`)
+      .replace("${componentCSS}", css);
   } catch (exception) {
     throw new Error(`[ssr.injectCSSIntoHTML] ${exception.message}`);
   }
 };
 
 const handleHTMLReplacementsForApp = ({
-  baseHTML = '',
+  baseHTML = "",
   // css = '',
-  componentHTML = '',
+  componentHTML = "",
   componentInstance = {},
   dataFromComponent,
   dataForClient = {},
@@ -33,13 +33,12 @@ const handleHTMLReplacementsForApp = ({
   props = {},
   translations = {},
   url = {},
-  layoutComponentPath = '',
-  pageComponentPath = '',
+  layoutComponentPath = "",
+  pageComponentPath = "",
 }) => {
   try {
     return baseHTML
       .replace("${meta}", "")
-      // .replace("${css}", css)
       .replace("${scripts}", "")
       .replace(
         '<div id="app"></div>',
@@ -56,14 +55,17 @@ const handleHTMLReplacementsForApp = ({
           }
 
           window.__joystick_ssr__ = true;
-          ${process.env.NODE_ENV === 'development' ? `window.__joystick__hmr_port = ${parseInt(process.env.PORT, 10) + 1}` : ''}
-          window.__joystick_data__ = ${
-            JSON.stringify({
-              // TODO:
-              [componentInstance.id]: dataFromComponent?.data || {},
-              ...(dataForClient || {}),
-            })
-          };
+          ${
+            process.env.NODE_ENV === "development"
+              ? `window.__joystick__hmr_port = ${
+                  parseInt(process.env.PORT, 10) + 1
+                }`
+              : ""
+          }
+          window.__joystick_data__ = ${JSON.stringify({
+            [componentInstance.id]: dataFromComponent?.data || {},
+            ...(dataForClient || {}),
+          })};
           window.__joystick_req__ = ${JSON.stringify(browserSafeRequest)};
           window.__joystick_ssr_props__ = ${JSON.stringify(props)};
           window.__joystick_i18n__ = ${JSON.stringify(translations)};
@@ -85,14 +87,20 @@ const handleHTMLReplacementsForApp = ({
         <script type="module" src="/_joystick/utils/process.js"></script>
         <script type="module" src="/_joystick/index.client.js"></script>
         ${
-          pageComponentPath ? `<script type="module" src="/_joystick/${pageComponentPath}"></script>` : ""
+          pageComponentPath
+            ? `<script type="module" src="/_joystick/${pageComponentPath}"></script>`
+            : ""
         }
         ${
           layoutComponentPath
             ? `<script type="module" src="/_joystick/${layoutComponentPath}"></script>`
             : ""
         }
-        ${process.env.NODE_ENV === 'development' ? `<script type="module" src="/_joystick/hmr/client.js"></script>` : ''}
+        ${
+          process.env.NODE_ENV === "development"
+            ? `<script type="module" src="/_joystick/hmr/client.js"></script>`
+            : ""
+        }
         `
       );
   } catch (exception) {
@@ -101,42 +109,38 @@ const handleHTMLReplacementsForApp = ({
 };
 
 const handleHTMLReplacementsForEmail = ({
-  subject = '',
-  preheader = '',
-  baseHTML = '',
-  // baseCSS = '',
-  // componentCSS = '',
-  componentHTML = '',
+  subject = "",
+  preheader = "",
+  baseHTML = "",
+  componentHTML = "",
 }) => {
   try {
     return baseHTML
-      .replace('${subject}', subject)
-      // .replace('${globalCSS}', `<style>${baseCSS || ''}</style>`)
-      // .replace('${componentCSS}', componentCSS)
-      .replace('${preheader}', preheader || '')
+      .replace("${subject}", subject)
+      .replace("${preheader}", preheader || "")
       .replace('<div id="email"></div>', componentHTML);
   } catch (exception) {
-    throw new Error(`[ssr.handleHTMLReplacementsForEmail] ${exception.message}`);
+    throw new Error(
+      `[ssr.handleHTMLReplacementsForEmail] ${exception.message}`
+    );
   }
 };
 
 const getHTMLWithTargetReplacements = ({
   componentInstance = {},
-  componentHTML = '',
+  componentHTML = "",
   isEmailRender = false,
-  emailSubject = '',
-  emailPreheader = '',
-  baseHTML = '',
-  // baseCSS = '',
-  // css = '',
+  emailSubject = "",
+  emailPreheader = "",
+  baseHTML = "",
   dataFromComponent = {},
   dataForClient = {},
   browserSafeRequest = {},
   props = {},
   translations = {},
   url = {},
-  layoutComponentPath = '',
-  pageComponentPath = '',
+  layoutComponentPath = "",
+  pageComponentPath = "",
 }) => {
   try {
     if (isEmailRender) {
@@ -144,8 +148,6 @@ const getHTMLWithTargetReplacements = ({
         subject: emailSubject,
         preheader: emailPreheader,
         baseHTML,
-        // baseCSS,
-        // componentCSS: css,
         componentHTML: componentHTML,
       });
     }
@@ -153,7 +155,6 @@ const getHTMLWithTargetReplacements = ({
     return handleHTMLReplacementsForApp({
       componentInstance,
       baseHTML,
-      // css,
       componentHTML,
       dataFromComponent,
       dataForClient,
@@ -175,7 +176,7 @@ const getHTMLWithData = (
   ssrTree = {},
   translations = {},
   dataFromComponent = {},
-  dataFromTree = [],
+  dataFromTree = []
 ) => {
   try {
     return componentInstance.renderToHTML({
@@ -196,18 +197,16 @@ const processHTML = ({
   dataFromComponent = {},
   dataFromTree = [],
   dataForClient = {},
-  baseHTML = '',
-  // baseCSS = '',
-  // css = '',
+  baseHTML = "",
   isEmailRender = false,
-  emailSubject = '',
-  emailPreheader = '',
+  emailSubject = "",
+  emailPreheader = "",
   browserSafeRequest = {},
   props = {},
   translations = {},
   url = {},
-  layoutComponentPath = '',
-  pageComponentPath = '',
+  layoutComponentPath = "",
+  pageComponentPath = "",
   head = null,
   renderingHTMLWithDataForSSR = false,
 }) => {
@@ -218,7 +217,7 @@ const processHTML = ({
       ssrTree,
       translations,
       dataFromComponent,
-      dataFromTree,
+      dataFromTree
     );
 
     const htmlWithWhenReplacements = replaceWhenTags(htmlWithData.wrapped);
@@ -230,8 +229,6 @@ const processHTML = ({
       emailSubject,
       emailPreheader,
       baseHTML,
-      // baseCSS,
-      // css,
       dataFromComponent,
       dataFromTree,
       dataForClient,
@@ -251,18 +248,21 @@ const processHTML = ({
   }
 };
 
-const getBaseCSS = (baseHTMLName = '') => {
+const getBaseCSS = (baseHTMLName = "") => {
   try {
     // NOTE: Passed value is baseHTMLName, however, we want to replace .html with .css to check for a CSS file.
-    const customBaseCSSPathForEmail = baseHTMLName ? `${process.cwd()}/email/base_${baseHTMLName}.css` : null;
+    const customBaseCSSPathForEmail = baseHTMLName
+      ? `${process.cwd()}/email/base_${baseHTMLName}.css`
+      : null;
     const customDefaultBaseCSSPathForEmail = `${process.cwd()}/email/base.css`;
-    const defaultBaseCSSPathForEmail = process.env.NODE_ENV === 'test' ?
-    `${process.cwd()}/src/email/templates/base.css` :
-    `${process.cwd()}/node_modules/@joystick.js/node/dist/email/templates/base.css`;
-    
+    const defaultBaseCSSPathForEmail =
+      process.env.NODE_ENV === "test"
+        ? `${process.cwd()}/src/email/templates/base.css`
+        : `${process.cwd()}/node_modules/@joystick.js/node/dist/email/templates/base.css`;
+
     // NOTE: Default if none of the other conditionals below catch.
     let baseCSSPathToFetch = defaultBaseCSSPathForEmail;
-  
+
     if (fs.existsSync(customDefaultBaseCSSPathForEmail)) {
       baseCSSPathToFetch = customDefaultBaseCSSPathForEmail;
     }
@@ -271,7 +271,9 @@ const getBaseCSS = (baseHTMLName = '') => {
       baseCSSPathToFetch = customBaseCSSPathForEmail;
     }
 
-    return fs.existsSync(baseCSSPathToFetch) ? fs.readFileSync(baseCSSPathToFetch, 'utf-8') : '';
+    return fs.existsSync(baseCSSPathToFetch)
+      ? fs.readFileSync(baseCSSPathToFetch, "utf-8")
+      : "";
   } catch (exception) {
     throw new Error(`[ssr.getBaseCSS] ${exception.message}`);
   }
@@ -280,15 +282,17 @@ const getBaseCSS = (baseHTMLName = '') => {
 const addAttributesToDOM = (dom = {}, attributes = {}) => {
   try {
     const attributeKeys = Object.keys(attributes);
-    const attributeKeysWithoutClassList = attributeKeys?.filter((key) => key !== 'class');
+    const attributeKeysWithoutClassList = attributeKeys?.filter(
+      (key) => key !== "class"
+    );
 
     if (Array.isArray(attributes?.class?.list)) {
-      if (attributes?.class?.method === 'replace') {
-        dom.setAttribute('class', attributes.class.list.join(' '));
+      if (attributes?.class?.method === "replace") {
+        dom.setAttribute("class", attributes.class.list.join(" "));
       } else {
         let currentItem = attributes.class.list.length;
 
-        while(currentItem--) {
+        while (currentItem--) {
           const className = attributes.class.list[currentItem];
           dom.classList.add(className);
         }
@@ -296,8 +300,8 @@ const addAttributesToDOM = (dom = {}, attributes = {}) => {
     }
 
     let currentAttribute = attributeKeysWithoutClassList.length;
-    
-    while(currentAttribute--) {
+
+    while (currentAttribute--) {
       const attribute = attributes.class.list[currentAttribute];
       dom.setAttribute(attribute, attributes[attribute]);
     }
@@ -308,16 +312,16 @@ const addAttributesToDOM = (dom = {}, attributes = {}) => {
   }
 };
 
-const addAttributesToBaseHTML = (baseHTML = '', attributes = {}) => {
+const addAttributesToBaseHTML = (baseHTML = "", attributes = {}) => {
   try {
     const { document } = parseHTML(baseHTML);
-    
+
     if (attributes?.html) {
-      addAttributesToDOM(document.documentElement, attributes.html)
+      addAttributesToDOM(document.documentElement, attributes.html);
     }
 
     if (attributes?.body) {
-      addAttributesToDOM(document.body, attributes.body)
+      addAttributesToDOM(document.body, attributes.body);
     }
 
     return document.toString();
@@ -326,16 +330,19 @@ const addAttributesToBaseHTML = (baseHTML = '', attributes = {}) => {
   }
 };
 
-const getBaseHTML = (isEmailRender = false, baseEmailHTMLName = '') => {
+const getBaseHTML = (isEmailRender = false, baseEmailHTMLName = "") => {
   try {
     let baseHTMLPathToFetch = `${process.cwd()}/index.html`;
 
     if (isEmailRender) {
-      const customBaseHTMLPathForEmail = baseEmailHTMLName ? `${process.cwd()}/email/base_${baseEmailHTMLName}.html` : null;
+      const customBaseHTMLPathForEmail = baseEmailHTMLName
+        ? `${process.cwd()}/email/base_${baseEmailHTMLName}.html`
+        : null;
       const customDefaultBaseHTMLPathForEmail = `${process.cwd()}/email/base.html`;
-      const defaultBaseHTMLPathForEmail = process.env.NODE_ENV === 'test' ?
-      `${process.cwd()}/src/email/templates/base.html` :
-      `${process.cwd()}/node_modules/@joystick.js/node/dist/email/templates/base.html`;
+      const defaultBaseHTMLPathForEmail =
+        process.env.NODE_ENV === "test"
+          ? `${process.cwd()}/src/email/templates/base.html`
+          : `${process.cwd()}/node_modules/@joystick.js/node/dist/email/templates/base.html`;
 
       // NOTE: Default if none of the other conditionals below catch.
       baseHTMLPathToFetch = defaultBaseHTMLPathForEmail;
@@ -349,7 +356,9 @@ const getBaseHTML = (isEmailRender = false, baseEmailHTMLName = '') => {
       }
     }
 
-    return fs.existsSync(baseHTMLPathToFetch) ? fs.readFileSync(baseHTMLPathToFetch, 'utf-8') : '';
+    return fs.existsSync(baseHTMLPathToFetch)
+      ? fs.readFileSync(baseHTMLPathToFetch, "utf-8")
+      : "";
   } catch (exception) {
     throw new Error(`[ssr.getBaseHTML] ${exception.message}`);
   }
@@ -371,15 +380,21 @@ const buildDataForClient = (dataFromTree = []) => {
 
 const getDataFromTree = (ssrTree = {}) => {
   try {
-    return Promise.all(ssrTree.dataFunctions.map(async (dataFunction) => {
-      return dataFunction();
-    }));
+    return Promise.all(
+      ssrTree.dataFunctions.map(async (dataFunction) => {
+        return dataFunction();
+      })
+    );
   } catch (exception) {
     throw new Error(`[ssr.getDataFromTree] ${exception.message}`);
   }
 };
 
-const buildTreeForComponent = (componentInstance = {}, ssrTree = {}, translations = {}) => {
+const buildTreeForComponent = (
+  componentInstance = {},
+  ssrTree = {},
+  translations = {}
+) => {
   try {
     // NOTE: Running renderToHTML with walkingTreeForSSR skips return of HTML and allows us to
     // "scoop up" all of the child components and their data functions into ssrTree.
@@ -394,9 +409,18 @@ const buildTreeForComponent = (componentInstance = {}, ssrTree = {}, translation
   }
 };
 
-const getDataFromComponent = async (componentInstance = {}, api = {}, browserSafeRequest = {}) => {
+const getDataFromComponent = async (
+  componentInstance = {},
+  api = {},
+  browserSafeRequest = {}
+) => {
   try {
-    const data = await componentInstance.handleFetchData(api, browserSafeRequest, {}, componentInstance);
+    const data = await componentInstance.handleFetchData(
+      api,
+      browserSafeRequest,
+      {},
+      componentInstance
+    );
     return {
       componentId: componentInstance?.id,
       data,
@@ -435,7 +459,7 @@ const getAPIForDataFunctions = (req = {}) => {
     // inbound request (it's technically a brand new request). Passing the cookie here
     // ensures that the user making the request is "forwarded" along with those requests.
     return {
-      get: (getterName = '', getterOptions = {}) => {
+      get: (getterName = "", getterOptions = {}) => {
         return get(getterName, {
           ...getterOptions,
           headers: {
@@ -443,7 +467,7 @@ const getAPIForDataFunctions = (req = {}) => {
           },
         });
       },
-      set: (setterName = '', setterOptions = {}) => {
+      set: (setterName = "", setterOptions = {}) => {
         return set(setterName, {
           ...setterOptions,
           headers: {
@@ -459,8 +483,9 @@ const getAPIForDataFunctions = (req = {}) => {
 
 const validateOptions = (options) => {
   try {
-    if (!options) throw new Error('options object is required.');
-    if (!options.componentFunction) throw new Error('options.componentFunction is required.');
+    if (!options) throw new Error("options object is required.");
+    if (!options.componentFunction)
+      throw new Error("options.componentFunction is required.");
   } catch (exception) {
     throw new Error(`[ssr.validateOptions] ${exception.message}`);
   }
@@ -470,7 +495,9 @@ const ssr = async (options, { resolve, reject }) => {
   try {
     validateOptions(options);
     const apiForDataFunctions = getAPIForDataFunctions(options.req);
-    const browserSafeRequest = options?.email ? {} : getBrowserSafeRequest({ ...(options?.req || {}) });
+    const browserSafeRequest = options?.email
+      ? {}
+      : getBrowserSafeRequest({ ...(options?.req || {}) });
 
     const componentInstance = getComponentInstance(options.componentFunction, {
       props: options?.props || {},
@@ -483,17 +510,23 @@ const ssr = async (options, { resolve, reject }) => {
     const ssrTree = getTreeForSSR(componentInstance);
     const ssrTreeForCSS = getTreeForSSR(componentInstance);
 
-    const dataFromComponent = await getDataFromComponent(componentInstance, apiForDataFunctions, browserSafeRequest);
+    const dataFromComponent = await getDataFromComponent(
+      componentInstance,
+      apiForDataFunctions,
+      browserSafeRequest
+    );
 
     buildTreeForComponent(componentInstance, ssrTree);
 
     const dataFromTree = await getDataFromTree(ssrTree);
-    const dataForClient = !options?.email ? buildDataForClient(dataFromTree) : null;
-    
+    const dataForClient = !options?.email
+      ? buildDataForClient(dataFromTree)
+      : null;
+
     let baseHTML = getBaseHTML(options?.email, options?.baseEmailHTMLName);
 
     if (options?.attributes?.html || options?.attributes?.body) {
-      baseHTML = addAttributesToBaseHTML(baseHTML, options?.attributes); 
+      baseHTML = addAttributesToBaseHTML(baseHTML, options?.attributes);
     }
 
     // NOTE: This is the HTML for the actual server-side render. Below, we run processHTML
@@ -543,12 +576,10 @@ const ssr = async (options, { resolve, reject }) => {
       head: options?.head,
     });
 
-    const baseCSS = options?.email ? getBaseCSS(options?.baseEmailHTMLName) : '';
+    const baseCSS = options?.email
+      ? getBaseCSS(options?.baseEmailHTMLName)
+      : "";
     const css = formatCSS(getCSSFromTree(ssrTreeForCSS));
-    // TODO: If we use a call to renderComponentToHTML(), pass in a special "cssTree" that we can use to collect CSS
-    // from the dynamically rendered components. This can be injected below so that inline/dynamically rendered components
-    // don't have a FOUC.
-    // const dynamicallyRenderedCSS = ;
     const htmlWithCSS = injectCSSIntoHTML(html, baseCSS, css);
 
     resolve(htmlWithCSS);
