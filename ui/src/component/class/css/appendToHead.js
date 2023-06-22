@@ -1,37 +1,35 @@
 import compileCSS from "./compile";
 import prefixCSS from "./prefix";
 import throwFrameworkError from "../../../lib/throwFrameworkError";
+import getCSSFromTree from "./getCSSFromTree";
 
-export default (componentInstance = {}, isHMRUpdate = false) => {
+export default (isHMRUpdate = false) => {
   try {
-    const hasSSRStylesForComponent = document.head.querySelector(`style[js-ssr]`)?.innerText?.includes(componentInstance.id);
+    const existingStyleTag = document.head.querySelector(`style[js-styles]`);
 
-    if (hasSSRStylesForComponent && !isHMRUpdate) {
+    if (existingStyleTag && !isHMRUpdate) {
       // NOTE: SSR'd CSS has complete tree in one tag. No need to add individual
       // styles back onto page.
       return;
     }
 
-    const css = componentInstance?.options?.css;
-    const compiledCSS = compileCSS(css, componentInstance);
-    const cssHash = btoa(`${compiledCSS.trim()}`).substring(0, 8);
-    const existingStyleTag = document.head.querySelector(`style[js-c="${componentInstance.id}"]`);
+    const cssFromTree = getCSSFromTree(window.joystick?._internal?.tree);
+    const css = cssFromTree.reverse().join("").trim();
+    const cssHash = btoa(`${css.trim()}`).substring(0, 8);
+
+    if (existingStyleTag) {
+      existingStyleTag.setAttribute("js-css", cssHash);
+      existingStyleTag.innerHTML = css;
+    }
 
     if (!existingStyleTag) {
       const style = document.createElement("style");
-
-      style.setAttribute("js-c", componentInstance?.id);
+      style.setAttribute("js-styles", "");
       style.setAttribute("js-css", cssHash);
-
-      style.innerHTML = prefixCSS(compiledCSS, componentInstance?.id);
-
+      style.innerHTML = css;
       document.head.appendChild(style);
     }
-
-    if (existingStyleTag && cssHash !== existingStyleTag.getAttribute('js-css')) {
-      existingStyleTag.innerHTML = prefixCSS(compiledCSS, componentInstance?.id);
-    }
   } catch (exception) {
-    throwFrameworkError('component.css.appendToHead', exception);
+    throwFrameworkError("component.css.appendToHead", exception);
   }
 };

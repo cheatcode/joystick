@@ -1,14 +1,14 @@
 import validateOptions from "./options/validateOptions";
 import registerOptions from "./options/registerOptions";
-import loadDataFromWindow from './data/loadDataFromWindow';
+import loadDataFromWindow from "./data/loadDataFromWindow";
 import appendCSSToHead from "./css/appendToHead";
 import fetchData from "./data/fetch";
 import windowIsUndefined from "../../lib/windowIsUndefined";
 import renderForMount from "./render/forMount";
 import getUpdatedDOM from "./render/getUpdatedDOM";
-import diffVirtualDOMNodes from './virtualDOM/diff';
+import diffVirtualDOMNodes from "./virtualDOM/diff";
 import processQueue from "../../lib/processQueue";
-import toHTML from './render/toHTML';
+import toHTML from "./render/toHTML";
 import { isFunction } from "../../lib/types";
 import compileState from "./state/compile";
 import clearChildrenOnParent from "../tree/clearChildrenOnParent";
@@ -28,7 +28,7 @@ class Component {
     this.parent = options?.parent || null;
     this.onUpdateChildComponent = this.handleUpdateChildComponentInVDOM;
     this.updateVirtualDOM = this.handleUpdateVirtualDOM;
-    
+
     // NOTE: Set timers and children objects to track timers and instances of child components between renders.
     this.timers = {};
     this.children = {};
@@ -43,10 +43,15 @@ class Component {
   }
 
   appendCSSToHead(isHMRUpdate = false) {
-    appendCSSToHead(this, isHMRUpdate);
+    appendCSSToHead(isHMRUpdate);
   }
 
-  async handleFetchData(api = {}, req = {}, input = {}, componentInstance = this) {
+  async handleFetchData(
+    api = {},
+    req = {},
+    input = {},
+    componentInstance = this
+  ) {
     const data = await fetchData(api, req, input, componentInstance);
     this.data = data;
     return data;
@@ -66,7 +71,13 @@ class Component {
       this.dom.virtual = vdom;
     }
 
-    const parent = this.parent ? findComponentInTreeByField(window.joystick._internal.tree, this.parent?.instanceId, 'instanceId') : null;
+    const parent = this.parent
+      ? findComponentInTreeByField(
+          window.joystick._internal.tree,
+          this.parent?.instanceId,
+          "instanceId"
+        )
+      : null;
 
     if (parent?.instance) {
       parent.instance.updateVirtualDOM();
@@ -75,7 +86,6 @@ class Component {
 
   onBeforeRender() {
     if (!windowIsUndefined()) {
-
       return {
         instanceId: this.instanceId,
       };
@@ -93,21 +103,24 @@ class Component {
     clearChildrenOnParent(this.instanceId);
 
     const updatedDOM = getUpdatedDOM(this, {});
-    const patchDOMNodes = diffVirtualDOMNodes(this.dom.virtual, updatedDOM.virtual);
+    const patchDOMNodes = diffVirtualDOMNodes(
+      this.dom.virtual,
+      updatedDOM.virtual
+    );
 
     if (patchDOMNodes && isFunction(patchDOMNodes)) {
-      processQueue('lifecycle.onBeforeMount', () => {
+      processQueue("lifecycle.onBeforeMount", () => {
         const patchedDOM = patchDOMNodes(this.DOMNode);
-        
+
         this.dom.actual = patchedDOM;
         this.dom.virtual = updatedDOM.virtual;
 
         registerListeners(this, this.renderMethods);
 
         this.setDOMNodeOnInstance();
-        
-        processQueue('domNodes', () => {
-          processQueue('lifecycle.onMount', () => {
+
+        processQueue("domNodes", () => {
+          processQueue("lifecycle.onMount", () => {
             this.onAfterRender(onBeforeRenderData, options);
           });
         });
@@ -124,15 +137,21 @@ class Component {
       updateParentInstanceInTree(onBeforeRenderData.instanceId, this);
 
       this.appendCSSToHead();
-      processQueue('lifecycle.onUpdateProps');
+      processQueue("lifecycle.onUpdateProps");
 
       // NOTE: Prevent a callback passed to setState() being called before or at the same time as
       // the initial render triggered by a setState() call.
-      if (renderOptions?.afterSetStateRender && isFunction(renderOptions.afterSetStateRender)) {
+      if (
+        renderOptions?.afterSetStateRender &&
+        isFunction(renderOptions.afterSetStateRender)
+      ) {
         renderOptions.afterSetStateRender();
       }
 
-      if (renderOptions?.afterRefetchDataRender && isFunction(renderOptions.afterRefetchDataRender)) {
+      if (
+        renderOptions?.afterRefetchDataRender &&
+        isFunction(renderOptions.afterRefetchDataRender)
+      ) {
         renderOptions.afterRefetchDataRender();
       }
 
@@ -171,15 +190,29 @@ class Component {
     }
   }
 
-  handleUpdateChildComponentInVDOM(componentId = '', instanceId = '') {
+  handleUpdateChildComponentInVDOM(componentId = "", instanceId = "") {
     // NOTE: parentComponent here is the parent relative *to* the child component, not the parent of this
     // component (why we pass this.instanceId here to lookup the parentComponent).
-    const parentComponent = findComponentInTreeByField(window.joystick._internal.tree, this.instanceId, 'instanceId');
-    const childComponent = findComponentInTreeByField(window.joystick._internal.tree, instanceId, 'instanceId');
+    const parentComponent = findComponentInTreeByField(
+      window.joystick._internal.tree,
+      this.instanceId,
+      "instanceId"
+    );
+    const childComponent = findComponentInTreeByField(
+      window.joystick._internal.tree,
+      instanceId,
+      "instanceId"
+    );
 
     if (childComponent?.instance?.DOMNode) {
-      const childAsVDOM = buildVirtualDOMTree(childComponent?.instance?.DOMNode);
-      replaceChildInVDOMTree(parentComponent?.instance?.dom?.virtual, childComponent?.instanceId, childAsVDOM);
+      const childAsVDOM = buildVirtualDOMTree(
+        childComponent?.instance?.DOMNode
+      );
+      replaceChildInVDOMTree(
+        parentComponent?.instance?.dom?.virtual,
+        childComponent?.instanceId,
+        childAsVDOM
+      );
     }
   }
 }
