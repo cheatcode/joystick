@@ -49,12 +49,16 @@ export default (args = {}) => {
   try {
     process.loader = new Loader({ defaultMessage: "Starting app..." });
     process.loader.text("Creating app...");
-    
+
     const projectName = args?.name;
     const projectAlreadyExists = checkIfProjectExists(projectName);
 
     if (projectAlreadyExists) {
-      console.log(chalk.red(`A folder with the name ${projectName} already exists. Please choose a different name and try again.`));
+      console.log(
+        chalk.red(
+          `A folder with the name ${projectName} already exists. Please choose a different name and try again.`
+        )
+      );
       process.exit(0);
     }
 
@@ -67,7 +71,7 @@ export default (args = {}) => {
       "i18n",
       "ui",
       "ui/components",
-      "ui/components/quote",
+      "ui/components/button",
       "ui/layouts",
       "ui/layouts/app",
       "ui/pages",
@@ -119,9 +123,9 @@ export default (args = {}) => {
         ),
       },
       {
-        name: "ui/components/quote/index.js",
+        name: "ui/components/button/index.js",
         content: fs.readFileSync(
-          `${__dirname}/templates/ui/components/quote/index.js`,
+          `${__dirname}/templates/ui/components/button/index.js`,
           "utf-8"
         ),
       },
@@ -176,7 +180,7 @@ export default (args = {}) => {
         ),
       },
     ]);
-  
+
     // NOTE: Pure aesthetics. Above step completes so quickly that it almost looks like
     // it's skipped. Add a buffer of 1.5s here to make for a better dev experience.
     setTimeout(() => {

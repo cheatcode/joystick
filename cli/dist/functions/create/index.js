@@ -41,7 +41,11 @@ var create_default = (args = {}) => {
     const projectName = args?.name;
     const projectAlreadyExists = checkIfProjectExists(projectName);
     if (projectAlreadyExists) {
-      console.log(chalk.red(`A folder with the name ${projectName} already exists. Please choose a different name and try again.`));
+      console.log(
+        chalk.red(
+          `A folder with the name ${projectName} already exists. Please choose a different name and try again.`
+        )
+      );
       process.exit(0);
     }
     createProjectFolder(projectName);
@@ -52,7 +56,7 @@ var create_default = (args = {}) => {
       "i18n",
       "ui",
       "ui/components",
-      "ui/components/quote",
+      "ui/components/button",
       "ui/layouts",
       "ui/layouts/app",
       "ui/pages",
@@ -103,9 +107,9 @@ var create_default = (args = {}) => {
         )
       },
       {
-        name: "ui/components/quote/index.js",
+        name: "ui/components/button/index.js",
         content: fs.readFileSync(
-          `${__dirname}/templates/ui/components/quote/index.js`,
+          `${__dirname}/templates/ui/components/button/index.js`,
           "utf-8"
         )
       },
