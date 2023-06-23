@@ -42,8 +42,8 @@ class Component {
     this.DOMNode = document.querySelector(`body [js-i="${this.instanceId}"]`);
   }
 
-  appendCSSToHead(isHMRUpdate = false) {
-    appendCSSToHead(isHMRUpdate);
+  appendCSSToHead() {
+    appendCSSToHead();
   }
 
   async handleFetchData(
