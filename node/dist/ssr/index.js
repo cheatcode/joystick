@@ -370,6 +370,7 @@ const ssr = async (options, { resolve, reject }) => {
     const ssrTreeForCSS = getTreeForSSR(componentInstance);
     const dataFromComponent = await getDataFromComponent(componentInstance, apiForDataFunctions, browserSafeRequest);
     buildTreeForComponent(componentInstance, ssrTree);
+    buildTreeForComponent(componentInstance, ssrTreeForCSS);
     const dataFromTree = await getDataFromTree(ssrTree);
     const dataForClient = !options?.email ? buildDataForClient(dataFromTree) : null;
     let baseHTML = getBaseHTML(options?.email, options?.baseEmailHTMLName);

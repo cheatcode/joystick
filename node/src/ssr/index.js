@@ -509,7 +509,6 @@ const ssr = async (options, { resolve, reject }) => {
 
     const ssrTree = getTreeForSSR(componentInstance);
     const ssrTreeForCSS = getTreeForSSR(componentInstance);
-
     const dataFromComponent = await getDataFromComponent(
       componentInstance,
       apiForDataFunctions,
@@ -517,6 +516,7 @@ const ssr = async (options, { resolve, reject }) => {
     );
 
     buildTreeForComponent(componentInstance, ssrTree);
+    buildTreeForComponent(componentInstance, ssrTreeForCSS);
 
     const dataFromTree = await getDataFromTree(ssrTree);
     const dataForClient = !options?.email
