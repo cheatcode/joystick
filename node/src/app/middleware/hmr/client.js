@@ -66,99 +66,113 @@ const websocketClient = (options = {}, onConnect = null) => {
 };
 
 export default (() =>
-  websocketClient(
-    {
-      autoReconnect: true,
-      onMessage: async (message = {}, connection = {}) => {
-        const previous = Object.assign({}, { scrollTop: window.scrollY });
-        const isFileChange = message && message.type && message.type === "FILE_CHANGE";
-        const isPageInLayout = !!window.__joystick_layout_page__;
-        const CSS = document.head.querySelector('link[href="/_joystick/index.css"]');
-        const clientIndex = document.body.querySelector('script[src^="/_joystick/index.client.js"]');
+  websocketClient({
+    autoReconnect: true,
+    onMessage: async (message = {}, connection = {}) => {
+      const previous = Object.assign({}, { scrollTop: window.scrollY });
+      const isFileChange =
+        message && message.type && message.type === "FILE_CHANGE";
+      const isPageInLayout = !!window.__joystick_layout_page__;
+      const CSS = document.head.querySelector(
+        'link[href="/_joystick/index.css"]'
+      );
+      const clientIndex = document.body.querySelector(
+        'script[src^="/_joystick/index.client.js"]'
+      );
 
-        if (message?.indexHTMLChanged) {
-          location.reload();
-        }
+      if (message?.indexHTMLChanged) {
+        location.reload();
+      }
 
-        if (message?.settings) {
-          window.__joystick_settings__ = JSON.stringify(message?.settings);
-          window.joystick.settings = message?.settings;
-        }
+      if (message?.settings) {
+        window.__joystick_settings__ = JSON.stringify(message?.settings);
+        window.joystick.settings = message?.settings;
+      }
 
-        if (clientIndex) {
-          clientIndex.parentNode.removeChild(clientIndex);
-          const updatedClientIndex = document.createElement('script');
+      if (clientIndex) {
+        clientIndex.parentNode.removeChild(clientIndex);
+        const updatedClientIndex = document.createElement("script");
 
-          updatedClientIndex.setAttribute('type', 'text/javascript');
-          updatedClientIndex.setAttribute('src', `/_joystick/index.client.js?v=${new Date().getTime()}`);
+        updatedClientIndex.setAttribute("type", "text/javascript");
+        updatedClientIndex.setAttribute(
+          "src",
+          `/_joystick/index.client.js?v=${new Date().getTime()}`
+        );
 
-          document.body.appendChild(updatedClientIndex);
-        }
+        document.body.appendChild(updatedClientIndex);
+      }
 
-        if (CSS) {
-          const updatedCSS = document.createElement('link');
+      if (CSS) {
+        const updatedCSS = document.createElement("link");
 
-          updatedCSS.setAttribute('rel', 'stylesheet');
-          updatedCSS.setAttribute('href', '/_joystick/index.css');
+        updatedCSS.setAttribute("rel", "stylesheet");
+        updatedCSS.setAttribute("href", "/_joystick/index.css");
 
-          document.head.appendChild(updatedCSS);
-        }
+        document.head.appendChild(updatedCSS);
+      }
 
-        if (isFileChange && isPageInLayout) {
-          (async () => {
-            // NOTE: Import the layout and page file from the server. This works because we delay restarting the
-            // server in the CLI until the HMR update event has been sent to trigger this.
-            window.__joystick_childrenBeforeHMRUpdate__ = window.joystick?._internal?.tree?.instance?.children;
+      if (isFileChange && isPageInLayout) {
+        (async () => {
+          // NOTE: Import the layout and page file from the server. This works because we delay restarting the
+          // server in the CLI until the HMR update event has been sent to trigger this.
+          window.__joystick_childrenBeforeHMRUpdate__ =
+            window.joystick?._internal?.tree?.instance?.children;
 
-            const layoutComponentFile = await import(`${window.__joystick_layout__}?t=${new Date().getTime()}`);
-            const pageComponentFile = await import(`${window.window.__joystick_layout_page_url__}?t=${new Date().getTime()}`);
-            const layout = layoutComponentFile.default;
-            const page = pageComponentFile.default;
+          const layoutComponentFile = await import(
+            `${window.__joystick_layout__}?t=${new Date().getTime()}`
+          );
+          const pageComponentFile = await import(
+            `${
+              window.window.__joystick_layout_page_url__
+            }?t=${new Date().getTime()}`
+          );
+          const layout = layoutComponentFile.default;
+          const page = pageComponentFile.default;
 
-            window.joystick.mount(
-              layout,
-              Object.assign({ page }, window.__joystick_ssr_props__),
-              document.getElementById('app'),
-              true,
-            );
+          window.joystick.mount(
+            layout,
+            Object.assign({ page }, window.__joystick_ssr_props__),
+            document.getElementById("app")
+          );
 
-            if (connection.send) {
-              connection.send({ type: 'HMR_UPDATE_COMPLETE' });
-            }
-          })();
-        }
+          if (connection.send) {
+            connection.send({ type: "HMR_UPDATE_COMPLETE" });
+          }
+        })();
+      }
 
-        if (isFileChange && !isPageInLayout) {
-          (async () => {
-            // NOTE: Import the page file from the server. This works because we delay restarting the
-            // server in the CLI until the HMR update event has been sent to trigger this.
-            window.__joystick_childrenBeforeHMRUpdate__ = window.joystick?._internal?.tree?.instance?.children;
+      if (isFileChange && !isPageInLayout) {
+        (async () => {
+          // NOTE: Import the page file from the server. This works because we delay restarting the
+          // server in the CLI until the HMR update event has been sent to trigger this.
+          window.__joystick_childrenBeforeHMRUpdate__ =
+            window.joystick?._internal?.tree?.instance?.children;
 
-            const pageComponentFile = await import(`${window.__joystick_page_url__}?t=${new Date().getTime()}`);
-            const page = pageComponentFile.default;
+          const pageComponentFile = await import(
+            `${window.__joystick_page_url__}?t=${new Date().getTime()}`
+          );
+          const page = pageComponentFile.default;
 
-            window.joystick.mount(
-              page,
-              Object.assign({}, window.__joystick_ssr_props__),
-              document.getElementById('app'),
-              true,
-            );
+          window.joystick.mount(
+            page,
+            Object.assign({}, window.__joystick_ssr_props__),
+            document.getElementById("app")
+          );
 
-            if (connection.send) {
-              connection.send({ type: 'HMR_UPDATE_COMPLETE' });
-            }
-          })();
-        }
+          if (connection.send) {
+            connection.send({ type: "HMR_UPDATE_COMPLETE" });
+          }
+        })();
+      }
 
-        if (CSS) {
-          // NOTE: Queue this at 1s delay to avoid FOUC.
-          setTimeout(() => {
-            CSS.parentNode.removeChild(CSS);
-          }, 1000);
-        }
+      if (CSS) {
+        // NOTE: Queue this at 1s delay to avoid FOUC.
+        setTimeout(() => {
+          CSS.parentNode.removeChild(CSS);
+        }, 1000);
+      }
 
-        // NOTE: Set scroll back to what it was before the HMR update.
-        window.scrollTo(0, previous.scrollTop);
-      },
+      // NOTE: Set scroll back to what it was before the HMR update.
+      window.scrollTo(0, previous.scrollTop);
     },
-  ))();
+  }))();

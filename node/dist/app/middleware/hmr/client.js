@@ -81,7 +81,7 @@ var client_default = (() => websocketClient({
         const pageComponentFile = await import(`${window.window.__joystick_layout_page_url__}?t=${new Date().getTime()}`);
         const layout = layoutComponentFile.default;
         const page = pageComponentFile.default;
-        window.joystick.mount(layout, Object.assign({ page }, window.__joystick_ssr_props__), document.getElementById("app"), true);
+        window.joystick.mount(layout, Object.assign({ page }, window.__joystick_ssr_props__), document.getElementById("app"));
         if (connection.send) {
           connection.send({ type: "HMR_UPDATE_COMPLETE" });
         }
@@ -92,7 +92,7 @@ var client_default = (() => websocketClient({
         window.__joystick_childrenBeforeHMRUpdate__ = window.joystick?._internal?.tree?.instance?.children;
         const pageComponentFile = await import(`${window.__joystick_page_url__}?t=${new Date().getTime()}`);
         const page = pageComponentFile.default;
-        window.joystick.mount(page, Object.assign({}, window.__joystick_ssr_props__), document.getElementById("app"), true);
+        window.joystick.mount(page, Object.assign({}, window.__joystick_ssr_props__), document.getElementById("app"));
         if (connection.send) {
           connection.send({ type: "HMR_UPDATE_COMPLETE" });
         }
