@@ -6,17 +6,24 @@ export default (file = "") => {
   const componentMapExists = fs.existsSync(componentMapPath);
   const componentMap = componentMapExists
     ? JSON.parse(fs.readFileSync(componentMapPath, "utf-8"))
-    : null;
+    : {};
 
-  const parts = file?.match(/\/\/ ui+.*/g);
-
-  const components = (parts || [])?.map((path, pathIndex) => {
-    const nextPath = parts[pathIndex + 1];
+  const parts = [...file?.matchAll(/\/\/ ui+.*/gi)]?.map((match) => {
     return {
-      path: path.replace("// ", ""),
+      path: match[0],
+      index: match.index,
+    };
+  });
+
+  const components = (parts || [])?.map((part, partIndex) => {
+    const nextPart = parts[partIndex + 1];
+
+    return {
+      path: part.path.replace("// ", ""),
+      index: part.index,
       source: file.substring(
-        file.indexOf(path),
-        nextPath ? file.indexOf(nextPath) : file.length
+        part.index,
+        nextPart ? nextPart.index : file.length
       ),
     };
   });
