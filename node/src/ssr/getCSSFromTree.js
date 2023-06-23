@@ -1,3 +1,5 @@
+import compileCSS from "./compileCSS";
+
 const handlePrefixCSS = (componentId, cssString) => {
   const regex = new RegExp(/^(?!@).+({|,)/gim);
   return (cssString || "")
@@ -15,7 +17,9 @@ const getCSSFromTree = (tree = {}, css = []) => {
   if (tree.instance && tree.instance.options && tree.instance.options.css) {
     const componentId = tree.instance.id;
     const rawCSS = tree.instance.options.css;
-    const prefixedCSS = handlePrefixCSS(componentId, rawCSS);
+    const compiledCSS = compileCSS(rawCSS, tree.instance);
+    const prefixedCSS = handlePrefixCSS(componentId, compiledCSS);
+
     css.push(prefixedCSS);
   }
 

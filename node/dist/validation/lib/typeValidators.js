@@ -1,6 +1,9 @@
 const isAny = (value) => {
   return !!value;
 };
+const isFunction = (value) => {
+  return typeof value === "function";
+};
 const isObject = (value) => {
   return !!(value && typeof value === "object" && !Array.isArray(value));
 };
@@ -27,6 +30,7 @@ export {
   isArray,
   isBoolean,
   isFloat,
+  isFunction,
   isInteger,
   isNumber,
   isObject,

@@ -3,6 +3,10 @@ export const isAny = (value) => {
   return !!value;
 };
 
+export const isFunction = (value) => {
+  return typeof value === "function";
+};
+
 export const isObject = (value) => {
   return !!(value && typeof value === "object" && !Array.isArray(value));
 };
@@ -12,7 +16,7 @@ export const isArray = (value) => {
 };
 
 export const isBoolean = (value) => {
-  return (value === true || value === false);
+  return value === true || value === false;
 };
 
 export const isFloat = (value) => {
