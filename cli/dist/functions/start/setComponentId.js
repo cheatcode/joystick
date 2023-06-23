@@ -3,7 +3,7 @@ import generateId from "./generateId.js";
 var setComponentId_default = (file = "") => {
   const componentMapPath = `./.joystick/build/componentMap.json`;
   const componentMapExists = fs.existsSync(componentMapPath);
-  const componentMap = componentMapExists ? JSON.parse(fs.readFileSync(componentMapPath, "utf-8")) : {};
+  const componentMap = componentMapExists ? JSON.parse(fs.readFileSync(componentMapPath, "utf-8")) : null;
   const parts = file?.match(/\/\/ ui+.*/g);
   const components = (parts || [])?.map((path, pathIndex) => {
     const nextPath = parts[pathIndex + 1];
@@ -17,8 +17,10 @@ var setComponentId_default = (file = "") => {
   });
   for (let i = 0; i < components.length; i += 1) {
     const component = components[i];
-    const componentId = componentMap[component.path] || generateId();
-    componentMap[component.path] = componentId;
+    const componentId = componentMap && componentMap[component.path] || generateId();
+    if (componentMap) {
+      componentMap[component.path] = componentId;
+    }
     const tainted = component.source.replace(
       /\.component\(\{+(?!\n + _componentId)/g,
       () => {
@@ -28,10 +30,12 @@ var setComponentId_default = (file = "") => {
     );
     file = file.replace(component.source, tainted);
   }
-  fs.writeFileSync(
-    "./.joystick/build/componentMap.json",
-    JSON.stringify(componentMap)
-  );
+  if (componentMap) {
+    fs.writeFileSync(
+      "./.joystick/build/componentMap.json",
+      JSON.stringify(componentMap)
+    );
+  }
   return file;
 };
 export {
