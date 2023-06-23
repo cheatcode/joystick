@@ -1,53 +1,72 @@
 import esbuild from "esbuild";
-import svg from 'esbuild-plugin-svg';
-import fs from 'fs';
+import svg from "esbuild-plugin-svg";
+import fs from "fs";
 import plugins from "./buildPlugins.js";
 import onWarn from "./onWarn.js";
 import getCodeFrame from "../../lib/getCodeFrame.js";
 
 const configs = {
-  node: (inputPath, outputPath = null, environment = 'development') => ({
+  node: (inputPath, outputPath = null, environment = "development") => ({
     entryPoints: [inputPath],
     bundle: false,
-    outfile: `${outputPath || './.joystick/build'}/${inputPath}`,
+    outfile: `${outputPath || "./.joystick/build"}/${inputPath}`,
     platform: "node",
     format: "esm",
     define: {
-      'process.env.NODE_ENV': `'${environment}'`,
+      "process.env.NODE_ENV": `'${environment}'`,
     },
-    minify: environment !== "development",
-    logLevel: 'silent',
-    plugins: [
-      plugins.warnNodeEnvironment,
-      plugins.generateFileDependencyMap
-    ],
+    minify: false,
+    logLevel: "silent",
+    plugins:
+      environment !== "development"
+        ? [
+            plugins.warnNodeEnvironment,
+            plugins.generateFileDependencyMap,
+            plugins.minify,
+          ]
+        : [plugins.warnNodeEnvironment, plugins.generateFileDependencyMap],
   }),
-  browser: (inputPath, outputPath = null, environment = 'development') => {
+  browser: (inputPath, outputPath = null, environment = "development") => {
     return {
       target: "es2020",
       entryPoints: [inputPath],
       bundle: true,
-      outfile: `${outputPath || './.joystick/build'}/${inputPath}`,
+      outfile: `${outputPath || "./.joystick/build"}/${inputPath}`,
       platform: "browser",
       format: "esm",
       define: {
-        'process.env.NODE_ENV': `'${environment}'`,
+        "process.env.NODE_ENV": `'${environment}'`,
       },
-      minify: environment !== "development",
-      logLevel: 'silent',
-      plugins: [
-        plugins.warnNodeEnvironment,
-        plugins.generateFileDependencyMap,
-        plugins.bootstrapComponent,
-        svg(),
-      ],
+      minify: false,
+      logLevel: "silent",
+      plugins:
+        environment !== "development"
+          ? [
+              plugins.warnNodeEnvironment,
+              plugins.generateFileDependencyMap,
+              plugins.bootstrapComponent,
+              plugins.minify,
+              svg(),
+            ]
+          : [
+              plugins.warnNodeEnvironment,
+              plugins.generateFileDependencyMap,
+              plugins.bootstrapComponent,
+              svg(),
+            ],
     };
   },
 };
 
-export default async (file = "", platform = "", outputPath = '', environment = 'development') => {
+export default async (
+  file = "",
+  platform = "",
+  outputPath = "",
+  environment = "development"
+) => {
   return new Promise(async (resolve) => {
-    const config = configs[platform] && configs[platform](file, outputPath, environment);
+    const config =
+      configs[platform] && configs[platform](file, outputPath, environment);
 
     if (config) {
       try {
@@ -59,10 +78,12 @@ export default async (file = "", platform = "", outputPath = '', environment = '
         console.warn(exception);
         const error = exception?.errors && exception?.errors[0];
 
-        const snippet = fs.existsSync(file) ? getCodeFrame(file, {
-          line: error?.location?.line,
-          column: error?.location?.column,
-        }) : null;
+        const snippet = fs.existsSync(file)
+          ? getCodeFrame(file, {
+              line: error?.location?.line,
+              column: error?.location?.column,
+            })
+          : null;
 
         onWarn({
           file,
@@ -84,7 +105,7 @@ export default async (file = "", platform = "", outputPath = '', environment = '
         });
       }
     }
-  
+
     return resolve({
       success: true,
     });

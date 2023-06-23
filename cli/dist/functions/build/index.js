@@ -1,4 +1,5 @@
 import child_process from "child_process";
+import chalk from "chalk";
 import Loader from "../../lib/loader.js";
 import getFilesToBuild from "../start/getFilesToBuild.js";
 import buildFiles from "../start/buildFiles.js";
@@ -14,7 +15,10 @@ var build_default = async (args = {}, options = {}) => {
     process.exit(0);
   }
   console.log("");
-  const loader = new Loader({ padding: options?.isDeploy ? "  " : "", defaultMessage: "Building app..." });
+  const loader = new Loader({
+    padding: options?.isDeploy ? "  " : "",
+    defaultMessage: "Building app..."
+  });
   loader.text("Building app...");
   const environment = options?.environment || "production";
   const settings = !options?.continuousIntegration ? await loadSettings(environment) : null;
@@ -31,11 +35,17 @@ var build_default = async (args = {}, options = {}) => {
   });
   if (options?.type === "tar") {
     const ignoreList = getTarIgnoreList(settings?.config?.build?.excludedPaths);
-    child_process.execSync(`cd ${outputPath}/.tar && tar -cf ../build.tar.xz --exclude=${ignoreList} .`);
+    child_process.execSync(
+      `cd ${outputPath}/.tar && tar -cf ../build.tar.xz --exclude=${ignoreList} .`
+    );
     child_process.execSync(`cd ${outputPath} && rm -rf .tar`);
   }
-  loader.stable(`App built as ${options?.type} to ${outputPath}!`);
+  loader.stable("");
   loader.stop();
+  console.log(
+    chalk.greenBright(`App built as ${options?.type} to ${outputPath}!
+`)
+  );
   return Promise.resolve();
 };
 export {

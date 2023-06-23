@@ -1,7 +1,7 @@
 {
   "name": "@joystick.js/cli",
-  "version": "1.0.0-beta.62",
-  "developmentVersion": "1.0.0-beta.1494",
+  "version": "1.0.0-beta.63",
+  "developmentVersion": "1.0.0-beta.1512",
   "type": "module",
   "description": "CLI for the Joystick JavaScript framework.",
   "main": "development.js",
@@ -48,6 +48,7 @@
     "ps-node": "^0.1.6",
     "selective-whitespace": "^1.0.4",
     "systeminformation": "^5.11.0",
+    "uglify-js": "^3.17.4",
     "ws": "^8.2.3",
     "xmlhttprequest": "^1.8.0"
   }

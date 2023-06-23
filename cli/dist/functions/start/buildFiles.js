@@ -11,9 +11,7 @@ const getFilePlatform = (path = "") => {
     getPlatformSafePath("ui/"),
     "index.client.js"
   ];
-  const browserExclusions = [
-    getPlatformSafePath("lib/node")
-  ];
+  const browserExclusions = [getPlatformSafePath("lib/node")];
   const nodePaths = [
     getPlatformSafePath("api/"),
     getPlatformSafePath("routes/"),
@@ -21,9 +19,7 @@ const getFilePlatform = (path = "") => {
     getPlatformSafePath("lib/node"),
     "index.server.js"
   ];
-  const nodeExclusions = [
-    getPlatformSafePath("lib/browser")
-  ];
+  const nodeExclusions = [getPlatformSafePath("lib/browser")];
   const isBrowser = browserPaths.some((browserPath) => {
     return path.includes(browserPath);
   }) && !browserExclusions.some((browserExclusionPath) => {
@@ -60,12 +56,7 @@ var buildFiles_default = async (filesToBuild = [], outputPath = null, environmen
         );
         return fileToBuild;
       }
-      return buildFile(
-        fileToBuild,
-        platform,
-        outputPath,
-        environment
-      );
+      return buildFile(fileToBuild, platform, outputPath, environment);
     })
   );
 };

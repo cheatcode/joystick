@@ -1,42 +1,48 @@
 import fs from "fs";
 import chalk from "chalk";
+import uglify from "uglify-js";
 import updateFileMap from "./updateFileMap.js";
-import { JOYSTICK_UI_REGEX, EXPORT_DEFAULT_REGEX, JOYSTICK_COMPONENT_REGEX, JOYSTICK_COMMENT_REGEX } from "../../lib/regexes.js";
+import {
+  JOYSTICK_UI_REGEX,
+  EXPORT_DEFAULT_REGEX,
+  JOYSTICK_COMPONENT_REGEX,
+  JOYSTICK_COMMENT_REGEX
+} from "../../lib/regexes.js";
 import generateId from "./generateId.js";
 import getPlatformSafePath from "../../lib/getPlatformSafePath.js";
 import setComponentId from "./setComponentId.js";
 var buildPlugins_default = {
-  warnNodeEnvironment: {
-    name: "warnNodeEnvironment",
-    setup(build) {
-      build.onLoad({ filter: /\.js$/ }, (args = {}) => {
-        const code = fs.readFileSync(args.path, "utf-8");
-        if (code?.match(/process.env.NODE_ENV\s+=\s/gi)?.length) {
-          console.warn(chalk.yellowBright("\n[WARNING] process.env.NODE_ENV should only be set via a CLI flag in development or via external environment variables in production.\n"));
-        }
-      });
-    }
-  },
   bootstrapComponent: {
     name: "bootstrapComponent",
     setup(build) {
       const ssrId = generateId();
       build.onLoad({ filter: /\.js$/ }, (args = {}) => {
         try {
-          const shouldSetSSRId = [getPlatformSafePath("ui/")].some((bootstrapTarget) => {
-            return args.path.includes(bootstrapTarget);
-          });
-          const isLayoutComponent = [getPlatformSafePath("ui/layouts")].some((bootstrapTarget) => {
-            return args.path.includes(bootstrapTarget);
-          });
-          const isPageComponent = [getPlatformSafePath("ui/pages")].some((bootstrapTarget) => {
-            return args.path.includes(bootstrapTarget);
-          });
-          const isEmailComponent = [getPlatformSafePath("email/")].some((bootstrapTarget) => {
-            return args.path.includes(bootstrapTarget);
-          });
+          const shouldSetSSRId = [getPlatformSafePath("ui/")].some(
+            (bootstrapTarget) => {
+              return args.path.includes(bootstrapTarget);
+            }
+          );
+          const isLayoutComponent = [getPlatformSafePath("ui/layouts")].some(
+            (bootstrapTarget) => {
+              return args.path.includes(bootstrapTarget);
+            }
+          );
+          const isPageComponent = [getPlatformSafePath("ui/pages")].some(
+            (bootstrapTarget) => {
+              return args.path.includes(bootstrapTarget);
+            }
+          );
+          const isEmailComponent = [getPlatformSafePath("email/")].some(
+            (bootstrapTarget) => {
+              return args.path.includes(bootstrapTarget);
+            }
+          );
           if (shouldSetSSRId || isLayoutComponent || isPageComponent || isEmailComponent) {
-            const code = fs.readFileSync(getPlatformSafePath(args.path), "utf-8");
+            const code = fs.readFileSync(
+              getPlatformSafePath(args.path),
+              "utf-8"
+            );
             const joystickUIMatches = code.match(JOYSTICK_UI_REGEX) || [];
             const joystickUIMatch = joystickUIMatches && joystickUIMatches[0];
             const exportDefaultMatches = code.match(EXPORT_DEFAULT_REGEX) || [];
@@ -51,8 +57,11 @@ var buildPlugins_default = {
               console.log(" ");
               return;
             }
-            let contents = code.replace("ui.component({", `ui.component({
-  _ssrId: '${ssrId}',`);
+            let contents = code.replace(
+              "ui.component({",
+              `ui.component({
+  _ssrId: '${ssrId}',`
+            );
             contents = contents.replace(JOYSTICK_COMMENT_REGEX, "");
             const exportDefaultMatchParts = exportDefaultMatch && exportDefaultMatch.split(" ") || [];
             const componentName = exportDefaultMatchParts.pop();
@@ -117,7 +126,10 @@ var buildPlugins_default = {
             const file = fs.readFileSync(build.initialOptions.outfile, "utf-8");
             const joystickUIMatches = file?.match(JOYSTICK_COMPONENT_REGEX) || [];
             if (joystickUIMatches?.length > 0) {
-              let contents = setComponentId(file)?.replace(/\.component\(\/\*\*\//g, ".component(");
+              let contents = setComponentId(file)?.replace(
+                /\.component\(\/\*\*\//g,
+                ".component("
+              );
               fs.writeFileSync(build.initialOptions.outfile, contents);
             }
           }
@@ -140,11 +152,44 @@ var buildPlugins_default = {
             return getPlatformSafePath(args.path).includes(excludedPath);
           });
           if (canAddToMap) {
-            const code = fs.readFileSync(getPlatformSafePath(args.path), "utf-8");
+            const code = fs.readFileSync(
+              getPlatformSafePath(args.path),
+              "utf-8"
+            );
             updateFileMap(getPlatformSafePath(args.path), code);
           }
         } catch (exception) {
           console.warn(exception);
+        }
+      });
+    }
+  },
+  minify: {
+    name: "minify",
+    setup(build) {
+      build.onEnd(() => {
+        const file = fs.readFileSync(build.initialOptions.outfile, "utf-8");
+        const minified = uglify.minify(file);
+        if (minified.error) {
+          console.warn(minified.error);
+        }
+        if (!minified.error) {
+          fs.writeFileSync(build.initialOptions.outfile, minified.code);
+        }
+      });
+    }
+  },
+  warnNodeEnvironment: {
+    name: "warnNodeEnvironment",
+    setup(build) {
+      build.onLoad({ filter: /\.js$/ }, (args = {}) => {
+        const code = fs.readFileSync(args.path, "utf-8");
+        if (code?.match(/process.env.NODE_ENV\s+=\s/gi)?.length) {
+          console.warn(
+            chalk.yellowBright(
+              "\n[WARNING] process.env.NODE_ENV should only be set via a CLI flag in development or via external environment variables in production.\n"
+            )
+          );
         }
       });
     }

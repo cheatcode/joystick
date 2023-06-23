@@ -11,36 +11,36 @@ const getFilePlatform = (path = "") => {
     getPlatformSafePath("lib/"),
     getPlatformSafePath("lib/browser"),
     getPlatformSafePath("ui/"),
-    "index.client.js"
+    "index.client.js",
   ];
 
-  const browserExclusions = [
-    getPlatformSafePath("lib/node")
-  ];
+  const browserExclusions = [getPlatformSafePath("lib/node")];
 
   const nodePaths = [
     getPlatformSafePath("api/"),
     getPlatformSafePath("routes/"),
     getPlatformSafePath("fixtures/"),
     getPlatformSafePath("lib/node"),
-    "index.server.js"
+    "index.server.js",
   ];
 
-  const nodeExclusions = [
-    getPlatformSafePath("lib/browser")
-  ];
+  const nodeExclusions = [getPlatformSafePath("lib/browser")];
 
-  const isBrowser = browserPaths.some((browserPath) => {
-    return path.includes(browserPath);
-  }) && !browserExclusions.some((browserExclusionPath) => {
-    return path.includes(browserExclusionPath);
-  });
+  const isBrowser =
+    browserPaths.some((browserPath) => {
+      return path.includes(browserPath);
+    }) &&
+    !browserExclusions.some((browserExclusionPath) => {
+      return path.includes(browserExclusionPath);
+    });
 
-  const isNode = nodePaths.some((nodePath) => {
-    return path.includes(nodePath);
-  }) && !nodeExclusions.some((nodeExclusionPath) => {
-    return path.includes(nodeExclusionPath);
-  });
+  const isNode =
+    nodePaths.some((nodePath) => {
+      return path.includes(nodePath);
+    }) &&
+    !nodeExclusions.some((nodeExclusionPath) => {
+      return path.includes(nodeExclusionPath);
+    });
 
   if (isBrowser) {
     platform = "browser";
@@ -54,33 +54,35 @@ const getFilePlatform = (path = "") => {
 };
 
 const isNotJavaScript = (path = "") => {
-  const extension = path.split('.').pop();
+  const extension = path.split(".").pop();
   return extension && !extension.match(/\js$/);
 };
 
-export default async (filesToBuild = [], outputPath = null, environment = 'development') => {
+export default async (
+  filesToBuild = [],
+  outputPath = null,
+  environment = "development"
+) => {
   return Promise.all(
     filesToBuild.map((fileToBuild) => {
       const platform = getFilePlatform(fileToBuild);
-      const isFileToCopy = platform === 'copy' || isNotJavaScript(fileToBuild) || filesToCopy.some((fileToCopy) => {
-        return fileToCopy.regex.test(fileToBuild);
-      });
+      const isFileToCopy =
+        platform === "copy" ||
+        isNotJavaScript(fileToBuild) ||
+        filesToCopy.some((fileToCopy) => {
+          return fileToCopy.regex.test(fileToBuild);
+        });
 
       if (isFileToCopy) {
         fs.outputFileSync(
-          `${outputPath || './.joystick/build'}/${fileToBuild}`,
+          `${outputPath || "./.joystick/build"}/${fileToBuild}`,
           fs.readFileSync(fileToBuild)
         );
 
         return fileToBuild;
       }
 
-      return buildFile(
-        fileToBuild,
-        platform,
-        outputPath,
-        environment,
-      );
+      return buildFile(fileToBuild, platform, outputPath, environment);
     })
   );
 };
