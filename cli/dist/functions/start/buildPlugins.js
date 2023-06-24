@@ -1,6 +1,5 @@
 import fs from "fs";
 import chalk from "chalk";
-import uglify from "uglify-js";
 import updateFileMap from "./updateFileMap.js";
 import {
   JOYSTICK_UI_REGEX,
@@ -57,10 +56,9 @@ var buildPlugins_default = {
               console.log(" ");
               return;
             }
-            let contents = code.replace(
-              "ui.component({",
-              `ui.component({
-  _ssrId: '${ssrId}',`
+            let contents = setComponentId(code)?.replace(
+              /\.component\(\/\*\*\//g,
+              ".component("
             );
             contents = contents.replace(JOYSTICK_COMMENT_REGEX, "");
             const exportDefaultMatchParts = exportDefaultMatch && exportDefaultMatch.split(" ") || [];
@@ -160,21 +158,6 @@ var buildPlugins_default = {
           }
         } catch (exception) {
           console.warn(exception);
-        }
-      });
-    }
-  },
-  minify: {
-    name: "minify",
-    setup(build) {
-      build.onEnd(() => {
-        const file = fs.readFileSync(build.initialOptions.outfile, "utf-8");
-        const minified = uglify.minify(file);
-        if (minified.error) {
-          console.warn(minified.error);
-        }
-        if (!minified.error) {
-          fs.writeFileSync(build.initialOptions.outfile, minified.code);
         }
       });
     }

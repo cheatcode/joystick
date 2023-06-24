@@ -14,13 +14,9 @@ const configs = {
     define: {
       "process.env.NODE_ENV": `'${environment}'`
     },
-    minify: false,
+    // minify: environment !== "development",
     logLevel: "silent",
-    plugins: environment !== "development" ? [
-      plugins.warnNodeEnvironment,
-      plugins.generateFileDependencyMap,
-      plugins.minify
-    ] : [plugins.warnNodeEnvironment, plugins.generateFileDependencyMap]
+    plugins: [plugins.warnNodeEnvironment, plugins.generateFileDependencyMap]
   }),
   browser: (inputPath, outputPath = null, environment = "development") => {
     return {
@@ -33,18 +29,12 @@ const configs = {
       define: {
         "process.env.NODE_ENV": `'${environment}'`
       },
-      minify: false,
+      // minify: environment !== "development",
       logLevel: "silent",
-      plugins: environment !== "development" ? [
+      plugins: [
+        plugins.bootstrapComponent,
         plugins.warnNodeEnvironment,
         plugins.generateFileDependencyMap,
-        plugins.bootstrapComponent,
-        plugins.minify,
-        svg()
-      ] : [
-        plugins.warnNodeEnvironment,
-        plugins.generateFileDependencyMap,
-        plugins.bootstrapComponent,
         svg()
       ]
     };

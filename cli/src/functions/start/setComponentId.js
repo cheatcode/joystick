@@ -2,7 +2,10 @@ import fs from "fs";
 import generateId from "./generateId.js";
 
 export default (file = "") => {
-  const componentMapPath = `./.joystick/build/componentMap.json`;
+  const componentMapPath =
+    process.env.NODE_ENV === "development"
+      ? `./.joystick/build/componentMap.json`
+      : `./.build/componentMap.json`;
   const componentMapExists = fs.existsSync(componentMapPath);
   const componentMap = componentMapExists
     ? JSON.parse(fs.readFileSync(componentMapPath, "utf-8"))
@@ -48,10 +51,7 @@ export default (file = "") => {
   }
 
   if (componentMap) {
-    fs.writeFileSync(
-      "./.joystick/build/componentMap.json",
-      JSON.stringify(componentMap)
-    );
+    fs.writeFileSync(componentMapPath, JSON.stringify(componentMap));
   }
 
   return file;

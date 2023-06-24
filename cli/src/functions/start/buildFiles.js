@@ -1,6 +1,8 @@
 import fs from "fs-extra";
+import esbuild from "esbuild";
 import filesToCopy from "./filesToCopy.js";
 import buildFile from "./buildFile.js";
+import minifyFile from "./minifyFile.js";
 import getPlatformSafePath from "../../lib/getPlatformSafePath.js";
 
 const getFilePlatform = (path = "") => {
@@ -64,7 +66,7 @@ export default async (
   environment = "development"
 ) => {
   return Promise.all(
-    filesToBuild.map((fileToBuild) => {
+    filesToBuild.map(async (fileToBuild) => {
       const platform = getFilePlatform(fileToBuild);
       const isFileToCopy =
         platform === "copy" ||
@@ -82,7 +84,16 @@ export default async (
         return fileToBuild;
       }
 
-      return buildFile(fileToBuild, platform, outputPath, environment);
+      const build = await buildFile(
+        fileToBuild,
+        platform,
+        outputPath,
+        environment
+      );
+
+      await minifyFile(`${outputPath || "./.joystick/build"}/${fileToBuild}`);
+
+      return build;
     })
   );
 };
