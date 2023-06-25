@@ -33,9 +33,9 @@ const configs = {
       // minify: environment !== "development",
       logLevel: "silent",
       plugins: [
-        plugins.bootstrapComponent,
         plugins.warnNodeEnvironment,
         plugins.generateFileDependencyMap,
+        plugins.bootstrapComponent,
         svg(),
       ],
     };
