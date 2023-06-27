@@ -51,12 +51,18 @@ class Queue {
     return this.db.countJobs("running");
   }
   _handleRequeueJobsRunningBeforeRestart() {
+    if (!this.db) {
+      return;
+    }
     if (!this.options.retryJobsRunningBeforeRestart) {
       return this.db.setJobsForMachineIncomplete();
     }
     return this.db.setJobsForMachinePending();
   }
   run() {
+    if (!this.db) {
+      return;
+    }
     console.log(`Starting ${this.name} queue...`);
     this._handleRequeueJobsRunningBeforeRestart().then(() => {
       setInterval(async () => {
