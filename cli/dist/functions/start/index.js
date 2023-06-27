@@ -16,7 +16,10 @@ import startDatabaseProvider from "./databases/startProvider.js";
 import CLILog from "../../lib/CLILog.js";
 import removeDeletedDependenciesFromMap from "./removeDeletedDependenciesFromMap.js";
 import validateDatabasesFromSettings from "../../lib/validateDatabasesFromSettings.js";
-const majorVersion = parseInt(process?.version?.split(".")[0]?.replace("v", ""), 10);
+const majorVersion = parseInt(
+  process?.version?.split(".")[0]?.replace("v", ""),
+  10
+);
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const killProcess = (pid = 0) => {
@@ -60,19 +63,25 @@ const requiredFileCheck = () => {
       const isDirectory = stats && stats.isDirectory();
       if (requiredFile && requiredFile.type === "file") {
         if (!exists || exists && !isFile) {
-          CLILog(`The path ${requiredFile.path} must exist in your project and must be a file (not a directory).`, {
-            level: "danger",
-            docs: "https://github.com/cheatcode/joystick#folder-and-file-structure"
-          });
+          CLILog(
+            `The path ${requiredFile.path} must exist in your project and must be a file (not a directory).`,
+            {
+              level: "danger",
+              docs: "https://github.com/cheatcode/joystick#folder-and-file-structure"
+            }
+          );
           process.exit(0);
         }
       }
       if (requiredFile && requiredFile.type === "directory") {
         if (!exists || exists && !isDirectory) {
-          CLILog(`The path ${requiredFile.path} must exist in your project and must be a directory (not a file).`, {
-            level: "danger",
-            docs: "https://github.com/cheatcode/joystick#folder-and-file-structure"
-          });
+          CLILog(
+            `The path ${requiredFile.path} must exist in your project and must be a directory (not a file).`,
+            {
+              level: "danger",
+              docs: "https://github.com/cheatcode/joystick#folder-and-file-structure"
+            }
+          );
           process.exit(0);
         }
       }
@@ -80,10 +89,7 @@ const requiredFileCheck = () => {
     resolve();
   });
 };
-const handleCleanup = async (processIds = [
-  process?.serverProcess?.pid,
-  process?.hmrProcess?.pid
-]) => {
+const handleCleanup = async (processIds = [process?.serverProcess?.pid, process?.hmrProcess?.pid]) => {
   process.loader.text("Shutting down...");
   for (let i = 0; i < processIds?.length; i += 1) {
     const processId = processIds[i];
@@ -111,9 +117,20 @@ const handleSignalEvents = (processIds = []) => {
 };
 const handleHMRProcessMessages = () => {
   process.hmrProcess.on("message", (message) => {
-    const processMessages = ["server_closed", "HMR_UPDATE_COMPLETED"];
+    const processMessages = [
+      "server_closed",
+      "HAS_HMR_CONNECTIONS",
+      "HAS_NO_HMR_CONNECTIONS",
+      "HMR_UPDATE_COMPLETED"
+    ];
     if (!processMessages.includes(message)) {
       process.loader.stable(message);
+    }
+    if (message === "HAS_HMR_CONNECTIONS") {
+      process.hmrProcess.hasConnections = true;
+    }
+    if (message === "HAS_NO_HMR_CONNECTIONS") {
+      process.hmrProcess.hasConnections = false;
     }
     if (message === "HMR_UPDATE_COMPLETED") {
       setTimeout(() => {
@@ -147,9 +164,7 @@ const handleHMRProcessSTDIO = () => {
   }
 };
 const startHMRProcess = () => {
-  const execArgv = [
-    "--no-warnings"
-  ];
+  const execArgv = ["--no-warnings"];
   if (majorVersion < 19) {
     execArgv.push("--experimental-specifier-resolution=node");
   }
@@ -214,9 +229,7 @@ const handleServerProcessSTDIO = () => {
   }
 };
 const startApplicationProcess = () => {
-  const execArgv = [
-    "--no-warnings"
-  ];
+  const execArgv = ["--no-warnings"];
   if (majorVersion < 19) {
     execArgv.push("--experimental-specifier-resolution=node");
   }
@@ -271,7 +284,11 @@ const initialBuild = async (buildSettings = {}) => {
   process.loader.text("Building app...");
   await requiredFileCheck();
   const filesToBuild = getFilesToBuild(buildSettings?.excludedPaths, "start");
-  const fileResults = await buildFiles(filesToBuild, null, process.env.NODE_ENV);
+  const fileResults = await buildFiles(
+    filesToBuild,
+    null,
+    process.env.NODE_ENV
+  );
   const hasErrors = [...fileResults].filter((result) => !!result).map(({ success }) => success).includes(false);
   if (!hasErrors) {
     startApplicationProcess();
@@ -280,16 +297,25 @@ const initialBuild = async (buildSettings = {}) => {
 };
 const startWatcher = async (buildSettings = {}) => {
   await initialBuild(buildSettings);
-  const watcher = chokidar.watch(watchlist.map(({ path: path2 }) => path2), {
-    ignoreInitial: true
-  });
+  const watcher = chokidar.watch(
+    watchlist.map(({ path: path2 }) => path2),
+    {
+      ignoreInitial: true
+    }
+  );
   watcher.on("all", async (event, path2) => {
     await requiredFileCheck();
     process.loader.text("Rebuilding app...");
     const isHTMLUpdate = path2?.includes("index.html");
+    const isUIUpdate = process.hmrProcess.hasConnections && path2?.includes("ui/") || false;
     if (["addDir"].includes(event) && fs.existsSync(path2) && fs.lstatSync(path2).isDirectory() && !fs.existsSync(`./.joystick/build/${path2}`)) {
       fs.mkdirSync(`./.joystick/build/${path2}`);
-      notifyHMRClients(isHTMLUpdate);
+      if (isUIUpdate) {
+        notifyHMRClients(isHTMLUpdate);
+      } else {
+        restartApplicationProcess();
+      }
+      return;
     }
     if (!!filesToCopy.find((fileToCopy) => fileToCopy.path === path2)) {
       const isDirectory = fs.statSync(path2).isDirectory();
@@ -300,12 +326,20 @@ const startWatcher = async (buildSettings = {}) => {
         fs.writeFileSync(`./.joystick/build/${path2}`, fs.readFileSync(path2));
       }
       loadSettings(process.env.NODE_ENV);
-      notifyHMRClients(isHTMLUpdate);
+      if (isUIUpdate) {
+        notifyHMRClients(isHTMLUpdate);
+      } else {
+        restartApplicationProcess();
+      }
       return;
     }
     if (["add", "change"].includes(event) && fs.existsSync(path2)) {
       const codependencies = getCodependenciesForFile(path2);
-      const fileResults = await buildFiles([path2, ...codependencies?.existing || []], null, process.env.NODE_ENV);
+      const fileResults = await buildFiles(
+        [path2, ...codependencies?.existing || []],
+        null,
+        process.env.NODE_ENV
+      );
       const fileResultsHaveErrors = fileResults.filter((result) => !!result).map(({ success }) => success).includes(false);
       removeDeletedDependenciesFromMap(codependencies.deleted);
       const hasErrors = fileResultsHaveErrors;
@@ -313,19 +347,30 @@ const startWatcher = async (buildSettings = {}) => {
         process.serverProcess.send(
           JSON.stringify({
             error: "BUILD_ERROR",
-            paths: fileResults.filter(({ success }) => !success).map(({ path: pathWithError, error }) => ({ path: pathWithError, error }))
+            paths: fileResults.filter(({ success }) => !success).map(({ path: pathWithError, error }) => ({
+              path: pathWithError,
+              error
+            }))
           })
         );
         return;
       }
       if (!hasErrors) {
         process.initialBuildComplete = true;
-        notifyHMRClients(isHTMLUpdate);
+        if (isUIUpdate) {
+          notifyHMRClients(isHTMLUpdate);
+        } else {
+          restartApplicationProcess();
+        }
         return;
       }
     }
     if (["unlink", "unlinkDir"].includes(event) && !fs.existsSync(`./.joystick/build/${path2}`)) {
-      notifyHMRClients(isHTMLUpdate);
+      if (isUIUpdate) {
+        notifyHMRClients(isHTMLUpdate);
+      } else {
+        restartApplicationProcess();
+      }
       return;
     }
     if (["unlink", "unlinkDir"].includes(event) && fs.existsSync(`./.joystick/build/${path2}`)) {
@@ -337,7 +382,11 @@ const startWatcher = async (buildSettings = {}) => {
       if (stats.isFile()) {
         fs.unlinkSync(pathToUnlink);
       }
-      notifyHMRClients(isHTMLUpdate);
+      if (isUIUpdate) {
+        notifyHMRClients(isHTMLUpdate);
+      } else {
+        restartApplicationProcess();
+      }
       return;
     }
   });
@@ -371,22 +420,26 @@ const loadSettings = () => {
   const settingsFilePath = `${process.cwd()}/settings.${environment}.json`;
   const hasSettingsFile = fs.existsSync(settingsFilePath);
   if (!hasSettingsFile) {
-    CLILog(`A settings file could not be found for this environment (${environment}). Create a settings.${environment}.json file at the root of your project and restart Joystick.`, {
-      level: "danger",
-      docs: "https://github.com/cheatcode/joystick#settings"
-    });
+    CLILog(
+      `A settings file could not be found for this environment (${environment}). Create a settings.${environment}.json file at the root of your project and restart Joystick.`,
+      {
+        level: "danger",
+        docs: "https://github.com/cheatcode/joystick#settings"
+      }
+    );
     process.exit(0);
   }
   const rawSettingsFile = fs.readFileSync(settingsFilePath, "utf-8");
   const isValidJSON = isValidJSONString(rawSettingsFile);
   if (!isValidJSON) {
-    CLILog(`Failed to parse settings file. Double-check the syntax in your settings.${environment}.json file at the root of your project and restart Joystick.`, {
-      level: "danger",
-      docs: "https://github.com/cheatcode/joystick#settings",
-      tools: [
-        { title: "JSON Linter", url: "https://jsonlint.com/" }
-      ]
-    });
+    CLILog(
+      `Failed to parse settings file. Double-check the syntax in your settings.${environment}.json file at the root of your project and restart Joystick.`,
+      {
+        level: "danger",
+        docs: "https://github.com/cheatcode/joystick#settings",
+        tools: [{ title: "JSON Linter", url: "https://jsonlint.com/" }]
+      }
+    );
     process.exit(0);
   }
   const settingsFile = isValidJSON ? rawSettingsFile : "{}";
@@ -402,10 +455,13 @@ var start_default = async (args = {}, options = {}) => {
   const databasePortStart = port + 10;
   const isJoystickProject = checkIfJoystickProject();
   if (!isJoystickProject) {
-    CLILog("This is not a Joystick project. A .joystick folder could not be found.", {
-      level: "danger",
-      docs: "https://github.com/cheatcode/joystick"
-    });
+    CLILog(
+      "This is not a Joystick project. A .joystick folder could not be found.",
+      {
+        level: "danger",
+        docs: "https://github.com/cheatcode/joystick"
+      }
+    );
     process.exit(0);
   }
   await killPortProcess([port, port + 1]);

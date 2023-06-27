@@ -1,4 +1,4 @@
-import fs from 'fs';
+import fs from "fs";
 import { WebSocketServer } from "ws";
 import generateId from "./generateId";
 
@@ -11,8 +11,8 @@ export default (() => {
     path: "/_joystick/hmr",
   });
 
-  process.on('message', (message) => {
-    if (typeof process.HMR_CONNECTIONS === 'object') {
+  process.on("message", (message) => {
+    if (typeof process.HMR_CONNECTIONS === "object") {
       const parsedMessage = JSON.parse(message);
       const connections = Object.values(process.HMR_CONNECTIONS);
       for (let i = 0; i < connections?.length; i += 1) {
@@ -20,7 +20,7 @@ export default (() => {
         if (connection?.connection?.send) {
           connection.connection.send(
             JSON.stringify({
-              type: 'FILE_CHANGE',
+              type: "FILE_CHANGE",
               settings: {
                 global: parsedMessage?.settings?.global,
                 public: parsedMessage?.settings?.public,
@@ -37,28 +37,38 @@ export default (() => {
     const connectionId = generateId();
 
     process.HMR_CONNECTIONS = {
-      ...(process.HMR_CONNECTIONS|| {}),
+      ...(process.HMR_CONNECTIONS || {}),
       [connectionId]: {
         connection: websocketConnection,
         watchlist: [],
       },
     };
 
-    websocketConnection.on('message', (message) => {
+    if (Object.keys(process.HMR_CONNECTIONS || {})?.length > 0) {
+      process.send("HAS_HMR_CONNECTIONS");
+    }
+
+    websocketConnection.on("message", (message) => {
       const parsedMessage = JSON.parse(message);
 
-      if (parsedMessage?.type === 'HMR_UPDATE_COMPLETE') {
-        process.send('HMR_UPDATE_COMPLETED');
+      if (parsedMessage?.type === "HMR_UPDATE_COMPLETE") {
+        process.send("HMR_UPDATE_COMPLETED");
       }
 
-      if (parsedMessage?.type === 'HMR_WATCHLIST') {
-        process.HMR_CONNECTIONS[connectionId]?.watchlist?.push(...(parsedMessage?.tags || []));
+      if (parsedMessage?.type === "HMR_WATCHLIST") {
+        process.HMR_CONNECTIONS[connectionId]?.watchlist?.push(
+          ...(parsedMessage?.tags || [])
+        );
       }
     });
 
-    websocketConnection.on('close', () => {
+    websocketConnection.on("close", () => {
       if (process.HMR_CONNECTIONS[connectionId]) {
         delete process.HMR_CONNECTIONS[connectionId];
+
+        if (Object.keys(process.HMR_CONNECTIONS || {})?.length === 0) {
+          process.send("HAS_NO_HMR_CONNECTIONS");
+        }
       }
     });
   });

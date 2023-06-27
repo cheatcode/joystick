@@ -4,9 +4,9 @@ import child_process from "child_process";
 import path, { dirname } from "path";
 import { fileURLToPath } from "url";
 import ps from "ps-node";
-import { killPortProcess } from 'kill-port-process';
+import { killPortProcess } from "kill-port-process";
 import fs from "fs";
-import chokidar from 'chokidar';
+import chokidar from "chokidar";
 import Loader from "../../lib/loader.js";
 import getFilesToBuild from "./getFilesToBuild.js";
 import buildFiles from "./buildFiles.js";
@@ -16,10 +16,13 @@ import getCodependenciesForFile from "./getCodependenciesForFile.js";
 import isValidJSONString from "../../lib/isValidJSONString.js";
 import startDatabaseProvider from "./databases/startProvider.js";
 import CLILog from "../../lib/CLILog.js";
-import removeDeletedDependenciesFromMap from './removeDeletedDependenciesFromMap.js';
+import removeDeletedDependenciesFromMap from "./removeDeletedDependenciesFromMap.js";
 import validateDatabasesFromSettings from "../../lib/validateDatabasesFromSettings.js";
 
-const majorVersion = parseInt(process?.version?.split('.')[0]?.replace('v', ''), 10);
+const majorVersion = parseInt(
+  process?.version?.split(".")[0]?.replace("v", ""),
+  10
+);
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -48,41 +51,48 @@ const watchlist = [
 const requiredFileCheck = () => {
   return new Promise((resolve) => {
     const requiredFiles = [
-      { path: 'index.server.js', type: 'file' },
-      { path: 'index.html', type: 'file' },
-      { path: 'index.client.js', type: 'file' },
-      { path: 'api', type: 'directory' },
-      { path: 'i18n', type: 'directory' },
-      { path: 'lib', type: 'directory' },
-      { path: 'public', type: 'directory' },
-      { path: 'ui', type: 'directory' },
-      { path: 'ui/components', type: 'directory' },
-      { path: 'ui/layouts', type: 'directory' },
-      { path: 'ui/pages', type: 'directory' },
+      { path: "index.server.js", type: "file" },
+      { path: "index.html", type: "file" },
+      { path: "index.client.js", type: "file" },
+      { path: "api", type: "directory" },
+      { path: "i18n", type: "directory" },
+      { path: "lib", type: "directory" },
+      { path: "public", type: "directory" },
+      { path: "ui", type: "directory" },
+      { path: "ui/components", type: "directory" },
+      { path: "ui/layouts", type: "directory" },
+      { path: "ui/pages", type: "directory" },
     ];
 
     requiredFiles.forEach((requiredFile) => {
       const exists = fs.existsSync(`${process.cwd()}/${requiredFile.path}`);
-      const stats = exists && fs.statSync(`${process.cwd()}/${requiredFile.path}`);
+      const stats =
+        exists && fs.statSync(`${process.cwd()}/${requiredFile.path}`);
       const isFile = stats && stats.isFile();
       const isDirectory = stats && stats.isDirectory();
 
-      if (requiredFile && requiredFile.type === 'file') {
+      if (requiredFile && requiredFile.type === "file") {
         if (!exists || (exists && !isFile)) {
-          CLILog(`The path ${requiredFile.path} must exist in your project and must be a file (not a directory).`, {
-            level: 'danger',
-            docs: 'https://github.com/cheatcode/joystick#folder-and-file-structure'
-          });
+          CLILog(
+            `The path ${requiredFile.path} must exist in your project and must be a file (not a directory).`,
+            {
+              level: "danger",
+              docs: "https://github.com/cheatcode/joystick#folder-and-file-structure",
+            }
+          );
           process.exit(0);
         }
       }
 
-      if (requiredFile && requiredFile.type === 'directory') {
+      if (requiredFile && requiredFile.type === "directory") {
         if (!exists || (exists && !isDirectory)) {
-          CLILog(`The path ${requiredFile.path} must exist in your project and must be a directory (not a file).`, {
-            level: 'danger',
-            docs: 'https://github.com/cheatcode/joystick#folder-and-file-structure'
-          });
+          CLILog(
+            `The path ${requiredFile.path} must exist in your project and must be a directory (not a file).`,
+            {
+              level: "danger",
+              docs: "https://github.com/cheatcode/joystick#folder-and-file-structure",
+            }
+          );
           process.exit(0);
         }
       }
@@ -92,11 +102,10 @@ const requiredFileCheck = () => {
   });
 };
 
-const handleCleanup = async (processIds = [
-  process?.serverProcess?.pid,
-  process?.hmrProcess?.pid,
-]) => {
-  process.loader.text('Shutting down...');
+const handleCleanup = async (
+  processIds = [process?.serverProcess?.pid, process?.hmrProcess?.pid]
+) => {
+  process.loader.text("Shutting down...");
 
   for (let i = 0; i < processIds?.length; i += 1) {
     const processId = processIds[i];
@@ -105,7 +114,7 @@ const handleCleanup = async (processIds = [
       await killProcess(processId);
     }
   }
-  
+
   const databases = Object.entries(process.env.DATABASES || {});
 
   for (let i = 0; i < databases?.length; i += 1) {
@@ -132,13 +141,26 @@ const handleSignalEvents = (processIds = []) => {
 
 const handleHMRProcessMessages = () => {
   process.hmrProcess.on("message", (message) => {
-    const processMessages = ["server_closed", "HMR_UPDATE_COMPLETED"];
+    const processMessages = [
+      "server_closed",
+      "HAS_HMR_CONNECTIONS",
+      "HAS_NO_HMR_CONNECTIONS",
+      "HMR_UPDATE_COMPLETED",
+    ];
 
     if (!processMessages.includes(message)) {
       process.loader.stable(message);
     }
 
-    if (message === 'HMR_UPDATE_COMPLETED') {
+    if (message === "HAS_HMR_CONNECTIONS") {
+      process.hmrProcess.hasConnections = true;
+    }
+
+    if (message === "HAS_NO_HMR_CONNECTIONS") {
+      process.hmrProcess.hasConnections = false;
+    }
+
+    if (message === "HMR_UPDATE_COMPLETED") {
       // NOTE: Do a setTimeout to ensure that server is still available while the HMR update completes.
       // Necessary because some updates are instance, but others might mount a UI that needs a server
       // available (e.g., runs API requests).
@@ -154,8 +176,8 @@ const handleHMRProcessSTDIO = () => {
     if (process.hmrProcess) {
       process.hmrProcess.on("error", (error) => {
         CLILog(error.toString(), {
-          level: 'danger',
-          docs: 'https://github.com/cheatcode/joystick',
+          level: "danger",
+          docs: "https://github.com/cheatcode/joystick",
         });
       });
 
@@ -166,8 +188,8 @@ const handleHMRProcessSTDIO = () => {
       process.hmrProcess.stderr.on("data", (data) => {
         process.loader.stop();
         CLILog(data.toString(), {
-          level: 'danger',
-          docs: 'https://github.com/cheatcode/joystick',
+          level: "danger",
+          docs: "https://github.com/cheatcode/joystick",
         });
       });
     }
@@ -177,9 +199,7 @@ const handleHMRProcessSTDIO = () => {
 };
 
 const startHMRProcess = () => {
-  const execArgv = [
-    "--no-warnings",
-  ];
+  const execArgv = ["--no-warnings"];
 
   if (majorVersion < 19) {
     execArgv.push("--experimental-specifier-resolution=node");
@@ -206,7 +226,7 @@ const notifyHMRClients = (indexHTMLChanged = false) => {
   const settings = loadSettings(process.env.NODE_ENV);
   process.hmrProcess.send(
     JSON.stringify({
-      type: 'RESTART_SERVER',
+      type: "RESTART_SERVER",
       settings,
       indexHTMLChanged,
     })
@@ -236,7 +256,7 @@ const handleServerProcessSTDIO = () => {
         if (message && message.includes("App running at:")) {
           process.loader.stable(message);
         } else {
-          if (message && !message.includes('BUILD_ERROR')) {
+          if (message && !message.includes("BUILD_ERROR")) {
             console.log(message);
           }
         }
@@ -245,8 +265,8 @@ const handleServerProcessSTDIO = () => {
       process.serverProcess.stderr.on("data", (data) => {
         process.loader.stop();
         CLILog(data.toString(), {
-          level: 'danger',
-          docs: 'https://github.com/cheatcode/joystick',
+          level: "danger",
+          docs: "https://github.com/cheatcode/joystick",
         });
       });
     }
@@ -256,16 +276,17 @@ const handleServerProcessSTDIO = () => {
 };
 
 const startApplicationProcess = () => {
-  const execArgv = [
-    "--no-warnings",
-  ];
+  const execArgv = ["--no-warnings"];
 
   if (majorVersion < 19) {
     execArgv.push("--experimental-specifier-resolution=node");
   }
 
-  if (process.env.NODE_ENV === 'development' && process.env.IS_DEBUG_MODE === 'true') {
-    execArgv.push('--inspect');
+  if (
+    process.env.NODE_ENV === "development" &&
+    process.env.IS_DEBUG_MODE === "true"
+  ) {
+    execArgv.push("--inspect");
   }
 
   const serverProcess = child_process.fork(
@@ -277,7 +298,7 @@ const startApplicationProcess = () => {
       // communicate with the child_process.
       silent: true,
       env: {
-        FORCE_COLOR: '1',
+        FORCE_COLOR: "1",
         LOGS_PATH: process.env.LOGS_PATH,
         NODE_ENV: process.env.NODE_ENV,
         ROOT_URL: process.env.ROOT_URL,
@@ -300,24 +321,6 @@ const restartApplicationProcess = async () => {
     process.loader.text("Restarting app...");
     process.serverProcess.kill();
     startApplicationProcess();
-
-    // NOTE: Notify the connected HMR clients of the change first so they can pull
-    // updated from the server *before* we stop and restart it. Without this, we
-    // get fetch errors in the browser because the server is unavailable.
-    // notifyHMRClients(() => {
-    //   setTimeout(() => {
-    //     // NOTE: Use IPC to tell Express server to stop itself before killing the
-    //     // node child process. Do it this way so we don't have to use a slower
-    //     // port killer utility.
-    //     process.serverProcess.send(JSON.stringify({
-    //       type: 'RESTART_SERVER',
-    //     }), () => {
-    //       process.serverProcess.kill();
-    //       startApplicationProcess();
-    //     });
-    //   }, 1000);
-    // });
-
     return Promise.resolve();
   }
 
@@ -346,8 +349,12 @@ const initialBuild = async (buildSettings = {}) => {
 
   await requiredFileCheck();
 
-  const filesToBuild = getFilesToBuild(buildSettings?.excludedPaths, 'start');
-  const fileResults = await buildFiles(filesToBuild, null, process.env.NODE_ENV);
+  const filesToBuild = getFilesToBuild(buildSettings?.excludedPaths, "start");
+  const fileResults = await buildFiles(
+    filesToBuild,
+    null,
+    process.env.NODE_ENV
+  );
 
   const hasErrors = [...fileResults]
     .filter((result) => !!result)
@@ -364,24 +371,36 @@ const initialBuild = async (buildSettings = {}) => {
 const startWatcher = async (buildSettings = {}) => {
   await initialBuild(buildSettings);
 
-  const watcher = chokidar.watch(watchlist.map(({ path }) => path), {
-    ignoreInitial: true,
-  });
+  const watcher = chokidar.watch(
+    watchlist.map(({ path }) => path),
+    {
+      ignoreInitial: true,
+    }
+  );
 
-  watcher.on('all', async (event, path) => {
+  watcher.on("all", async (event, path) => {
     await requiredFileCheck();
     process.loader.text("Rebuilding app...");
-    const isHTMLUpdate = path?.includes('index.html');
+    const isHTMLUpdate = path?.includes("index.html");
+
+    const isUIUpdate =
+      (process.hmrProcess.hasConnections && path?.includes("ui/")) || false;
 
     if (
-      ['addDir'].includes(event) &&
+      ["addDir"].includes(event) &&
       fs.existsSync(path) &&
       fs.lstatSync(path).isDirectory() &&
       !fs.existsSync(`./.joystick/build/${path}`)
     ) {
       fs.mkdirSync(`./.joystick/build/${path}`);
-      notifyHMRClients(isHTMLUpdate);
-      // await restartApplicationProcess();
+
+      if (isUIUpdate) {
+        notifyHMRClients(isHTMLUpdate);
+      } else {
+        restartApplicationProcess();
+      }
+
+      return;
     }
 
     if (!!filesToCopy.find((fileToCopy) => fileToCopy.path === path)) {
@@ -390,21 +409,31 @@ const startWatcher = async (buildSettings = {}) => {
       if (isDirectory && !fs.existsSync(`./.joystick/build/${path}`)) {
         fs.mkdirSync(`./.joystick/build/${path}`);
       }
-      
+
       if (!isDirectory) {
         fs.writeFileSync(`./.joystick/build/${path}`, fs.readFileSync(path));
       }
 
       loadSettings(process.env.NODE_ENV);
-      notifyHMRClients(isHTMLUpdate);
-      // await restartApplicationProcess();
+
+      if (isUIUpdate) {
+        notifyHMRClients(isHTMLUpdate);
+      } else {
+        restartApplicationProcess();
+      }
+
       return;
     }
 
-    if (['add', 'change'].includes(event) && fs.existsSync(path)) {
+    if (["add", "change"].includes(event) && fs.existsSync(path)) {
       const codependencies = getCodependenciesForFile(path);
-      const fileResults = await buildFiles([path, ...(codependencies?.existing || [])], null, process.env.NODE_ENV);
-      const fileResultsHaveErrors = fileResults.filter((result) => !!result)
+      const fileResults = await buildFiles(
+        [path, ...(codependencies?.existing || [])],
+        null,
+        process.env.NODE_ENV
+      );
+      const fileResultsHaveErrors = fileResults
+        .filter((result) => !!result)
         .map(({ success }) => success)
         .includes(false);
 
@@ -418,7 +447,10 @@ const startWatcher = async (buildSettings = {}) => {
             error: "BUILD_ERROR",
             paths: fileResults
               .filter(({ success }) => !success)
-              .map(({ path: pathWithError, error }) => ({ path: pathWithError, error })),
+              .map(({ path: pathWithError, error }) => ({
+                path: pathWithError,
+                error,
+              })),
           })
         );
 
@@ -427,19 +459,34 @@ const startWatcher = async (buildSettings = {}) => {
 
       if (!hasErrors) {
         process.initialBuildComplete = true;
-        notifyHMRClients(isHTMLUpdate);
-        // await restartApplicationProcess();
+
+        if (isUIUpdate) {
+          notifyHMRClients(isHTMLUpdate);
+        } else {
+          restartApplicationProcess();
+        }
+
         return;
       }
     }
 
-    if (['unlink', 'unlinkDir'].includes(event) && !fs.existsSync(`./.joystick/build/${path}`)) {
-      notifyHMRClients(isHTMLUpdate);
-      // await restartApplicationProcess();
+    if (
+      ["unlink", "unlinkDir"].includes(event) &&
+      !fs.existsSync(`./.joystick/build/${path}`)
+    ) {
+      if (isUIUpdate) {
+        notifyHMRClients(isHTMLUpdate);
+      } else {
+        restartApplicationProcess();
+      }
+
       return;
     }
 
-    if (['unlink', 'unlinkDir'].includes(event) && fs.existsSync(`./.joystick/build/${path}`)) {
+    if (
+      ["unlink", "unlinkDir"].includes(event) &&
+      fs.existsSync(`./.joystick/build/${path}`)
+    ) {
       const pathToUnlink = `./.joystick/build/${path}`;
       const stats = fs.lstatSync(pathToUnlink);
 
@@ -451,8 +498,12 @@ const startWatcher = async (buildSettings = {}) => {
         fs.unlinkSync(pathToUnlink);
       }
 
-      notifyHMRClients(isHTMLUpdate);
-      // await restartApplicationProcess();
+      if (isUIUpdate) {
+        notifyHMRClients(isHTMLUpdate);
+      } else {
+        restartApplicationProcess();
+      }
+
       return;
     }
   });
@@ -496,10 +547,13 @@ const loadSettings = () => {
   const hasSettingsFile = fs.existsSync(settingsFilePath);
 
   if (!hasSettingsFile) {
-    CLILog(`A settings file could not be found for this environment (${environment}). Create a settings.${environment}.json file at the root of your project and restart Joystick.`, {
-      level: 'danger',
-      docs: 'https://github.com/cheatcode/joystick#settings',
-    });
+    CLILog(
+      `A settings file could not be found for this environment (${environment}). Create a settings.${environment}.json file at the root of your project and restart Joystick.`,
+      {
+        level: "danger",
+        docs: "https://github.com/cheatcode/joystick#settings",
+      }
+    );
     process.exit(0);
   }
 
@@ -507,19 +561,18 @@ const loadSettings = () => {
   const isValidJSON = isValidJSONString(rawSettingsFile);
 
   if (!isValidJSON) {
-    CLILog(`Failed to parse settings file. Double-check the syntax in your settings.${environment}.json file at the root of your project and restart Joystick.`, {
-      level: 'danger',
-      docs: 'https://github.com/cheatcode/joystick#settings',
-      tools: [
-        { title: 'JSON Linter', url: 'https://jsonlint.com/' }
-      ],
-    });
+    CLILog(
+      `Failed to parse settings file. Double-check the syntax in your settings.${environment}.json file at the root of your project and restart Joystick.`,
+      {
+        level: "danger",
+        docs: "https://github.com/cheatcode/joystick#settings",
+        tools: [{ title: "JSON Linter", url: "https://jsonlint.com/" }],
+      }
+    );
     process.exit(0);
   }
 
-  const settingsFile = isValidJSON
-    ? rawSettingsFile
-    : "{}";
+  const settingsFile = isValidJSON ? rawSettingsFile : "{}";
 
   // NOTE: Child process will inherit this env var from this parent process.
   process.env.JOYSTICK_SETTINGS = settingsFile;
@@ -535,23 +588,26 @@ export default async (args = {}, options = {}) => {
   process.loader = new Loader({ defaultMessage: "Starting app..." });
 
   const port = options?.port ? parseInt(options?.port) : 2600;
-  
+
   // NOTE: Give databases their own port range to avoid collisions.
   const databasePortStart = port + 10;
 
   const isJoystickProject = checkIfJoystickProject();
 
   if (!isJoystickProject) {
-    CLILog('This is not a Joystick project. A .joystick folder could not be found.', {
-      level: 'danger',
-      docs: 'https://github.com/cheatcode/joystick',
-    });
+    CLILog(
+      "This is not a Joystick project. A .joystick folder could not be found.",
+      {
+        level: "danger",
+        docs: "https://github.com/cheatcode/joystick",
+      }
+    );
     process.exit(0);
   }
 
   await killPortProcess([port, port + 1]);
 
-  process.title = 'joystick';
+  process.title = "joystick";
   process.env.LOGS_PATH = options?.logs || null;
   process.env.NODE_ENV = options?.environment || "development";
   process.env.PORT = options?.port ? parseInt(options?.port) : 2600;

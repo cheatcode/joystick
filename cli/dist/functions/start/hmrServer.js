@@ -36,18 +36,26 @@ var hmrServer_default = (() => {
         watchlist: []
       }
     };
+    if (Object.keys(process.HMR_CONNECTIONS || {})?.length > 0) {
+      process.send("HAS_HMR_CONNECTIONS");
+    }
     websocketConnection.on("message", (message) => {
       const parsedMessage = JSON.parse(message);
       if (parsedMessage?.type === "HMR_UPDATE_COMPLETE") {
         process.send("HMR_UPDATE_COMPLETED");
       }
       if (parsedMessage?.type === "HMR_WATCHLIST") {
-        process.HMR_CONNECTIONS[connectionId]?.watchlist?.push(...parsedMessage?.tags || []);
+        process.HMR_CONNECTIONS[connectionId]?.watchlist?.push(
+          ...parsedMessage?.tags || []
+        );
       }
     });
     websocketConnection.on("close", () => {
       if (process.HMR_CONNECTIONS[connectionId]) {
         delete process.HMR_CONNECTIONS[connectionId];
+        if (Object.keys(process.HMR_CONNECTIONS || {})?.length === 0) {
+          process.send("HAS_NO_HMR_CONNECTIONS");
+        }
       }
     });
   });
