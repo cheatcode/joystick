@@ -1,9 +1,14 @@
 import compileCSS from "./compile";
 
 const handlePrefixCSS = (componentId, cssString) => {
-  const regex = new RegExp(/^(?!@).+({|,)/gim);
+  const commentRegex = new RegExp(/\/\*[^*]*\*+([^/*][^*]*\*+)*\//g);
+  const selectorRegex = new RegExp(/([^\r\n,{}]+)(,(?=[^}]*{)|\s*{)/g);
+
   return (cssString || "")
-    .replace(regex, (match) => {
+    .replace(commentRegex, (match) => {
+      return "";
+    })
+    .replace(selectorRegex, (match) => {
       if (["@", ": "].some((skip) => match?.includes(skip))) {
         return match;
       }
