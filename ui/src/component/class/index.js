@@ -142,7 +142,7 @@ class Component {
       // animations, this decimates the CPU/GPU leading to a clunky UI.
       throttle(() => {
         this.appendCSSToHead();
-      }, 50);
+      }, 100);
 
       processQueue("lifecycle.onUpdateProps");
 
