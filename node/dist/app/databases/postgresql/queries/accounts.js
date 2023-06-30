@@ -20,7 +20,10 @@ var accounts_default = {
   },
   createUser: async (input = {}) => {
     const userId = generateId();
-    await process.databases.postgresql.query(`INSERT INTO users(${objectToSQLKeysString({ user_id: userId, ...input })}) VALUES (${objectToSQLValuesString({ user_id: userId, ...input })});`);
+    await process.databases.postgresql.query(`INSERT INTO users(${objectToSQLKeysString({
+      user_id: userId,
+      ...input
+    })}) VALUES (${objectToSQLValuesString({ user_id: userId, ...input })});`);
     return userId;
   },
   user: async (input) => {
@@ -38,6 +41,9 @@ var accounts_default = {
     }
     return null;
   },
+  deleteOldSessions: async (input = {}) => {
+    await process.databases.postgresql.query(`DELETE FROM users_sessions WHERE user_id = '${input?.userId}'`);
+  },
   addSession: async (input = {}) => {
     await process.databases.postgresql.query(`INSERT INTO users_sessions(user_id, token, token_expires_at) VALUES ('${input?.userId}', '${input?.session?.token}', '${input?.session?.tokenExpiresAt}');`);
   },
@@ -45,6 +51,20 @@ var accounts_default = {
     const [existingUser] = await process.databases.postgresql.query(`SELECT user_id FROM users_sessions WHERE token='${input.token}';`);
     const [user] = await process.databases.postgresql.query(`SELECT * FROM users WHERE user_id='${existingUser?.user_id}';`);
     return user;
+  },
+  createEmailVerificationToken: async (input) => {
+    const token = generateId();
+    await process.databases.postgresql.query(`INSERT INTO users_verify_email_tokens(user_id, token) VALUES ('${input?.userId}', '${token}');`);
+    return token;
+  },
+  userWithVerifyEmailToken: async (input) => {
+    const [existingUser] = await process.databases.postgresql.query(`SELECT user_id FROM users_verify_email_tokens WHERE token='${input.token}';`);
+    const [user] = await process.databases.postgresql.query(`SELECT * FROM users WHERE user_id='${existingUser?.user_id}';`);
+    return user;
+  },
+  markEmailVerifiedAt: async (input) => {
+    await process.databases.postgresql.query(`UPDATE users SET email_verified = true, email_verified_at = '${new Date().toISOString()}' WHERE user_id='${input?.userId}';`);
+    await process.databases.postgresql.query(`DELETE FROM users_verify_email_tokens WHERE token = '${input?.token}'`);
   },
   addPasswordResetToken: async (input = {}) => {
     const [user] = await process.databases.postgresql.query(`SELECT user_id FROM users WHERE email_address='${input?.emailAddress}';`);
@@ -66,7 +86,9 @@ var accounts_default = {
   addRole: async (input = {}) => {
     const [existingRole] = await process.databases.postgresql.query(`SELECT * FROM roles WHERE role='${input?.role}';`);
     if (!existingRole && input?.role) {
-      await process.databases.postgresql.query(`INSERT INTO roles(${objectToSQLKeysString({ role: input?.role })}) VALUES (${objectToSQLValuesString({ role: input?.role })});`);
+      await process.databases.postgresql.query(`INSERT INTO roles(${objectToSQLKeysString({
+        role: input?.role
+      })}) VALUES (${objectToSQLValuesString({ role: input?.role })});`);
       return {
         _id: input?.userId,
         action: "add",
@@ -109,10 +131,20 @@ var accounts_default = {
   grantRole: async (input = {}) => {
     const user = await process.databases.postgresql.query(`SELECT * FROM users WHERE user_id='${input?.userId}';`);
     if (user) {
-      await process.databases.postgresql.query(`INSERT INTO users_roles(${objectToSQLKeysString({ user_id: input?.userId, role: input?.role })}) VALUES (${objectToSQLValuesString({ user_id: input?.userId, role: input?.role })}) ON CONFLICT DO NOTHING;`);
+      await process.databases.postgresql.query(`INSERT INTO users_roles(${objectToSQLKeysString({
+        user_id: input?.userId,
+        role: input?.role
+      })}) VALUES (${objectToSQLValuesString({
+        user_id: input?.userId,
+        role: input?.role
+      })}) ON CONFLICT DO NOTHING;`);
       const [existingRole] = await process.databases.postgresql.query(`SELECT * FROM roles WHERE role='${input?.role}';`);
       if (!existingRole) {
-        await process.databases.postgresql.query(`INSERT INTO roles(${objectToSQLKeysString({ role: input?.role })}) VALUES (${objectToSQLValuesString({ role: input?.role })}) ON CONFLICT DO NOTHING;`);
+        await process.databases.postgresql.query(`INSERT INTO roles(${objectToSQLKeysString({
+          role: input?.role
+        })}) VALUES (${objectToSQLValuesString({
+          role: input?.role
+        })}) ON CONFLICT DO NOTHING;`);
       }
       return {
         _id: input?.userId,

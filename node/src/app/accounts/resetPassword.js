@@ -3,6 +3,16 @@ import runUserQuery from "./runUserQuery";
 import generateSession from "./generateSession";
 import getOutput from "../getOutput";
 
+const deleteOldSessions = (userId = null) => {
+  try {
+    return runUserQuery("deleteOldSessions", { userId });
+  } catch (error) {
+    throw new Error(
+      formatErrorString("resetPassword.deleteOldSessions", error)
+    );
+  }
+};
+
 const removeTokenFromUser = (userId = null, token = null) => {
   try {
     return runUserQuery("removeResetToken", { userId, token });
@@ -57,7 +67,12 @@ const resetPassword = async (options, { resolve, reject }) => {
       options.password
     );
 
-    const updatedUser = await removeTokenFromUser(user?._id || user?.user_id, options.token);
+    const updatedUser = await removeTokenFromUser(
+      user?._id || user?.user_id,
+      options.token
+    );
+
+    await deleteOldSessions(user?._id || user?.user_id);
 
     const session = await generateSession({
       userId: updatedUser?._id || updatedUser?.user_id,

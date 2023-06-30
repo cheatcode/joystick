@@ -34,6 +34,15 @@ var accounts_default = {
     }
     return null;
   },
+  deleteOldSessions: async (input = {}) => {
+    await process.databases.mongodb.collection("users").updateOne({
+      _id: input.userId
+    }, {
+      $set: {
+        sessions: []
+      }
+    });
+  },
   addSession: async (input = {}) => {
     await process.databases.mongodb.collection("users").updateOne({
       _id: input.userId
@@ -48,6 +57,43 @@ var accounts_default = {
       "sessions.token": input?.token
     });
     return user;
+  },
+  createVerifyEmailToken: async (input) => {
+    const token = generateId();
+    await process.databases.mongodb.collection("users").updateOne({
+      _id: input?.userId
+    }, {
+      $addToSet: {
+        verifyEmailTokens: {
+          userId: input?.userId,
+          token
+        }
+      }
+    });
+    return token;
+  },
+  userWithVerifyEmailToken: async (input) => {
+    const user = await process.databases.mongodb.collection("users").findOne({
+      "verifyEmailTokens.token": input?.token
+    });
+    return user;
+  },
+  markEmailVerifiedAt: async (input) => {
+    const user = await process.databases.mongodb.collection("users").findOne({
+      _id: input?.userId
+    });
+    await process.databases.mongodb.collection("users").updateOne({
+      _id: input?.userId
+    }, {
+      $set: {
+        emailVerified: true,
+        emailVerifiedAt: new Date().toISOString(),
+        verifyEmailTokens: user?.verifyEmailTokens?.filter((verifyEmailToken) => {
+          return verifyEmailToken?.token === input?.token;
+        })
+      }
+    });
+    return true;
   },
   addPasswordResetToken: (input = {}) => {
     return process.databases.mongodb.collection("users").updateOne({

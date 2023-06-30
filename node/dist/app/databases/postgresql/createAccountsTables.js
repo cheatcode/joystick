@@ -22,10 +22,12 @@ var createAccountsTables_default = async () => {
     "token text",
     "requested_at text"
   ]);
-  await createTable("roles", [
+  await createTable("users_verify_email_tokens", [
     "id bigserial primary key",
-    "role text"
+    "user_id text",
+    "token text"
   ]);
+  await createTable("roles", ["id bigserial primary key", "role text"]);
   await createTable("users_roles", [
     "id bigserial primary key",
     "user_id text",

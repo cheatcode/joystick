@@ -10,6 +10,13 @@ const addSessionToUser = (userId = null, session = null) => {
     throw new Error(formatErrorString("login.addSessionToUser", error));
   }
 };
+const deleteOldSessions = (userId = null) => {
+  try {
+    return runUserQuery("deleteOldSessions", { userId });
+  } catch (error) {
+    throw new Error(formatErrorString("login.deleteOldSessions", error));
+  }
+};
 const checkIfValidPassword = (passwordFromLogin = null, passwordHashFromUser = null) => {
   try {
     return bcrypt.compareSync(passwordFromLogin, passwordHashFromUser);
@@ -30,6 +37,7 @@ const login = async (options, { resolve, reject }) => {
     if (!isValidPassword) {
       return reject("Incorrect password.");
     }
+    await deleteOldSessions(user?._id || user?.user_id);
     const session = await generateSession();
     await addSessionToUser(user?._id || user?.user_id, session);
     const { password, sessions, ...restOfUser } = user;

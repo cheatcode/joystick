@@ -434,8 +434,7 @@ class App {
     this.express.app.post("/api/_accounts/recover-password", async (req, res) => {
       try {
         await accounts.recoverPassword({
-          emailAddress: req?.body?.emailAddress,
-          origin: req?.body?.origin
+          emailAddress: req?.body?.emailAddress
         });
         res.status(200).send(JSON.stringify({}));
       } catch (exception) {
@@ -457,6 +456,19 @@ class App {
           tokenExpiresAt: reset?.tokenExpiresAt
         });
         res.status(200).send(JSON.stringify(reset?.user || {}));
+      } catch (exception) {
+        console.log(exception);
+        return res.status(500).send(JSON.stringify({
+          errors: [formatAPIError(exception, "server")]
+        }));
+      }
+    });
+    this.express.app.post("/api/_accounts/verify-email", async (req, res) => {
+      try {
+        await accounts.verifyEmail({
+          token: req?.query?.token
+        });
+        res.redirect("/");
       } catch (exception) {
         console.log(exception);
         return res.status(500).send(JSON.stringify({
@@ -493,7 +505,12 @@ class App {
           next();
         }, multerMiddleware, async (req, res) => {
           const input = req?.headers["x-joystick-upload-input"] ? JSON.parse(req?.headers["x-joystick-upload-input"]) : {};
-          validateUploads({ files: req?.files, input, uploaderName, uploaderOptions }).then(async (validatedUploads = []) => {
+          validateUploads({
+            files: req?.files,
+            input,
+            uploaderName,
+            uploaderOptions
+          }).then(async (validatedUploads = []) => {
             if (typeof uploaderOptions?.onBeforeUpload === "function") {
               await uploaderOptions?.onBeforeUpload({
                 input,

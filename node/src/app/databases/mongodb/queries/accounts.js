@@ -1,4 +1,4 @@
-import generateId from '../../../../lib/generateId';
+import generateId from "../../../../lib/generateId";
 
 export default {
   existingUser: async (input = {}) => {
@@ -55,6 +55,18 @@ export default {
 
     return null;
   },
+  deleteOldSessions: async (input = {}) => {
+    await process.databases.mongodb.collection("users").updateOne(
+      {
+        _id: input.userId,
+      },
+      {
+        $set: {
+          sessions: [],
+        },
+      }
+    );
+  },
   addSession: async (input = {}) => {
     await process.databases.mongodb.collection("users").updateOne(
       {
@@ -73,6 +85,56 @@ export default {
     });
 
     return user;
+  },
+  createVerifyEmailToken: async (input) => {
+    const token = generateId();
+
+    await process.databases.mongodb.collection("users").updateOne(
+      {
+        _id: input?.userId,
+      },
+      {
+        $addToSet: {
+          verifyEmailTokens: {
+            userId: input?.userId,
+            token,
+          },
+        },
+      }
+    );
+
+    return token;
+  },
+  userWithVerifyEmailToken: async (input) => {
+    const user = await process.databases.mongodb.collection("users").findOne({
+      "verifyEmailTokens.token": input?.token,
+    });
+
+    return user;
+  },
+  markEmailVerifiedAt: async (input) => {
+    const user = await process.databases.mongodb.collection("users").findOne({
+      _id: input?.userId,
+    });
+
+    await process.databases.mongodb.collection("users").updateOne(
+      {
+        _id: input?.userId,
+      },
+      {
+        $set: {
+          emailVerified: true,
+          emailVerifiedAt: new Date().toISOString(),
+          verifyEmailTokens: user?.verifyEmailTokens?.filter(
+            (verifyEmailToken) => {
+              return verifyEmailToken?.token === input?.token;
+            }
+          ),
+        },
+      }
+    );
+
+    return true;
   },
   addPasswordResetToken: (input = {}) => {
     return process.databases.mongodb.collection("users").updateOne(
@@ -127,10 +189,16 @@ export default {
       }
     );
 
-    return process.databases.mongodb.collection("users").findOne({ _id: input?.userId });
+    return process.databases.mongodb
+      .collection("users")
+      .findOne({ _id: input?.userId });
   },
   addRole: async (input = {}) => {
-    const existingRole = input?.role ? await process.databases.mongodb.collection("roles").findOne({ role: input?.role }) : null;
+    const existingRole = input?.role
+      ? await process.databases.mongodb
+          .collection("roles")
+          .findOne({ role: input?.role })
+      : null;
 
     if (!existingRole && input?.role) {
       await process.databases.mongodb.collection("roles").insertOne({
@@ -140,7 +208,7 @@ export default {
 
       return {
         _id: input?.userId,
-        action: 'add',
+        action: "add",
         role: input?.role,
         ok: true,
         error: null,
@@ -148,23 +216,32 @@ export default {
     }
 
     return {
-      action: 'add',
+      action: "add",
       role: input?.role,
       ok: false,
-      error: input?.role ? `Role already exists: ${input?.role}.` : `Must pass a name for role to add.`,
+      error: input?.role
+        ? `Role already exists: ${input?.role}.`
+        : `Must pass a name for role to add.`,
     };
   },
   removeRole: async (input = {}) => {
-    const existingRole = input?.role ? await process.databases.mongodb.collection("roles").findOne({ role: input?.role }) : null;
+    const existingRole = input?.role
+      ? await process.databases.mongodb
+          .collection("roles")
+          .findOne({ role: input?.role })
+      : null;
 
     if (existingRole) {
-      await process.databases.mongodb.collection("users").updateMany({
-        roles: { $in: [input?.role] }
-      }, {
-        $pull: {
-          roles: input?.role,
+      await process.databases.mongodb.collection("users").updateMany(
+        {
+          roles: { $in: [input?.role] },
+        },
+        {
+          $pull: {
+            roles: input?.role,
+          },
         }
-      });
+      );
 
       await process.databases.mongodb.collection("roles").deleteOne({
         role: input?.role,
@@ -172,7 +249,7 @@ export default {
 
       return {
         _id: input?.userId,
-        action: 'remove',
+        action: "remove",
         role: input?.role,
         ok: true,
         error: null,
@@ -180,27 +257,37 @@ export default {
     }
 
     return {
-      action: 'add',
+      action: "add",
       role: input?.role,
       ok: false,
       error: `Could not find an existing role with the name ${input?.role}.`,
     };
   },
   listRoles: async (input = {}) => {
-    const roles = await process.databases.mongodb.collection("roles").find().toArray();
+    const roles = await process.databases.mongodb
+      .collection("roles")
+      .find()
+      .toArray();
     return (roles || []).map(({ role }) => role);
   },
   grantRole: async (input = {}) => {
-    const user = await process.databases.mongodb.collection("users").findOne({ _id: input?.userId });
+    const user = await process.databases.mongodb
+      .collection("users")
+      .findOne({ _id: input?.userId });
 
     if (user) {
-      await process.databases.mongodb.collection("users").updateOne({ _id: input?.userId }, {
-        $addToSet: {
-          roles: input?.role,
-        },
-      });
+      await process.databases.mongodb.collection("users").updateOne(
+        { _id: input?.userId },
+        {
+          $addToSet: {
+            roles: input?.role,
+          },
+        }
+      );
 
-      const existingRole = await process.databases.mongodb.collection("roles").findOne({ role: input?.role });
+      const existingRole = await process.databases.mongodb
+        .collection("roles")
+        .findOne({ role: input?.role });
 
       if (!existingRole) {
         await process.databases.mongodb.collection("roles").insertOne({
@@ -211,7 +298,7 @@ export default {
 
       return {
         _id: input?.userId,
-        action: 'grant',
+        action: "grant",
         role: input?.role,
         ok: true,
         error: null,
@@ -220,25 +307,30 @@ export default {
 
     return {
       _id: input?.userId,
-      action: 'grant',
+      action: "grant",
       role: input?.role,
       ok: false,
       error: `User not found with the _id ${input?.userId}.`,
     };
   },
   revokeRole: async (input = {}) => {
-    const user = await process.databases.mongodb.collection("users").findOne({ _id: input?.userId });
+    const user = await process.databases.mongodb
+      .collection("users")
+      .findOne({ _id: input?.userId });
 
     if (user && user.roles) {
-      await process.databases.mongodb.collection("users").updateOne({ _id: input?.userId }, {
-        $pull: {
-          roles: input?.role,
-        },
-      });
+      await process.databases.mongodb.collection("users").updateOne(
+        { _id: input?.userId },
+        {
+          $pull: {
+            roles: input?.role,
+          },
+        }
+      );
 
       return {
         _id: input?.userId,
-        action: 'revoke',
+        action: "revoke",
         role: input?.role,
         ok: true,
         error: null,
@@ -247,14 +339,16 @@ export default {
 
     return {
       _id: input?.userId,
-      action: 'revoke',
+      action: "revoke",
       role: input?.role,
       ok: false,
       error: `User not found with the _id ${input?.userId}.`,
     };
   },
   userHasRole: async (input = {}) => {
-    const user = await process.databases.mongodb.collection("users").findOne({ _id: input?.userId });
+    const user = await process.databases.mongodb
+      .collection("users")
+      .findOne({ _id: input?.userId });
 
     if (user && user.roles) {
       return user?.roles?.includes(input?.role);

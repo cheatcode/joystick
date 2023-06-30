@@ -14,6 +14,14 @@ const addSessionToUser = (userId = null, session = null) => {
   }
 };
 
+const deleteOldSessions = (userId = null) => {
+  try {
+    return runUserQuery("deleteOldSessions", { userId });
+  } catch (error) {
+    throw new Error(formatErrorString("login.deleteOldSessions", error));
+  }
+};
+
 const checkIfValidPassword = (
   passwordFromLogin = null,
   passwordHashFromUser = null
@@ -49,6 +57,8 @@ const login = async (options, { resolve, reject }) => {
       return reject("Incorrect password.");
     }
 
+    await deleteOldSessions(user?._id || user?.user_id);
+
     const session = await generateSession();
 
     await addSessionToUser(user?._id || user?.user_id, session);
@@ -56,9 +66,12 @@ const login = async (options, { resolve, reject }) => {
 
     return resolve({
       ...session,
-      user: getOutput({
-        ...restOfUser,
-      }, options?.output),
+      user: getOutput(
+        {
+          ...restOfUser,
+        },
+        options?.output
+      ),
     });
   } catch (error) {
     reject(new Error(formatErrorString("login", error)));

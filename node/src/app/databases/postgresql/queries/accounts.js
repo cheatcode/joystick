@@ -1,4 +1,4 @@
-import generateId from '../../../../lib/generateId';
+import generateId from "../../../../lib/generateId";
 import objectToSQLKeysString from "../../../../lib/objectToSQLKeysString";
 import objectToSQLValuesString from "../../../../lib/objectToSQLValuesString";
 
@@ -32,7 +32,12 @@ export default {
   },
   createUser: async (input = {}) => {
     const userId = generateId();
-    await process.databases.postgresql.query(`INSERT INTO users(${objectToSQLKeysString({ user_id: userId, ...input })}) VALUES (${objectToSQLValuesString({ user_id: userId, ...input })});`);
+    await process.databases.postgresql.query(
+      `INSERT INTO users(${objectToSQLKeysString({
+        user_id: userId,
+        ...input,
+      })}) VALUES (${objectToSQLValuesString({ user_id: userId, ...input })});`
+    );
     return userId;
   },
   user: async (input) => {
@@ -62,6 +67,11 @@ export default {
 
     return null;
   },
+  deleteOldSessions: async (input = {}) => {
+    await process.databases.postgresql.query(
+      `DELETE FROM users_sessions WHERE user_id = '${input?.userId}'`
+    );
+  },
   addSession: async (input = {}) => {
     await process.databases.postgresql.query(
       `INSERT INTO users_sessions(user_id, token, token_expires_at) VALUES ('${input?.userId}', '${input?.session?.token}', '${input?.session?.tokenExpiresAt}');`
@@ -78,13 +88,46 @@ export default {
 
     return user;
   },
+  createEmailVerificationToken: async (input) => {
+    const token = generateId();
+
+    await process.databases.postgresql.query(
+      `INSERT INTO users_verify_email_tokens(user_id, token) VALUES ('${input?.userId}', '${token}');`
+    );
+
+    return token;
+  },
+  userWithVerifyEmailToken: async (input) => {
+    const [existingUser] = await process.databases.postgresql.query(
+      `SELECT user_id FROM users_verify_email_tokens WHERE token='${input.token}';`
+    );
+
+    const [user] = await process.databases.postgresql.query(
+      `SELECT * FROM users WHERE user_id='${existingUser?.user_id}';`
+    );
+
+    return user;
+  },
+  markEmailVerifiedAt: async (input) => {
+    await process.databases.postgresql.query(
+      `UPDATE users SET email_verified = true, email_verified_at = '${new Date().toISOString()}' WHERE user_id='${
+        input?.userId
+      }';`
+    );
+
+    await process.databases.postgresql.query(
+      `DELETE FROM users_verify_email_tokens WHERE token = '${input?.token}'`
+    );
+  },
   addPasswordResetToken: async (input = {}) => {
     const [user] = await process.databases.postgresql.query(
       `SELECT user_id FROM users WHERE email_address='${input?.emailAddress}';`
     );
-      
+
     await process.databases.postgresql.query(
-      `INSERT INTO users_password_reset_tokens(user_id, token, requested_at) VALUES ('${user?.user_id}', '${input?.token}', '${new Date().toISOString()}');`
+      `INSERT INTO users_password_reset_tokens(user_id, token, requested_at) VALUES ('${
+        user?.user_id
+      }', '${input?.token}', '${new Date().toISOString()}');`
     );
   },
   userWithResetToken: async (input) => {
@@ -121,12 +164,14 @@ export default {
 
     if (!existingRole && input?.role) {
       await process.databases.postgresql.query(
-        `INSERT INTO roles(${objectToSQLKeysString({ role: input?.role })}) VALUES (${objectToSQLValuesString({ role: input?.role })});`
+        `INSERT INTO roles(${objectToSQLKeysString({
+          role: input?.role,
+        })}) VALUES (${objectToSQLValuesString({ role: input?.role })});`
       );
 
       return {
         _id: input?.userId,
-        action: 'add',
+        action: "add",
         role: input?.role,
         ok: true,
         error: null,
@@ -134,10 +179,12 @@ export default {
     }
 
     return {
-      action: 'add',
+      action: "add",
       role: input?.role,
       ok: false,
-      error: input?.role ? `Role already exists: ${input?.role}.` : `Must pass a name for role to add.`,
+      error: input?.role
+        ? `Role already exists: ${input?.role}.`
+        : `Must pass a name for role to add.`,
     };
   },
   removeRole: async (input = {}) => {
@@ -156,7 +203,7 @@ export default {
 
       return {
         _id: input?.userId,
-        action: 'remove',
+        action: "remove",
         role: input?.role,
         ok: true,
         error: null,
@@ -164,7 +211,7 @@ export default {
     }
 
     return {
-      action: 'add',
+      action: "add",
       role: input?.role,
       ok: false,
       error: `Could not find an existing role with the name ${input?.role}.`,
@@ -184,7 +231,13 @@ export default {
 
     if (user) {
       await process.databases.postgresql.query(
-        `INSERT INTO users_roles(${objectToSQLKeysString({ user_id: input?.userId, role: input?.role })}) VALUES (${objectToSQLValuesString({ user_id: input?.userId, role: input?.role })}) ON CONFLICT DO NOTHING;`
+        `INSERT INTO users_roles(${objectToSQLKeysString({
+          user_id: input?.userId,
+          role: input?.role,
+        })}) VALUES (${objectToSQLValuesString({
+          user_id: input?.userId,
+          role: input?.role,
+        })}) ON CONFLICT DO NOTHING;`
       );
 
       const [existingRole] = await process.databases.postgresql.query(
@@ -193,13 +246,17 @@ export default {
 
       if (!existingRole) {
         await process.databases.postgresql.query(
-          `INSERT INTO roles(${objectToSQLKeysString({ role: input?.role })}) VALUES (${objectToSQLValuesString({ role: input?.role })}) ON CONFLICT DO NOTHING;`
-        );  
+          `INSERT INTO roles(${objectToSQLKeysString({
+            role: input?.role,
+          })}) VALUES (${objectToSQLValuesString({
+            role: input?.role,
+          })}) ON CONFLICT DO NOTHING;`
+        );
       }
 
       return {
         _id: input?.userId,
-        action: 'grant',
+        action: "grant",
         role: input?.role,
         ok: true,
         error: null,
@@ -208,7 +265,7 @@ export default {
 
     return {
       _id: input?.userId,
-      action: 'grant',
+      action: "grant",
       role: input?.role,
       ok: false,
       error: `User not found with the _id ${input?.userId}.`,
@@ -226,7 +283,7 @@ export default {
 
       return {
         _id: input?.userId,
-        action: 'revoke',
+        action: "revoke",
         role: input?.role,
         ok: true,
         error: null,
@@ -235,7 +292,7 @@ export default {
 
     return {
       _id: input?.userId,
-      action: 'revoke',
+      action: "revoke",
       role: input?.role,
       ok: false,
       error: `User not found with the _id ${input?.userId}.`,
