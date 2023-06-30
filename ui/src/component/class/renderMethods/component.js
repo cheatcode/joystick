@@ -26,7 +26,7 @@ const renderForClient = (
     // animations, this decimates the CPU/GPU leading to a clunky UI.
     throttle(() => {
       component.appendCSSToHead(false, component);
-    }, 300);
+    }, 50);
 
     componentMethodInstance.renderedComponent = component;
 
