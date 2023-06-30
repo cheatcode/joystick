@@ -1,9 +1,9 @@
 import compileCSS from "./compile";
 
-const handlePrefixCSS = (componentId, cssString) => {
-  const commentRegex = new RegExp(/\/\*[^*]*\*+([^/*][^*]*\*+)*\//g);
-  const selectorRegex = new RegExp(/([^\r\n,{}]+)(,(?=[^}]*{)|\s*{)/g);
+const commentRegex = new RegExp(/\/\*[^*]*\*+([^/*][^*]*\*+)*\//g);
+const selectorRegex = new RegExp(/([^\r\n,{}]+)(,(?=[^}]*{)|\s*{)/g);
 
+const handlePrefixCSS = (componentId, cssString) => {
   return (cssString || "")
     .replace(commentRegex, (match) => {
       return "";

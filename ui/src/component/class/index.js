@@ -19,6 +19,7 @@ import replaceChildInVDOMTree from "../tree/replaceChildInVDOMTree";
 import generateId from "../../lib/generateId";
 import registerListeners from "./events/registerListeners";
 import unregisterListeners from "./events/unregisterListeners";
+import throttle from "../../lib/throttle";
 
 class Component {
   constructor(options = {}) {
@@ -136,7 +137,13 @@ class Component {
     if (!windowIsUndefined()) {
       updateParentInstanceInTree(onBeforeRenderData.instanceId, this);
 
-      this.appendCSSToHead();
+      // TODO: Temporary fix. In a UI where there's a lot of re-rendering, the work
+      // done inside of appendCSSToHead overwhelms the call stack. For things like
+      // animations, this decimates the CPU/GPU leading to a clunky UI.
+      throttle(() => {
+        this.appendCSSToHead();
+      }, 300);
+
       processQueue("lifecycle.onUpdateProps");
 
       // NOTE: Prevent a callback passed to setState() being called before or at the same time as
