@@ -24,9 +24,9 @@ const renderForClient = (
     // TODO: Temporary fix. In a UI where there's a lot of re-rendering, the work
     // done inside of appendCSSToHead overwhelms the call stack. For things like
     // animations, this decimates the CPU/GPU leading to a clunky UI.
-    throttle(() => {
-      component.appendCSSToHead(false, component);
-    }, 100);
+    // throttle(() => {
+    //   component.appendCSSToHead(false, component);
+    // }, 100);
 
     componentMethodInstance.renderedComponent = component;
 
