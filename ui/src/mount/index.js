@@ -39,7 +39,7 @@ export default (Component = null, props = {}, target = null) => {
     appendToTarget(target, componentAsDOM);
 
     component.setDOMNodeOnInstance();
-    component.appendCSSToHead();
+    window.joystick._internal.css.update();
 
     // NOTE: Run event listener attachment before lifecycle methods in case onMount
     // triggers a re-render (potential for duplicate event listeners if we do this last).

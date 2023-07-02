@@ -1,7 +1,6 @@
 import validateOptions from "./options/validateOptions";
 import registerOptions from "./options/registerOptions";
 import loadDataFromWindow from "./data/loadDataFromWindow";
-import appendCSSToHead from "./css/appendToHead";
 import fetchData from "./data/fetch";
 import windowIsUndefined from "../../lib/windowIsUndefined";
 import renderForMount from "./render/forMount";
@@ -19,7 +18,6 @@ import replaceChildInVDOMTree from "../tree/replaceChildInVDOMTree";
 import generateId from "../../lib/generateId";
 import registerListeners from "./events/registerListeners";
 import unregisterListeners from "./events/unregisterListeners";
-import throttle from "../../lib/throttle";
 
 class Component {
   constructor(options = {}) {
@@ -41,10 +39,6 @@ class Component {
 
   setDOMNodeOnInstance() {
     this.DOMNode = document.querySelector(`body [js-i="${this.instanceId}"]`);
-  }
-
-  appendCSSToHead() {
-    appendCSSToHead();
   }
 
   async handleFetchData(
@@ -137,7 +131,8 @@ class Component {
     if (!windowIsUndefined()) {
       updateParentInstanceInTree(onBeforeRenderData.instanceId, this);
 
-      this.appendCSSToHead();
+      window.joystick._internal.css.update();
+
       processQueue("lifecycle.onUpdateProps");
 
       // NOTE: Prevent a callback passed to setState() being called before or at the same time as

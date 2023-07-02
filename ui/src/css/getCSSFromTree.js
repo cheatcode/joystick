@@ -1,11 +1,11 @@
-import compileCSS from "./compile";
+import compileCSS from "../component/class/css/compile";
 
 const commentRegex = new RegExp(/\/\*[^*]*\*+([^/*][^*]*\*+)*\//g);
 const selectorRegex = new RegExp(/([^\r\n,{}]+)(,(?=[^}]*{)|\s*{)/g);
 
 const handlePrefixCSS = (componentId, cssString) => {
   return (cssString || "")
-    .replace(commentRegex, (match) => {
+    .replace(commentRegex, () => {
       return "";
     })
     .replace(selectorRegex, (match) => {
