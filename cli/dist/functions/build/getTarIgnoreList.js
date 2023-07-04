@@ -8,7 +8,9 @@ var getTarIgnoreList_default = (excludedPaths = []) => {
   const ignoreFiles = [
     ...gitignoreFiles,
     ...excludedPaths,
-    ...masterIgnoreList,
+    ...(masterIgnoreList || [])?.map((ignore) => {
+      return `${process.cwd()}/${ignore}`;
+    }),
     "*.tar",
     "*.tar.gz",
     "*.tar.xz"

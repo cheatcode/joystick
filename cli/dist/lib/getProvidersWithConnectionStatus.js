@@ -5,12 +5,12 @@ var getProvidersWithConnectionStatus_default = (user = {}) => {
       ...provider,
       connectedAs: {
         // aws: user?.aws ? `Connected as ${login?.user?.aws?.username}` : null,
-        digitalOcean: user?.digitalOcean ? `\u2714 Connected as ${user?.digitalOcean?.info?.email}` : null,
+        digitalOcean: user?.oauth?.digitalOcean ? `\u2714 Connected as ${user?.oauth?.digitalOcean?.info?.email}` : null,
         // google: user?.aws ? `Connected as ${login?.user?.aws?.username}` : null,
         // hetzner: user?.aws ? `Connected as ${login?.user?.aws?.username}` : null,
-        linode: user?.linode ? `\u2714 Connected as ${user?.linode?.account?.email}` : null,
+        linode: user?.oauth?.linode ? `\u2714 Connected as ${user?.oauth?.linode?.account?.email}` : null,
         // rackspace: user?.aws ? `Connected as ${login?.user?.aws?.username}` : null,
-        vultr: user?.vultr ? `\u2714 Connected as ${user?.vultr?.email}` : null
+        vultr: user?.oauth?.vultr ? `\u2714 Connected as ${user?.oauth?.vultr?.email}` : null
       }[provider?.value] || "\u{1F5D9} Not connected"
     };
   });

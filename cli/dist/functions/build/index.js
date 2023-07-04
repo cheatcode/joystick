@@ -35,6 +35,7 @@ var build_default = async (args = {}, options = {}) => {
   });
   if (options?.type === "tar") {
     const ignoreList = getTarIgnoreList(settings?.config?.build?.excludedPaths);
+    console.log(ignoreList);
     child_process.execSync(
       `cd ${outputPath}/.tar && tar -cf ../build.tar.xz --exclude=${ignoreList} .`
     );

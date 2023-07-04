@@ -27,10 +27,7 @@ const handleDeployment = async ({
     if (isInitialDeployment) {
       const loader = new Loader({ padding: " ", defaultMessage: "" });
       const deploymentToExecute = await inquirer.prompt(
-        prompts.initialDeployment(
-          user,
-          loginSessionToken
-        )
+        prompts.initialDeployment(user, loginSessionToken)
       );
       deploymentToExecuteWithDefaults = {
         ...deploymentToExecute,
@@ -40,22 +37,39 @@ const handleDeployment = async ({
       await checkIfProvisionAvailable();
       console.log("\n");
       loader.text("Building deployment summary...");
-      const deploymentSummary = await getDeploymentSummary(deploymentToExecuteWithDefaults, loginSessionToken, domain);
+      const deploymentSummary = await getDeploymentSummary(
+        deploymentToExecuteWithDefaults,
+        loginSessionToken,
+        domain
+      );
       loader.stop();
       const totalInstancesRequested = deploymentToExecuteWithDefaults?.loadBalancerInstances + deploymentToExecuteWithDefaults?.appInstances;
       const deploymentFeasible = totalInstancesRequested <= deploymentSummary?.limits?.available;
+      console.log({
+        totalInstancesRequested,
+        deploymentFeasible,
+        deploymentSummary
+      });
       if (!deploymentFeasible) {
-        CLILog(`${chalk.yellowBright(`Cannot push with this configuration as it would exceed the limits set by your selected provider (${providerMap[deploymentToExecuteWithDefaults?.provider]}).`)} Your account there is limited to ${deploymentSummary?.limits?.account} instances (currently using ${deploymentSummary?.limits?.existing}).
+        CLILog(
+          `${chalk.yellowBright(
+            `Cannot push with this configuration as it would exceed the limits set by your selected provider (${providerMap[deploymentToExecuteWithDefaults?.provider]}).`
+          )} Your account there is limited to ${deploymentSummary?.limits?.account} instances (currently using ${deploymentSummary?.limits?.existing}).
 
- You requested ${totalInstancesRequested} instances which would go over your account limit. Please adjust your configuration (or request an increase from your provider) and try again.`, {
-          padding: " ",
-          level: "danger",
-          docs: "https://cheatcode.co/docs/push/provider-limits"
-        });
+ You requested ${totalInstancesRequested} instances which would go over your account limit. Please adjust your configuration (or request an increase from your provider) and try again.`,
+          {
+            padding: " ",
+            level: "danger",
+            docs: "https://cheatcode.co/docs/push/provider-limits"
+          }
+        );
         process.exit(0);
       }
       const response = await inquirer.prompt(
-        prompts.confirmInitialDeployment(deploymentToExecuteWithDefaults, deploymentSummary?.costs)
+        prompts.confirmInitialDeployment(
+          deploymentToExecuteWithDefaults,
+          deploymentSummary?.costs
+        )
       );
       confirmation = response.confirmation;
     }
@@ -81,10 +95,13 @@ var push_default = async (args = {}, options = {}) => {
   try {
     const hasJoystickFolder = fs.existsSync(".joystick");
     if (!hasJoystickFolder) {
-      CLILog("This is not a Joystick project. A .joystick folder could not be found.", {
-        level: "danger",
-        docs: "https://github.com/cheatcode/joystick"
-      });
+      CLILog(
+        "This is not a Joystick project. A .joystick folder could not be found.",
+        {
+          level: "danger",
+          docs: "https://github.com/cheatcode/joystick"
+        }
+      );
       process.exit(0);
     }
     await checkIfProvisionAvailable();
@@ -96,9 +113,13 @@ var push_default = async (args = {}, options = {}) => {
 `, "greenBright");
     console.log(user);
     if (!user?.onboardingComplete && user?.onboardingStep < 4) {
-      console.log(chalk.yellowBright(`
+      console.log(
+        chalk.yellowBright(
+          `
 Please visit push.cheatcode.co to finish setting up your account before deploying.
-`));
+`
+        )
+      );
       process.exit(0);
     }
     let domain = options?.domain;
@@ -106,7 +127,11 @@ Please visit push.cheatcode.co to finish setting up your account before deployin
       domain = await inquirer.prompt(prompts.domain()).then((answers) => answers?.domain);
     }
     await checkIfProvisionAvailable();
-    const deploymentFromServer = await getDeployment({ domain, loginSessionToken, environment: options?.environment });
+    const deploymentFromServer = await getDeployment({
+      domain,
+      loginSessionToken,
+      environment: options?.environment
+    });
     await handleDeployment({
       isInitialDeployment: deploymentFromServer?.status === "undeployed",
       loginSessionToken,
