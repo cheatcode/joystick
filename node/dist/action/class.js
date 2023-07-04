@@ -63,7 +63,7 @@ class Action {
             return reject(new Error(formattedValidationErrors));
           }
         }
-        const result = await this.config?.run(this?.config?.input || {}, this?.steps, this);
+        const result = await this.config?.run(input || {}, this?.steps, this);
         return resolve(result);
       } catch (exception) {
         if (this.options?.logErrors) {
