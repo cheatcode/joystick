@@ -1,18 +1,20 @@
 import sanitizeHTML from "sanitize-html";
 import _accounts from "./app/accounts";
+import _action from "./action/index.js";
 import _websockets from "./websockets";
 import api from "./api/index.js";
+import app from "./app/index.js";
+import generateId from "./lib/generateId.js";
 import getOrigin from "./api/getOrigin";
+import loadSettings from "./settings/load";
+import logs from "./logs/index.js";
 import nodeUrlPolyfills from "./lib/nodeUrlPolyfills.js";
 import sendEmail from "./email/send";
-import loadSettings from "./settings/load";
-import generateId from "./lib/generateId.js";
-import app from "./app/index.js";
-import logs from "./logs/index.js";
 if (process.env.NODE_ENV !== "development" && process.env.IS_PUSH_DEPLOYED) {
   logs();
 }
 const accounts = _accounts;
+const action = _action;
 const get = api.get;
 const set = api.set;
 const email = {
@@ -35,14 +37,25 @@ global.joystick = {
   settings
 };
 var src_default = {
-  id: generateId,
+  __dirname,
+  __filename,
+  accounts,
+  action,
   app,
-  settings
+  email,
+  get,
+  id,
+  origin,
+  sanitize,
+  set,
+  settings,
+  websockets
 };
 export {
   __dirname,
   __filename,
   accounts,
+  action,
   src_default as default,
   email,
   get,

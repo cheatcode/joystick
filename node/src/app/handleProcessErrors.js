@@ -28,7 +28,7 @@ export default (listeners = {}) => {
   });
 
   process.on("message", async (message, sendHandle) => {
-    if (process.env.NODE_ENV !== 'test') {
+    if (process.env.NODE_ENV !== "test") {
       console.log(message);
     }
 

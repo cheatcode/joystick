@@ -1,7 +1,7 @@
 import getErrorObject from "./getErrorObject";
 var formatAPIError_default = (exception = {}, location = "") => {
   return {
-    error: getErrorObject(exception),
+    error: exception,
     message: exception?.message || exception?.reason || exception,
     location
   };

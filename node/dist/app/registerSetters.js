@@ -20,7 +20,7 @@ var registerSetters_default = (express, setters = [], context = {}, APIOptions =
         const shouldDisableSanitizationForSetter = setter_options?.sanitize === false;
         const shouldSanitizeOutput = (setter_options?.sanitize || APIOptions?.sanitize) === true || isObject(APIOptions?.sanitize || setter_options?.sanitize);
         let validationErrors = [];
-        if (setter_options?.input) {
+        if (Object.keys(setter_options?.input || {})?.length > 0) {
           validationErrors = await validate.inputWithSchema(input, setter_options.input);
         }
         if (validationErrors.length > 0) {
@@ -53,9 +53,8 @@ var registerSetters_default = (express, setters = [], context = {}, APIOptions =
             const sanitizedResponse = !shouldDisableSanitizationForSetter && shouldSanitizeOutput ? sanitizeAPIResponse(response, localSanitizationOptions || APIOptions?.sanitize) : response;
             return res.send(JSON.stringify(sanitizedResponse || {}));
           } catch (exception) {
-            console.log(exception);
             return res.status(500).send(JSON.stringify({
-              errors: [formatAPIError(exception, "server")]
+              errors: [formatAPIError(exception, `setters.${setter_name}`)]
             }));
           }
         }
