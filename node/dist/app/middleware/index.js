@@ -16,9 +16,12 @@ import replaceFileProtocol from "../../lib/replaceFileProtocol.js";
 import getBuildPath from "../../lib/getBuildPath.js";
 const cwd = replaceFileProtocol(replaceBackslashesWithForwardSlashes(process.cwd()));
 const faviconPath = process.env.NODE_ENV === "test" ? `${cwd}/src/tests/mocks/app/public/favicon.ico` : "public/favicon.ico";
-var middleware_default = (app, port, config = {}) => {
+var middleware_default = (app, port, config = {}, hasSSL = false) => {
   if (process.env.NODE_ENV === "production") {
-    app.use(insecure);
+    app.use((req, res, next) => {
+      req._hasSSL = hasSSL;
+      return insecure(req, res, next);
+    });
   }
   const buildPath = getBuildPath();
   app.use((_req, res, next) => {

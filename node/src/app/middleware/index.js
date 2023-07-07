@@ -11,16 +11,24 @@ import render from "./render.js";
 import generateErrorPage from "../../lib/generateErrorPage.js";
 import hasLoginTokenExpired from "../accounts/hasLoginTokenExpired.js";
 import runUserQuery from "../accounts/runUserQuery.js";
-import replaceBackslashesWithForwardSlashes from '../../lib/replaceBackslashesWithForwardSlashes.js';
-import replaceFileProtocol from '../../lib/replaceFileProtocol.js';
+import replaceBackslashesWithForwardSlashes from "../../lib/replaceBackslashesWithForwardSlashes.js";
+import replaceFileProtocol from "../../lib/replaceFileProtocol.js";
 import getBuildPath from "../../lib/getBuildPath.js";
 
-const cwd = replaceFileProtocol(replaceBackslashesWithForwardSlashes(process.cwd()));
-const faviconPath = process.env.NODE_ENV === 'test' ? `${cwd}/src/tests/mocks/app/public/favicon.ico` : 'public/favicon.ico'; 
+const cwd = replaceFileProtocol(
+  replaceBackslashesWithForwardSlashes(process.cwd())
+);
+const faviconPath =
+  process.env.NODE_ENV === "test"
+    ? `${cwd}/src/tests/mocks/app/public/favicon.ico`
+    : "public/favicon.ico";
 
-export default (app, port, config = {}) => {
-  if (process.env.NODE_ENV === 'production') {
-    app.use(insecure);
+export default (app, port, config = {}, hasSSL = false) => {
+  if (process.env.NODE_ENV === "production") {
+    app.use((req, res, next) => {
+      req._hasSSL = hasSSL;
+      return insecure(req, res, next);
+    });
   }
 
   const buildPath = getBuildPath();
@@ -43,7 +51,7 @@ export default (app, port, config = {}) => {
   app.use(requestMethods);
   app.use(compression());
 
-  app.use('/css', express.static("css", { eTag: false, maxAge: "0" }));
+  app.use("/css", express.static("css", { eTag: false, maxAge: "0" }));
   app.use(express.static("public", { eTag: false, maxAge: "0" }));
 
   app.use("/_joystick/heartbeat", (_req, res) => {

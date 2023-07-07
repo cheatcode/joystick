@@ -1,5 +1,5 @@
 import express from "express";
-import https from 'https';
+import https from "https";
 import middleware from "./middleware/index.js";
 import getSSLCertificates from "../lib/getSSLCertificates.js";
 
@@ -12,10 +12,12 @@ export default (onInit = () => {}, options = {}) => {
     process.env.PORT = port;
 
     const app = express();
-    const server = ssl ? https.createServer(ssl, app).listen(port) : app.listen(port);
+    const server = ssl
+      ? https.createServer(ssl, app).listen(port)
+      : app.listen(port);
     const config = joystick?.settings?.config || {};
 
-    middleware(app, port, config?.middleware);
+    middleware(app, port, config?.middleware, !!ssl);
 
     if (options?.middleware && options?.middleware instanceof Array) {
       options.middleware.forEach((middleware) => {
