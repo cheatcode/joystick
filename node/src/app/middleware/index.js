@@ -27,7 +27,6 @@ export default (app, port, config = {}, hasSSL = false) => {
   if (process.env.NODE_ENV === "production") {
     app.use((req, res, next) => {
       req._hasSSL = hasSSL;
-      console.log("HAS SSL", req?._hasSSL);
       return insecure(req, res, next);
     });
   }
