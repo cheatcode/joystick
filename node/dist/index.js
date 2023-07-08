@@ -10,7 +10,7 @@ import loadSettings from "./settings/load";
 import logs from "./logs/index.js";
 import nodeUrlPolyfills from "./lib/nodeUrlPolyfills.js";
 import sendEmail from "./email/send";
-if (process.env.NODE_ENV !== "development" && process.env.IS_PUSH_DEPLOYED) {
+if (process.env.NODE_ENV !== "development") {
   logs();
 }
 const accounts = _accounts;
