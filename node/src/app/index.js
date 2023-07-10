@@ -816,6 +816,14 @@ export class App {
                   req,
                 });
 
+                if (typeof uploaderOptions?.onAfterUpload === "function") {
+                  await uploaderOptions?.onAfterUpload({
+                    input,
+                    req,
+                    uploads,
+                  });
+                }
+
                 res.status(200).send(
                   JSON.stringify({
                     status: 200,
