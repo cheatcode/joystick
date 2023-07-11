@@ -1,9 +1,9 @@
 import fs from "fs";
-var getSSLCertificates_default = (ssl = {}) => {
-  const deployCertificatePath = "/lib/push/certs/cert.pem";
-  const deployKeyPath = "/lib/push/certs/key.pem";
-  const certPath = process.env.IS_PUSH_DEPLOYED ? deployCertificatePath : ssl?.cert;
-  const keyPath = process.env.IS_PUSH_DEPLOYED ? deployKeyPath : ssl?.key;
+var getSSLCertificates_default = (ssl = null) => {
+  const pushCertificatePath = "/lib/push/certs/cert.pem";
+  const pushKeyPath = "/lib/push/certs/key.pem";
+  const certPath = process.env.IS_PUSH_DEPLOYED ? pushCertificatePath : ssl?.cert || null;
+  const keyPath = process.env.IS_PUSH_DEPLOYED ? pushKeyPath : ssl?.key || null;
   const certExists = fs.existsSync(certPath);
   const keyExists = fs.existsSync(keyPath);
   if (process.env.NODE_ENV === "development" || !certExists || !keyExists) {

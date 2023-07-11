@@ -8,12 +8,12 @@ import app from "./app/index.js";
 import generateId from "./lib/generateId.js";
 import getOrigin from "./api/getOrigin";
 import loadSettings from "./settings/load";
-import logs from "./logs/index.js";
+import pushLogs from "./push/logs/index.js";
 import nodeUrlPolyfills from "./lib/nodeUrlPolyfills.js";
 import sendEmail from "./email/send";
 
-if (process.env.NODE_ENV !== "development") {
-  logs();
+if (process.env.NODE_ENV !== "development" && process.env.IS_PUSH_DEPLOYED) {
+  pushLogs();
 }
 
 export const accounts = _accounts;

@@ -23,12 +23,9 @@ const faviconPath =
     ? `${cwd}/src/tests/mocks/app/public/favicon.ico`
     : "public/favicon.ico";
 
-export default (app, port, config = {}, hasSSL = false) => {
+export default (app, port, config = {}) => {
   if (process.env.NODE_ENV === "production") {
-    app.use((req, res, next) => {
-      req._hasSSL = hasSSL;
-      return insecure(req, res, next);
-    });
+    app.use(insecure);
   }
 
   const buildPath = getBuildPath();
