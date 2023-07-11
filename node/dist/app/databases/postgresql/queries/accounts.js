@@ -42,7 +42,7 @@ var accounts_default = {
     return null;
   },
   deleteOldSessions: async (input = {}) => {
-    await process.databases.postgresql.query(`DELETE FROM users_sessions WHERE user_id = '${input?.userId}'`);
+    await process.databases.postgresql.query(`DELETE FROM users_sessions WHERE user_id = '${input?.userId}' AND token_expires_at::date < NOW()`);
   },
   addSession: async (input = {}) => {
     await process.databases.postgresql.query(`INSERT INTO users_sessions(user_id, token, token_expires_at) VALUES ('${input?.userId}', '${input?.session?.token}', '${input?.session?.tokenExpiresAt}');`);

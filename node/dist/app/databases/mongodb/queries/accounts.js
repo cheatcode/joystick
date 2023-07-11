@@ -1,4 +1,5 @@
 import generateId from "../../../../lib/generateId";
+import dayjs from "dayjs";
 var accounts_default = {
   existingUser: async (input = {}) => {
     let existingUserWithEmailAddress;
@@ -35,13 +36,21 @@ var accounts_default = {
     return null;
   },
   deleteOldSessions: async (input = {}) => {
-    await process.databases.mongodb.collection("users").updateOne({
-      _id: input.userId
-    }, {
-      $set: {
-        sessions: []
-      }
+    const user = await process.databases.mongodb.collection("users").findOne({
+      _id: input?.userId
     });
+    if (user) {
+      const sessions = user?.sessions?.filter((session) => {
+        return dayjs(session?.tokenExpiresAt).isAfter(dayjs().utc().format());
+      });
+      await process.databases.mongodb.collection("users").updateOne({
+        _id: input.userId
+      }, {
+        $set: {
+          sessions
+        }
+      });
+    }
   },
   addSession: async (input = {}) => {
     await process.databases.mongodb.collection("users").updateOne({
