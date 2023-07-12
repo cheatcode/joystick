@@ -139,9 +139,7 @@ export default async (args = {}, options = {}) => {
 
     colorLog(`\n✔ Logged in as ${user?.emailAddress}\n`, "greenBright");
 
-    console.log(user);
-
-    if (!user?.onboardingComplete && user?.onboardingStep < 4) {
+    if (!user?.onboarding?.complete && user?.onboarding?.step < 4) {
       console.log(
         chalk.yellowBright(
           `\nPlease visit push.cheatcode.co to finish setting up your account before deploying.\n`
@@ -159,6 +157,7 @@ export default async (args = {}, options = {}) => {
     }
 
     await checkIfProvisionAvailable();
+
     const deploymentFromServer = await getDeployment({
       domain,
       loginSessionToken,

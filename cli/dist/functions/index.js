@@ -129,6 +129,21 @@ var functions_default = {
           }
         },
         description: "The value you want to use for NODE_ENV in the deployed app (e.g., staging or production). Default is production."
+      },
+      provisionServer: {
+        flags: {
+          "-p": {
+            set: !!rawArgs.includes("-p"),
+            value: !!rawArgs.includes("-p") && rawArgs[rawArgs.indexOf("-p") + 1],
+            parent: "push"
+          },
+          "--provisionServer": {
+            set: !!rawArgs.includes("--provisionServer"),
+            value: !!rawArgs.includes("--provisionServer") && rawArgs[rawArgs.indexOf("--provisionServer") + 1],
+            parent: "push"
+          }
+        },
+        description: 'The Push provision server to target (either "local" or "remote").'
       }
     },
     function: push

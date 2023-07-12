@@ -13,7 +13,7 @@ export default (excludedPaths = []) => {
     ...gitignoreFiles,
     ...excludedPaths,
     ...(masterIgnoreList || [])?.map((ignore) => {
-      return `${process.cwd()}/${ignore}`;
+      return `${process.cwd()}/./${ignore}`;
     }),
     "*.tar",
     "*.tar.gz",

@@ -3,8 +3,7 @@ import chalk from "chalk";
 import mongoUri from "mongo-uri-tool";
 import fs from "fs";
 import buildConnectionString from "./buildConnectionString";
-var mongodb_default = async (settings = {}, databasePortBaseIndex = 0) => {
-  const databasePort = parseInt(process.env.PORT, 10) + 10 + databasePortBaseIndex;
+var mongodb_default = async (settings = {}, databasePort = 2610) => {
   const connection = settings?.connection || {
     hosts: [
       { hostname: "127.0.0.1", port: databasePort }

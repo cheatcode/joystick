@@ -10,6 +10,8 @@ export default (provider = '', loginSessionToken = '') => {
     const text = await response.text();
     const data = checkIfValidJSON(text);
 
+    console.log('PING', data);
+
     if (data?.error) {
       CLILog(
         data.error?.message,

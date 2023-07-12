@@ -33,6 +33,7 @@ import readDirectory from "../lib/readDirectory.js";
 import getBuildPath from "../lib/getBuildPath.js";
 import generateMachineId from "../lib/generateMachineId.js";
 import emitWebsocketEvent from "../websockets/emitWebsocketEvent.js";
+import getTargetDatabaseConnection from "./databases/getTargetDatabaseConnection.js";
 
 process.setMaxListeners(0);
 
@@ -91,6 +92,19 @@ export class App {
 
   async loadDatabases(callback) {
     const settings = loadSettings();
+
+    const hasUsersDatabase = settings?.config?.databases?.some((database = {}) => {
+      return !!database?.users;
+    });
+
+    const hasQueuesDatabase = settings?.config?.databases?.some((database = {}) => {
+      return !!database?.queues;
+    });
+
+    const hasPostgreSQLUsersDatabase = settings?.config?.databases?.some((database = {}) => {
+      return database?.provider === 'postgresql' && database?.users;
+    });
+
     const databases = settings?.config?.databases?.map((database) => {
       return {
         provider: database?.provider,
@@ -104,33 +118,53 @@ export class App {
       databaseIndex += 1
     ) {
       const database = databases[databaseIndex];
+      const hasMultipleOfProvider = (databases?.filter((database) => database?.provider === database?.provider))?.length > 1;
+      const databasePort = parseInt(process.env.PORT, 10) + 10 + databaseIndex;
 
       if (database?.provider === "mongodb") {
-        const mongodb = await connectMongoDB(database?.settings, databaseIndex);
+        const mongodb = await connectMongoDB(database?.settings, databasePort);
         process.databases = {
           ...(process.databases || {}),
-          mongodb,
+          mongodb: !hasMultipleOfProvider ? mongodb : {
+            ...(process?.databases?.mongodb || {}),
+            [database?.settings?.name || `mongodb_${databasePort}`]: mongodb,
+          },
         };
       }
 
       if (database?.provider === "postgresql") {
         const postgresql = await connectPostgreSQL(
           database?.settings,
-          databaseIndex
+          databasePort
         );
+
         process.databases = {
           ...(process.databases || {}),
-          postgresql: {
+          postgresql: !hasMultipleOfProvider ? {
             ...postgresql?.pool,
             query: postgresql?.query,
+          } : {
+            ...(process?.databases?.postgresql || {}),
+            [database?.settings?.name || `postgresql_${databasePort}`]: {
+              ...postgresql?.pool,
+              query: postgresql?.query,
+            },
           },
         };
-
-        if (postgresql?.query) {
-          await createPostgreSQLAccountsTables();
-          await createPostgreSQLAccountsIndexes();
-        }
       }
+    }
+
+    if (hasUsersDatabase) {
+      process.databases._users = (getTargetDatabaseConnection('users'))?.connection;
+    }
+
+    if (hasQueuesDatabase) {
+      process.databases._queues = (getTargetDatabaseConnection('queues'))?.connection;
+    }
+
+    if (hasPostgreSQLUsersDatabase) {
+      await createPostgreSQLAccountsTables();
+      await createPostgreSQLAccountsIndexes();
     }
 
     return process.databases;

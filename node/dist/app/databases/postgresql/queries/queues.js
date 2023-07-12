@@ -1,8 +1,8 @@
 import dayjs from "dayjs";
 var queues_default = {
   addJob: function(jobToAdd = {}) {
-    const db = process.databases.postgresql;
-    return db.query(`
+    const db = process.databases._queues;
+    return db?.query(`
       INSERT INTO queue_${this.queue.name} (
         _id,
         status,
@@ -21,8 +21,8 @@ var queues_default = {
     ]);
   },
   countJobs: async function(status = "") {
-    const db = process.databases.postgresql;
-    const [jobs] = await db.query(`
+    const db = process.databases._queues;
+    const [jobs] = await db?.query(`
       SELECT
         count(*)
       FROM
@@ -35,8 +35,8 @@ var queues_default = {
     return Promise.resolve(jobs.count);
   },
   deleteJob: function(jobId = "") {
-    const db = process.databases.postgresql;
-    return db.query(`
+    const db = process.databases._queues;
+    return db?.query(`
       DELETE FROM
         queue_${this.queue.name}
       WHERE
@@ -46,8 +46,8 @@ var queues_default = {
     ]);
   },
   getJobs: function(query = {}) {
-    const db = process.databases.postgresql;
-    return db.query(`
+    const db = process.databases._queues;
+    return db?.query(`
       SELECT * FROM
         queue_${this.queue.name}
       ${query?.status ? `
@@ -59,8 +59,8 @@ var queues_default = {
     ]);
   },
   getNextJobToRun: async function() {
-    const db = process.databases.postgresql;
-    const [nextJob] = await db.query(`
+    const db = process.databases._queues;
+    const [nextJob] = await db?.query(`
       SELECT * FROM
         queue_${this.queue.name}
       WHERE
@@ -75,7 +75,7 @@ var queues_default = {
       "pending"
     ]);
     if (nextJob?._id) {
-      await db.query(`
+      await db?.query(`
         UPDATE
           queue_${this.queue.name}
         SET
@@ -97,8 +97,8 @@ var queues_default = {
     } : {};
   },
   initializeDatabase: async function() {
-    const db = process.databases.postgresql;
-    await db.query(`
+    const db = process.databases._queues;
+    await db?.query(`
       CREATE TABLE IF NOT EXISTS queue_${this.queue.name} (
         _id text PRIMARY KEY,
         status text,
@@ -112,14 +112,14 @@ var queues_default = {
         error text
       )
     `);
-    db.query(`CREATE INDEX IF NOT EXISTS status_index ON queue_${this.queue.name} (status)`);
-    db.query(`CREATE INDEX IF NOT EXISTS status_nextRunAt_index ON queue_${this.queue.name} (status, next_run_at)`);
-    db.query(`CREATE INDEX IF NOT EXISTS completedAt_index ON queue_${this.queue.name} (completed_at)`);
-    db.query(`CREATE INDEX IF NOT EXISTS failedAt_index ON queue_${this.queue.name} (failed_at)`);
+    db?.query(`CREATE INDEX IF NOT EXISTS status_index ON queue_${this.queue.name} (status)`);
+    db?.query(`CREATE INDEX IF NOT EXISTS status_nextRunAt_index ON queue_${this.queue.name} (status, next_run_at)`);
+    db?.query(`CREATE INDEX IF NOT EXISTS completedAt_index ON queue_${this.queue.name} (completed_at)`);
+    db?.query(`CREATE INDEX IF NOT EXISTS failedAt_index ON queue_${this.queue.name} (failed_at)`);
   },
   requeueJob: function(jobId = "", nextRunAt = null) {
-    const db = process.databases.postgresql;
-    return db.query(`
+    const db = process.databases._queues;
+    return db?.query(`
       UPDATE
         queue_${this.queue.name}
       SET
@@ -136,8 +136,8 @@ var queues_default = {
     ]);
   },
   setJobsForMachineIncomplete: function() {
-    const db = process.databases.postgresql;
-    return db.query(`
+    const db = process.databases._queues;
+    return db?.query(`
       UPDATE
         queue_${this.queue.name}
       SET
@@ -153,8 +153,8 @@ var queues_default = {
     ]);
   },
   setJobCompleted: function(jobId = "") {
-    const db = process.databases.postgresql;
-    return db.query(`
+    const db = process.databases._queues;
+    return db?.query(`
       UPDATE
         queue_${this.queue.name}
       SET
@@ -169,8 +169,8 @@ var queues_default = {
     ]);
   },
   setJobFailed: function(jobId = "", error = "") {
-    const db = process.databases.postgresql;
-    return db.query(`
+    const db = process.databases._queues;
+    return db?.query(`
       UPDATE
         queue_${this.queue.name}
       SET
@@ -187,8 +187,8 @@ var queues_default = {
     ]);
   },
   setJobsForMachinePending: function() {
-    const db = process.databases.postgresql;
-    return db.query(`
+    const db = process.databases._queues;
+    return db?.query(`
       UPDATE
         queue_${this.queue.name}
       SET

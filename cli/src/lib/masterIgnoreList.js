@@ -6,7 +6,6 @@ export default [
   `.joystick/data`,
   `.push`,
   `node_modules`,
-  `uploads`,
   `storage`,
   `settings.development.json`,
   `settings.staging.json`,

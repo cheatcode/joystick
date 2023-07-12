@@ -1,8 +1,8 @@
 const createUniqueIndex = async (indexName = "", tableName = "", tableColumns = []) => {
-  return process.databases.postgresql.query(`CREATE UNIQUE INDEX IF NOT EXISTS ${indexName} ON ${tableName}(${tableColumns.join(", ")})`);
+  return process.databases._users?.query(`CREATE UNIQUE INDEX IF NOT EXISTS ${indexName} ON ${tableName}(${tableColumns.join(", ")})`);
 };
 const createIndex = async (indexName = "", tableName = "", tableColumns = []) => {
-  return process.databases.postgresql.query(`CREATE INDEX IF NOT EXISTS ${indexName} ON ${tableName}(${tableColumns.join(", ")})`);
+  return process.databases._users?.query(`CREATE INDEX IF NOT EXISTS ${indexName} ON ${tableName}(${tableColumns.join(", ")})`);
 };
 var createAccountsIndexes_default = async () => {
   await createIndex("user_by_email", "users", ["email_address"]);

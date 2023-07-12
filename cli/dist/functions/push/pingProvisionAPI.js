@@ -8,6 +8,7 @@ var pingProvisionAPI_default = (provider = "", loginSessionToken = "") => {
   return fetch(url, { method: "GET" }).then(async (response) => {
     const text = await response.text();
     const data = checkIfValidJSON(text);
+    console.log("PING", data);
     if (data?.error) {
       CLILog(
         data.error?.message,

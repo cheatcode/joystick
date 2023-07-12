@@ -5,7 +5,7 @@ import runUserQuery from "./runUserQuery";
 import { isObject } from "../../validation/lib/typeValidators";
 import getOutput from "../getOutput";
 import typesMap from "../databases/typesMap";
-import getTargetDatabase from "../databases/getTargetDatabase";
+import getTargetDatabaseProvider from "../databases/getTargetDatabaseProvider.js";
 
 const addSessionToUser = (userId = null, session = null) => {
   try {
@@ -35,7 +35,7 @@ const insertUserInDatabase = async (user = {}) => {
 
 const getUserToCreate = async (options = {}) => {
   try {
-    const usersDatabase = getTargetDatabase('users');
+    const usersDatabase = getTargetDatabaseProvider('users');
     const usersDatabaseType = typesMap[usersDatabase];
 
     let user = {

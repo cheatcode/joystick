@@ -5,10 +5,10 @@ var accounts_default = {
     let existingUserWithEmailAddress;
     let existingUserWithUsername;
     if (input?.emailAddress) {
-      existingUserWithEmailAddress = await process.databases.mongodb.collection("users").findOne({ emailAddress: input.emailAddress });
+      existingUserWithEmailAddress = await process.databases._users?.collection("users").findOne({ emailAddress: input.emailAddress });
     }
     if (input?.username) {
-      existingUserWithUsername = await process.databases.mongodb.collection("users").findOne({ username: input.username });
+      existingUserWithUsername = await process.databases._users?.collection("users").findOne({ username: input.username });
     }
     return existingUserWithEmailAddress || existingUserWithUsername ? {
       existingEmailAddress: existingUserWithEmailAddress?.emailAddress,
@@ -17,33 +17,33 @@ var accounts_default = {
   },
   createUser: async (input = {}) => {
     const userId = generateId();
-    await process.databases.mongodb.collection("users").insertOne({ _id: userId, ...input });
+    await process.databases._users?.collection("users").insertOne({ _id: userId, ...input });
     return userId;
   },
   user: async (input) => {
     if (input?.emailAddress) {
-      const user = await process.databases.mongodb.collection("users").findOne({ emailAddress: input.emailAddress });
+      const user = await process.databases._users?.collection("users").findOne({ emailAddress: input.emailAddress });
       return user;
     }
     if (input?.username) {
-      const user = await process.databases.mongodb.collection("users").findOne({ username: input.username });
+      const user = await process.databases._users?.collection("users").findOne({ username: input.username });
       return user;
     }
     if (input?._id) {
-      const user = await process.databases.mongodb.collection("users").findOne({ _id: input._id });
+      const user = await process.databases._users?.collection("users").findOne({ _id: input._id });
       return user;
     }
     return null;
   },
   deleteOldSessions: async (input = {}) => {
-    const user = await process.databases.mongodb.collection("users").findOne({
+    const user = await process.databases._users?.collection("users").findOne({
       _id: input?.userId
     });
     if (user) {
       const sessions = user?.sessions?.filter((session) => {
         return dayjs(session?.tokenExpiresAt).isAfter(dayjs().utc().format());
       });
-      await process.databases.mongodb.collection("users").updateOne({
+      await process.databases._users?.collection("users").updateOne({
         _id: input.userId
       }, {
         $set: {
@@ -53,7 +53,7 @@ var accounts_default = {
     }
   },
   addSession: async (input = {}) => {
-    await process.databases.mongodb.collection("users").updateOne({
+    await process.databases._users?.collection("users").updateOne({
       _id: input.userId
     }, {
       $addToSet: {
@@ -62,14 +62,14 @@ var accounts_default = {
     });
   },
   userWithLoginToken: async (input) => {
-    const user = await process.databases.mongodb.collection("users").findOne({
+    const user = await process.databases._users?.collection("users").findOne({
       "sessions.token": input?.token
     });
     return user;
   },
   createVerifyEmailToken: async (input) => {
     const token = generateId();
-    await process.databases.mongodb.collection("users").updateOne({
+    await process.databases._users?.collection("users").updateOne({
       _id: input?.userId
     }, {
       $addToSet: {
@@ -82,16 +82,16 @@ var accounts_default = {
     return token;
   },
   userWithVerifyEmailToken: async (input) => {
-    const user = await process.databases.mongodb.collection("users").findOne({
+    const user = await process.databases._users?.collection("users").findOne({
       "verifyEmailTokens.token": input?.token
     });
     return user;
   },
   markEmailVerifiedAt: async (input) => {
-    const user = await process.databases.mongodb.collection("users").findOne({
+    const user = await process.databases._users?.collection("users").findOne({
       _id: input?.userId
     });
-    await process.databases.mongodb.collection("users").updateOne({
+    await process.databases._users?.collection("users").updateOne({
       _id: input?.userId
     }, {
       $set: {
@@ -105,7 +105,7 @@ var accounts_default = {
     return true;
   },
   addPasswordResetToken: (input = {}) => {
-    return process.databases.mongodb.collection("users").updateOne({
+    return process.databases._users?.collection("users").updateOne({
       emailAddress: input.emailAddress
     }, {
       $addToSet: {
@@ -117,13 +117,13 @@ var accounts_default = {
     });
   },
   userWithResetToken: async (input) => {
-    const user = await process.databases.mongodb.collection("users").findOne({
+    const user = await process.databases._users?.collection("users").findOne({
       "passwordResetTokens.token": input["passwordResetTokens.token"]
     });
     return user;
   },
   setNewPassword: async (input = {}) => {
-    return process.databases.mongodb.collection("users").updateOne({
+    return process.databases._users?.collection("users").updateOne({
       _id: input?.userId
     }, {
       $set: {
@@ -132,8 +132,8 @@ var accounts_default = {
     });
   },
   removeResetToken: async (input = {}) => {
-    const user = await process.databases.mongodb.collection("users").findOne({ _id: input?.userId });
-    await process.databases.mongodb.collection("users").updateOne({
+    const user = await process.databases._users?.collection("users").findOne({ _id: input?.userId });
+    await process.databases._users?.collection("users").updateOne({
       _id: input?.userId
     }, {
       $set: {
@@ -142,12 +142,12 @@ var accounts_default = {
         })
       }
     });
-    return process.databases.mongodb.collection("users").findOne({ _id: input?.userId });
+    return process.databases._users?.collection("users").findOne({ _id: input?.userId });
   },
   addRole: async (input = {}) => {
-    const existingRole = input?.role ? await process.databases.mongodb.collection("roles").findOne({ role: input?.role }) : null;
+    const existingRole = input?.role ? await process.databases._users?.collection("roles").findOne({ role: input?.role }) : null;
     if (!existingRole && input?.role) {
-      await process.databases.mongodb.collection("roles").insertOne({
+      await process.databases._users?.collection("roles").insertOne({
         _id: generateId(),
         role: input?.role
       });
@@ -167,16 +167,16 @@ var accounts_default = {
     };
   },
   removeRole: async (input = {}) => {
-    const existingRole = input?.role ? await process.databases.mongodb.collection("roles").findOne({ role: input?.role }) : null;
+    const existingRole = input?.role ? await process.databases._users?.collection("roles").findOne({ role: input?.role }) : null;
     if (existingRole) {
-      await process.databases.mongodb.collection("users").updateMany({
+      await process.databases._users?.collection("users").updateMany({
         roles: { $in: [input?.role] }
       }, {
         $pull: {
           roles: input?.role
         }
       });
-      await process.databases.mongodb.collection("roles").deleteOne({
+      await process.databases._users?.collection("roles").deleteOne({
         role: input?.role
       });
       return {
@@ -195,20 +195,20 @@ var accounts_default = {
     };
   },
   listRoles: async (input = {}) => {
-    const roles = await process.databases.mongodb.collection("roles").find().toArray();
+    const roles = await process.databases._users?.collection("roles").find().toArray();
     return (roles || []).map(({ role }) => role);
   },
   grantRole: async (input = {}) => {
-    const user = await process.databases.mongodb.collection("users").findOne({ _id: input?.userId });
+    const user = await process.databases._users?.collection("users").findOne({ _id: input?.userId });
     if (user) {
-      await process.databases.mongodb.collection("users").updateOne({ _id: input?.userId }, {
+      await process.databases._users?.collection("users").updateOne({ _id: input?.userId }, {
         $addToSet: {
           roles: input?.role
         }
       });
-      const existingRole = await process.databases.mongodb.collection("roles").findOne({ role: input?.role });
+      const existingRole = await process.databases._users?.collection("roles").findOne({ role: input?.role });
       if (!existingRole) {
-        await process.databases.mongodb.collection("roles").insertOne({
+        await process.databases._users?.collection("roles").insertOne({
           _id: generateId(),
           role: input?.role
         });
@@ -230,9 +230,9 @@ var accounts_default = {
     };
   },
   revokeRole: async (input = {}) => {
-    const user = await process.databases.mongodb.collection("users").findOne({ _id: input?.userId });
+    const user = await process.databases._users?.collection("users").findOne({ _id: input?.userId });
     if (user && user.roles) {
-      await process.databases.mongodb.collection("users").updateOne({ _id: input?.userId }, {
+      await process.databases._users?.collection("users").updateOne({ _id: input?.userId }, {
         $pull: {
           roles: input?.role
         }
@@ -254,7 +254,7 @@ var accounts_default = {
     };
   },
   userHasRole: async (input = {}) => {
-    const user = await process.databases.mongodb.collection("users").findOne({ _id: input?.userId });
+    const user = await process.databases._users?.collection("users").findOne({ _id: input?.userId });
     if (user && user.roles) {
       return user?.roles?.includes(input?.role);
     }

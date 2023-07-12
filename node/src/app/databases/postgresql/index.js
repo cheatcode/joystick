@@ -4,10 +4,10 @@ import os from 'os';
 
 const { Pool } = postgresql;
 
-export default async (settings = {}, databasePortBaseIndex = 0) => {
+export default async (settings = {}, databasePort = 2610) => {
   const connection = settings?.connection || {
     hosts: [
-      { hostname: "127.0.0.1", port: parseInt(process.env.PORT, 10) + 10 + databasePortBaseIndex },
+      { hostname: "127.0.0.1", port: databasePort },
     ],
     database: "app",
     // NOTE: PostgreSQL creates a default superuser based on the OS username.

@@ -1,23 +1,23 @@
 import dayjs from "dayjs";
 var queues_default = {
   addJob: function(jobToAdd = {}) {
-    const db = process.databases.mongodb.collection(`queue_${this.queue.name}`);
+    const db = process.databases._queues?.collection(`queue_${this.queue.name}`);
     return db.insertOne(jobToAdd);
   },
   countJobs: function(status = "") {
-    const db = process.databases.mongodb.collection(`queue_${this.queue.name}`);
+    const db = process.databases._queues?.collection(`queue_${this.queue.name}`);
     return db.countDocuments({ status });
   },
   deleteJob: function(jobId = "") {
-    const db = process.databases.mongodb.collection(`queue_${this.queue.name}`);
+    const db = process.databases._queues?.collection(`queue_${this.queue.name}`);
     return db.deleteOne({ _id: jobId });
   },
   getJobs: function(query = {}) {
-    const db = process.databases.mongodb.collection(`queue_${this.queue.name}`);
+    const db = process.databases._queues?.collection(`queue_${this.queue.name}`);
     return db.find(query).toArray();
   },
   getNextJobToRun: async function() {
-    const db = process.databases.mongodb.collection(`queue_${this.queue.name}`);
+    const db = process.databases._queues?.collection(`queue_${this.queue.name}`);
     const nextJob = await db.findOneAndUpdate({
       $or: [
         {
@@ -45,7 +45,7 @@ var queues_default = {
     return nextJob?.value;
   },
   initializeDatabase: function() {
-    const db = process.databases.mongodb.collection(`queue_${this.queue.name}`);
+    const db = process.databases._queues?.collection(`queue_${this.queue.name}`);
     db.createIndex({ status: 1 });
     db.createIndex({ status: 1, nextRunAt: 1 });
     if (this.queue.options?.cleanup?.completedAfterSeconds) {
@@ -56,7 +56,7 @@ var queues_default = {
     }
   },
   requeueJob: function(jobId = "", nextRunAt = null) {
-    const db = process.databases.mongodb.collection(`queue_${this.queue.name}`);
+    const db = process.databases._queues?.collection(`queue_${this.queue.name}`);
     return db.updateOne({ _id: jobId }, {
       $set: {
         status: "pending",
@@ -68,7 +68,7 @@ var queues_default = {
     });
   },
   setJobsForMachineIncomplete: function() {
-    const db = process.databases.mongodb.collection(`queue_${this.queue.name}`);
+    const db = process.databases._queues?.collection(`queue_${this.queue.name}`);
     return db.updateMany({ status: "running", lockedBy: this.machineId }, {
       $set: {
         status: "incomplete"
@@ -76,7 +76,7 @@ var queues_default = {
     });
   },
   setJobCompleted: function(jobId = "") {
-    const db = process.databases.mongodb.collection(`queue_${this.queue.name}`);
+    const db = process.databases._queues?.collection(`queue_${this.queue.name}`);
     return db.updateOne({ _id: jobId }, {
       $set: {
         status: "completed",
@@ -85,7 +85,7 @@ var queues_default = {
     });
   },
   setJobFailed: function(jobId = "", error = "") {
-    const db = process.databases.mongodb.collection(`queue_${this.queue.name}`);
+    const db = process.databases._queues?.collection(`queue_${this.queue.name}`);
     return db.updateOne({ _id: jobId }, {
       $set: {
         status: "failed",
@@ -95,7 +95,7 @@ var queues_default = {
     });
   },
   setJobsForMachinePending: function() {
-    const db = process.databases.mongodb.collection(`queue_${this.queue.name}`);
+    const db = process.databases._queues?.collection(`queue_${this.queue.name}`);
     return db.updateMany({ status: { $in: ["pending", "running"] }, lockedBy: this.machineId }, {
       $set: {
         status: "pending"

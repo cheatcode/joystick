@@ -2,7 +2,7 @@ import dayjs from "dayjs";
 import fs from "fs";
 import os from "os";
 import generateId from "../../lib/generateId";
-import getTargetDatabase from "../databases/getTargetDatabase";
+import getTargetDatabaseProvider from "../databases/getTargetDatabaseProvider";
 import queryMap from "../databases/queryMap";
 
 // TODO: Add a maxAttempts option to jobs so we don't run incessantly.
@@ -28,7 +28,7 @@ class Queue {
   }
 
   async _initDatabase() {
-    const queuesDatabase = getTargetDatabase("queues");
+    const queuesDatabase = getTargetDatabaseProvider("queues");
     const db = queryMap[queuesDatabase]?.queues;
 
     if (db && typeof db === "object" && !Array.isArray(db)) {

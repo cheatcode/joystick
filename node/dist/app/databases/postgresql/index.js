@@ -2,10 +2,10 @@ import postgresql from "pg";
 import chalk from "chalk";
 import os from "os";
 const { Pool } = postgresql;
-var postgresql_default = async (settings = {}, databasePortBaseIndex = 0) => {
+var postgresql_default = async (settings = {}, databasePort = 2610) => {
   const connection = settings?.connection || {
     hosts: [
-      { hostname: "127.0.0.1", port: parseInt(process.env.PORT, 10) + 10 + databasePortBaseIndex }
+      { hostname: "127.0.0.1", port: databasePort }
     ],
     database: "app",
     username: (os.userInfo() || {}).username || "",

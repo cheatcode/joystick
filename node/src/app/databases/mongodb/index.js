@@ -4,8 +4,7 @@ import mongoUri from "mongo-uri-tool";
 import fs from 'fs';
 import buildConnectionString from "./buildConnectionString";
 
-export default async (settings = {}, databasePortBaseIndex = 0) => {
-  const databasePort = parseInt(process.env.PORT, 10) + 10 + databasePortBaseIndex;
+export default async (settings = {}, databasePort = 2610) => {
   const connection = settings?.connection || {
     hosts: [
       // NOTE: By default, expect databases start from 2610 (assuming a PORT of 2600).

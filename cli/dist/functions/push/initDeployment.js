@@ -8,6 +8,7 @@ import domains from "../../lib/domains.js";
 import checkIfValidJSON from "../../lib/checkIfValidJSON.js";
 import CLILog from "../../lib/CLILog.js";
 import build from "../build/index.js";
+import getAvailableCDN from "./getAvailableCDN.js";
 const getAppSettings = (environment = "") => {
   try {
     if (fs.existsSync(`settings.${environment}.json`)) {
@@ -57,6 +58,39 @@ const startDeployment = (isInitialDeployment = false, loginSessionToken = "", de
     throw new Error(`[initDeployment.startDeployment] ${exception.message}`);
   }
 };
+const uploadBuildToCDN = ({
+  mirror = "",
+  domain = "",
+  loginSessionToken = "",
+  deploymentId = "",
+  version = ""
+}) => {
+  try {
+    const formData = new FormData();
+    const timestamp = (/* @__PURE__ */ new Date()).toISOString();
+    formData.append(
+      "version_tar",
+      fs.readFileSync(`.build/build.tar.xz`),
+      `${timestamp}.tar.xz`
+    );
+    formData.append("deploymentId", deploymentId);
+    formData.append("version", version);
+    fetch(`${mirror}/api/uploads/receive`, {
+      method: "POST",
+      headers: {
+        ...formData.getHeaders(),
+        "x-deployment-domain": domain,
+        "x-login-session-token": loginSessionToken
+      },
+      body: formData
+    }).then(async (response) => {
+      const data = await response.json();
+      return data?.data;
+    });
+  } catch (exception) {
+    throw new Error(`[initDeployment.uploadBuildToCDN] ${exception.message}`);
+  }
+};
 const buildApp = (environment = "production") => {
   try {
     return build({}, { isDeploy: true, type: "tar", environment });
@@ -84,14 +118,22 @@ const initDeployment = async (options, { resolve, reject }) => {
     await buildApp(options?.deployment?.environment || options?.environment);
     const appSettings = getAppSettings(options?.environment);
     loader.text("Starting deployment...");
-    await startDeployment(
-      options?.isInitialDeployment,
-      options?.loginSessionToken,
-      options.deployment,
-      deploymentTimestamp,
-      appSettings,
-      options?.environment
-    );
+    const availableCDN = await getAvailableCDN();
+    if (!availableCDN) {
+      loader.stop();
+      console.log(chalk.redBright(`
+Unable to upload version. Check status.cheatcode.co for availability.
+`));
+      return true;
+    }
+    c;
+    await uploadBuildToCDN({
+      mirror: availableCDN,
+      domain: options?.deployment?.domain,
+      loginSessionToken: options?.loginSessionToken,
+      version: deploymentTimestamp,
+      deploymentId: options?.deployment?.deploymentId
+    });
     loader.stop();
     console.log(chalk.greenBright(`Your app is deploying! To monitor progress, head to ${domains?.push}/deployments/${options?.deployment?.domain}
 `));

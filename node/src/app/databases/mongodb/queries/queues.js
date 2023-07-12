@@ -2,23 +2,23 @@ import dayjs from "dayjs";
 
 export default {
   addJob: function (jobToAdd = {}) {
-    const db = process.databases.mongodb.collection(`queue_${this.queue.name}`);
+    const db = process.databases._queues?.collection(`queue_${this.queue.name}`);
     return db.insertOne(jobToAdd);
   },
   countJobs: function (status = '') {
-    const db = process.databases.mongodb.collection(`queue_${this.queue.name}`);
+    const db = process.databases._queues?.collection(`queue_${this.queue.name}`);
     return db.countDocuments({ status });
   },
   deleteJob: function (jobId = '') {
-    const db = process.databases.mongodb.collection(`queue_${this.queue.name}`);
+    const db = process.databases._queues?.collection(`queue_${this.queue.name}`);
     return db.deleteOne({ _id: jobId });
   },
   getJobs: function (query = {}) {
-    const db = process.databases.mongodb.collection(`queue_${this.queue.name}`);
+    const db = process.databases._queues?.collection(`queue_${this.queue.name}`);
     return db.find(query).toArray();
   },
   getNextJobToRun: async function () {
-    const db = process.databases.mongodb.collection(`queue_${this.queue.name}`);
+    const db = process.databases._queues?.collection(`queue_${this.queue.name}`);
 
     const nextJob = await db.findOneAndUpdate({
       $or: [
@@ -50,7 +50,7 @@ export default {
     return nextJob?.value;
   },
   initializeDatabase: function () {
-    const db = process.databases.mongodb.collection(`queue_${this.queue.name}`);
+    const db = process.databases._queues?.collection(`queue_${this.queue.name}`);
 
     db.createIndex({ status: 1 });
     db.createIndex({ status: 1, nextRunAt: 1 });
@@ -64,7 +64,7 @@ export default {
     }
   },
   requeueJob: function (jobId = '', nextRunAt = null) {
-    const db = process.databases.mongodb.collection(`queue_${this.queue.name}`);
+    const db = process.databases._queues?.collection(`queue_${this.queue.name}`);
     return db.updateOne({ _id: jobId }, {
       $set: {
         status: 'pending',
@@ -76,7 +76,7 @@ export default {
     });
   },
   setJobsForMachineIncomplete: function () {
-    const db = process.databases.mongodb.collection(`queue_${this.queue.name}`);
+    const db = process.databases._queues?.collection(`queue_${this.queue.name}`);
     return db.updateMany({ status: 'running', lockedBy: this.machineId }, {
       $set: {
         status: 'incomplete',
@@ -84,7 +84,7 @@ export default {
     });
   },
   setJobCompleted: function (jobId = '') {
-    const db = process.databases.mongodb.collection(`queue_${this.queue.name}`);
+    const db = process.databases._queues?.collection(`queue_${this.queue.name}`);
     return db.updateOne({ _id: jobId }, {
       $set: {
         status: 'completed',
@@ -93,7 +93,7 @@ export default {
     });
   },
   setJobFailed: function (jobId = '', error = '') {
-    const db = process.databases.mongodb.collection(`queue_${this.queue.name}`);
+    const db = process.databases._queues?.collection(`queue_${this.queue.name}`);
     return db.updateOne({ _id: jobId }, {
       $set: {
         status: 'failed',
@@ -103,7 +103,7 @@ export default {
     });
   },
   setJobsForMachinePending: function () {
-    const db = process.databases.mongodb.collection(`queue_${this.queue.name}`);
+    const db = process.databases._queues?.collection(`queue_${this.queue.name}`);
     
     // NOTE: Do NOT change the nextRunAt as we want priority to remain intact. Oldest jobs
     // should still be FIFO.

@@ -11,6 +11,17 @@ const getPostgreSQLProcessId = async (port = 2610) => {
   const pids = await getProcessIdFromPort(port);
   return pids.tcp && pids.tcp[0];
 };
+const setupDataDirectory = (postgresqlPort = 2610) => {
+  const legacyDataDirectoryExists = fs.existsSync(".joystick/data/postgresql");
+  const dataDirectoryExists = fs.existsSync(`.joystick/data/postgresql_${postgresqlPort}`);
+  if (legacyDataDirectoryExists && !dataDirectoryExists) {
+    fs.renameSync(".joystick/data/postgresql", `.joystick/data/postgresql_${postgresqlPort}`);
+  }
+  if (!dataDirectoryExists) {
+    fs.mkdirSync(`.joystick/data/postgresql_${postgresqlPort}`, { recursive: true });
+  }
+  return dataDirectoryExists;
+};
 const warnPostgreSQLIsMissing = () => {
   CLILog(
     "PostgreSQL is not installed on this computer. You can download PostgreSQL at https://www.postgresql.org/download. After you've installed PostgreSQL, run joystick start again, or, remove PostgreSQL from your databases list in your settings.development.json file to skip startup.",
@@ -33,7 +44,6 @@ const startPostgreSQL = async (port = 2610) => {
     warnPostgreSQLIsMissing();
     process.exit(1);
   }
-  const dataDirectoryExists = fs.existsSync(".joystick/data/postgresql");
   const postgreSQLControlExists = checkIfPostgreSQLControlExists();
   if (!postgreSQLControlExists) {
     CLILog(
@@ -44,12 +54,13 @@ const startPostgreSQL = async (port = 2610) => {
       }
     );
   }
-  if (!dataDirectoryExists && postgreSQLControlExists) {
-    await exec(
-      `pg_ctl init -D .joystick/data/postgresql`
-    );
-  }
   try {
+    const dataDirectoryExists = setupDataDirectory(port);
+    if (!dataDirectoryExists && postgreSQLControlExists) {
+      await exec(
+        `pg_ctl init -D .joystick/data/postgresql_${port}`
+      );
+    }
     const postgreSQLPort = port;
     await killPortProcess(postgreSQLPort);
     const databaseProcess = child_process.spawn(
@@ -58,7 +69,7 @@ const startPostgreSQL = async (port = 2610) => {
         "-o",
         `"-p ${postgreSQLPort}"`,
         "-D",
-        ".joystick/data/postgresql",
+        `.joystick/data/postgresql_${port}`,
         "start"
       ].filter((command) => !!command)
     );

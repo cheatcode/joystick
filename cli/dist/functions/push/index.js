@@ -111,8 +111,7 @@ var push_default = async (args = {}, options = {}) => {
     colorLog(`
 \u2714 Logged in as ${user?.emailAddress}
 `, "greenBright");
-    console.log(user);
-    if (!user?.onboardingComplete && user?.onboardingStep < 4) {
+    if (!user?.onboarding?.complete && user?.onboarding?.step < 4) {
       console.log(
         chalk.yellowBright(
           `

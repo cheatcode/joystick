@@ -16,6 +16,7 @@ import startDatabaseProvider from "./databases/startProvider.js";
 import CLILog from "../../lib/CLILog.js";
 import removeDeletedDependenciesFromMap from "./removeDeletedDependenciesFromMap.js";
 import validateDatabasesFromSettings from "../../lib/validateDatabasesFromSettings.js";
+import wait from "../../lib/wait.js";
 const majorVersion = parseInt(
   process?.version?.split(".")[0]?.replace("v", ""),
   10
@@ -90,29 +91,76 @@ const requiredFileCheck = () => {
   });
 };
 const handleCleanup = async (processIds = [process?.serverProcess?.pid, process?.hmrProcess?.pid]) => {
-  process.loader.text("Shutting down...");
   for (let i = 0; i < processIds?.length; i += 1) {
     const processId = processIds[i];
     if (processId) {
       await killProcess(processId);
     }
   }
-  const databases = Object.entries(process.env.DATABASES || {});
+  const databases = Object.entries(process._databases || {});
   for (let i = 0; i < databases?.length; i += 1) {
-    const databaseInstance = databases[i] && databases[i][1];
-    if (databaseInstance?.pid) {
-      await killProcess(databaseInstance.pid);
+    const [provider, providerConnection] = databases[i];
+    if (providerConnection?.pid) {
+      await killProcess(providerConnection.pid);
+    }
+    if (!providerConnection?.pid) {
+      const providerConnections = Object.entries(providerConnection);
+      for (let pc = 0; pc < providerConnections?.length; pc += 1) {
+        const [_connectionName, connection] = providerConnections[pc];
+        if (connection?.pid) {
+          await killProcess(connection?.pid);
+        }
+      }
     }
   }
-  process.loader.stop();
-  process.exit();
+};
+const getDatabaseProcessIds = () => {
+  const databaseProcessIds = [];
+  const databases = Object.entries(process._databases || {});
+  for (let i = 0; i < databases?.length; i += 1) {
+    const [_provider, providerConnection] = databases[i];
+    if (providerConnection?.pid) {
+      databaseProcessIds.push(providerConnection.pid);
+    }
+    if (!providerConnection?.pid) {
+      const providerConnections = Object.entries(providerConnection);
+      for (let pc = 0; pc < providerConnections?.length; pc += 1) {
+        const [_connectionName, connection] = providerConnections[pc];
+        if (connection?.pid) {
+          databaseProcessIds.push(connection.pid);
+        }
+      }
+    }
+  }
+  return databaseProcessIds;
 };
 const handleSignalEvents = (processIds = []) => {
+  const execArgv = ["--no-warnings"];
+  if (majorVersion < 19) {
+    execArgv.push("--experimental-specifier-resolution=node");
+  }
+  const cleanupProcess = child_process.fork(
+    path.resolve(`${__dirname}/cleanup/index.js`),
+    [],
+    {
+      // NOTE: Run in detached mode so when parent process dies, the child still runs
+      // and cleanup completes.
+      detached: true,
+      execArgv,
+      // NOTE: Pipe stdin, stdout, and stderr. IPC establishes a message channel so we
+      // communicate with the child_process.
+      silent: true
+    }
+  );
   process.on("SIGINT", async () => {
-    await handleCleanup(processIds);
+    const databaseProcessIds = getDatabaseProcessIds();
+    cleanupProcess.send(JSON.stringify({ processIds: [...processIds, ...databaseProcessIds] }));
+    process.exit();
   });
   process.on("SIGTERM", async () => {
-    await handleCleanup(processIds);
+    const databaseProcessIds = getDatabaseProcessIds();
+    cleanupProcess.send(JSON.stringify({ processIds: [...processIds, ...databaseProcessIds] }));
+    process.exit();
   });
 };
 const handleHMRProcessMessages = () => {
@@ -391,12 +439,15 @@ const startWatcher = async (buildSettings = {}) => {
     }
   });
 };
-const startDatabase = async (database = {}, databasePort = 2610) => {
-  process.env.DATABASES = {
-    ...process.env.DATABASES || {},
-    [database.provider]: await startDatabaseProvider(database, databasePort)
+const startDatabase = async (database = {}, databasePort = 2610, hasMultipleOfProvider = false) => {
+  process._databases = {
+    ...process._databases || {},
+    [database.provider]: !hasMultipleOfProvider ? await startDatabaseProvider(database, databasePort) : {
+      ...process._databases && process._databases[database.provider] || {},
+      [database?.name || `${database.provider}_${databasePort}`]: await startDatabaseProvider(database, databasePort)
+    }
   };
-  return Promise.resolve();
+  return Promise.resolve(process._databases);
 };
 const startDatabases = async (databasePortStart = 2610) => {
   try {
@@ -406,7 +457,9 @@ const startDatabases = async (databasePortStart = 2610) => {
     if (databases && Array.isArray(databases) && databases.length > 0) {
       validateDatabasesFromSettings(databases);
       for (let i = 0; i < databases?.length; i += 1) {
-        await startDatabase(databases[i], databasePortStart + i);
+        const database = databases[i];
+        const hasMultipleOfProvider = databases?.filter((database2) => database2?.provider === database2?.provider)?.length > 1;
+        await startDatabase(database, databasePortStart + i, hasMultipleOfProvider);
       }
       return Promise.resolve();
     }

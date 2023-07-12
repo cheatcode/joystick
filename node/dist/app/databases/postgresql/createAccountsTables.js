@@ -1,5 +1,5 @@
 const createTable = async (table = "", tableColumns = []) => {
-  return process.databases.postgresql.query(`CREATE TABLE IF NOT EXISTS ${table} (${tableColumns.join(", ")})`);
+  return process.databases._users?.query(`CREATE TABLE IF NOT EXISTS ${table} (${tableColumns.join(", ")})`);
 };
 var createAccountsTables_default = async () => {
   await createTable("users", [
