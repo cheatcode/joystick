@@ -13,12 +13,14 @@ const getPostgreSQLProcessId = async (port = 2610) => {
 };
 const setupDataDirectory = (postgresqlPort = 2610) => {
   const legacyDataDirectoryExists = fs.existsSync(".joystick/data/postgresql");
-  const dataDirectoryExists = fs.existsSync(`.joystick/data/postgresql_${postgresqlPort}`);
+  let dataDirectoryExists = fs.existsSync(`.joystick/data/postgresql_${postgresqlPort}`);
   if (legacyDataDirectoryExists && !dataDirectoryExists) {
     fs.renameSync(".joystick/data/postgresql", `.joystick/data/postgresql_${postgresqlPort}`);
+    dataDirectoryExists = true;
   }
   if (!dataDirectoryExists) {
     fs.mkdirSync(`.joystick/data/postgresql_${postgresqlPort}`, { recursive: true });
+    dataDirectoryExists = true;
   }
   return dataDirectoryExists;
 };
