@@ -1,7 +1,7 @@
 {
   "name": "@joystick.js/node",
-  "version": "1.0.0-beta.152",
-  "developmentVersion": "1.0.0-beta.1273",
+  "version": "1.0.0-beta.153",
+  "developmentVersion": "1.0.0-beta.1274",
   "type": "module",
   "description": "A Node.js framework for building web apps.",
   "main": "./dist/index.js",

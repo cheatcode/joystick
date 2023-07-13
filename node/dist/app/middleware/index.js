@@ -14,6 +14,7 @@ import runUserQuery from "../accounts/runUserQuery.js";
 import replaceBackslashesWithForwardSlashes from "../../lib/replaceBackslashesWithForwardSlashes.js";
 import replaceFileProtocol from "../../lib/replaceFileProtocol.js";
 import getBuildPath from "../../lib/getBuildPath.js";
+import sanitizeQueryParameters from "./sanitizeQueryParameters.js";
 const cwd = replaceFileProtocol(replaceBackslashesWithForwardSlashes(process.cwd()));
 const faviconPath = process.env.NODE_ENV === "test" ? `${cwd}/src/tests/mocks/app/public/favicon.ico` : "public/favicon.ico";
 var middleware_default = (app, port, config = {}) => {
@@ -32,6 +33,7 @@ var middleware_default = (app, port, config = {}) => {
     }
     next();
   });
+  app.use(sanitizeQueryParameters);
   app.use(requestMethods);
   app.use(compression());
   app.use("/css", express.static("css", { eTag: false, maxAge: "0" }));

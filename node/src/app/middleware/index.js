@@ -14,6 +14,7 @@ import runUserQuery from "../accounts/runUserQuery.js";
 import replaceBackslashesWithForwardSlashes from "../../lib/replaceBackslashesWithForwardSlashes.js";
 import replaceFileProtocol from "../../lib/replaceFileProtocol.js";
 import getBuildPath from "../../lib/getBuildPath.js";
+import sanitizeQueryParameters from "./sanitizeQueryParameters.js";
 
 const cwd = replaceFileProtocol(
   replaceBackslashesWithForwardSlashes(process.cwd())
@@ -45,6 +46,7 @@ export default (app, port, config = {}) => {
     next();
   });
 
+  app.use(sanitizeQueryParameters);
   app.use(requestMethods);
   app.use(compression());
 
