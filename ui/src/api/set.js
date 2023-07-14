@@ -31,6 +31,7 @@ export default (setterName = "", setterOptions = {}) => {
       return new Promise((resolve, reject) => {
         const url = `${window.location.origin}/api/_setters/${setterName}`;
         const body = getBody(setterOptions);
+        const csrf = document.querySelector('[name="csrf"]')?.getAttribute('content');
 
         return fetch(url, {
           method: 'POST',
@@ -38,6 +39,7 @@ export default (setterName = "", setterOptions = {}) => {
           headers: {
             ...(setterOptions?.headers || {}),
             "Content-Type": "application/json",
+            'x-joystick-csrf': csrf,
           },
           body,
           credentials: "include",

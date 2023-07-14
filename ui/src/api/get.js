@@ -24,12 +24,14 @@ export default (getterName = "", getterOptions = {}) => {
         const input = getterOptions.input ? JSON.stringify(getterOptions.input) : null;
         const output = getterOptions.output ? JSON.stringify(getterOptions.output) : null;
         const url = `${window.location.origin}/api/_getters/${getterName}?input=${input}&output=${output}`;
+        const csrf = document.querySelector('[name="csrf"]')?.getAttribute('content');
 
         return fetch(url, {
           method: 'GET',
           mode: "cors",
           headers: {
             ...(getterOptions?.headers || {}),
+            'x-joystick-csrf': csrf,
           },
           credentials: "include",
         }).then(async (response) => {
