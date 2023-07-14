@@ -1,4 +1,3 @@
-import chalk from "chalk";
 import getAPIURLComponent from "./getAPIURLComponent.js";
 import getAPIContext from "./getAPIContext.js";
 import formatAPIError from "../lib/formatAPIError.js";
@@ -6,8 +5,9 @@ import validate from "../validation/index.js";
 import getOutput from "./getOutput.js";
 import sanitizeAPIResponse from "./sanitizeAPIResponse.js";
 import { isObject } from "../validation/lib/typeValidators.js";
+import validateSession from "./validateSession.js";
 
-export default (express, setters = [], context = {}, APIOptions = {}) => {
+export default (express, setters = [], context = {}, APIOptions = {}, appInstance = {}) => {
   const { app } = express;
 
   if (app) {
@@ -18,6 +18,13 @@ export default (express, setters = [], context = {}, APIOptions = {}) => {
           ? setter_options?.middleware
           : []),
         async (req, res) => {
+          const isValidSession = validateSession(req, res, appInstance?.sessions);
+
+          if (!isValidSession) {
+            // NOTE: validateSession handles the 403 error so just return here.
+            return;
+          }
+
           const setter_context = await getAPIContext({ req, res }, context);
           const input = req?.body?.input;
           const output = req?.body?.output;

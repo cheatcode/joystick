@@ -10,6 +10,8 @@ export default (setterName = "", setterOptions = {}) => {
         headers: {
           ...(setterOptions?.headers || {}),
           "Content-Type": "application/json",
+          'Cookie': `joystickSession=${setterOptions?.req?.context?.session?.id}`,
+          'x-joystick-csrf': setterOptions?.req?.context?.session?.csrf,
         },
         body: JSON.stringify(setterOptions),
         credentials: "include",

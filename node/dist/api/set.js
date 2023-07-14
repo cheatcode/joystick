@@ -8,7 +8,9 @@ var set_default = (setterName = "", setterOptions = {}) => {
         mode: "cors",
         headers: {
           ...setterOptions?.headers || {},
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
+          "Cookie": `joystickSession=${setterOptions?.req?.context?.session?.id}`,
+          "x-joystick-csrf": setterOptions?.req?.context?.session?.csrf
         },
         body: JSON.stringify(setterOptions),
         credentials: "include"

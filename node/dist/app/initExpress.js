@@ -3,7 +3,7 @@ import https from "https";
 import middleware from "./middleware/index.js";
 import getSSLCertificates from "../lib/getSSLCertificates.js";
 var initExpress_default = (onInit = () => {
-}, options = {}) => {
+}, options = {}, appInstance = {}) => {
   try {
     const ssl = getSSLCertificates(options?.ssl);
     const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 2600;
@@ -11,7 +11,7 @@ var initExpress_default = (onInit = () => {
     const app = express();
     const server = ssl ? https.createServer(ssl, app).listen(port) : app.listen(port);
     const config = joystick?.settings?.config || {};
-    middleware(app, port, config?.middleware);
+    middleware(app, port, config?.middleware, appInstance);
     if (options?.middleware && options?.middleware instanceof Array) {
       options.middleware.forEach((middleware2) => {
         app.use(middleware2);

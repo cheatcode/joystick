@@ -1,4 +1,4 @@
-import getBaseAuthenticationCookie from "./getBaseAuthenticationCookie";
+import generateCookie from "../../lib/generateCookie.js";
 
 export default (res = null, authentication = null) => {
   if (!res || !authentication) return null;
@@ -6,13 +6,13 @@ export default (res = null, authentication = null) => {
   res.cookie(
     "joystickLoginToken",
     authentication.token,
-    getBaseAuthenticationCookie(authentication.tokenExpiresAt)
+    generateCookie(authentication.tokenExpiresAt)
   );
 
   res.cookie(
     "joystickLoginTokenExpiresAt",
     authentication.tokenExpiresAt,
-    getBaseAuthenticationCookie(authentication.tokenExpiresAt)
+    generateCookie(authentication.tokenExpiresAt)
   );
 
   return res;

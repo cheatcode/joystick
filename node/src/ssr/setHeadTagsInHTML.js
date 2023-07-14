@@ -1,12 +1,22 @@
 import htmlParser from 'node-html-parser';
 
-export default (htmlString = '', head = null) => {
-  if (!head) {
-    return htmlString;
-  }
-
+export default (htmlString = '', head = null, req = {}) => {
   const html = htmlParser.parse(htmlString);
   const headTag = html.querySelector('head');
+
+  if (req?.context?.session) {
+    const metaTagWrapper = htmlParser.parse(`<meta />`);
+    const tag = metaTagWrapper.querySelector('meta');
+
+    tag.setAttribute('name', 'csrf');
+    tag.setAttribute('content', req?.context?.session?.csrf);
+
+    headTag.appendChild(tag);
+  }
+
+  if (!head) {
+    return html.toString();
+  }
 
   if (head.title) {
     const existingTitle = headTag.querySelector('title');

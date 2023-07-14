@@ -15,6 +15,7 @@ import replaceBackslashesWithForwardSlashes from "../../lib/replaceBackslashesWi
 import replaceFileProtocol from "../../lib/replaceFileProtocol.js";
 import getBuildPath from "../../lib/getBuildPath.js";
 import sanitizeQueryParameters from "./sanitizeQueryParameters.js";
+import session from "./session.js";
 
 const cwd = replaceFileProtocol(
   replaceBackslashesWithForwardSlashes(process.cwd())
@@ -24,7 +25,7 @@ const faviconPath =
     ? `${cwd}/src/tests/mocks/app/public/favicon.ico`
     : "public/favicon.ico";
 
-export default (app, port, config = {}) => {
+export default (app, port, config = {}, appInstance = {}) => {
   if (process.env.NODE_ENV === "production") {
     app.use(insecure);
   }
@@ -101,6 +102,7 @@ export default (app, port, config = {}) => {
   app.use(cookieParser());
   app.use(bodyParser(config?.bodyParser));
   app.use(cors(config?.cors, port));
+  app.use((req, res, next) => session(req, res, next, appInstance));
   app.use(async (req, res, next) => {
     const loginTokenHasExpired = await hasLoginTokenExpired(
       res,
@@ -120,5 +122,6 @@ export default (app, port, config = {}) => {
 
     next();
   });
+
   app.use(render);
 };

@@ -153,7 +153,8 @@ const processHTML = ({
   layoutComponentPath = "",
   pageComponentPath = "",
   head = null,
-  renderingHTMLWithDataForSSR = false
+  renderingHTMLWithDataForSSR = false,
+  req
 }) => {
   try {
     const htmlWithData = getHTMLWithData(renderingHTMLWithDataForSSR, componentInstance, ssrTree, translations, dataFromComponent, dataFromTree);
@@ -175,7 +176,7 @@ const processHTML = ({
       layoutComponentPath,
       pageComponentPath
     });
-    return setHeadTagsInHTML(htmlWithTargetReplacements, head);
+    return setHeadTagsInHTML(htmlWithTargetReplacements, head, req);
   } catch (exception) {
     throw new Error(`[ssr.processHTML] ${exception.message}`);
   }
@@ -328,7 +329,8 @@ const getAPIForDataFunctions = (req = {}) => {
           ...getterOptions,
           headers: {
             cookie: req?.headers?.cookie
-          }
+          },
+          req
         });
       },
       set: (setterName = "", setterOptions = {}) => {
@@ -336,7 +338,8 @@ const getAPIForDataFunctions = (req = {}) => {
           ...setterOptions,
           headers: {
             cookie: req?.headers?.cookie
-          }
+          },
+          req
         });
       }
     };
@@ -394,7 +397,8 @@ const ssr = async (options, { resolve, reject }) => {
       url: options?.url,
       layoutComponentPath: options?.layoutComponentPath,
       pageComponentPath: options?.pageComponentPath,
-      head: options?.head
+      head: options?.head,
+      req: options?.req
     });
     processHTML({
       renderingHTMLWithDataForSSR: true,

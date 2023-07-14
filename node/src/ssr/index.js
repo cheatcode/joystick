@@ -209,6 +209,7 @@ const processHTML = ({
   pageComponentPath = "",
   head = null,
   renderingHTMLWithDataForSSR = false,
+  req,
 }) => {
   try {
     const htmlWithData = getHTMLWithData(
@@ -242,7 +243,7 @@ const processHTML = ({
 
     // NOTE: If no head is available, setHeadTagsInHTML will return htmlWithTargetReplacements
     // without any changes.
-    return setHeadTagsInHTML(htmlWithTargetReplacements, head);
+    return setHeadTagsInHTML(htmlWithTargetReplacements, head, req);
   } catch (exception) {
     throw new Error(`[ssr.processHTML] ${exception.message}`);
   }
@@ -465,6 +466,7 @@ const getAPIForDataFunctions = (req = {}) => {
           headers: {
             cookie: req?.headers?.cookie,
           },
+          req,
         });
       },
       set: (setterName = "", setterOptions = {}) => {
@@ -473,6 +475,7 @@ const getAPIForDataFunctions = (req = {}) => {
           headers: {
             cookie: req?.headers?.cookie,
           },
+          req,
         });
       },
     };
@@ -494,6 +497,7 @@ const validateOptions = (options) => {
 const ssr = async (options, { resolve, reject }) => {
   try {
     validateOptions(options);
+
     const apiForDataFunctions = getAPIForDataFunctions(options.req);
     const browserSafeRequest = options?.email
       ? {}
@@ -550,6 +554,7 @@ const ssr = async (options, { resolve, reject }) => {
       layoutComponentPath: options?.layoutComponentPath,
       pageComponentPath: options?.pageComponentPath,
       head: options?.head,
+      req: options?.req,
     });
 
     // NOTE: We do this again so we can scoop all possible CSS (including conditional CSS via when tags).

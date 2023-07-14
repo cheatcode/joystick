@@ -44,6 +44,7 @@ export class App {
 
     handleProcessErrors(options?.events);
 
+    this.sessions = new Map();
     this.databases = [];
     this.express = {};
     this.options = options || {};
@@ -53,7 +54,7 @@ export class App {
     await this.invalidateCache();
 
     this.databases = await this.loadDatabases();
-    this.express = initExpress(this.onStartApp, options);
+    this.express = initExpress(this.onStartApp, options, this);
     this.initWebsockets(options?.websockets || {});
     this.initAccounts();
     this.initDeploy();
@@ -292,11 +293,11 @@ export class App {
     const context = api?.context;
 
     if (getters && isObject(getters) && Object.keys(getters).length > 0) {
-      registerGetters(this.express, Object.entries(getters), context, options);
+      registerGetters(this.express, Object.entries(getters), context, options, this);
     }
 
     if (setters && isObject(setters) && Object.keys(setters).length > 0) {
-      registerSetters(this.express, Object.entries(setters), context, options);
+      registerSetters(this.express, Object.entries(setters), context, options, this);
     }
   }
 
@@ -691,6 +692,7 @@ export class App {
 
     this.express.app.post("/api/_accounts/logout", async (req, res) => {
       try {
+        this.sessions.delete(req?.context?.user?._id || req?.context?.user?.user_id);
         accounts._unsetAuthenticationCookie(res);
         res.status(200).send(JSON.stringify({}));
       } catch (exception) {

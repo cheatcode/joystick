@@ -1,9 +1,14 @@
 import dayjs from "dayjs";
 
 export default (tokenExpiresAt = null) => {
-  return {
+  const cookie = {
     secure: process.env.NODE_ENV !== "development",
     httpOnly: true,
-    expires: dayjs(tokenExpiresAt).toDate(),
   };
+  
+  if (tokenExpiresAt) {
+    cookie.expires = dayjs(tokenExpiresAt).toDate();
+  }
+  
+  return cookie;
 };

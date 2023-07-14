@@ -24,10 +24,17 @@ export default (getterName = "", getterOptions = {}) => {
         method: "GET",
         mode: "cors",
         credentials: "include",
+        headers: {
+          'Cookie': `joystickSession=${getterOptions?.req?.context?.session?.id}`,
+          'x-joystick-csrf': getterOptions?.req?.context?.session?.csrf,
+        },
       };
 
       if (getterOptions?.headers) {
-        options.headers = getterOptions?.headers;
+        options.headers = {
+          ...(options?.headers || {}),
+          ...(getterOptions?.headers || {})
+        };
       }
 
       fetch(url, options)

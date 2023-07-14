@@ -1,4 +1,3 @@
-import chalk from "chalk";
 import getAPIURLComponent from "./getAPIURLComponent.js";
 import getAPIContext from "./getAPIContext.js";
 import formatAPIError from "../lib/formatAPIError.js";
@@ -6,11 +5,16 @@ import validate from "../validation/index.js";
 import getOutput from "./getOutput.js";
 import sanitizeAPIResponse from "./sanitizeAPIResponse.js";
 import { isObject } from "../validation/lib/typeValidators.js";
-var registerSetters_default = (express, setters = [], context = {}, APIOptions = {}) => {
+import validateSession from "./validateSession.js";
+var registerSetters_default = (express, setters = [], context = {}, APIOptions = {}, appInstance = {}) => {
   const { app } = express;
   if (app) {
     for (const [setter_name, setter_options] of setters) {
       app.post(`/api/_setters/${getAPIURLComponent(setter_name)}`, ...Array.isArray(setter_options?.middleware) ? setter_options?.middleware : [], async (req, res) => {
+        const isValidSession = validateSession(req, res, appInstance?.sessions);
+        if (!isValidSession) {
+          return;
+        }
         const setter_context = await getAPIContext({ req, res }, context);
         const input = req?.body?.input;
         const output = req?.body?.output;
