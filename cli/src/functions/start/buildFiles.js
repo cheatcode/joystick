@@ -91,7 +91,9 @@ export default async (
         environment
       );
 
-      await minifyFile(`${outputPath || "./.joystick/build"}/${fileToBuild}`);
+      if (environment !== 'development') {
+        await minifyFile(`${outputPath || "./.joystick/build"}/${fileToBuild}`);
+      }
 
       return build;
     })

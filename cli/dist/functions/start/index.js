@@ -166,23 +166,23 @@ const handleSignalEvents = (processIds = []) => {
 const handleHMRProcessMessages = () => {
   process.hmrProcess.on("message", (message) => {
     const processMessages = [
-      "server_closed",
+      "SERVER_CLOSED",
       "HAS_HMR_CONNECTIONS",
       "HAS_NO_HMR_CONNECTIONS",
       "HMR_UPDATE_COMPLETED"
     ];
-    if (!processMessages.includes(message)) {
+    if (!processMessages.includes(message?.type)) {
       process.loader.stable(message);
     }
-    if (message === "HAS_HMR_CONNECTIONS") {
+    if (message?.type === "HAS_HMR_CONNECTIONS") {
       process.hmrProcess.hasConnections = true;
     }
-    if (message === "HAS_NO_HMR_CONNECTIONS") {
+    if (message?.type === "HAS_NO_HMR_CONNECTIONS") {
       process.hmrProcess.hasConnections = false;
     }
-    if (message === "HMR_UPDATE_COMPLETED") {
+    if (message?.type === "HMR_UPDATE_COMPLETED") {
       setTimeout(() => {
-        restartApplicationProcess();
+        restartApplicationProcess(message?.sessions);
       }, 500);
     }
   });
@@ -242,7 +242,7 @@ const notifyHMRClients = (indexHTMLChanged = false) => {
 };
 const handleServerProcessMessages = () => {
   process.serverProcess.on("message", (message) => {
-    const processMessages = ["server_closed"];
+    const processMessages = ["SERVER_CLOSED"];
     if (!processMessages.includes(message)) {
       process.loader.stable(message);
     }
@@ -276,7 +276,7 @@ const handleServerProcessSTDIO = () => {
     throw new Error(`[dev.handleServerProcessSTDIO] ${exception.message}`);
   }
 };
-const startApplicationProcess = () => {
+const startApplicationProcess = (sessionsBeforeHMRUpdate = null) => {
   const execArgv = ["--no-warnings"];
   if (majorVersion < 19) {
     execArgv.push("--experimental-specifier-resolution=node");
@@ -298,7 +298,8 @@ const startApplicationProcess = () => {
         NODE_ENV: process.env.NODE_ENV,
         ROOT_URL: process.env.ROOT_URL,
         PORT: process.env.PORT,
-        JOYSTICK_SETTINGS: process.env.JOYSTICK_SETTINGS
+        JOYSTICK_SETTINGS: process.env.JOYSTICK_SETTINGS,
+        HMR_SESSIONS: sessionsBeforeHMRUpdate
       }
     }
   );
@@ -307,11 +308,11 @@ const startApplicationProcess = () => {
   handleServerProcessMessages();
   return serverProcess;
 };
-const restartApplicationProcess = async () => {
+const restartApplicationProcess = async (sessionsBeforeHMRUpdate = null) => {
   if (process.serverProcess && process.serverProcess.pid) {
     process.loader.text("Restarting app...");
     process.serverProcess.kill();
-    startApplicationProcess();
+    startApplicationProcess(sessionsBeforeHMRUpdate);
     return Promise.resolve();
   }
   process.loader.text("Starting app...");
@@ -354,8 +355,9 @@ const startWatcher = async (buildSettings = {}) => {
   watcher.on("all", async (event, path2) => {
     await requiredFileCheck();
     process.loader.text("Rebuilding app...");
-    const isHTMLUpdate = path2?.includes("index.html");
-    const isUIUpdate = process.hmrProcess.hasConnections && path2?.includes("ui/") || false;
+    const isHTMLUpdate = path2 === "index.html";
+    const isUIPath = path2?.includes("ui/") || path2 === "index.css" || isHTMLUpdate;
+    const isUIUpdate = process.hmrProcess.hasConnections && isUIPath || false;
     if (["addDir"].includes(event) && fs.existsSync(path2) && fs.lstatSync(path2).isDirectory() && !fs.existsSync(`./.joystick/build/${path2}`)) {
       fs.mkdirSync(`./.joystick/build/${path2}`);
       if (isUIUpdate) {

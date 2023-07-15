@@ -45,14 +45,14 @@ export default (() => {
     };
 
     if (Object.keys(process.HMR_CONNECTIONS || {})?.length > 0) {
-      process.send("HAS_HMR_CONNECTIONS");
+      process.send({ type: "HAS_HMR_CONNECTIONS" });
     }
 
     websocketConnection.on("message", (message) => {
       const parsedMessage = JSON.parse(message);
 
       if (parsedMessage?.type === "HMR_UPDATE_COMPLETE") {
-        process.send("HMR_UPDATE_COMPLETED");
+        process.send({ type: "HMR_UPDATE_COMPLETED", sessions: parsedMessage?.sessions });
       }
 
       if (parsedMessage?.type === "HMR_WATCHLIST") {
@@ -67,9 +67,12 @@ export default (() => {
         delete process.HMR_CONNECTIONS[connectionId];
 
         if (Object.keys(process.HMR_CONNECTIONS || {})?.length === 0) {
-          process.send("HAS_NO_HMR_CONNECTIONS");
+          process.send({ type: "HAS_NO_HMR_CONNECTIONS" });
         }
       }
     });
+
   });
+
+  return true;
 })();

@@ -64,7 +64,9 @@ var buildFiles_default = async (filesToBuild = [], outputPath = null, environmen
         outputPath,
         environment
       );
-      await minifyFile(`${outputPath || "./.joystick/build"}/${fileToBuild}`);
+      if (environment !== "development") {
+        await minifyFile(`${outputPath || "./.joystick/build"}/${fileToBuild}`);
+      }
       return build;
     })
   );
