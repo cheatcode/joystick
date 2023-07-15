@@ -3,7 +3,7 @@ let reconnectAttempts = 0;
 
 const websocketClient = (options = {}, onConnect = null) => {
   let client = new WebSocket(
-    `ws://localhost:${window.__joystick__hmr_port}/_joystick/hmr`
+    `ws://localhost:${window.__joystick_hmr_port__}/_joystick/hmr`
   );
 
   if (reconnectInterval) {
@@ -136,7 +136,8 @@ export default (() =>
           );
 
           if (connection.send) {
-            connection.send({ type: "HMR_UPDATE_COMPLETE" });
+            const sessions = await fetch(`${location.origin}/api/_joystick/sessions`)?.then((response) => response.text());
+            connection.send({ type: "HMR_UPDATE_COMPLETE", sessions });
           }
         })();
       }
@@ -160,7 +161,8 @@ export default (() =>
           );
 
           if (connection.send) {
-            connection.send({ type: "HMR_UPDATE_COMPLETE" });
+            const sessions = await fetch(`${location.origin}/api/_joystick/sessions`)?.then((response) => response.strin());
+            connection.send({ type: "HMR_UPDATE_COMPLETE", sessions });
           }
         })();
       }

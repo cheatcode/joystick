@@ -17,7 +17,13 @@ export default (onInit = () => {}, options = {}, appInstance = {}) => {
       : app.listen(port);
     const config = joystick?.settings?.config || {};
 
-    middleware(app, port, config?.middleware, appInstance);
+    middleware({
+      app,
+      port,
+      middlewareConfig: config?.middleware,
+      appInstance,
+      cspConfig: options?.csp,
+    });
 
     if (options?.middleware && options?.middleware instanceof Array) {
       options.middleware.forEach((middleware) => {

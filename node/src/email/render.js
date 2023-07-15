@@ -37,6 +37,7 @@ export default async ({
   subject,
   preheader,
   user,
+  hmrToken,
 }) => {
   try {
     const buildPath = getBuildPath();
@@ -56,6 +57,7 @@ export default async ({
       baseEmailHTMLName: baseName,
       props,
       translations,
+      hmrToken,
     });
   } catch (exception) {
     console.warn(exception);

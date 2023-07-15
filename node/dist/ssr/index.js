@@ -42,7 +42,7 @@ const handleHTMLReplacementsForApp = ({
           }
 
           window.__joystick_ssr__ = true;
-          ${process.env.NODE_ENV === "development" ? `window.__joystick__hmr_port = ${parseInt(process.env.PORT, 10) + 1}` : ""}
+          ${process.env.NODE_ENV === "development" ? `window.__joystick_hmr_port__ = ${parseInt(process.env.PORT, 10) + 1};` : ""}
           window.__joystick_data__ = ${JSON.stringify({
       [componentInstance.id]: dataFromComponent?.data || {},
       ...dataForClient || {}

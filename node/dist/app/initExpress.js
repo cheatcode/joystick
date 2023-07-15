@@ -11,7 +11,13 @@ var initExpress_default = (onInit = () => {
     const app = express();
     const server = ssl ? https.createServer(ssl, app).listen(port) : app.listen(port);
     const config = joystick?.settings?.config || {};
-    middleware(app, port, config?.middleware, appInstance);
+    middleware({
+      app,
+      port,
+      middlewareConfig: config?.middleware,
+      appInstance,
+      cspConfig: options?.csp
+    });
     if (options?.middleware && options?.middleware instanceof Array) {
       options.middleware.forEach((middleware2) => {
         app.use(middleware2);

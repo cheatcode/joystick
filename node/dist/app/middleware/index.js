@@ -16,9 +16,16 @@ import replaceFileProtocol from "../../lib/replaceFileProtocol.js";
 import getBuildPath from "../../lib/getBuildPath.js";
 import sanitizeQueryParameters from "./sanitizeQueryParameters.js";
 import session from "./session.js";
+import csp from "./csp.js";
 const cwd = replaceFileProtocol(replaceBackslashesWithForwardSlashes(process.cwd()));
 const faviconPath = process.env.NODE_ENV === "test" ? `${cwd}/src/tests/mocks/app/public/favicon.ico` : "public/favicon.ico";
-var middleware_default = (app, port, config = {}, appInstance = {}) => {
+var middleware_default = ({
+  app,
+  port,
+  middlewareConfig,
+  appInstance,
+  cspConfig
+}) => {
   if (process.env.NODE_ENV === "production") {
     app.use(insecure);
   }
@@ -36,6 +43,9 @@ var middleware_default = (app, port, config = {}, appInstance = {}) => {
   });
   app.use(sanitizeQueryParameters);
   app.use(requestMethods);
+  if (cspConfig) {
+    app.use((req, res, next) => csp(req, res, next, cspConfig));
+  }
   app.use(compression());
   app.use("/css", express.static("css", { eTag: false, maxAge: "0" }));
   app.use(express.static("public", { eTag: false, maxAge: "0" }));
@@ -60,8 +70,8 @@ var middleware_default = (app, port, config = {}, appInstance = {}) => {
   });
   app.use(favicon(faviconPath));
   app.use(cookieParser());
-  app.use(bodyParser(config?.bodyParser));
-  app.use(cors(config?.cors, port));
+  app.use(bodyParser(middlewareConfig?.bodyParser));
+  app.use(cors(middlewareConfig?.cors, port));
   app.use((req, res, next) => session(req, res, next, appInstance));
   app.use(async (req, res, next) => {
     const loginTokenHasExpired = await hasLoginTokenExpired(res, req?.cookies?.joystickLoginToken, req?.cookies?.joystickLoginTokenExpiresAt);

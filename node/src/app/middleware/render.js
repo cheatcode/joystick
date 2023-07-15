@@ -198,7 +198,6 @@ export default (req, res, next) => {
     }
 
     // TODO: Implement CSRF for cached html.
-    
     if (options?.cache?.expiresAfterMinutes) {
       // NOTE: Defined above as a let.
       currentDiff = typeof options?.cache?.diff === 'function' ? await getCacheDiff(options?.cache?.diff) : null;

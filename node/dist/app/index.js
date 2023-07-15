@@ -40,7 +40,8 @@ class App {
     this.setMachineId();
     this.setJoystickProcessId();
     handleProcessErrors(options?.events);
-    this.sessions = new Map();
+    const HMRSessions = JSON.parse(process.env.HMR_SESSIONS || "{}");
+    this.sessions = new Map(HMRSessions ? Object.entries(HMRSessions) : []);
     this.databases = [];
     this.express = {};
     this.options = options || {};
@@ -50,6 +51,7 @@ class App {
     this.databases = await this.loadDatabases();
     this.express = initExpress(this.onStartApp, options, this);
     this.initWebsockets(options?.websockets || {});
+    this.initDevelopmentRoutes();
     this.initAccounts();
     this.initDeploy();
     this.initAPI(options?.api);
@@ -60,7 +62,7 @@ class App {
     this.initCronJobs(options?.cronJobs);
     if (process.env.NODE_ENV === "development") {
       process.on("message", (message) => {
-        const parsedMessage = JSON.parse(message);
+        const parsedMessage = typeof message === "string" ? JSON.parse(message) : message;
         if (parsedMessage?.type === " RESTART_SERVER") {
           this.express?.server?.close();
         }
@@ -137,7 +139,9 @@ class App {
   }
   onStartApp(express = {}) {
     process.on("message", (message) => {
-      process.BUILD_ERROR = JSON.parse(message);
+      if (typeof message === "string") {
+        process.BUILD_ERROR = JSON.parse(message);
+      }
     });
     console.log(`App running at: http://localhost:${express.port}`);
   }
@@ -395,6 +399,17 @@ class App {
         });
       }
     });
+  }
+  initDevelopmentRoutes() {
+    if (process.env.NODE_ENV === "development") {
+      this.express.app.get("/api/_joystick/sessions", async (req, res) => {
+        const sessions = Array.from(this.sessions.entries())?.reduce((acc = {}, [key, value]) => {
+          acc[key] = value;
+          return acc;
+        }, {});
+        res.status(200).send(JSON.stringify(sessions));
+      });
+    }
   }
   initAccounts() {
     this.express.app.get("/api/_accounts/authenticated", async (req, res) => {

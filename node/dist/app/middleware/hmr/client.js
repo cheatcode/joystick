@@ -2,7 +2,7 @@
 var reconnectInterval = null;
 var reconnectAttempts = 0;
 var websocketClient = (options = {}, onConnect = null) => {
-  let client = new WebSocket(`ws://localhost:${window.__joystick__hmr_port}/_joystick/hmr`);
+  let client = new WebSocket(`ws://localhost:${window.__joystick_hmr_port__}/_joystick/hmr`);
   if (reconnectInterval) {
     clearInterval(reconnectInterval);
     reconnectInterval = null;
@@ -83,7 +83,8 @@ var client_default = (() => websocketClient({
         const page = pageComponentFile.default;
         window.joystick.mount(layout, Object.assign({ page }, window.__joystick_ssr_props__), document.getElementById("app"));
         if (connection.send) {
-          connection.send({ type: "HMR_UPDATE_COMPLETE" });
+          const sessions = await fetch(`${location.origin}/api/_joystick/sessions`)?.then((response) => response.text());
+          connection.send({ type: "HMR_UPDATE_COMPLETE", sessions });
         }
       })();
     }
@@ -94,7 +95,8 @@ var client_default = (() => websocketClient({
         const page = pageComponentFile.default;
         window.joystick.mount(page, Object.assign({}, window.__joystick_ssr_props__), document.getElementById("app"));
         if (connection.send) {
-          connection.send({ type: "HMR_UPDATE_COMPLETE" });
+          const sessions = await fetch(`${location.origin}/api/_joystick/sessions`)?.then((response) => response.strin());
+          connection.send({ type: "HMR_UPDATE_COMPLETE", sessions });
         }
       })();
     }

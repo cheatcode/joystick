@@ -25,7 +25,8 @@ var render_default = async ({
   props,
   subject,
   preheader,
-  user
+  user,
+  hmrToken
 }) => {
   try {
     const buildPath = getBuildPath();
@@ -37,7 +38,8 @@ var render_default = async ({
       componentFunction: Component,
       baseEmailHTMLName: baseName,
       props,
-      translations
+      translations,
+      hmrToken
     });
   } catch (exception) {
     console.warn(exception);
