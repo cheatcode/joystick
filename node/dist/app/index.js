@@ -41,9 +41,6 @@ class App {
     this.setJoystickProcessId();
     handleProcessErrors(options?.events);
     const HMRSessions = JSON.parse(process.env.HMR_SESSIONS || "{}");
-    console.log({
-      HMRSessions
-    });
     this.sessions = new Map(HMRSessions ? Object.entries(HMRSessions) : []);
     this.databases = [];
     this.express = {};

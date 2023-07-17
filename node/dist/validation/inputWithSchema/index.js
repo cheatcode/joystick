@@ -75,7 +75,7 @@ const addToValidationQueue = (queue = [], schema = {}, input = {}, parentPath = 
 const validateInputWithSchema = async (input = null, schema = null, parentPath = "") => {
   const errors = [];
   if (!input) {
-    throwError("Must pass input.");
+    errors.push("Input is required.");
   }
   if (schema && Object.keys(schema) && !schema.type) {
     validateSchema(schema);

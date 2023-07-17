@@ -110,7 +110,8 @@ const validateInputWithSchema = async (
   const errors = [];
 
   if (!input) {
-    throwError("Must pass input.");
+    errors.push("Input is required.");
+    // throwError("Input is required.");
   }
 
   if (schema && Object.keys(schema) && !schema.type) {

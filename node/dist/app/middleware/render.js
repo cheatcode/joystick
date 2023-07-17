@@ -130,7 +130,7 @@ const parseBrowserLanguages = (languages = "") => {
   const rawLanguages = languages.split(",");
   return rawLanguages?.map((rawLanguage) => rawLanguage.split(";")[0]);
 };
-var render_default = (req, res, next) => {
+var render_default = (req, res, next, appInstance = {}) => {
   res.render = async function(path = "", options = {}) {
     const urlFormattedForCache = req?.url?.split("/")?.filter((part) => !!part)?.join("_");
     const buildPathForEnvironment = getBuildPath();
@@ -190,7 +190,8 @@ var render_default = (req, res, next) => {
       baseHTMLPath: null,
       layoutComponentPath: options?.layout,
       pageComponentPath: path?.substring(0, 1) === "/" ? path?.replace("/", "") : path,
-      head: options?.head
+      head: options?.head,
+      api: appInstance?.options?.api
     });
     if (options?.cache?.expiresAfterMinutes) {
       writeCacheFileToDisk({

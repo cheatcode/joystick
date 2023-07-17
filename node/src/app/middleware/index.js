@@ -135,5 +135,5 @@ export default ({
     next();
   });
 
-  app.use(render);
+  app.use((req, res, next) => render(req, res, next, appInstance));
 };

@@ -369,7 +369,7 @@ const buildDataForClient = (dataFromTree = []) => {
   try {
     return dataFromTree.reduce((data = {}, dataFromChildComponent) => {
       if (!data[dataFromChildComponent.componentId]) {
-        data[dataFromChildComponent.componentId] = dataFromChildComponent.data;
+        data[dataFromChildComponent.componentId] = dataFromChildComponent.data || JSON.parse(dataFromChildComponent.error);
       }
 
       return data;
@@ -422,6 +422,7 @@ const getDataFromComponent = async (
       {},
       componentInstance
     );
+
     return {
       componentId: componentInstance?.id,
       data,
@@ -453,7 +454,7 @@ const getComponentInstance = (Component, options = {}) => {
   }
 };
 
-const getAPIForDataFunctions = (req = {}) => {
+const getAPIForDataFunctions = (req = {}, api = {}) => {
   try {
     // NOTE: We have to relay the original SSR req object because if/when these get
     // and set functions are called on the server, they have no awareness of the original
@@ -461,21 +462,23 @@ const getAPIForDataFunctions = (req = {}) => {
     // ensures that the user making the request is "forwarded" along with those requests.
     return {
       get: (getterName = "", getterOptions = {}) => {
-        return get(getterName, {
-          ...getterOptions,
-          headers: {
-            cookie: req?.headers?.cookie,
-          },
-          req,
+        return get({
+          getterName,
+          getterOptions: api?.getters[getterName] || {},
+          input: getterOptions?.input,
+          output: getterOptions?.output,
+          context: req?.context,
+          APIOptions: api?.options,
         });
       },
       set: (setterName = "", setterOptions = {}) => {
-        return set(setterName, {
-          ...setterOptions,
-          headers: {
-            cookie: req?.headers?.cookie,
-          },
-          req,
+        return set({
+          setterName,
+          setterOptions: api?.setters[setterName] || {},
+          input: setterOptions?.input,
+          output: setterOptions?.output,
+          context: req?.context,
+          APIOptions: api?.options,
         });
       },
     };
@@ -498,7 +501,7 @@ const ssr = async (options, { resolve, reject }) => {
   try {
     validateOptions(options);
 
-    const apiForDataFunctions = getAPIForDataFunctions(options.req);
+    const apiForDataFunctions = getAPIForDataFunctions(options.req, options?.api);
     const browserSafeRequest = options?.email
       ? {}
       : getBrowserSafeRequest({ ...(options?.req || {}) });
@@ -517,12 +520,17 @@ const ssr = async (options, { resolve, reject }) => {
       componentInstance,
       apiForDataFunctions,
       browserSafeRequest
-    );
+    ).then((data) => data).catch((error) => {
+      return [{ error }];
+    });
 
     buildTreeForComponent(componentInstance, ssrTree);
     buildTreeForComponent(componentInstance, ssrTreeForCSS);
 
-    const dataFromTree = await getDataFromTree(ssrTree);
+    const dataFromTree = await getDataFromTree(ssrTree).then((data) => data).catch((error) => {
+      return [{ error }];
+    });
+
     const dataForClient = !options?.email
       ? buildDataForClient(dataFromTree)
       : null;

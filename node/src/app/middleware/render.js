@@ -160,7 +160,7 @@ const parseBrowserLanguages = (languages = '') => {
   return rawLanguages?.map((rawLanguage) => rawLanguage.split(';')[0]);
 };
 
-export default (req, res, next) => {
+export default (req, res, next, appInstance = {}) => {
   res.render = async function (path = "", options = {}) {
     const urlFormattedForCache = req?.url?.split('/')?.filter((part) => !!part)?.join('_');
     const buildPathForEnvironment = getBuildPath();
@@ -244,6 +244,7 @@ export default (req, res, next) => {
       // has a forward slash prepended, just strip it for them.
       pageComponentPath: path?.substring(0, 1) === '/' ? path?.replace('/', '') : path,
       head: options?.head,
+      api: appInstance?.options?.api,
     });
     
     if (options?.cache?.expiresAfterMinutes) {

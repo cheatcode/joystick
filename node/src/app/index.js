@@ -51,10 +51,6 @@ export class App {
     // it's completed the update in the browser. The HMR server then passes
     // them to the startApplicationProcess() which ends up here on the env.
     const HMRSessions = JSON.parse(process.env.HMR_SESSIONS || '{}');
-
-    console.log({
-      HMRSessions,
-    });
     
     this.sessions = new Map(HMRSessions ? Object.entries(HMRSessions) : []);
     this.databases = [];
@@ -67,6 +63,7 @@ export class App {
 
     this.databases = await this.loadDatabases();
     this.express = initExpress(this.onStartApp, options, this);
+    
     this.initWebsockets(options?.websockets || {});
     this.initDevelopmentRoutes();
     this.initAccounts();

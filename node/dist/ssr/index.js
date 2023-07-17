@@ -261,7 +261,7 @@ const buildDataForClient = (dataFromTree = []) => {
   try {
     return dataFromTree.reduce((data = {}, dataFromChildComponent) => {
       if (!data[dataFromChildComponent.componentId]) {
-        data[dataFromChildComponent.componentId] = dataFromChildComponent.data;
+        data[dataFromChildComponent.componentId] = dataFromChildComponent.data || JSON.parse(dataFromChildComponent.error);
       }
       return data;
     }, {});
@@ -321,25 +321,27 @@ const getComponentInstance = (Component, options = {}) => {
     throw new Error(`[ssr.getComponentInstance] ${exception.message}`);
   }
 };
-const getAPIForDataFunctions = (req = {}) => {
+const getAPIForDataFunctions = (req = {}, api = {}) => {
   try {
     return {
       get: (getterName = "", getterOptions = {}) => {
-        return get(getterName, {
-          ...getterOptions,
-          headers: {
-            cookie: req?.headers?.cookie
-          },
-          req
+        return get({
+          getterName,
+          getterOptions: api?.getters[getterName] || {},
+          input: getterOptions?.input,
+          output: getterOptions?.output,
+          context: req?.context,
+          APIOptions: api?.options
         });
       },
       set: (setterName = "", setterOptions = {}) => {
-        return set(setterName, {
-          ...setterOptions,
-          headers: {
-            cookie: req?.headers?.cookie
-          },
-          req
+        return set({
+          setterName,
+          setterOptions: api?.setters[setterName] || {},
+          input: setterOptions?.input,
+          output: setterOptions?.output,
+          context: req?.context,
+          APIOptions: api?.options
         });
       }
     };
@@ -360,7 +362,7 @@ const validateOptions = (options) => {
 const ssr = async (options, { resolve, reject }) => {
   try {
     validateOptions(options);
-    const apiForDataFunctions = getAPIForDataFunctions(options.req);
+    const apiForDataFunctions = getAPIForDataFunctions(options.req, options?.api);
     const browserSafeRequest = options?.email ? {} : getBrowserSafeRequest({ ...options?.req || {} });
     const componentInstance = getComponentInstance(options.componentFunction, {
       props: options?.props || {},
@@ -371,10 +373,14 @@ const ssr = async (options, { resolve, reject }) => {
     });
     const ssrTree = getTreeForSSR(componentInstance);
     const ssrTreeForCSS = getTreeForSSR(componentInstance);
-    const dataFromComponent = await getDataFromComponent(componentInstance, apiForDataFunctions, browserSafeRequest);
+    const dataFromComponent = await getDataFromComponent(componentInstance, apiForDataFunctions, browserSafeRequest).then((data) => data).catch((error) => {
+      return [{ error }];
+    });
     buildTreeForComponent(componentInstance, ssrTree);
     buildTreeForComponent(componentInstance, ssrTreeForCSS);
-    const dataFromTree = await getDataFromTree(ssrTree);
+    const dataFromTree = await getDataFromTree(ssrTree).then((data) => data).catch((error) => {
+      return [{ error }];
+    });
     const dataForClient = !options?.email ? buildDataForClient(dataFromTree) : null;
     let baseHTML = getBaseHTML(options?.email, options?.baseEmailHTMLName);
     if (options?.attributes?.html || options?.attributes?.body) {
