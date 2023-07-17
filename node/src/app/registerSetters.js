@@ -19,34 +19,34 @@ export default (express, setters = [], context = {}, APIOptions = {}, appInstanc
           ? setterOptions?.middleware
           : []),
         async (req, res) => {
-//          const isValidSession = validateSession(req, res, appInstance?.sessions);
-//
-//          if (!isValidSession) {
-//            // NOTE: validateSession handles the 403 error so just return here.
-//            return;
-//          }
+          const isValidSession = validateSession(req, res, appInstance?.sessions);
 
-            const setterContext = await getAPIContext({ req, res }, context);
-            const input = req?.body?.input || null;
-            const output = req?.body?.output || null;
+          if (!isValidSession) {
+            // NOTE: validateSession handles the 403 error so just return here.
+            return;
+          }
 
-            runSetter({
-              setterName,
-              setterOptions,
-              input,
-              output,
-              APIOptions,
-              context: setterContext,
-            }).then((response) => {
-              return res.status(200).send(
-                JSON.stringify(response)
-              );
-            }).catch((response) => {
-              const errors = response?.errors;
-              return res.status(errors[0]?.status || 400).send(
-                JSON.stringify(response)
-              );
-            });
+          const setterContext = await getAPIContext({ req, res }, context);
+          const input = req?.body?.input || null;
+          const output = req?.body?.output || null;
+
+          runSetter({
+            setterName,
+            setterOptions,
+            input,
+            output,
+            APIOptions,
+            context: setterContext,
+          }).then((response) => {
+            return res.status(200).send(
+              JSON.stringify(response)
+            );
+          }).catch((response) => {
+            const errors = response?.errors;
+            return res.status(errors[0]?.status || 400).send(
+              JSON.stringify(response)
+            );
+          });
         }
       );
     }

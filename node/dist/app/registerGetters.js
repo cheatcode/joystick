@@ -12,6 +12,10 @@ var registerGetters_default = (express, getters = [], context = {}, APIOptions =
   if (app) {
     for (const [getterName, getterOptions] of getters) {
       app.get(`/api/_getters/${getAPIURLComponent(getterName)}`, ...Array.isArray(getterOptions?.middleware) ? getterOptions?.middleware : [], async (req, res) => {
+        const isValidSession = validateSession(req, res, appInstance?.sessions);
+        if (!isValidSession) {
+          return;
+        }
         const getterContext = await getAPIContext({ req, res }, context);
         const input = req?.query?.input ? JSON.parse(req?.query?.input) : null;
         const output = req?.query?.output ? JSON.parse(req?.query?.output) : null;

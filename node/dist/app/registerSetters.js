@@ -12,6 +12,10 @@ var registerSetters_default = (express, setters = [], context = {}, APIOptions =
   if (app) {
     for (const [setterName, setterOptions] of setters) {
       app.post(`/api/_setters/${getAPIURLComponent(setterName)}`, ...Array.isArray(setterOptions?.middleware) ? setterOptions?.middleware : [], async (req, res) => {
+        const isValidSession = validateSession(req, res, appInstance?.sessions);
+        if (!isValidSession) {
+          return;
+        }
         const setterContext = await getAPIContext({ req, res }, context);
         const input = req?.body?.input || null;
         const output = req?.body?.output || null;
