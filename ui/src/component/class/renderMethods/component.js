@@ -49,16 +49,27 @@ const renderToHTMLForSSR = (component = {}) => {
 const collectDataFunctionsForSSR = (component = {}) => {
   try {
     component.parent.ssrTree.dataFunctions.push(async () => {
-      const data = await component.options.data(
-        component.parent.options.api,
-        component.parent.options.req
-      );
-      component.data = data || {};
-      return {
-        componentId: component.id,
-        ssrId: component.ssrId,
-        data,
-      };
+      try {
+        const data = await component.options.data(
+          component.parent.options.api,
+          component.parent.options.req
+        );
+
+        component.data = data || {};
+
+        return {
+          componentId: component.id,
+          ssrId: component.ssrId,
+          data,
+        };
+      } catch (error) {
+        return {
+          componentId: component.id,
+          ssrId: component.ssrId,
+          data: null,
+          error,
+        };
+      }
     });
 
     // NOTE: Call rest of tree for this component but signal that we're only collecting data,
