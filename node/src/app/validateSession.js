@@ -5,12 +5,6 @@ export default (req = null, res = null, sessions = null) => {
   const csrfToken = req?.headers['x-joystick-csrf'];
   const session = sessions?.get(sessionToken);
 
-  console.log({
-    sessionToken,
-    csrfToken,
-    session,
-  });
-
   if (!session || session && session.csrf !== csrfToken) {
     res.status(403).send(
       JSON.stringify({

@@ -52,6 +52,10 @@ export class App {
     // them to the startApplicationProcess() which ends up here on the env.
     const HMRSessions = JSON.parse(process.env.HMR_SESSIONS || '{}');
 
+    console.log({
+      HMRSessions,
+    });
+    
     this.sessions = new Map(HMRSessions ? Object.entries(HMRSessions) : []);
     this.databases = [];
     this.express = {};

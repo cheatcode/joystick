@@ -18,12 +18,12 @@ export default (express, getters = [], context = {}, APIOptions = {}, appInstanc
           ? getter_options?.middleware
           : []),
         async (req, res) => {
-          const isValidSession = validateSession(req, res, appInstance?.sessions);
-
-          if (!isValidSession) {
-            // NOTE: validateSession handles the 403 error so just return here.
-            return;
-          }
+//          const isValidSession = validateSession(req, res, appInstance?.sessions);
+//
+//          if (!isValidSession) {
+//            // NOTE: validateSession handles the 403 error so just return here.
+//            return;
+//          }
 
           const getter_context = await getAPIContext({ req, res }, context);
           const { query } = req;
