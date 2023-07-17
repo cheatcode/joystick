@@ -1,14 +1,11 @@
 import fetch from "node-fetch";
 import _ from 'lodash';
-
-const mirrors = [
-  'https://push-versions-1.cheatcode.co',
-  'https://push-versions-2.cheatcode.co',
-  'https://push-versions-3.cheatcode.co',
-  ];
+import domains from './domains.js';
 
 export default async () => {
-  const results = (await Promise.allSettled(mirrors?.map(async (mirror) => {
+  // NOTE: Even though we can pass a separate server, we always want to use production as that
+  // is where the instance-cli will pull versions from.
+  const results = (await Promise.allSettled(domains?.versions?.production?.map(async (mirror) => {
     const controller = new AbortController();
     setTimeout(() => controller.abort(), 2000);
 

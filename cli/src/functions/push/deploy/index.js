@@ -6,11 +6,13 @@ import _ from 'lodash';
 import fs from 'fs';
 import FormData from 'form-data';
 import Loader from '../../lib/loader.js';
-import domains from '../../lib/domains.js';
+import domains from './domains.js';
 import checkIfValidJSON from '../../lib/checkIfValidJSON.js';
 import CLILog from '../../lib/CLILog.js';
 import build from '../build/index.js';
-import getAvailableCDN from "./getAvailableCDN.js";
+import getAvailableCDN from "../getAvailableCDN.js";
+import initialDeployment from './initial.js';
+import versionDeployment from './version.js';
 
 const getAppSettings = (environment = '') => {
   try {
@@ -25,51 +27,34 @@ const getAppSettings = (environment = '') => {
   }
 };
 
-const startDeployment = (
+const startDeployment = async ({
   isInitialDeployment = false,
   loginSessionToken = '',
   deployment = {},
-  deploymentTimestamp = '',
+  version = '',
   appSettings = '',
-  environment = 'production'
-) => {
+  environment = 'production',
+  server = 'production',
+}) => {
   try {
-    const formData = new FormData();
+    if (isInitialDeployment) {
+      return initialDeployment({
+        version,
+        deployment,
+        settings: appSettings,
+        environment,
+        loginSessionToken,
+        server,
+      });
+    }
 
-    formData.append('build_tar', fs.readFileSync(`.build/build.tar.xz`), `${deploymentTimestamp}.tar.xz`);
-    formData.append('deployment', JSON.stringify({
-      ...(deployment || {}),
-      version: deploymentTimestamp,
+    return versionDeployment({
+      version,
+      deployment,
       settings: appSettings,
       environment,
-    }));
-
-    return fetch(`${domains?.provision}/api/deployments/${isInitialDeployment ? 'initial' : 'version'}`, {
-      method: 'POST',
-      headers: {
-        ...formData.getHeaders(),
-        'x-login-session-token': loginSessionToken,
-        'x-deployment-domain': deployment?.domain,
-      },
-      body: formData
-    }).then(async (response) => {
-      const text = await response.text();
-      const data = checkIfValidJSON(text);
-      const isPayloadSizeError = text?.includes('payload');
-
-      if (data?.error || isPayloadSizeError) {
-        CLILog(
-          data.error?.message || text,
-          {
-            level: 'danger',
-            docs: isPayloadSizeError ? 'https://cheatcode.co/docs/push/considerations/payload-size' : 'https://cheatcode.co/docs/push'
-          }
-        );
-    
-        process.exit(0);
-      }
-  
-      return data?.data;
+      loginSessionToken,
+      server,
     });
   } catch (exception) {
     throw new Error(`[initDeployment.startDeployment] ${exception.message}`);
@@ -113,6 +98,37 @@ const uploadBuildToCDN = ({
   }
 };
 
+const uploadVersionToCDN = async ({
+  loader,
+  deployment,
+  loginSessionToken,
+  version,
+}) => {
+  try {
+    const availableCDN = await getAvailableCDN();
+
+    if (!availableCDN) {
+      loader.stop();
+      console.log(chalk.redBright(`\nUnable to upload version. Check status.cheatcode.co for availability.\n`));
+      process.exit();
+    }
+
+    // TODO: This doesn't work. The versions server needs access to a database, so we need to give
+    // it access to one and make sure it has user data similar to localhost. May be worth writing a
+    // localhost sync script to the database so we can still do local deploys.
+
+    await uploadBuildToCDN({
+      mirror: availableCDN,
+      domain: deployment?.domain,
+      loginSessionToken,
+      version,
+      deploymentId: deployment?._id,
+    });
+  } catch (exception) {
+    throw new Error(`[actionName.uploadVersionToCDN] ${exception.message}`);
+  }
+};
+
 const buildApp = (environment = 'production') => {
   try {
     return build({}, { isDeploy: true, type: 'tar', environment });
@@ -146,40 +162,26 @@ const initDeployment = async (options, { resolve, reject }) => {
 
     const appSettings = getAppSettings(options?.environment);
 
-    loader.text("Starting deployment...");
-  
-    // TODO: Do the upload indepently to the CDN here. Why: because it's
-    // extra work to upload it to provision, just for provision to send it
-    // to the CDN.
+    loader.text("Uploading deployment...");
 
-    const availableCDN = await getAvailableCDN();
-
-    if (!availableCDN) {
-      loader.stop();
-      console.log(chalk.redBright(`\nUnable to upload version. Check status.cheatcode.co for availability.\n`));
-      return true;
-    }
- c
-    // TODO: This doesn't work. The versions server needs access to a database, so we need to give
-    // it access to one and make sure it has user data similar to localhost. May be worth writing a
-    // localhost sync script to the database so we can still do local deploys.
-
-    await uploadBuildToCDN({
-      mirror: availableCDN,
-      domain: options?.deployment?.domain,
+    await uploadVersionToCDN({
+      loader,
       loginSessionToken: options?.loginSessionToken,
+      deployment: options?.deployment,
       version: deploymentTimestamp,
-      deploymentId: options?.deployment?.deploymentId,
     });
 
-//    await startDeployment(
-//      options?.isInitialDeployment,
-//      options?.loginSessionToken,
-//      options.deployment,
-//      deploymentTimestamp,
-//      appSettings,
-//      options?.environment,
-//    );
+    loader.text("Starting deployment...");
+
+    await startDeployment({
+      isInitialDeployment: options?.isInitialDeployment,
+      loginSessionToken: options?.loginSessionToken,
+      deployment: options.deployment,
+      version: deploymentTimestamp,
+      appSettings,
+      environment: options?.environment,
+      server: options?.server,
+    });
 
     loader.stop();
     console.log(chalk.greenBright(`Your app is deploying! To monitor progress, head to ${domains?.push}/deployments/${options?.deployment?.domain}\n`));
