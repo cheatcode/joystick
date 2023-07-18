@@ -1,23 +1,27 @@
-import sanitizeHTML from "sanitize-html";
 import util from "util";
-const sanitizeAPIResponse = (data = null, sanitizerOptions = null) => {
+import { HTML_ENTITY_MAP } from "../lib/constants.js";
+const escapeHTML = (string = "") => {
+  return String(string).replace(/[&<>"'`=\/]/g, function(match) {
+    return HTML_ENTITY_MAP[match];
+  });
+};
+const sanitizeAPIResponse = (data = null) => {
   let sanitizedData = data;
-  let customSanitizerOptions = util.isObject(sanitizerOptions) && !Array.isArray(sanitizerOptions) ? sanitizerOptions : null;
   if (!util.isString(sanitizedData) && !util.isObject(sanitizedData) && !Array.isArray(sanitizedData)) {
     return sanitizedData;
   }
   if (util.isString(sanitizedData)) {
-    sanitizedData = sanitizeHTML(sanitizedData, customSanitizerOptions)?.trim();
+    sanitizedData = escapeHTML(sanitizedData)?.trim();
   }
   if (util.isObject(sanitizedData) && !Array.isArray(sanitizedData)) {
     sanitizedData = Object.entries(sanitizedData)?.reduce((result = {}, [key, value]) => {
-      result[key] = sanitizeAPIResponse(value, customSanitizerOptions);
+      result[key] = sanitizeAPIResponse(value);
       return result;
     }, {});
   }
   if (Array.isArray(sanitizedData)) {
     sanitizedData = sanitizedData.map((arrayItem = null) => {
-      return sanitizeAPIResponse(arrayItem, customSanitizerOptions);
+      return sanitizeAPIResponse(arrayItem);
     });
   }
   return sanitizedData;
