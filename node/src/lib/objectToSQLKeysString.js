@@ -6,6 +6,7 @@ const objectToSQLKeys = (objectToConvert = {}, target = []) => {
 
   keyValuePairs.forEach(([key, value]) => {
     if (isObject(value)) {
+      // NOTE: Convert camel and pascal case column names to snake case for consistency.
       target.push(camelPascalToSnake(key));
       objectToSQLKeys(value, target);
     } else {

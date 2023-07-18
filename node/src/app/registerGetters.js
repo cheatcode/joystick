@@ -41,11 +41,16 @@ export default (express, getters = [], context = {}, APIOptions = {}, appInstanc
             return res.status(200).send(
               JSON.stringify(response)
             );
-          }).catch((response) => {
-            const errors = response?.errors;
-            return res.status(errors[0]?.status || 400).send(
-              JSON.stringify(response)
-            );
+          }).catch((error) => {
+            if (typeof error === 'string') {
+              return res.status(500).send(error);
+            }
+
+            if (typeof error === 'object' && !Array.isArray(error)) {
+              return res.status((error?.errors && error?.errors[0]?.status) || 400).send(
+                JSON.stringify(error)
+              );
+            }
           });
         }
       );
