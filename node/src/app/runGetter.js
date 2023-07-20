@@ -30,7 +30,15 @@ const handleRunGetter = async (
 
 const handleRunAuthorization = async (getterOptions = {}, input = {}, context = {}) => {
   try {
-    return getterOptions?.authorized(input, context);
+    const authorization = await getterOptions?.authorized(input, context);
+
+    if (typeof authorization === 'boolean') {
+      return authorization;
+    }
+
+    if (typeof authorization === 'object' && !Array.isArray(authorization) && typeof authorization?.authorized !== 'undefined') {
+      return authorization?.authorized ? true : authorization?.message;
+    }
   } catch (exception) {
     throw new Error(`[runGetter.runAuthorization] ${exception.message}`);
   }
@@ -103,12 +111,12 @@ const runGetter = async (options, { resolve, reject }) => {
         options?.input,
         options?.context,
       );
-      
-      if (!authorized) {
+ 
+      if (!authorized || typeof authorized === 'string') {
         return reject({
           errors: [
             formatAPIError(
-              new Error(`Not authorized to access ${options?.getterName}.`),
+              new Error(typeof authorized === 'string' ? authorized : `Not authorized to access ${options?.getterName}.`),
               "authorized",
               403
             ),
