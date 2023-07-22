@@ -3,40 +3,38 @@ import semver from "semver";
 import { createRequire } from "module";
 import fs from 'fs';
 
-const setPackageJSONVersions = (originalVersion, version) => {
+const require = createRequire(import.meta.url);
+const packageJSON = require("./package.json");
+const canaryJSON = require('./canary.json');
+
+const updatePackageJSONVersion = (packageJSON, originalVersion) => {
   packageJSON.version = originalVersion;
-  packageJSON.developmentVersion = version;
-  console.log({ originalVersion, version });
   fs.writeFileSync('package.json', JSON.stringify(packageJSON, null, 2));
 };
 
-const require = createRequire(import.meta.url);
-const packageJSON = require("./package.json");
+const updatePackageJSONDependencies = (packageJSON, canaryJSON) => {
+  packageJSON.dependencies = canaryJSON?.dependencies;
+  packageJSON.devDependencies = canaryJSON?.devDependencies;
+  fs.writeFileSync('package.json', JSON.stringify(packageJSON, null, 2));
+};
+
+updatePackageJSONDependencies(packageJSON, canaryJSON);
 
 const originalVersion = `${packageJSON.version}`;
-const version = semver.inc(
-  process.env.NODE_ENV === 'development' ? packageJSON.developmentVersion : packageJSON.version,
+
+const version = semver.inc(packageJSON.version,
   "prerelease",
   "beta"
 );
-const force = process.env.NODE_ENV === "development" ? "--force" : "";
-const registry =
-  process.env.NODE_ENV === "development"
-    ? "--registry http://localhost:4873"
-    : "";
 
 try {
   execSync(
-    `npm version ${version} --allow-same-version ${registry} && npm publish --access public ${force} ${registry}`
+    `npm version ${version} --allow-same-version && npm publish --access public`
   );
 } catch (exception) {
-  setPackageJSONVersions(originalVersion, version);
+  updatePackageJSONVersion(originalVersion, version);
 }
 
 if (process.env.NODE_ENV === 'production') {
   execSync(`git add . && git commit -m "release @joystick.js/node@${version}"`);
-}
-
-if (process.env.NODE_ENV === 'development') {
-  setPackageJSONVersions(originalVersion, version);
 }
