@@ -1,3 +1,6 @@
+import fs from "fs";
+import { fileURLToPath } from "url";
+import { dirname } from "path";
 import sanitizeHTML from "sanitize-html";
 import _accounts from "./app/accounts";
 import _action from "./action/index.js";
@@ -26,6 +29,8 @@ const sanitize = {
     allowedTags: sanitizeHTML.defaults.allowedTags
   }
 };
+const currentFilePath = fileURLToPath(import.meta.url);
+const __package = dirname(currentFilePath);
 const __filename = nodeUrlPolyfills.__filename;
 const __dirname = nodeUrlPolyfills.__dirname;
 const id = generateId;
@@ -34,7 +39,10 @@ const settings = loadSettings();
 global.joystick = {
   id: generateId,
   emitters: {},
-  settings
+  settings,
+  __package,
+  __dirname,
+  __filename
 };
 var src_default = {
   __dirname,
@@ -54,6 +62,7 @@ var src_default = {
 export {
   __dirname,
   __filename,
+  __package,
   accounts,
   action,
   src_default as default,

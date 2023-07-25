@@ -7,91 +7,158 @@ import getDeployment from "../../lib/getDeployment.js";
 import getDeploymentSummary from "./getDeploymentSummary.js";
 import providerMap from "./providerMap.js";
 import Loader from "../../lib/loader.js";
-import initDeployment from "./initDeployment.js";
-import updateDeployment from "./updateDeployment.js";
-import getSessionToken from "../../lib/getSessionToken.js";
+import getSessionToken from "./getSessionToken.js";
 import getUserFromSessionToken from "./getUserFromSessionToken.js";
 import colorLog from "../../lib/colorLog.js";
-import checkIfProvisionAvailable from "./checkIfProvisionAvailable.js";
+import checkIfProvisionAvailable from "./checkIfProvisionAvailable.js     ";
+import deploy from "./deploy/index.js";
+const warnUnfeasibleDeployment = (deploymentToInitialize = {}, deploymentSummary = {}) => {
+  try {
+    const totalInstancesRequested = deploymentToInitialize?.loadBalancerInstances + deploymentToInitialize?.appInstances;
+    const deploymentFeasible = totalInstancesRequested <= deploymentSummary?.limits?.available;
+    if (!deploymentFeasible) {
+      CLILog(
+        `${chalk.yellowBright(
+          `Cannot push with this configuration as it would exceed the instance limits set by your selected provider (${providerMap[deploymentToInitialize?.provider]}).`
+        )} Your account there is limited to ${deploymentSummary?.limits?.account} instances (currently using ${deploymentSummary?.limits?.existing}).
+
+ You requested ${totalInstancesRequested} instances which would go over your account limit. Please adjust your configuration (or request an increase from your provider) and try again.`,
+        {
+          padding: " ",
+          level: "danger",
+          docs: "https://cheatcode.co/docs/push/provider-limits"
+        }
+      );
+      process.exit(0);
+    }
+  } catch (exception) {
+    throw new Error(`[actionName.warnUnfeasibleDeployment] ${exception.message}`);
+  }
+};
+const getDeploymentToInitialize = async (user, loginSessionToken) => {
+  try {
+    const deploymentToInitialize = await inquirer.prompt(
+      prompts.initialDeployment(user, loginSessionToken)
+    );
+    return {
+      ...deploymentToInitialize,
+      loadBalancerInstances: deploymentToInitialize?.loadBalancerInstances || 1,
+      appInstances: deploymentToInitialize?.appInstances || 2
+    };
+  } catch (exception) {
+    throw new Error(`[actionName.getDeploymentToInitialize] ${exception.message}`);
+  }
+};
 const handleDeployment = async ({
   isInitialDeployment = false,
   loginSessionToken = "",
   domain = "",
   deployment = {},
   user = {},
-  environment = "production"
+  environment = "production",
+  server = "production"
 }) => {
   try {
     let confirmation = null;
-    let deploymentToExecuteWithDefaults = null;
+    let deploymentToInitialize = null;
     if (isInitialDeployment) {
       const loader = new Loader({ padding: " ", defaultMessage: "" });
-      const deploymentToExecute = await inquirer.prompt(
-        prompts.initialDeployment(user, loginSessionToken)
-      );
-      deploymentToExecuteWithDefaults = {
-        ...deploymentToExecute,
-        loadBalancerInstances: deploymentToExecute?.loadBalancerInstances || 1,
-        appInstances: deploymentToExecute?.appInstances || 2
-      };
+      deploymentToInitialize = await getDeploymentToInitialize(user, loginSessionToken);
       await checkIfProvisionAvailable();
       console.log("\n");
       loader.text("Building deployment summary...");
       const deploymentSummary = await getDeploymentSummary(
-        deploymentToExecuteWithDefaults,
+        deploymentToInitialize,
         loginSessionToken,
         domain
       );
       loader.stop();
-      const totalInstancesRequested = deploymentToExecuteWithDefaults?.loadBalancerInstances + deploymentToExecuteWithDefaults?.appInstances;
-      const deploymentFeasible = totalInstancesRequested <= deploymentSummary?.limits?.available;
-      console.log({
-        totalInstancesRequested,
-        deploymentFeasible,
-        deploymentSummary
-      });
-      if (!deploymentFeasible) {
-        CLILog(
-          `${chalk.yellowBright(
-            `Cannot push with this configuration as it would exceed the limits set by your selected provider (${providerMap[deploymentToExecuteWithDefaults?.provider]}).`
-          )} Your account there is limited to ${deploymentSummary?.limits?.account} instances (currently using ${deploymentSummary?.limits?.existing}).
-
- You requested ${totalInstancesRequested} instances which would go over your account limit. Please adjust your configuration (or request an increase from your provider) and try again.`,
-          {
-            padding: " ",
-            level: "danger",
-            docs: "https://cheatcode.co/docs/push/provider-limits"
-          }
-        );
-        process.exit(0);
-      }
+      warnUnfeasibleDeployment(deploymentToInitialize, deploymentSummary);
       const response = await inquirer.prompt(
         prompts.confirmInitialDeployment(
-          deploymentToExecuteWithDefaults,
+          deploymentToInitialize,
           deploymentSummary?.costs
         )
       );
       confirmation = response.confirmation;
     }
-    if (!isInitialDeployment || confirmation) {
-      await initDeployment({
-        environment,
-        loginSessionToken,
-        isInitialDeployment,
-        deployment: {
-          environment: deployment?.environment,
-          deploymentId: deployment?._id,
-          domain,
-          ...deploymentToExecuteWithDefaults || {}
-        }
-      });
-      return;
+    if (!confirmation) {
+      process.exit();
     }
+    await deploy({
+      environment,
+      loginSessionToken,
+      isInitialDeployment,
+      deployment: {
+        _id: deployment?._id,
+        environment: deployment?.environment,
+        domain,
+        ...deploymentToInitialize || {}
+      },
+      server
+    });
+    return Promise.resolve();
   } catch (exception) {
     throw new Error(`[push.handleDeployment] ${exception.message}`);
   }
 };
-var push_default = async (args = {}, options = {}) => {
+const getDomain = async (domainFromOptions = "") => {
+  try {
+    let domain = domainFromOptions;
+    if (!domain) {
+      domain = await inquirer.prompt(prompts.domain()).then((answers) => answers?.domain);
+    }
+    return domain;
+  } catch (exception) {
+    throw new Error(`[push.getDomain] ${exception.message}`);
+  }
+};
+const onboardingWarning = (user = null) => {
+  try {
+    if (!user?.onboarding?.complete && user?.onboarding?.step < 4) {
+      console.log(
+        chalk.yellowBright(
+          `
+Please visit push.cheatcode.co to finish setting up your account before deploying.
+`
+        )
+      );
+      process.exit(0);
+    }
+  } catch (exception) {
+    throw new Error(`[push.onboardingWarning] ${exception.message}`);
+  }
+};
+const noUserWarning = (user = null) => {
+  try {
+    if (!user) {
+      console.log(
+        chalk.redBright(
+          `
+User not found. Please try again. If this is a mistake, please contact push@cheatcode.co for assistance.
+`
+        )
+      );
+      process.exit();
+    }
+  } catch (exception) {
+    throw new Error(`[push.noUserWarning] ${exception.message}`);
+  }
+};
+const getUser = async (loginSessionToken = "") => {
+  try {
+    const user = await getUserFromSessionToken(loginSessionToken);
+    if (user) {
+      colorLog(`
+\u2714 Logged in as ${user?.emailAddress}
+`, "greenBright");
+    }
+    return user;
+  } catch (exception) {
+    throw new Error(`[push.getUser] ${exception.message}`);
+  }
+};
+const checkForJoystickFolder = () => {
   try {
     const hasJoystickFolder = fs.existsSync(".joystick");
     if (!hasJoystickFolder) {
@@ -104,42 +171,35 @@ var push_default = async (args = {}, options = {}) => {
       );
       process.exit(0);
     }
+  } catch (exception) {
+    throw new Error(`[push.checkForJoystickFolder] ${exception.message}`);
+  }
+};
+var push_default = async (args = {}, options = {}) => {
+  try {
+    checkForJoystickFolder();
     await checkIfProvisionAvailable();
     const loginSessionToken = await getSessionToken();
+    const user = await getUser(loginSessionToken);
+    noUserWarning(user);
+    onboardingWarning(user);
+    const domain = await getDomain(options?.domain);
     await checkIfProvisionAvailable();
-    const user = await getUserFromSessionToken(loginSessionToken);
-    colorLog(`
-\u2714 Logged in as ${user?.emailAddress}
-`, "greenBright");
-    if (!user?.onboarding?.complete && user?.onboarding?.step < 4) {
-      console.log(
-        chalk.yellowBright(
-          `
-Please visit push.cheatcode.co to finish setting up your account before deploying.
-`
-        )
-      );
-      process.exit(0);
-    }
-    let domain = options?.domain;
-    if (!domain) {
-      domain = await inquirer.prompt(prompts.domain()).then((answers) => answers?.domain);
-    }
-    await checkIfProvisionAvailable();
-    const deploymentFromServer = await getDeployment({
+    const deployment = await getDeployment({
       domain,
       loginSessionToken,
       environment: options?.environment
     });
     await handleDeployment({
-      isInitialDeployment: deploymentFromServer?.status === "undeployed",
+      isInitialDeployment: deployment?.status === "undeployed",
       loginSessionToken,
       domain,
-      deployment: deploymentFromServer,
+      deployment,
       user,
-      environment: options?.environment || "production"
+      environment: options?.environment || "production",
+      server: options?.server
     });
-    return true;
+    return Promise.resolve();
   } catch (exception) {
     console.warn(exception);
     throw new Error(`[push] ${exception.message}`);

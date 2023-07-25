@@ -13,9 +13,11 @@ const getListeners = (instance = {}, renderMethods = {}, listenersToRegister = [
         instance,
         elements: document.querySelectorAll(`body [js-i="${instance.instanceId}"] ${eventFromInstance?.selector}`),
         handler: function eventHandler(DOMEvent) {
-          Object.defineProperty(DOMEvent, "target", {
-            value: DOMEvent.composedPath()[0],
-          });
+          console.log('TARGET?', DOMEvent?.target);
+
+//          Object.defineProperty(DOMEvent, "target", {
+//            value: DOMEvent.composedPath()[0],
+//          });
 
           eventFromInstance.handler(DOMEvent, {
             ...(instance || {}),
@@ -58,7 +60,6 @@ const registerListenersFix = (rootInstance = {}, renderMethods = {}) => {
 
     for (let i = 0; i < eventsToRegister?.length; i += 1) {
       const { instance, element, elementSelector, type, handler } = eventsToRegister[i];
-
       element.addEventListener(type, handler);
 
       instance._eventListeners = [

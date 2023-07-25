@@ -1,7 +1,7 @@
 /* eslint-disable consistent-return */
 
 import fs from "fs";
-import joystick from "@joystick.js/node";
+import { __package } from "../index.js";
 import get from "../api/get";
 import set from "../api/set";
 import getBrowserSafeRequest from "../app/getBrowserSafeRequest";
@@ -259,7 +259,7 @@ const getBaseCSS = (baseHTMLName = "") => {
     const defaultBaseCSSPathForEmail =
       process.env.NODE_ENV === "test"
         ? `${process.cwd()}/src/email/templates/base.css`
-        : `${process.cwd()}/node_modules/@joystick.js/node/dist/email/templates/base.css`;
+        : `${__package}/email/templates/base.css`;
 
     // NOTE: Default if none of the other conditionals below catch.
     let baseCSSPathToFetch = defaultBaseCSSPathForEmail;
@@ -343,7 +343,7 @@ const getBaseHTML = (isEmailRender = false, baseEmailHTMLName = "") => {
       const defaultBaseHTMLPathForEmail =
         process.env.NODE_ENV === "test"
           ? `${process.cwd()}/src/email/templates/base.html`
-          : `${process.cwd()}/node_modules/@joystick.js/node/dist/email/templates/base.html`;
+          : `${__package}/email/templates/base.html`;
 
       // NOTE: Default if none of the other conditionals below catch.
       baseHTMLPathToFetch = defaultBaseHTMLPathForEmail;

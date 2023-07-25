@@ -1,16 +1,12 @@
-import { URL } from "url";
+import { fileURLToPath } from "url";
+import { dirname } from "path";
 var nodeUrlPolyfills_default = {
-  __filename: (url = null) => {
-    if (!url) {
-      return "";
-    }
-    return new URL("", url).pathname;
+  __filename: (url = "") => {
+    return fileURLToPath(url);
   },
-  __dirname: (url = null) => {
-    if (!url) {
-      return "";
-    }
-    return new URL(".", url).pathname;
+  __dirname: (url = "") => {
+    const currentFilePath = fileURLToPath(url);
+    return dirname(currentFilePath);
   }
 };
 export {

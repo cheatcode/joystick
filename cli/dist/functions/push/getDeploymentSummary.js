@@ -1,5 +1,5 @@
 import fetch from "node-fetch";
-import domains from "../../lib/domains.js";
+import domains from "./domains.js";
 import checkIfValidJSON from "../../lib/checkIfValidJSON.js";
 import CLILog from "../../lib/CLILog.js";
 var getDeploymentSummary_default = (answers = {}, loginSessionToken = "", deploymentDomain = "") => {

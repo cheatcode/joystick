@@ -10,7 +10,7 @@ import Loader from "../../lib/loader.js";
 import getSessionToken from "./getSessionToken.js";
 import getUserFromSessionToken from "./getUserFromSessionToken.js";
 import colorLog from "../../lib/colorLog.js";
-import checkIfProvisionAvailable from "./checkIfProvisionAvailable.js";
+import checkIfProvisionAvailable from "./checkIfProvisionAvailable.js     ";
 import deploy from './deploy/index.js';
 
 const warnUnfeasibleDeployment = (deploymentToInitialize = {}, deploymentSummary = {}) => {

@@ -1,8 +1,8 @@
 var providerMap_default = {
   // aws: 'AWS',
   // azure: 'Azure',
-  digitalOcean: "Digital Ocean",
   // google: 'Google',
+  digitalOcean: "Digital Ocean",
   linode: "Linode",
   vultr: "Vultr"
 };

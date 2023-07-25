@@ -1,5 +1,5 @@
 import fs from "fs";
-import joystick from "@joystick.js/node";
+import { __package } from "../index.js";
 import get from "../api/get";
 import set from "../api/set";
 import getBrowserSafeRequest from "../app/getBrowserSafeRequest";
@@ -185,7 +185,7 @@ const getBaseCSS = (baseHTMLName = "") => {
   try {
     const customBaseCSSPathForEmail = baseHTMLName ? `${process.cwd()}/email/base_${baseHTMLName}.css` : null;
     const customDefaultBaseCSSPathForEmail = `${process.cwd()}/email/base.css`;
-    const defaultBaseCSSPathForEmail = process.env.NODE_ENV === "test" ? `${process.cwd()}/src/email/templates/base.css` : `${process.cwd()}/node_modules/@joystick.js/node/dist/email/templates/base.css`;
+    const defaultBaseCSSPathForEmail = process.env.NODE_ENV === "test" ? `${process.cwd()}/src/email/templates/base.css` : `${__package}/email/templates/base.css`;
     let baseCSSPathToFetch = defaultBaseCSSPathForEmail;
     if (fs.existsSync(customDefaultBaseCSSPathForEmail)) {
       baseCSSPathToFetch = customDefaultBaseCSSPathForEmail;
@@ -243,7 +243,7 @@ const getBaseHTML = (isEmailRender = false, baseEmailHTMLName = "") => {
     if (isEmailRender) {
       const customBaseHTMLPathForEmail = baseEmailHTMLName ? `${process.cwd()}/email/base_${baseEmailHTMLName}.html` : null;
       const customDefaultBaseHTMLPathForEmail = `${process.cwd()}/email/base.html`;
-      const defaultBaseHTMLPathForEmail = process.env.NODE_ENV === "test" ? `${process.cwd()}/src/email/templates/base.html` : `${process.cwd()}/node_modules/@joystick.js/node/dist/email/templates/base.html`;
+      const defaultBaseHTMLPathForEmail = process.env.NODE_ENV === "test" ? `${process.cwd()}/src/email/templates/base.html` : `${__package}/email/templates/base.html`;
       baseHTMLPathToFetch = defaultBaseHTMLPathForEmail;
       if (fs.existsSync(customDefaultBaseHTMLPathForEmail)) {
         baseHTMLPathToFetch = customDefaultBaseHTMLPathForEmail;

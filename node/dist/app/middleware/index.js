@@ -3,6 +3,7 @@ import compression from "compression";
 import cookieParser from "cookie-parser";
 import favicon from "serve-favicon";
 import fs from "fs";
+import { __package } from "../../index.js";
 import insecure from "./insecure.js";
 import requestMethods from "./requestMethods.js";
 import bodyParser from "./bodyParser.js";
@@ -54,7 +55,7 @@ var middleware_default = ({
   });
   app.use("/_joystick/utils/process.js", (_req, res) => {
     res.set("Content-Type", "text/javascript");
-    const processPolyfill = fs.readFileSync(`${cwd}/node_modules/@joystick.js/node/dist/app/utils/process.js`, "utf-8");
+    const processPolyfill = fs.readFileSync(`${__package}/app/utils/process.js`, "utf-8");
     res.send(processPolyfill.replace("${NODE_ENV}", process.env.NODE_ENV));
   });
   app.use("/_joystick/index.client.js", express.static(`${buildPath}index.client.js`, {
@@ -65,7 +66,7 @@ var middleware_default = ({
   app.use("/_joystick/ui", express.static(`${buildPath}ui`, { eTag: false, maxAge: "0" }));
   app.use("/_joystick/hmr/client.js", (_req, res) => {
     res.set("Content-Type", "text/javascript");
-    const hmrClient = fs.readFileSync(`${cwd}/node_modules/@joystick.js/node/dist/app/middleware/hmr/client.js`, "utf-8");
+    const hmrClient = fs.readFileSync(`${__package}/app/middleware/hmr/client.js`, "utf-8");
     res.send(hmrClient.replace("${process.env.PORT}", parseInt(process.env.PORT, 10) + 1));
   });
   app.use(favicon(faviconPath));

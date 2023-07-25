@@ -77,3 +77,12 @@ if (functionsCalled.includes('update')) {
     functions.update.function(args, options);
   }
 }
+
+if (functionsCalled.includes('use')) {
+  const args = getArgs(functions.use.args);
+  const options = getOptions(functions.use.options);
+
+  if (functions.use.function && typeof functions.use.function === 'function') {
+    functions.use.function(args, options);
+  }
+}

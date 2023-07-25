@@ -1,7 +1,7 @@
 {
   "name": "@joystick.js/cli",
   "version": "1.0.0-beta.71",
-  "developmentVersion": "1.0.0-beta.1676",
+  "developmentVersion": "1.0.0-beta.1695",
   "type": "module",
   "description": "CLI for the Joystick JavaScript framework.",
   "main": "development.js",
@@ -10,7 +10,7 @@
   },
   "scripts": {
     "build": "node .build/index.js",
-    "development:release": "export NODE_ENV=development && npm run build && node release.js",
+    "canary:release": "export NODE_ENV=development && npm run build && node canary.js",
     "production:release": "export NODE_ENV=production && npm run build && node release.js",
     "win:development:release": "SET NODE_ENV=development&& npm run build && node release.js",
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -46,6 +46,7 @@
     "pg": "^8.7.3",
     "port-pid": "^0.0.7",
     "ps-node": "^0.1.6",
+    "replace-in-files": "^3.0.0",
     "selective-whitespace": "^1.0.4",
     "systeminformation": "^5.11.0",
     "ws": "^8.2.3",

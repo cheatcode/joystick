@@ -27,7 +27,8 @@ export const isNull = (value) => {
 
 export const isDOM = (value) => {
   try {
-    return value instanceof Element;
+    return true;
+    // return value instanceof HTMLElement;
   } catch (exception) {
     throwFrameworkError('types.isDOM', exception);
   }

@@ -1,6 +1,6 @@
 import fetch from "node-fetch";
 import chalk from "chalk";
-import domains from "../../lib/domains.js";
+import domains from "./domains.js";
 import CLILog from "../../lib/CLILog.js";
 import checkIfValidJSON from "../../lib/checkIfValidJSON.js";
 var getUserFromSessionToken_default = (loginSessionToken = "") => {
