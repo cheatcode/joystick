@@ -1,0 +1,17 @@
+{
+  "name": "@joystick.js/test",
+  "type": "module",
+  "version": "1.0.0-beta.1",
+  "description": "Isomorphic testing framework for the Joystick JavaScript framework.",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "node .build/index.js",
+    "canary:release": "export NODE_ENV=development && npm run build && node canary.js",
+    "production:release": "export NODE_ENV=production && npm run build && node release.js",
+    "win:canary:release": "SET NODE_ENV=development && npm run build && node canary.js",
+    "win:production:release": "SET NODE_ENV=production && npm run build && node release.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "SAUCR"
+}
