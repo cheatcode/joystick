@@ -2,10 +2,6 @@ import chalk from 'chalk';
 import rainbowRoad from './rainbowRoad.js';
 
 export default (message = '', options = {}) => {
-  if (process.env.NODE_ENV === 'test') {
-    return;
-  }
-
   const colors = {
     info: 'blue',
     success: 'green',

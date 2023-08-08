@@ -1,4 +1,5 @@
 import { isObject } from "../../validation/lib/typeValidators";
+import escapeKeyValuePair from "../../lib/escapeKeyValuePair.js";
 var getBrowserSafeUser_default = (user = null) => {
   if (!user || !isObject(user)) {
     return null;
@@ -16,7 +17,7 @@ var getBrowserSafeUser_default = (user = null) => {
       return fields;
     }
   }, {});
-  return browserSafeUser;
+  return escapeKeyValuePair(browserSafeUser);
 };
 export {
   getBrowserSafeUser_default as default

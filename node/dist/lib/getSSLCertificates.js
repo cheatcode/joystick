@@ -6,7 +6,7 @@ var getSSLCertificates_default = (ssl = null) => {
   const keyPath = process.env.IS_PUSH_DEPLOYED ? pushKeyPath : ssl?.key || null;
   const certExists = fs.existsSync(certPath);
   const keyExists = fs.existsSync(keyPath);
-  if (process.env.NODE_ENV === "development" || !certExists || !keyExists) {
+  if (["development", "test"].includes(process.env.NODE_ENV) || !certExists || !keyExists) {
     return null;
   }
   return {

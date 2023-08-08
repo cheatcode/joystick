@@ -17,7 +17,7 @@ var mongodb_default = async (settings = {}, databasePort = 2610) => {
     const connectionOptions = {
       useNewUrlParser: true,
       useUnifiedTopology: true,
-      ssl: !process.env.NODE_ENV?.includes("development"),
+      ssl: !["development", "test"].includes(process.env.NODE_ENV),
       ...settings?.options || {}
     };
     if (settings?.options?.ca) {

@@ -190,7 +190,11 @@ export class App {
       }
     });
 
-    console.log(`App running at: http://localhost:${express.port}`);
+    // NOTE: This should be silent in a test environment as we just want to run
+    // tests immediately after and don't need a startup signal.
+    if (process.env.NODE_ENV !== 'test') {
+      console.log(`App running at: http://localhost:${express.port}`);
+    }
   }
 
   setMachineId() {
@@ -621,7 +625,7 @@ export class App {
   }
 
   initDevelopmentRoutes() {
-    if (process.env.NODE_ENV === 'development') {
+    if (['development', 'test'].includes(process.env.NODE_ENV)) {
       this.express.app.get('/api/_joystick/sessions', async (req, res) => {
         const sessions = Array.from(this.sessions.entries())?.reduce((acc = {}, [key, value]) => {
           acc[key] = value;

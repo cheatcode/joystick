@@ -1,4 +1,5 @@
 import { isObject } from "../../validation/lib/typeValidators";
+import escapeKeyValuePair from "../../lib/escapeKeyValuePair.js";
 
 export default (user = null) => {
   if (!user || !isObject(user)) {
@@ -20,5 +21,5 @@ export default (user = null) => {
     }
   }, {});
 
-  return browserSafeUser;
+  return escapeKeyValuePair(browserSafeUser);
 };

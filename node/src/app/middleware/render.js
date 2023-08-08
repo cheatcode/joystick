@@ -8,6 +8,8 @@ import generateErrorPage from "../../lib/generateErrorPage.js";
 import replaceFileProtocol from '../../lib/replaceFileProtocol.js';
 import replaceBackslashesWithForwardSlashes from '../../lib/replaceBackslashesWithForwardSlashes.js';
 import getBuildPath from "../../lib/getBuildPath.js";
+import escapeHTML from "../../lib/escapeHTML.js";
+import escapeKeyValuePair from "../../lib/escapeKeyValuePair.js";
 
 const generateHash = (input = '') => {
   return crypto.createHash('sha256').update(input).digest('hex');
@@ -72,10 +74,10 @@ const getUrl = (request = {}) => {
   const [path = null] = request.url?.split('?');
 
   return {
-    params: request.params,
-    query: request.query,
-    route: request.route.path,
-    path,
+    params: escapeKeyValuePair(request.params),
+    query: escapeKeyValuePair(request.query),
+    route: escapeHTML(request.route.path),
+    path: escapeHTML(path),
   };
 };
 

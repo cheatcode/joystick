@@ -15,11 +15,10 @@ import runUserQuery from "../accounts/runUserQuery.js";
 import replaceBackslashesWithForwardSlashes from "../../lib/replaceBackslashesWithForwardSlashes.js";
 import replaceFileProtocol from "../../lib/replaceFileProtocol.js";
 import getBuildPath from "../../lib/getBuildPath.js";
-import sanitizeQueryParameters from "./sanitizeQueryParameters.js";
 import session from "./session.js";
 import csp from "./csp.js";
 const cwd = replaceFileProtocol(replaceBackslashesWithForwardSlashes(process.cwd()));
-const faviconPath = process.env.NODE_ENV === "test" ? `${cwd}/src/tests/mocks/app/public/favicon.ico` : "public/favicon.ico";
+const faviconPath = "public/favicon.ico";
 var middleware_default = ({
   app,
   port,
@@ -42,7 +41,6 @@ var middleware_default = ({
     }
     next();
   });
-  app.use(sanitizeQueryParameters);
   app.use(requestMethods);
   if (cspConfig) {
     app.use((req, res, next) => csp(req, res, next, cspConfig));

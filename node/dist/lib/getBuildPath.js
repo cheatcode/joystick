@@ -1,6 +1,6 @@
 import fs from "fs";
 var getBuildPath_default = () => {
-  if (process.env.NODE_ENV === "development" || fs.existsSync(".joystick/build")) {
+  if (["development", "test"].includes(process.env.NODE_ENV) || fs.existsSync(".joystick/build")) {
     return ".joystick/build/";
   }
   return "";

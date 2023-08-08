@@ -1,11 +1,5 @@
 import util from 'util';
-import { HTML_ENTITY_MAP } from "../lib/constants.js";
-
-const escapeHTML = (string = '') => {
-  return String(string).replace(/[&<>"'`=\/]/g, function (match) {
-    return HTML_ENTITY_MAP[match];
-  });
-};
+import escapeHTML from "../lib/escapeHTML.js";
 
 const sanitizeAPIResponse = (data = null) => {
   let sanitizedData = data;
