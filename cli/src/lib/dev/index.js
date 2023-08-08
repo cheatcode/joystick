@@ -308,10 +308,6 @@ const handleCopyDirectory = (context = {}, path = '', options = {}) => {
 const handleRestartApplicationProcess = async (options = {}) => {
   try {
       if (process.serverProcess && process.serverProcess.pid) {
-        if (!options?.watch) {
-          process.loader.text("Restarting app...");
-        }
-
         process.serverProcess.kill();
 
         await handleStartAppServer(options);
@@ -320,8 +316,7 @@ const handleRestartApplicationProcess = async (options = {}) => {
       }
 
       // NOTE: Original process was never initialized due to an error.
-      process.loader.text("Starting app...");
-      startApplicationProcess();
+      await handleStartAppServer(options);
 
       if (!process.hmrProcess) {
         startHMR();
@@ -420,7 +415,11 @@ const startFileWatcher = (options = {}) => {
       }
 
       const watchChangeContext = getWatchChangeContext(event, path);
-
+//
+//      console.log({
+//        watchChangeContext,
+//      });
+//
       handleCopyDirectory(watchChangeContext, path, options);
       handleCopyFile(watchChangeContext, path, options);
       handleAddDirectory(watchChangeContext, path, options);

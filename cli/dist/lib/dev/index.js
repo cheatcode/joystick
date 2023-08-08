@@ -253,15 +253,11 @@ const handleCopyDirectory = (context = {}, path2 = "", options = {}) => {
 const handleRestartApplicationProcess = async (options = {}) => {
   try {
     if (process.serverProcess && process.serverProcess.pid) {
-      if (!options?.watch) {
-        process.loader.text("Restarting app...");
-      }
       process.serverProcess.kill();
       await handleStartAppServer(options);
       return Promise.resolve();
     }
-    process.loader.text("Starting app...");
-    startApplicationProcess();
+    await handleStartAppServer(options);
     if (!process.hmrProcess) {
       startHMR();
     }
