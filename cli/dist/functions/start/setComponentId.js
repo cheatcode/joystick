@@ -1,7 +1,7 @@
 import fs from "fs";
 import generateId from "./generateId.js";
 var setComponentId_default = (file = "") => {
-  const componentMapPath = process.env.NODE_ENV === "development" ? `./.joystick/build/componentMap.json` : `./.build/componentMap.json`;
+  const componentMapPath = ["development", "test"].includes(process.env.NODE_ENV) ? `./.joystick/build/componentMap.json` : `./.build/componentMap.json`;
   const componentMapExists = fs.existsSync(componentMapPath);
   const componentMap = componentMapExists ? JSON.parse(fs.readFileSync(componentMapPath, "utf-8")) : {};
   const parts = [...file?.matchAll(/\/\/ ui+.*/gi)]?.map((match) => {

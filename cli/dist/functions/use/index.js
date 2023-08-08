@@ -3,7 +3,7 @@ import child_process from "child_process";
 var use_default = async (args = {}) => {
   if (args?.version === "canary") {
     await replaceInFiles({
-      files: ["./index.server.js", "./api/**/*.js", "lib/node/**/*.js"],
+      files: ["**/*.js"],
       from: /(@joystick.js\/node)(?!-)/g,
       to: "@joystick.js/node-canary",
       optionsForFiles: {
@@ -14,7 +14,7 @@ var use_default = async (args = {}) => {
       }
     });
     await replaceInFiles({
-      files: ["./index.client.js", "./ui/**/*.js", "lib/**/*.js"],
+      files: ["**/*.js"],
       from: /(@joystick.js\/ui)(?!-)/g,
       to: "@joystick.js/ui-canary",
       optionsForFiles: {
@@ -30,7 +30,7 @@ var use_default = async (args = {}) => {
   }
   if (args?.version === "production") {
     await replaceInFiles({
-      files: ["./index.server.js", "./api/**/*.js", "lib/node/**/*.js"],
+      files: ["**/*.js"],
       from: /(@joystick.js\/node-canary)/g,
       to: "@joystick.js/node",
       optionsForFiles: {
@@ -41,7 +41,7 @@ var use_default = async (args = {}) => {
       }
     });
     await replaceInFiles({
-      files: ["./index.client.js", "./ui/**/*.js", "lib/**/*.js"],
+      files: ["**/*.js"],
       from: /(@joystick.js\/ui-canary)/g,
       to: "@joystick.js/ui",
       optionsForFiles: {

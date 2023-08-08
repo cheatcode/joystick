@@ -3,7 +3,7 @@ import svg from "esbuild-plugin-svg";
 import fs from "fs";
 import plugins from "./buildPlugins.js";
 import onWarn from "./onWarn.js";
-import getCodeFrame from "../../lib/getCodeFrame.js";
+import getCodeFrame from "../../lib/build/getCodeFrame.js";
 const configs = {
   node: (inputPath, outputPath = null, environment = "development") => ({
     entryPoints: [inputPath],

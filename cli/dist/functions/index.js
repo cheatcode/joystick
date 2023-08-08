@@ -4,6 +4,7 @@ import logout from "./logout/index.js";
 import start from "./start/index.js";
 import update from "./update/index.js";
 import use from "./use/index.js";
+import test from "./test/index.js";
 const [_node, _bin, ...rawArgs] = process.argv;
 var functions_default = {
   build: {
@@ -215,6 +216,31 @@ var functions_default = {
       }
     },
     function: start
+  },
+  test: {
+    set: !!rawArgs.includes("test"),
+    description: "Start an existing Joystick app and run its tests.",
+    args: {
+      watch: {
+        set: !!rawArgs.includes("watch"),
+        parent: "test",
+        value: !!rawArgs.includes("watch"),
+        description: "Run joystick test in watch mode."
+      }
+    },
+    options: {
+      watch: {
+        flags: {
+          "--watch": {
+            set: !!rawArgs.includes("--watch"),
+            value: !!rawArgs.includes("--watch"),
+            parent: "test"
+          }
+        },
+        description: "Environment to set for process.env.NODE_ENV."
+      }
+    },
+    function: test
   },
   update: {
     set: !!rawArgs.includes("update"),

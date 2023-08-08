@@ -1,6 +1,6 @@
 {
   "name": "@joystick.js/cli",
-  "version": "1.0.0-beta.71",
+  "version": "1.0.0-beta.72",
   "developmentVersion": "1.0.0-beta.1695",
   "type": "module",
   "description": "CLI for the Joystick JavaScript framework.",
@@ -26,6 +26,7 @@
     "@babel/code-frame": "^7.15.8",
     "acorn": "^8.5.0",
     "ascii-table": "^0.0.9",
+    "ava": "^5.3.1",
     "chalk": "^4.1.2",
     "chokidar": "^3.5.2",
     "command-exists": "^1.2.9",

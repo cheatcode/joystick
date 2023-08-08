@@ -1,7 +1,7 @@
 import chalk from "chalk";
 import { OBJECT_REGEX } from "../../lib/regexes.js";
 import rainbowRoad from "../../lib/rainbowRoad.js";
-import getCodeFrame from "../../lib/getCodeFrame.js";
+import getCodeFrame from "../../lib/build/getCodeFrame.js";
 const removeLocationDataFromStackTrace = (stackTrace = "") => {
   return stackTrace.replace(OBJECT_REGEX, "");
 };

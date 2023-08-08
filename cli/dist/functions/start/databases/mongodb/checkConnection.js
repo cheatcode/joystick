@@ -3,11 +3,8 @@ import chalk from "chalk";
 import fs from "fs";
 import buildConnectionString from "./buildConnectionString.js";
 var checkConnection_default = async (connection = {}, options = {}) => {
-  const connectionString = buildConnectionString(connection);
-  console.log({
-    connectionString
-  });
   try {
+    const connectionString = buildConnectionString(connection2);
     const connectionOptions = {
       connectTimeoutMS: 3e3,
       socketTimeoutMS: 3e3,

@@ -3,7 +3,7 @@ import generateId from "./generateId.js";
 
 export default (file = "") => {
   const componentMapPath =
-    process.env.NODE_ENV === "development"
+    ['development', 'test'].includes(process.env.NODE_ENV)
       ? `./.joystick/build/componentMap.json`
       : `./.build/componentMap.json`;
   const componentMapExists = fs.existsSync(componentMapPath);

@@ -1,6 +1,6 @@
 {
   "name": "@joystick.js/cli-canary",
-  "version": "0.0.0-canary.1",
+  "version": "0.0.0-canary.182",
   "type": "module",
   "description": "CLI for the Joystick JavaScript framework.",
   "main": "development.js",
@@ -25,6 +25,7 @@
     "@babel/code-frame": "^7.15.8",
     "acorn": "^8.5.0",
     "ascii-table": "^0.0.9",
+    "ava": "^5.3.1",
     "chalk": "^4.1.2",
     "chokidar": "^3.5.2",
     "command-exists": "^1.2.9",

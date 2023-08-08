@@ -15,7 +15,7 @@ const warnMongoDBMissing = () => {
   CLILog(
     `MongoDB is not installed on this computer.\n\n Download MongoDB at https://www.mongodb.com/try/download/community\n\n After you've installed MongoDB, run joystick start again, or, remove MongoDB from your config.databases array in your settings.development.json file to skip starting it up.`, {
     level: 'danger',
-    docs: 'https://github.com/cheatcode/joystick#databases',
+    docs: 'https://cheatcode.co/docs/joystick/cli/databases#mongodb',
   });
 };
 

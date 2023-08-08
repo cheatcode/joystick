@@ -53,6 +53,13 @@ if (functionsCalled.includes("start")) {
     functions.start.function(args, options);
   }
 }
+if (functionsCalled.includes("test")) {
+  const args = getArgs(functions.test.args);
+  const options = getOptions(functions.test.options);
+  if (functions.test.function && typeof functions.test.function === "function") {
+    functions.test.function(args, options);
+  }
+}
 if (functionsCalled.includes("update")) {
   const args = getArgs(functions.update.args);
   const options = getOptions(functions.update.options);
