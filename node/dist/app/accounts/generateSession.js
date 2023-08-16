@@ -1,9 +1,7 @@
 import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc.js";
 import generateId from "../../lib/generateId";
-if (process.env.NODE_ENV !== "test") {
-  const utc = await import("dayjs/plugin/utc");
-  dayjs.extend(utc.default);
-}
+dayjs.extend(utc);
 var generateSession_default = () => {
   return {
     token: generateId(64),

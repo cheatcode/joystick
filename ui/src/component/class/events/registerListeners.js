@@ -13,12 +13,6 @@ const getListeners = (instance = {}, renderMethods = {}, listenersToRegister = [
         instance,
         elements: document.querySelectorAll(`body [js-i="${instance.instanceId}"] ${eventFromInstance?.selector}`),
         handler: function eventHandler(DOMEvent) {
-          console.log('TARGET?', DOMEvent?.target);
-
-//          Object.defineProperty(DOMEvent, "target", {
-//            value: DOMEvent.composedPath()[0],
-//          });
-
           eventFromInstance.handler(DOMEvent, {
             ...(instance || {}),
             setState: instance?.setState.bind(instance),
@@ -41,7 +35,7 @@ const getListeners = (instance = {}, renderMethods = {}, listenersToRegister = [
 
     return listenersToRegister;
   } catch (exception) {
-    throwFrameworkError('component.events.registerListenersFix.getListeners', exception);
+    throwFrameworkError('component.eve!nts.registerListenersFix.getListeners', exception);
   }
 };
 

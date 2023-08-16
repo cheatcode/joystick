@@ -34,6 +34,7 @@ class Component {
 
     validateOptions(options);
     registerOptions(this, options);
+    
     this.data = loadDataFromWindow(this);
   }
 

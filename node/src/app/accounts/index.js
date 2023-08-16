@@ -1,6 +1,7 @@
 import _setAuthenticationCookie from "./setAuthenticationCookie.js";
 import _unsetAuthenticationCookie from "./unsetAuthenticationCookie.js";
 import defaultUserOutputFields from "./defaultUserOutputFields";
+import deleteUser from './deleteUser.js';
 import getBrowserSafeUser from "./getBrowserSafeUser";
 import login from "./login";
 import recoverPassword from "./recoverPassword";
@@ -15,6 +16,7 @@ export default {
   _setAuthenticationCookie,
   _unsetAuthenticationCookie,
   defaultUserOutputFields,
+  deleteUser,
   getBrowserSafeUser,
   login,
   recoverPassword,

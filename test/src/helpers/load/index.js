@@ -1,13 +1,20 @@
 import fs from 'fs';
-import log from "../../lib/log";
+import CLILog from "../../lib/CLILog.js";
+
+const uncachedImport = async (path = '', options = {}) => {
+  const modulePath = `${path}?update=${Date.now()}`
+  const contents = await import(modulePath);
+  return (contents?.default && options?.default) ? contents.default : contents;
+};
 
 export default async (path = '', options = {}) => {
   const sanitizedPath = path?.charAt(0) === '/' ? path.substring(1, path.length) : path;
-  const buildPath = `.joystick/build/${sanitizedPath}`;
+  // NOTE: Use timestamp to cache bust on import() below.
+  const buildPath = `${process.cwd()}/.joystick/build/${sanitizedPath}`;
   const pathExists = fs.existsSync(buildPath);
   
   if (!pathExists) {
-    log(`[test.load] Path at ${buildPath} not found.`, {
+    CLILog(`[test.load] Path at ${buildPath} not found.`, {
       level: 'warning',
       docs: 'https://cheatcode.co/docs/joystick/test/load',
     });
@@ -15,7 +22,5 @@ export default async (path = '', options = {}) => {
     return null;
   }
   
-  const contents = await import(buildPath);
-  
-  return (contents?.default && options?.default) ? contents.default : contents;
+  return uncachedImport(buildPath, options);
 };

@@ -1,6 +1,6 @@
 {
   "name": "@joystick.js/node-canary",
-  "version": "0.0.0-canary.46",
+  "version": "0.0.0-canary.79",
   "type": "module",
   "description": "A Node.js framework for building web apps.",
   "main": "./dist/index.js",
@@ -38,6 +38,7 @@
     "node-html-parser": "^5.1.0",
     "nodemailer": "^6.7.0",
     "pg": "^8.7.3",
+    "pg-escape": "^0.2.0",
     "process": "^0.11.10",
     "query-string": "^7.0.1",
     "sanitize-html": "^2.7.3",

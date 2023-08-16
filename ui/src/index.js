@@ -19,6 +19,18 @@ export const renderComponentToHTML = _renderComponentToHTML;
 export const set = api.set;
 export const upload = _upload;
 
+const environment = () => {
+  if (typeof window !== 'undefined') {
+    return window.__joystick_env__;
+  }
+
+  if (typeof process !== 'undefined') {
+    return process.env.NODE_ENV;
+  }
+
+  return null;
+};
+
 const joystick = {
   // NOTE: Safe place to track state and data for third-party dependencies that
   // directly manipulate the DOM.
@@ -43,6 +55,10 @@ const joystick = {
   accounts,
   cache,
   component,
+  env: {
+    development: environment() === 'development',
+    test: environment() === 'test',
+  },
   get,
   html,
   id: generateId,

@@ -25,7 +25,7 @@ export default (getterName = "", getterOptions = {}) => {
         const output = getterOptions.output ? JSON.stringify(getterOptions.output) : null;
         const url = `${window.location.origin}/api/_getters/${getterName}?input=${input}&output=${output}`;
         const csrf = document.querySelector('[name="csrf"]')?.getAttribute('content');
-
+        
         return fetch(url, {
           method: 'GET',
           mode: "cors",

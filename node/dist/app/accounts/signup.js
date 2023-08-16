@@ -6,6 +6,9 @@ import { isObject } from "../../validation/lib/typeValidators";
 import getOutput from "../getOutput";
 import typesMap from "../databases/typesMap";
 import getTargetDatabaseProvider from "../databases/getTargetDatabaseProvider.js";
+import stringToSnakeCase from "../databases/stringToSnakeCase.js";
+import createMetadataTableColumns from "./createMetadataTableColumns.js";
+import roles from "./roles/index.js";
 const addSessionToUser = (userId = null, session = null) => {
   try {
     return runUserQuery("addSession", { userId, session });
@@ -27,6 +30,16 @@ const insertUserInDatabase = async (user = {}) => {
     throw new Error(formatErrorString("signup.insertUserInDatabase", exception));
   }
 };
+const sqlizeMetadata = (metadata = {}) => {
+  try {
+    return Object.entries(metadata).reduce((sqlized = {}, [key, value]) => {
+      sqlized[stringToSnakeCase(key)] = value;
+      return sqlized;
+    }, {});
+  } catch (exception) {
+    throw new Error(`[actionName.sqlizeMetadata] ${exception.message}`);
+  }
+};
 const getUserToCreate = async (options = {}) => {
   try {
     const usersDatabase = getTargetDatabaseProvider("users");
@@ -40,12 +53,19 @@ const getUserToCreate = async (options = {}) => {
     if (options?.username) {
       user.username = options?.username;
     }
-    if (options?.metadata && isObject(options.metadata) && usersDatabaseType === "sql" && options?.metadata?.language) {
-      user.language = options?.metadata?.language;
+    if (options?.metadata && isObject(options.metadata) && usersDatabaseType === "sql") {
+      const sqlizedMetadata = sqlizeMetadata(options.metadata);
+      await createMetadataTableColumns(usersDatabase, sqlizedMetadata);
+      const { roles: [], ...restOfMetadata } = options?.metadata;
+      user = {
+        ...sqlizeMetadata(restOfMetadata),
+        ...user
+      };
     }
     if (options?.metadata && isObject(options.metadata) && usersDatabaseType === "nosql") {
+      const { roles: [], ...restOfMetadata } = options?.metadata;
       user = {
-        ...options.metadata,
+        ...restOfMetadata || {},
         ...user
       };
     }
@@ -70,15 +90,25 @@ const signup = async (options, { resolve, reject }) => {
       return reject("Password is required.");
     }
     const existingUser = await getExistingUser(options.emailAddress, options.metadata?.username);
-    if (existingUser) {
+    if (existingUser && process.env.NODE_ENV !== "test") {
       throw new Error(`A user with the ${existingUser.existingUsername ? "username" : "email address"} ${existingUser.existingUsername || existingUser.existingEmailAddress} already exists.`);
     }
-    const userToCreate = await getUserToCreate(options);
-    const userId = await insertUserInDatabase(userToCreate);
+    let userToCreate;
+    let userId = existingUser?._id || existingUser?.user_id;
+    if (!existingUser) {
+      userToCreate = await getUserToCreate(options);
+      userId = await insertUserInDatabase(userToCreate);
+    }
     const user = await getUserByUserId(userId);
     const session = generateSession();
     if (user?._id || user?.user_id) {
-      await addSessionToUser(user._id || user?.user_id, session);
+      await addSessionToUser(user?._id || user?.user_id, session);
+    }
+    if (options?.metadata?.roles?.length > 0 && process.env.NODE_ENV === "test") {
+      for (let i = 0; i < options?.metadata?.roles?.length; i += 1) {
+        const role = options?.metadata?.roles[i];
+        roles.grant(user?._id || user?.user_id, role);
+      }
     }
     return resolve({
       ...session,

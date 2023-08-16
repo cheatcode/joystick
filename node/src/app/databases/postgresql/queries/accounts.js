@@ -79,6 +79,12 @@ export default {
 
     return null;
   },
+  deleteUser: async (input = {}) => {
+    await process.databases._users?.query(
+      `DELETE FROM users WHERE user_id = $1`,
+      [input?.userId]
+    );
+  },
   deleteOldSessions: async (input = {}) => {
     await process.databases._users?.query(
       `DELETE FROM users_sessions WHERE user_id = $1 AND token_expires_at::date < NOW()`,

@@ -1,4 +1,4 @@
-- [ ] Turn this into a package
+- [x] Turn this into a package
 - [ ] Wire up the Ava stuff in joystick test command
 - [ ] Start writing a mock test suite against current API implementation
 - [ ] Work through implementation alongside suite so you know it's right

@@ -8,6 +8,8 @@ import getCSSFromTree from "./getCSSFromTree";
 import replaceWhenTags from "./replaceWhenTags";
 import setHeadTagsInHTML from "./setHeadTagsInHTML";
 import { parseHTML } from "linkedom";
+import getDataFromComponent from "./getDataFromComponent.js";
+import getAPIForDataFunctions from "./getAPIForDataFunctions.js";
 const injectCSSIntoHTML = (html, baseCSS = "", css = "") => {
   try {
     return html.replace("${css}", css).replace("${globalCSS}", `<style>${baseCSS || ""}</style>`).replace("${componentCSS}", css);
@@ -290,17 +292,6 @@ const buildTreeForComponent = (componentInstance = {}, ssrTree = {}, translation
     throw new Error(`[ssr.buildTreeForComponent] ${exception.message}`);
   }
 };
-const getDataFromComponent = async (componentInstance = {}, api = {}, browserSafeRequest = {}) => {
-  try {
-    const data = await componentInstance.handleFetchData(api, browserSafeRequest, {}, componentInstance);
-    return {
-      componentId: componentInstance?.id,
-      data
-    };
-  } catch (exception) {
-    throw new Error(`[ssr.getDataFromComponent] ${exception.message}`);
-  }
-};
 const getTreeForSSR = (componentInstance = {}) => {
   try {
     return {
@@ -319,34 +310,6 @@ const getComponentInstance = (Component, options = {}) => {
     return Component(options);
   } catch (exception) {
     throw new Error(`[ssr.getComponentInstance] ${exception.message}`);
-  }
-};
-const getAPIForDataFunctions = (req = {}, api = {}) => {
-  try {
-    return {
-      get: (getterName = "", getterOptions = {}) => {
-        return get({
-          getterName,
-          getterOptions: api?.getters[getterName] || {},
-          input: getterOptions?.input,
-          output: getterOptions?.output,
-          context: req?.context,
-          APIOptions: api?.options
-        });
-      },
-      set: (setterName = "", setterOptions = {}) => {
-        return set({
-          setterName,
-          setterOptions: api?.setters[setterName] || {},
-          input: setterOptions?.input,
-          output: setterOptions?.output,
-          context: req?.context,
-          APIOptions: api?.options
-        });
-      }
-    };
-  } catch (exception) {
-    throw new Error(`[ssr.getAPIForDataFunctions] ${exception.message}`);
   }
 };
 const validateOptions = (options) => {

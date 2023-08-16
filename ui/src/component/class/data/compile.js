@@ -17,19 +17,24 @@ const compileData = (dataFromWindow = {}, requestFromWindow = {}, componentInsta
 
         componentInstance.data = compileData(data, requestFromWindow, componentInstance);
 
-        // NOTE: Keep data on window up to date so if a parent re-renders a child that's refetched it's data since
-        // mount, the data rendered isn't stale.
-        window.__joystick_data__[componentInstance?.id] = data;
+        // NOTE: Make this conditional to avoid errors when refetching data in tests.
+        if (window.__joystick_data__[componentInstance?.id]) {
+          // NOTE: Keep data on window up to date so if a parent re-renders a child that's refetched it's data since
+          // mount, the data rendered isn't stale.
+          window.__joystick_data__[componentInstance?.id] = data;
+        }
 
-        componentInstance.render({
-          afterRefetchDataRender: () => {
-            if (componentInstance?.lifecycle?.onRefetchData) {
-              componentInstance?.lifecycle?.onRefetchData(componentInstance);
-            }
-          },
-        });
+        if (!componentInstance?.isTest) {
+          componentInstance.render({
+            afterRefetchDataRender: () => {
+              if (componentInstance?.lifecycle?.onRefetchData) {
+                componentInstance?.lifecycle?.onRefetchData(componentInstance);
+              }
+            },
+          });
+        }
 
-        return data;
+        return componentInstance.data;
       },
     };
   } catch (exception) {

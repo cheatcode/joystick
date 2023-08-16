@@ -18,7 +18,7 @@ export default (message = '', options = {}) => {
 
   const color = options.level ? colors[options.level] : 'gray';
   const title = options.level ? titles[options.level] : 'Log';
-  const docs = options.docs || 'https://cheatcode.co/docs/joystick';
+  const docs = options.docs || 'https://github.com/cheatcode/joystick';
 
   console.log(`\n${(options.padding || '')}${rainbowRoad()}\n`);
   console.log(`${(options.padding || '')}${chalk[color](`${title}:`)}\n`)

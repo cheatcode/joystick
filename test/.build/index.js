@@ -10,7 +10,7 @@ const buildFile = (fileToBuild) => {
   return esbuild
     .build({
       entryPoints: [`src/${file}`],
-      bundle: true,
+      bundle: false,
       outfile: `./dist/${file}`,
       platform: "node",
       format: "esm",

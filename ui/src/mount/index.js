@@ -27,7 +27,6 @@ export default (Component = null, props = {}, target = null) => {
     });
 
     if (componentAsDOM) {
-      componentAsDOM.setAttribute("js-ssrId", component.ssrId);
       componentAsDOM.setAttribute("js-c", component.id);
       componentAsDOM.setAttribute("js-i", component.instanceId);
     }
@@ -48,6 +47,8 @@ export default (Component = null, props = {}, target = null) => {
     // NOTE: Run onMount for mounted component and all of its children.
     component.lifecycle.onMount();
     processQueue("lifecycle.onMount");
+
+    return component;
   } catch (exception) {
     throwFrameworkError("mount", exception);
   }

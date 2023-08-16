@@ -6,6 +6,9 @@ import { isObject } from "../../validation/lib/typeValidators";
 import getOutput from "../getOutput";
 import typesMap from "../databases/typesMap";
 import getTargetDatabaseProvider from "../databases/getTargetDatabaseProvider.js";
+import stringToSnakeCase from "../databases/stringToSnakeCase.js";
+import createMetadataTableColumns from "./createMetadataTableColumns.js";
+import roles from "./roles/index.js";
 
 const addSessionToUser = (userId = null, session = null) => {
   try {
@@ -33,6 +36,17 @@ const insertUserInDatabase = async (user = {}) => {
   }
 };
 
+const sqlizeMetadata = (metadata = {}) => {
+  try {
+    return Object.entries(metadata).reduce((sqlized = {}, [key, value]) => {
+      sqlized[stringToSnakeCase(key)] = value;
+      return sqlized;
+    }, {});
+  } catch (exception) {
+    throw new Error(`[actionName.sqlizeMetadata] ${exception.message}`);
+  }
+};
+
 const getUserToCreate = async (options = {}) => {
   try {
     const usersDatabase = getTargetDatabaseProvider('users');
@@ -53,20 +67,26 @@ const getUserToCreate = async (options = {}) => {
     if (
       options?.metadata &&
       isObject(options.metadata) &&
-      usersDatabaseType === 'sql' &&
-      options?.metadata?.language
+      usersDatabaseType === 'sql'
     ) {
-      // NOTE: Harshly limit metadata fields in an SQL users database. Prevents overcomplicated
-      // code and forces developer to move user metadata to another table they control.
-      user.language = options?.metadata?.language;
+      const sqlizedMetadata = sqlizeMetadata(options.metadata);
+      await createMetadataTableColumns(usersDatabase, sqlizedMetadata);
+      const { roles: [], ...restOfMetadata } = options?.metadata;
+
+      user = {
+        ...(sqlizeMetadata(restOfMetadata)),
+        ...user,
+      }
     }
 
     if (options?.metadata && isObject(options.metadata) && usersDatabaseType === 'nosql') {
+      const { roles: [], ...restOfMetadata } = options?.metadata;
+
       // NOTE: Put metadata first to avoid overrides of account fields (e.g., passing
       // metadata.password or metadata.emailAddress).
 
       user = {
-        ...options.metadata,
+        ...(restOfMetadata || {}),
         ...user,
       };
     }
@@ -100,7 +120,7 @@ const signup = async (options, { resolve, reject }) => {
       options.metadata?.username
     );
 
-    if (existingUser) {
+    if (existingUser && process.env.NODE_ENV !== 'test') {
       throw new Error(
         `A user with the ${existingUser.existingUsername ? "username" : "email address"} ${
           existingUser.existingUsername || existingUser.existingEmailAddress
@@ -108,14 +128,29 @@ const signup = async (options, { resolve, reject }) => {
       );
     }
 
-    const userToCreate = await getUserToCreate(options);
-    const userId = await insertUserInDatabase(userToCreate);
+    let userToCreate;
+    let userId = existingUser?._id || existingUser?.user_id;
+
+    if (!existingUser) {
+      userToCreate = await getUserToCreate(options);
+      userId = await insertUserInDatabase(userToCreate);
+    }
+
     const user = await getUserByUserId(userId);
     const session = generateSession();
 
     // NOTE: _id on nosql databases and user_id on sql databases.
     if (user?._id || user?.user_id) {
-      await addSessionToUser(user._id || user?.user_id, session);
+      await addSessionToUser(user?._id || user?.user_id, session);
+    }
+
+    // NOTE: Add roles to user ONLY if we're in a test environment. Do this to avoid
+    // client-side attacks assigning unauthorized privliges.
+    if (options?.metadata?.roles?.length > 0 && process.env.NODE_ENV === 'test') {
+      for (let i = 0; i < options?.metadata?.roles?.length; i += 1) {
+        const role = options?.metadata?.roles[i];
+        roles.grant(user?._id || user?.user_id, role);
+      }
     }
 
     return resolve({

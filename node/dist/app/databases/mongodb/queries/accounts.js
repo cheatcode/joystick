@@ -1,5 +1,7 @@
 import generateId from "../../../../lib/generateId";
 import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc.js";
+dayjs.extend(utc);
 var accounts_default = {
   existingUser: async (input = {}) => {
     let existingUserWithEmailAddress;
@@ -34,6 +36,11 @@ var accounts_default = {
       return user;
     }
     return null;
+  },
+  deleteUser: async (input = {}) => {
+    return process.databases._users?.collection("users").deleteOne({
+      _id: input?.userId
+    });
   },
   deleteOldSessions: async (input = {}) => {
     const user = await process.databases._users?.collection("users").findOne({

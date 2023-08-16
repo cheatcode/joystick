@@ -25,6 +25,7 @@ import runUploader from "./runUploader";
 import generateId from "../lib/generateId.js";
 import getOutput from "./getOutput.js";
 import defaultUserOutputFields from "./accounts/defaultUserOutputFields.js";
+import createMongoDBAccountsIndexes from "./databases/mongodb/createAccountsIndexes";
 import createPostgreSQLAccountsTables from "./databases/postgresql/createAccountsTables";
 import createPostgreSQLAccountsIndexes from "./databases/postgresql/createAccountsIndexes";
 import loadSettings from "../settings/load.js";
@@ -32,8 +33,15 @@ import Queue from "./queues/index.js";
 import readDirectory from "../lib/readDirectory.js";
 import getBuildPath from "../lib/getBuildPath.js";
 import generateMachineId from "../lib/generateMachineId.js";
+import importFile from "../lib/importFile.js";
 import emitWebsocketEvent from "../websockets/emitWebsocketEvent.js";
 import getTargetDatabaseConnection from "./databases/getTargetDatabaseConnection.js";
+import getAPIForDataFunctions from "../ssr/getAPIForDataFunctions.js";
+import getBrowserSafeRequest from "./getBrowserSafeRequest.js";
+import getDataFromComponent from "../ssr/getDataFromComponent.js";
+import getTranslations from "./middleware/getTranslations.js";
+import runUserQuery from "./accounts/runUserQuery.js";
+import wait from "../lib/wait.js";
 process.setMaxListeners(0);
 class App {
   constructor(options = {}) {
@@ -53,6 +61,7 @@ class App {
     this.initWebsockets(options?.websockets || {});
     this.initDevelopmentRoutes();
     this.initAccounts();
+    this.initTests();
     this.initDeploy();
     this.initAPI(options?.api);
     this.initRoutes(options?.routes);
@@ -84,6 +93,9 @@ class App {
     });
     const hasQueuesDatabase = settings?.config?.databases?.some((database = {}) => {
       return !!database?.queues;
+    });
+    const hasMongoDBUsersDatabase = settings?.config?.databases?.some((database = {}) => {
+      return database?.provider === "mongodb" && database?.users;
     });
     const hasPostgreSQLUsersDatabase = settings?.config?.databases?.some((database = {}) => {
       return database?.provider === "postgresql" && database?.users;
@@ -131,6 +143,9 @@ class App {
     if (hasQueuesDatabase) {
       process.databases._queues = getTargetDatabaseConnection("queues")?.connection;
     }
+    if (hasMongoDBUsersDatabase) {
+      await createMongoDBAccountsIndexes();
+    }
     if (hasPostgreSQLUsersDatabase) {
       await createPostgreSQLAccountsTables();
       await createPostgreSQLAccountsIndexes();
@@ -156,6 +171,63 @@ class App {
     }
     if (!fs.existsSync("./.joystick/PROCESS_ID")) {
       fs.writeFileSync("./.joystick/PROCESS_ID", `${generateId(32)}`);
+    }
+  }
+  initTests() {
+    if (process.env.NODE_ENV === "test") {
+      this.express.app.get("/api/_test/bootstrap", async (req, res) => {
+        const buildPath = `${process.cwd()}/.joystick/build`;
+        const Component = req?.query?.pathToComponent ? await importFile(`${buildPath}/${req?.query?.pathToComponent}`) : null;
+        if (Component) {
+          const componentInstance = Component();
+          const apiForDataFunctions = await getAPIForDataFunctions(req, this?.options?.api);
+          const browserSafeRequest = getBrowserSafeRequest(req);
+          const data = await getDataFromComponent(componentInstance, apiForDataFunctions, browserSafeRequest);
+          const translations = await getTranslations({ build: buildPath, page: req?.query?.pathToComponent }, req);
+          return res.status(200).send({
+            data: {
+              [data?.componentId]: data?.data
+            },
+            translations,
+            req: browserSafeRequest
+          });
+        }
+        res.status(200).send({ data: {}, translations: {} });
+      });
+      this.express.app.post("/api/_test/accounts/signup", async (req, res) => {
+        const existingUser = await runUserQuery("user", { emailAddress: req?.body?.emailAddress });
+        if (existingUser) {
+          await runUserQuery("deleteUser", { userId: existingUser?._id || existingUser?.user_id });
+        }
+        const signup = await accounts.signup({
+          emailAddress: req?.body?.emailAddress,
+          password: req?.body?.password,
+          metadata: req?.body?.metadata,
+          output: req?.body?.output || defaultUserOutputFields
+        });
+        res.status(200).send(JSON.stringify({
+          ...signup?.user || {},
+          joystickToken: signup?.token,
+          joystickLoginTokenExpiresAt: signup?.tokenExpiresAt
+        }));
+      });
+      this.express.app.post("/api/_test/accounts/login", async (req, res) => {
+        const login = await accounts.login({
+          emailAddress: req?.body?.emailAddress,
+          username: req?.body?.username,
+          password: req?.body?.password,
+          output: req?.body?.output || defaultUserOutputFields
+        });
+        res.status(200).send(JSON.stringify({
+          ...login?.user || {},
+          joystickToken: login?.token,
+          joystickLoginTokenExpiresAt: login?.tokenExpiresAt
+        }));
+      });
+      this.express.app.delete("/api/_test/accounts", async (req, res) => {
+        await runUserQuery("deleteUser", { userId: req?.body?.userId });
+        res.status(200).send({ data: {} });
+      });
     }
   }
   initDeploy() {
@@ -433,11 +505,20 @@ class App {
           metadata: req?.body?.metadata,
           output: req?.body?.output || defaultUserOutputFields
         });
-        accounts._setAuthenticationCookie(res, {
-          token: signup?.token,
-          tokenExpiresAt: signup?.tokenExpiresAt
-        });
-        res.status(200).send(JSON.stringify(signup?.user || {}));
+        if (!process.env.NODE_ENV !== "test") {
+          accounts._setAuthenticationCookie(res, {
+            token: signup?.token,
+            tokenExpiresAt: signup?.tokenExpiresAt
+          });
+        }
+        const response = {
+          ...signup?.user || {}
+        };
+        if (process.env.NODE_ENV === "test") {
+          response.joystickToken = signup?.token;
+          response.joystickLoginTokenExpiresAt = signup?.tokenExpiresAt;
+        }
+        res.status(200).send(JSON.stringify(response));
       } catch (exception) {
         console.log(exception);
         return res.status(500).send(JSON.stringify({
@@ -453,11 +534,20 @@ class App {
           password: req?.body?.password,
           output: req?.body?.output || defaultUserOutputFields
         });
-        accounts._setAuthenticationCookie(res, {
-          token: login?.token,
-          tokenExpiresAt: login?.tokenExpiresAt
-        });
-        res.status(200).send(JSON.stringify(login?.user || {}));
+        if (!process.env.NODE_ENV !== "test") {
+          accounts._setAuthenticationCookie(res, {
+            token: login?.token,
+            tokenExpiresAt: login?.tokenExpiresAt
+          });
+        }
+        const response = {
+          ...login?.user || {}
+        };
+        if (process.env.NODE_ENV === "test") {
+          response.joystickToken = login?.token;
+          response.joystickLoginTokenExpiresAt = login?.tokenExpiresAt;
+        }
+        res.status(200).send(JSON.stringify(response));
       } catch (exception) {
         console.log(exception);
         return res.status(500).send(JSON.stringify({
