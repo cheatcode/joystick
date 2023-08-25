@@ -33,9 +33,11 @@ const flattenAndReplaceWhenElements = (dom = {}, options = {}) => {
 
 export default (html = '') => {
   try {
-    const { document: parseHTMLDocument } = parseHTML(html);
-    const dom = flattenAndReplaceWhenElements(parseHTMLDocument);
-    return dom.toString();
+    const whenRegex = new RegExp('<when>|</when>', 'g');
+    return html?.replace(whenRegex, '');
+//    const { document: parseHTMLDocument } = parseHTML(html);
+//    const dom = flattenAndReplaceWhenElements(parseHTMLDocument);
+//    return dom.toString();
   } catch (exception) {
     throw new Error(`[ssr.replaceWhenTags] ${exception.message}`);
   }

@@ -18,6 +18,7 @@ import replaceChildInVDOMTree from "../tree/replaceChildInVDOMTree";
 import generateId from "../../lib/generateId";
 import registerListeners from "./events/registerListeners";
 import unregisterListeners from "./events/unregisterListeners";
+import trackFunctionCall from "../../test/trackFunctionCall.js";
 
 class Component {
   constructor(options = {}) {
@@ -89,6 +90,10 @@ class Component {
   }
 
   render(options = {}) {
+    trackFunctionCall(`ui.${this?.options?.test?.name || generateId()}.render`, [
+      options
+    ]);
+
     if (options?.mounting) {
       return renderForMount(this, options);
     }
@@ -161,6 +166,11 @@ class Component {
   }
 
   setState(state = {}, callback = null) {
+    trackFunctionCall(`ui.${this?.options?.test?.name || generateId()}.setState`, [
+      state,
+      callback,
+    ]);
+
     this.state = compileState(this, {
       ...(this.state || {}),
       ...state,

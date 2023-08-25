@@ -3,6 +3,8 @@ import throwFrameworkError from "../../../lib/throwFrameworkError";
 import addToQueue from "../../../lib/addToQueue";
 import getUpdatedDOM from "../render/getUpdatedDOM";
 import addChildToParent from "../../tree/addChildToParent";
+import trackFunctionCall from "../../../test/trackFunctionCall.js";
+import generateId from "../../../lib/generateId.js";
 
 const renderForClient = (
   component = {},
@@ -124,6 +126,7 @@ const handleLifecycle = (componentMethodInstance = {}, component = {}) => {
       if (component.options.lifecycle.onBeforeMount) {
         addToQueue("lifecycle.onBeforeMount", () => {
           component.options.lifecycle.onBeforeMount(component);
+          trackFunctionCall(`ui.${component?.options?.test?.name || generateId()}.lifecycle.onBeforeMount`, [component]);
         });
       }
 
@@ -133,6 +136,7 @@ const handleLifecycle = (componentMethodInstance = {}, component = {}) => {
       ) {
         addToQueue("lifecycle.onMount", () => {
           component.options.lifecycle.onMount(component);
+          trackFunctionCall(`ui.${component?.options?.test?.name || generateId()}.lifecycle.onMount`, [component]);
         });
       }
     }
@@ -156,11 +160,18 @@ const handleOnChangeProps = (component = {}, parent = {}, props = {}) => {
         addToQueue("lifecycle.onUpdateProps", () => {
           const existingProps =
             parent?.existingPropsMap && parent?.existingPropsMap[component.id];
+
           component.options.lifecycle.onUpdateProps(
             existingProps || {},
             props,
             component
           );
+
+          trackFunctionCall(`ui.${component?.options?.test?.name || generateId()}.lifecycle.onBeforeMount`, [
+            existingProps || {},
+            props,
+            component,
+          ]);
         });
       }
     }

@@ -75,7 +75,6 @@ export default async (paths = {}, req = {}) => {
     }
   }
 
-
   const translationsFile = await getTranslationsFile(matchingFile, paths);
 
   return translationsFile;

@@ -1,5 +1,7 @@
 import throwFrameworkError from "../../../lib/throwFrameworkError";
 import serialize from "./serialize";
+import generateId from "../../../lib/generateId.js";
+import trackFunctionCall from "../../../test/trackFunctionCall.js";
 
 const getListeners = (instance = {}, renderMethods = {}, listenersToRegister = []) => {
   try {
@@ -18,6 +20,15 @@ const getListeners = (instance = {}, renderMethods = {}, listenersToRegister = [
             setState: instance?.setState.bind(instance),
             ...(renderMethods || {}),
           });
+
+          trackFunctionCall(`ui.${instance?.options?.test?.name || generateId()}.events.${eventFromInstance.type}.selector_${eventFromInstance?.selector}`, [
+            DOMEvent,
+            {
+              ...(instance || {}),
+              setState: instance?.setState.bind(instance),
+              ...(renderMethods || {}),
+            }
+          ]);
         },
       });
     }

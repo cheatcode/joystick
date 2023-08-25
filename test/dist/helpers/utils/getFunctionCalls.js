@@ -1,0 +1,1 @@
+import o from"node-fetch";var l=async(t="")=>{let e={...(await o(`http://localhost:${process.env.PORT}/api/_test/process`).then(s=>s.json()))?.test?.functionCalls||{},...window?.test?.functionCalls||{}};return t?e[t]:e};export{l as default};

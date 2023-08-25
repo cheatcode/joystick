@@ -2,12 +2,18 @@ import api from '../../../api';
 import addToQueue from '../../../lib/addToQueue';
 import throwFrameworkError from "../../../lib/throwFrameworkError";
 import fetchData from './fetch';
+import trackFunctionCall from "../../../test/trackFunctionCall.js";
+import generateId from "../../../lib/generateId.js";
 
 const compileData = (dataFromWindow = {}, requestFromWindow = {}, componentInstance = {}) => {
   try {
     return {
       ...dataFromWindow,
       refetch: async (input = {}) => {
+        trackFunctionCall(`ui.${componentInstance?.options?.test?.name || generateId()}.data.refetch`, [
+          input
+        ]);
+        
         const data = await fetchData(
           api,
           requestFromWindow,
@@ -24,7 +30,7 @@ const compileData = (dataFromWindow = {}, requestFromWindow = {}, componentInsta
           window.__joystick_data__[componentInstance?.id] = data;
         }
 
-        if (!componentInstance?.isTest) {
+        if (!window?.__joystick_test__) {
           componentInstance.render({
             afterRefetchDataRender: () => {
               if (componentInstance?.lifecycle?.onRefetchData) {

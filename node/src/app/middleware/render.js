@@ -121,6 +121,29 @@ export default (req, res, next, appInstance = {}) => {
     }
 
     // TODO: Implement CSRF for cached html.
+    /*
+      TODO:
+
+       For cached layouts, we'll need to generate a cache file per unique user ID and make sure to delete
+       it whenever the user logs out. Also have a time interval that says when a user is gone for > ~60M,
+       auto-delete the cached copy until they come back.
+
+       Another option: always generate one file in cache, but, set a placeholder for certain values to
+       do a string replace on before returning the HTML (e.g., a username in nav).
+
+       ${nocache('username')}
+
+        Use the name passed to nocache in the cache config for the route. So, if it's a username,
+        expect something like cache: { nocache: { username: context?.user?.username } }.
+
+        Only gotcha is if you expect an object value to not be cached (e.g., a full user object).
+
+        Might be able to do something on the component options to say "if we're loading from cache,
+        always call the component's cache() method and get the values to swap."
+        cache: () => ({
+          username:
+        }),
+    */
     if (options?.cache?.expiresAfterMinutes) {
       // NOTE: Defined above as a let.
       currentDiff = typeof options?.cache?.diff === 'function' ? await getCacheDiff(options?.cache?.diff) : null;

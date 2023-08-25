@@ -1,1 +1,1 @@
-var o=(e="",t="",n={})=>{const p=n?.document?.querySelector("#app")?.querySelector(t),r=new Event(e);return p.dispatchEvent(r),!0};export{o as default};
+var r=(n="",c="",p={},t={})=>{const e=p?.document?.querySelector("#app")?.querySelector(c),a=new Event(n);return Object.keys(t)?.length>0&&Object.assign(e,t),e.dispatchEvent(a),!0};export{r as default};

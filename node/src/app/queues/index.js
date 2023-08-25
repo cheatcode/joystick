@@ -104,13 +104,13 @@ class Queue {
         const okayToRunJobs = await this._checkIfOkayToRunJobs();
         if (okayToRunJobs && !process.env.HALT_QUEUES) {
           const nextJob = await this.db.getNextJobToRun();
-          this._handleNextJob(nextJob);
+          this.handleNextJob(nextJob);
         }
       }, 300);
     });
   }
 
-  _handleNextJob(nextJob = {}) {
+  async handleNextJob(nextJob = {}) {
     if (
       nextJob &&
       nextJob?.job &&
@@ -118,7 +118,7 @@ class Queue {
       typeof this.options.jobs[nextJob?.job]?.run === "function"
     ) {
       try {
-        this.options.jobs[nextJob.job].run(nextJob?.payload, {
+        await this.options.jobs[nextJob.job].run(nextJob?.payload, {
           ...nextJob,
           queue: this,
           completed: () => this._handleJobCompleted(nextJob?._id),

@@ -2,6 +2,7 @@ import _accounts from "./accounts";
 import _cache from "./cache";
 import _html from "./html";
 import _renderComponentToHTML from "./component/renderComponentToHTML";
+import _test from './test/index.js';
 import _upload from "./upload";
 import attachJoystickToWindow from "./attachJoystickToWindow";
 import api from "./api";
@@ -17,6 +18,7 @@ export const get = api.get;
 export const html = _html;
 export const renderComponentToHTML = _renderComponentToHTML;
 export const set = api.set;
+export const test = _test;
 export const upload = _upload;
 
 const environment = () => {

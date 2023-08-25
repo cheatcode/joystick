@@ -1,6 +1,7 @@
 import logRequestErrors from "../lib/logRequestErrors";
 import parseJSON from "../lib/parseJSON";
 import throwFrameworkError from "../lib/throwFrameworkError";
+import generateCookieHeader from "../lib/generateCookieHeader.js";
 
 const handleParseResponse = async (response = {}) => {
   try {
@@ -26,13 +27,22 @@ export default (getterName = "", getterOptions = {}) => {
         const url = `${window.location.origin}/api/_getters/${getterName}?input=${input}&output=${output}`;
         const csrf = document.querySelector('[name="csrf"]')?.getAttribute('content');
         
+        const headers = {
+          ...(getterOptions?.headers || {}),
+          'x-joystick-csrf': csrf,
+        };
+
+        if (window?.__joystick_test__) {
+          headers.Cookie = generateCookieHeader({
+            joystickLoginToken: window.__joystick_test_login_token__,
+            joystickLoginTokenExpiresAt: window.__joystick_test_login_token_expires_at__,
+          });
+        }
+
         return fetch(url, {
           method: 'GET',
           mode: "cors",
-          headers: {
-            ...(getterOptions?.headers || {}),
-            'x-joystick-csrf': csrf,
-          },
+          headers,
           credentials: "include",
         }).then(async (response) => {
           const dataFromResponse = await handleParseResponse(response);

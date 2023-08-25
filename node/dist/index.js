@@ -4,6 +4,7 @@ import { dirname } from "path";
 import sanitizeHTML from "sanitize-html";
 import _accounts from "./app/accounts";
 import _action from "./action/index.js";
+import _test from "./test/index.js";
 import _websockets from "./websockets";
 import api from "./api/index.js";
 import app from "./app/index.js";
@@ -20,6 +21,7 @@ const accounts = _accounts;
 const action = _action;
 const get = api.get;
 const set = api.set;
+const test = _test;
 const email = {
   send: sendEmail
 };
@@ -72,5 +74,6 @@ export {
   origin,
   sanitize,
   set,
+  test,
   websockets
 };

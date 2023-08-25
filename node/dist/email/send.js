@@ -7,7 +7,13 @@ import settings from "../settings";
 import validateSMTPSettings from "./validateSMTPSettings";
 import render from "./render";
 import getBuildPath from "../lib/getBuildPath";
-var send_default = async ({ template: templateName, props, base: baseName, ...restOfOptions }) => {
+import trackFunctionCall from "../test/trackFunctionCall.js";
+var send_default = async (...args) => {
+  const { template: templateName, props, base: baseName, ...restOfOptions } = args;
+  if (process.env.NODE_ENV === "test") {
+    trackFunctionCall("node.email.send", args);
+    return;
+  }
   const validSMTPSettings = validateSMTPSettings(settings?.config?.email?.smtp);
   if (!validSMTPSettings) {
     console.warn(chalk.redBright("Cannot send email, invalid SMTP settings."));

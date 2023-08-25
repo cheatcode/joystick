@@ -1,5 +1,7 @@
 import formatAPIError from "../lib/formatAPIError";
 import validate from "../validation";
+import trackFunctionCall from "../test/trackFunctionCall.js";
+import z from "@joystick.js/ui/dist/forms/validators/semVer.js";
 
 class Action {
   constructor(input = {}) {
@@ -18,10 +20,19 @@ class Action {
       (serializedSteps = {}, [stepName = "", stepOptions = {}]) => {
         serializedSteps[stepName] = async (...args) => {
           try {
+            trackFunctionCall(`node.actions.${this?.name}.steps.${stepName}`, [
+              ...args,
+              this,
+            ]);
+
             const result = await stepOptions?.run(...args, this);
 
             if (typeof stepOptions?.onSuccess === "function") {
               stepOptions.onSuccess(result, this);
+              trackFunctionCall(`node.actions.${this?.name}.steps.${stepName}.onSuccess`, [
+                result,
+                this,
+              ]);
             }
 
             return result;
@@ -32,6 +43,10 @@ class Action {
 
             if (typeof stepOptions?.onError === "function") {
               stepOptions.onError(exception, this);
+              trackFunctionCall(`node.actions.${this?.name}.steps.${stepName}.onError`, [
+                exception,
+                this,
+              ]);
             }
           }
         };
@@ -60,6 +75,10 @@ class Action {
     return new Promise(async (resolve, reject) => {
       try {
         this.abort = (error) => {
+          trackFunctionCall(`node.actions.${this?.name}.abort`, [
+            error,
+          ]);
+
           reject(error);
           throw error;
         };
@@ -91,6 +110,12 @@ class Action {
             return reject(new Error(formattedValidationErrors));
           }
         }
+
+        trackFunctionCall(`node.actions.${this.name}.run`, [
+          input || {},
+          this.steps,
+          this,
+        ]);
 
         const result = await this.config?.run(input || {}, this?.steps, this);
 

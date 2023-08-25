@@ -5,18 +5,41 @@ import fetch from 'node-fetch';
 import { URL, URLSearchParams } from 'url';
 import event from './event.js';
 import load from "../load/index.js";
+import generateCookieHeader from "../../lib/generateCookieHeader.js";
 
-const bootstrapWindow = async (pathToComponent = '') => {
+const bootstrapWindow = async (pathToComponent = '', options = {}) => {
   const url = new URL(`${window?.location?.origin}/api/_test/bootstrap`);
   url.search = new URLSearchParams({ pathToComponent });
 
-  const bootstrap = await fetch(url).then(async (response) => response.json());
+  const bootstrapRequestOptions = {
+    cache: 'no-store',
+  };
 
-  window.joystick = {};
-  window.joystick.settings = {}; // TODO
+  if (options?.user) {
+    bootstrapRequestOptions.headers = {
+      Cookie: generateCookieHeader({
+        joystickLoginToken: options?.user?.joystickLoginToken,
+        joystickLoginTokenExpiresAt: options?.user?.joystickLoginTokenExpiresAt,
+      }),
+    };
+  }
+
+  const bootstrap = await fetch(url, bootstrapRequestOptions).then(async (response) => response.json());
+
+  window.joystick = {
+    settings: bootstrap?.settings || {}
+  };
+
+  window.__joystick_test__ = true;
   window.__joystick_data__ = bootstrap?.data || {};
   window.__joystick_i18n__ = bootstrap?.translations || {};
-  window.__joystick_req__ = bootstrap?.req; // TODO
+  window.__joystick_req__ = bootstrap?.req;
+  window.__joystick_url__ = options?.url || {
+    params: {},
+    path: '/',
+    query: {},
+    route: '/',
+  };
 };
 
 const loadDOM = () => {
@@ -29,6 +52,7 @@ const loadDOM = () => {
       </body>
     </html>
   `);
+
   const { window, document, Element, Event, HTMLElement } = dom;
 
   global.window = window;
@@ -53,7 +77,7 @@ export default async (pathToComponent = '', options = {}) => {
     origin: `http://localhost:${process.env.PORT}`,
   };
 
-  await bootstrapWindow(pathToComponent);
+  await bootstrapWindow(pathToComponent, options?.user);
 
   // NOTE: Force default to true as that's the prescribed pattern for
   // Joystick component files.
@@ -68,9 +92,6 @@ export default async (pathToComponent = '', options = {}) => {
   }
   
   const component = joystick.mount(Layout || Component, props, dom?.document.querySelector('#app'));
-
-  // NOTE: Used internally in @joystick.js/ui to control component behavior.
-  component.isTest = true;
 
   return {
     dom,
@@ -93,8 +114,8 @@ export default async (pathToComponent = '', options = {}) => {
 
         return methodToCall(...methodArgs);
       },
-      event: (eventType = '', eventTarget = '') => {
-        return event(eventType, eventTarget, dom);
+      event: (eventType = '', eventTarget = '', overrides = {}) => {
+        return event(eventType, eventTarget, dom, overrides);
       },
     },
   };

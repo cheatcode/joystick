@@ -56,6 +56,7 @@ export default (componentInstance = {}, componentOptions = {}) => {
         const [websocketName, websocketDefinition] = websocketDefinitions[i];
 
         websocketClient({
+          test: componentInstance?.test,
           url: `${window?.process?.env.NODE_ENV === 'development' ? 'ws' : 'wss'}://${location.host}/api/_websockets/${websocketName}`,
           options: websocketDefinition?.options || {},
           query: websocketDefinition?.query || {},

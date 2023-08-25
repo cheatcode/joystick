@@ -21,6 +21,7 @@ export default [
   "props",
   "render",
   "state",
+  "test",
   "translations",
   "url",
   "websockets",

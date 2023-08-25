@@ -42,6 +42,8 @@ import getDataFromComponent from "../ssr/getDataFromComponent.js";
 import getTranslations from "./middleware/getTranslations.js";
 import runUserQuery from "./accounts/runUserQuery.js";
 import wait from "../lib/wait.js";
+import dayjs from "dayjs";
+import trackFunctionCall from "../test/trackFunctionCall.js";
 process.setMaxListeners(0);
 class App {
   constructor(options = {}) {
@@ -64,11 +66,11 @@ class App {
     this.initTests();
     this.initDeploy();
     this.initAPI(options?.api);
-    this.initRoutes(options?.routes);
     this.initUploaders(options?.uploaders);
     this.initFixtures(options?.fixtures);
     this.initQueues(options?.queues);
     this.initCronJobs(options?.cronJobs);
+    this.initRoutes(options?.routes);
     if (process.env.NODE_ENV === "development") {
       process.on("message", (message) => {
         const parsedMessage = typeof message === "string" ? JSON.parse(message) : message;
@@ -184,15 +186,22 @@ class App {
           const browserSafeRequest = getBrowserSafeRequest(req);
           const data = await getDataFromComponent(componentInstance, apiForDataFunctions, browserSafeRequest);
           const translations = await getTranslations({ build: buildPath, page: req?.query?.pathToComponent }, req);
+          const settings = loadSettings();
           return res.status(200).send({
             data: {
               [data?.componentId]: data?.data
             },
-            translations,
-            req: browserSafeRequest
+            req: browserSafeRequest,
+            settings,
+            translations
           });
         }
         res.status(200).send({ data: {}, translations: {} });
+      });
+      this.express.app.get("/api/_test/process", async (req, res) => {
+        res.status(200).send({
+          test: process?.test || {}
+        });
       });
       this.express.app.post("/api/_test/accounts/signup", async (req, res) => {
         const existingUser = await runUserQuery("user", { emailAddress: req?.body?.emailAddress });
@@ -207,25 +216,28 @@ class App {
         });
         res.status(200).send(JSON.stringify({
           ...signup?.user || {},
-          joystickToken: signup?.token,
+          joystickLoginToken: signup?.token,
           joystickLoginTokenExpiresAt: signup?.tokenExpiresAt
-        }));
-      });
-      this.express.app.post("/api/_test/accounts/login", async (req, res) => {
-        const login = await accounts.login({
-          emailAddress: req?.body?.emailAddress,
-          username: req?.body?.username,
-          password: req?.body?.password,
-          output: req?.body?.output || defaultUserOutputFields
-        });
-        res.status(200).send(JSON.stringify({
-          ...login?.user || {},
-          joystickToken: login?.token,
-          joystickLoginTokenExpiresAt: login?.tokenExpiresAt
         }));
       });
       this.express.app.delete("/api/_test/accounts", async (req, res) => {
         await runUserQuery("deleteUser", { userId: req?.body?.userId });
+        res.status(200).send({ data: {} });
+      });
+      this.express.app.post("/api/_test/queues", async (req, res) => {
+        const queue = process?.queues[req?.body?.queue];
+        const job = this?.options?.queues[req?.body?.queue]?.jobs[req?.body?.job];
+        if (!queue) {
+          return res.status(404).send({ status: 404, error: `Queue ${req?.body?.queue} not found.` });
+        }
+        if (!job) {
+          return res.status(400).send({ status: 400, error: `Couldn't find a job called ${req?.body?.job} for the ${req?.body?.queue} queue.` });
+        }
+        await queue.handleNextJob({
+          _id: "joystick_test",
+          job: req?.body?.job,
+          payload: req?.body?.payload
+        });
         res.status(200).send({ data: {} });
       });
     }
@@ -411,9 +423,18 @@ class App {
             noServer: true,
             path: `/api/_websockets/${userWebsocketName}`
           }),
-          onOpen: userWebsocketDefinition?.onOpen || null,
-          onMessage: userWebsocketDefinition?.onMessage || null,
-          onClose: userWebsocketDefinition?.onClose || null
+          onOpen: (...args) => {
+            trackFunctionCall(`node.websockets.${userWebsocketName}.onOpen`, args);
+            return userWebsocketDefinition?.onOpen ? userWebsocketDefinition?.onOpen(...args) : null;
+          },
+          onMessage: (...args) => {
+            trackFunctionCall(`node.websockets.${userWebsocketName}.onMessage`, args);
+            return userWebsocketDefinition?.onMessage ? userWebsocketDefinition?.onMessage(...args) : null;
+          },
+          onClose: (...args) => {
+            trackFunctionCall(`node.websockets.${userWebsocketName}.onClose`, args);
+            return userWebsocketDefinition?.onClose ? userWebsocketDefinition.onClose(...args) : null;
+          }
         };
         return definitions;
       }, {})

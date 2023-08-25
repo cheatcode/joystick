@@ -1,1 +1,1 @@
-var e={};export{e as default};
+import s from"ws";var c={connect:async(o="")=>new Promise(r=>{const e=new s(`ws://localhost:${process.env.PORT}/api/_websockets/${o}`);e.on("open",()=>{r({...e,send:(n={})=>e.send(JSON.stringify(n))})}),e.on("error",n=>{reject(n)})})};export{c as default};

@@ -1,6 +1,7 @@
 /* eslint-disable consistent-return */
 
 import log from "../lib/log";
+import trackFunctionCall from "../test/trackFunctionCall.js";
 
 const handleCheckUpload = ({
   uploaderName,
@@ -61,6 +62,17 @@ const formatUploads = ({
   try {
     return Promise.all(uploads.map(async (upload) => {
       const fileExtension = upload?.mimeType?.split('/').pop();
+      const fileNameIsFunction = typeof uploaderOptions?.fileName === 'function';
+
+      if (fileNameIsFunction) {
+        trackFunctionCall(`node.uploaders.${uploaderName}.fileName`, [{
+          input,
+          fileName: upload?.originalname,
+          fileSize: upload?.size,
+          fileExtension,
+          mimeType: upload?.mimetype
+        }]);
+      }
 
       return {
         uploaderName,
@@ -69,7 +81,7 @@ const formatUploads = ({
         s3: uploaderOptions?.s3,
         maxSizeInMegabytes: typeof uploaderOptions?.maxSizeInMegabytes === 'function' ? await uploaderOptions?.maxSizeInMegabytes({ input, upload }) : uploaderOptions?.maxSizeInMegabytes,
         mimeTypes: uploaderOptions?.mimeTypes,
-        fileName: typeof uploaderOptions?.fileName === 'function' ?
+        fileName: fileNameIsFunction ?
           uploaderOptions.fileName({ input, fileName: upload?.originalname, fileSize: upload?.size, fileExtension, mimeType: upload?.mimetype }) :
           upload?.originalname,
         originalFileName: upload?.originalname,

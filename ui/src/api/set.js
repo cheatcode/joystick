@@ -33,14 +33,23 @@ export default (setterName = "", setterOptions = {}) => {
         const body = getBody(setterOptions);
         const csrf = document.querySelector('[name="csrf"]')?.getAttribute('content');
 
+        const headers = {
+          ...(setterOptions?.headers || {}),
+          "Content-Type": "application/json",
+          'x-joystick-csrf': csrf,
+        };
+
+        if (window?.__joystick_test__) {
+          headers.Cookie = generateCookieHeader({
+            joystickLoginToken: window?.__joystick_test_login_token__,
+            joystickLoginTokenExpiresAt: window.__joystick_test_login_token_expirs_at__,
+          });
+        }
+
         return fetch(url, {
           method: 'POST',
           mode: "cors",
-          headers: {
-            ...(setterOptions?.headers || {}),
-            "Content-Type": "application/json",
-            'x-joystick-csrf': csrf,
-          },
+          headers,
           body,
           credentials: "include",
         }).then(async (response) => {

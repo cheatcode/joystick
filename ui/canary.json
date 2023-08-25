@@ -1,7 +1,7 @@
 {
   "name": "@joystick.js/ui-canary",
   "type": "module",
-  "version": "0.0.0-canary.40",
+  "version": "0.0.0-canary.74",
   "description": "A JavaScript framework for building user interfaces.",
   "main": "./dist/index.js",
   "scripts": {

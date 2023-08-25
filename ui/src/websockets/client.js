@@ -1,10 +1,17 @@
 import throwFrameworkError from "../lib/throwFrameworkError";
+import trackFunctionCall from "../test/trackFunctionCall.js";
+import generateId from "../lib/generateId.js";
 
 let reconnectInterval = null;
 let reconnectAttempts = 0;
 
 const websocketClient = (options = {}, onConnect = null) => {
   try {
+    if (window?.__joystick_test__) {
+      // NOTE: Skip connection in test environment and fire the onConnect callback.
+      return onConnect();
+    }
+
     let url = options?.url;
 
     if (options?.query) {
@@ -21,6 +28,10 @@ const websocketClient = (options = {}, onConnect = null) => {
     const connection = {
       client,
       send: (message = {}) => {
+        trackFunctionCall(`ui.websockets.${options?.test?.name || generateId()}.send`, [
+          message
+        ]);
+
         return client.send(JSON.stringify(message));
       },
     };
@@ -32,6 +43,9 @@ const websocketClient = (options = {}, onConnect = null) => {
   
       if (options?.events?.onOpen) {
         options.events.onOpen(connection);
+        trackFunctionCall(`ui.websockets.${options?.test?.name || generateId()}.onOpen`, [
+          connection
+        ]);
       }
 
       reconnectAttempts = 0;
@@ -40,6 +54,10 @@ const websocketClient = (options = {}, onConnect = null) => {
     client.addEventListener("message", (event) => {
       if (event?.data && options?.events?.onMessage) {
         options.events.onMessage(JSON.parse(event.data || {}), connection);
+        trackFunctionCall(`ui.websockets.${options?.test?.name || generateId()}.onMessage`, [
+          event.data || {},
+          connection
+        ]);
       }
     });
   
@@ -50,6 +68,10 @@ const websocketClient = (options = {}, onConnect = null) => {
 
       if (options?.events?.onClose) {
         options.events.onClose(event?.code, event?.reason, connection);
+        trackFunctionCall(`ui.websockets.${options?.test?.name || generateId()}.onClose`, [
+          event.data || {},
+          connection
+        ]);
       }
   
       client = null;

@@ -1,9 +1,17 @@
+import fetch from 'node-fetch';
+
 export default {
-  job: (queueName = '', job = {}) => {
-    // TODO: Add a job of name to queueName.
-    // TODO: Run the job immediately.
-    // TODO: Return result of job.
-    // TODO: In test, either verify that response is as expected, or, test for known
-    // side-effects of the job in database.
+  job: (jobName = '', options = {}) => {
+    return fetch(`http://localhost:${process.env.PORT}/api/_test/queues`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        queue: options?.queue,
+        job: jobName,
+        payload: options?.payload,
+      }),
+    })
   },
 };

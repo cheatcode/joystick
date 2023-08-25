@@ -80,13 +80,18 @@ const getUserToCreate = async (options = {}) => {
     }
 
     if (options?.metadata && isObject(options.metadata) && usersDatabaseType === 'nosql') {
-      const { roles: [], ...restOfMetadata } = options?.metadata;
+      let metadata = { ...(options?.metadata || {}) };
+
+      if (metadata?.roles) {
+        // NOTE: We don't need roles information here so trash it.
+        delete metadata.roles;
+      }
 
       // NOTE: Put metadata first to avoid overrides of account fields (e.g., passing
       // metadata.password or metadata.emailAddress).
 
       user = {
-        ...(restOfMetadata || {}),
+        ...(metadata || {}),
         ...user,
       };
     }

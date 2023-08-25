@@ -28,17 +28,9 @@ const handleAvaSTDOUT = (stdout = '', options = {}) => {
       return null;
     }
 
-    if (stdout?.includes('No tests found')) {
-      CLILog('No tests found. Add tests in the /tests folder at the root of your Joystick app.', {
-        level: 'danger',
-        docs: 'https://cheatcode.co/docs/joystick/test/setup',
-      });
-      
-      // NOTE: Do this here because the standard SIGINT and SIGTERM hooks the dev process
-      // listens for don't catch a clean exit (and the process.exit() hook fires after exit).
-      options.cleanupProcess.send(JSON.stringify(({ processIds: options?.processIds })));
-      
-      return process.exit(0);
+    if (stdout?.includes('No tests found in')) {
+      const [message] = stdout?.split(',');
+      return console.log(`${message}\n`);
     }
     
     console.log(stdout);
@@ -87,6 +79,11 @@ const runAva = (options = {}) => {
         if (!error) {
           // NOTE: Do this here because the standard SIGINT and SIGTERM hooks the dev process
           // listens for don't catch a clean exit (and the process.exit() hook fires after exit).
+          options.cleanupProcess.send(JSON.stringify(({ processIds: options?.processIds })));
+          resolve();
+        } else {
+          // NOTE: Do not report any Ava errors here because they're picked up by the handleAvaSTDIO();
+          // hook below. Just do a clean exit here so Node doesn't hang.
           options.cleanupProcess.send(JSON.stringify(({ processIds: options?.processIds })));
           resolve();
         }

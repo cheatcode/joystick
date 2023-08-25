@@ -63,9 +63,12 @@ const getUserToCreate = async (options = {}) => {
       };
     }
     if (options?.metadata && isObject(options.metadata) && usersDatabaseType === "nosql") {
-      const { roles: [], ...restOfMetadata } = options?.metadata;
+      let metadata = { ...options?.metadata || {} };
+      if (metadata?.roles) {
+        delete metadata.roles;
+      }
       user = {
-        ...restOfMetadata || {},
+        ...metadata || {},
         ...user
       };
     }

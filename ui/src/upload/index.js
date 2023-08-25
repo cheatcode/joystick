@@ -2,9 +2,20 @@ import generateId from "../lib/generateId";
 import logRequestErrors from "../lib/logRequestErrors";
 import throwFrameworkError from "../lib/throwFrameworkError";
 import websocketClient from "../websockets/client";
+import trackFunctionCall from "../test/trackFunctionCall.js";
 
 export default (uploaderName = '', uploaderOptions = {}) => {
   try {
+    if (window?.__joystick_test__) {
+      // NOTE: In a test, do not try to upload anything, just track the call and return.
+      trackFunctionCall(`ui.upload.${uploaderName}`, [
+        uploaderName,
+        uploaderOptions,
+      ]);
+
+      return;
+    }
+
     return new Promise((resolve, reject) => {
       const uploadId = generateId();
       let lastProgress = 0;

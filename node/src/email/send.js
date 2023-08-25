@@ -7,8 +7,18 @@ import settings from "../settings";
 import validateSMTPSettings from "./validateSMTPSettings";
 import render from "./render";
 import getBuildPath from "../lib/getBuildPath";
+import trackFunctionCall from "../test/trackFunctionCall.js";
 
-export default async ({ template: templateName, props, base: baseName, ...restOfOptions }) => {
+export default async (...args) => {
+  const { template: templateName, props, base: baseName, ...restOfOptions } = args;
+
+  if (process.env.NODE_ENV === 'test') {
+    // NOTE: In a test environment, we do not actually want to send an email. Instead,
+    // track the call and then return.
+    trackFunctionCall('node.email.send', args);
+    return;
+  }
+
   const validSMTPSettings = validateSMTPSettings(settings?.config?.email?.smtp);
 
   if (!validSMTPSettings) {

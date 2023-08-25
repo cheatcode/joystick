@@ -1,5 +1,5 @@
 import fs from "fs";
-import { __package } from "../index.js";
+import joystick, { __package } from "../index.js";
 import get from "../api/get";
 import set from "../api/set";
 import getBrowserSafeRequest from "../app/getBrowserSafeRequest";
@@ -339,8 +339,8 @@ const ssr = async (options, { resolve, reject }) => {
     const dataFromComponent = await getDataFromComponent(componentInstance, apiForDataFunctions, browserSafeRequest).then((data) => data).catch((error) => {
       return [{ error }];
     });
-    buildTreeForComponent(componentInstance, ssrTree);
-    buildTreeForComponent(componentInstance, ssrTreeForCSS);
+    buildTreeForComponent(componentInstance, ssrTree, options?.translations);
+    buildTreeForComponent(componentInstance, ssrTreeForCSS, options?.translations);
     const dataFromTree = await getDataFromTree(ssrTree).then((data) => data).catch((error) => {
       return [{ error }];
     });

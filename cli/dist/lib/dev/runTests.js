@@ -21,13 +21,10 @@ const handleAvaSTDOUT = (stdout = "", options = {}) => {
     if (stdout?.includes("Using configuration")) {
       return null;
     }
-    if (stdout?.includes("No tests found")) {
-      CLILog("No tests found. Add tests in the /tests folder at the root of your Joystick app.", {
-        level: "danger",
-        docs: "https://cheatcode.co/docs/joystick/test/setup"
-      });
-      options.cleanupProcess.send(JSON.stringify({ processIds: options?.processIds }));
-      return process.exit(0);
+    if (stdout?.includes("No tests found in")) {
+      const [message] = stdout?.split(",");
+      return console.log(`${message}
+`);
     }
     console.log(stdout);
   } catch (exception) {
@@ -61,6 +58,9 @@ const runAva = (options = {}) => {
         }
       }, (error) => {
         if (!error) {
+          options.cleanupProcess.send(JSON.stringify({ processIds: options?.processIds }));
+          resolve();
+        } else {
           options.cleanupProcess.send(JSON.stringify({ processIds: options?.processIds }));
           resolve();
         }

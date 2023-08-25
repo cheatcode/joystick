@@ -3,10 +3,17 @@ import formatAPIError from "../lib/formatAPIError.js";
 import { isObject } from "../validation/lib/typeValidators.js";
 import getOutput from "./getOutput.js";
 import sanitizeAPIResponse from "./sanitizeAPIResponse.js";
-const handleRunGetter = async (getterOptions = {}, input = {}, output = {}, context = {}, APIOptions = {}) => {
+import trackFunctionCall from "../test/trackFunctionCall.js";
+import getSanitizedContext from "../../getSanitizedContext.js";
+const handleRunGetter = async (name = "", getterOptions = {}, input = {}, output = {}, context = {}, APIOptions = {}) => {
   try {
     const shouldDisableSanitizationForGetter = getterOptions?.sanitize === false;
     const shouldSanitizeOutput = (getterOptions?.sanitize || APIOptions?.sanitize) === true || isObject(APIOptions?.sanitize || getterOptions?.sanitize);
+    const sanitizedContext = getSanitizedContext(context);
+    trackFunctionCall(`node.api.getters.${name}`, [
+      input,
+      sanitizedContext
+    ]);
     const data = await getterOptions?.get(input, context) || {};
     const response = output ? getOutput(data, output) : data;
     return !shouldDisableSanitizationForGetter && shouldSanitizeOutput ? sanitizeAPIResponse(response, getterOptions?.sanitize || APIOptions?.sanitize) : response;
@@ -14,8 +21,13 @@ const handleRunGetter = async (getterOptions = {}, input = {}, output = {}, cont
     throw new Error(`[runGetter.handleRunGetter] ${exception.message}`);
   }
 };
-const handleRunAuthorization = async (getterOptions = {}, input = {}, context = {}) => {
+const handleRunAuthorization = async (name = "", getterOptions = {}, input = {}, context = {}) => {
   try {
+    const sanitizedContext = getSanitizedContext(context);
+    trackFunctionCall(`node.api.getters.${name}.authorized`, [
+      input,
+      sanitizedContext
+    ]);
     const authorization = await getterOptions?.authorized(input, context);
     if (typeof authorization === "boolean") {
       return authorization;
@@ -77,7 +89,7 @@ const runGetter = async (options, { resolve, reject }) => {
       }
     }
     if (typeof options?.getterOptions?.authorized === "function") {
-      const authorized = await handleRunAuthorization(options?.getterOptions, options?.input, options?.context);
+      const authorized = await handleRunAuthorization(options?.getterName, options?.getterOptions, options?.input, options?.context);
       if (!authorized || typeof authorized === "string") {
         return reject({
           errors: [
@@ -87,7 +99,7 @@ const runGetter = async (options, { resolve, reject }) => {
       }
     }
     if (typeof options?.getterOptions?.get === "function") {
-      const response = await handleRunGetter(options?.getterOptions, options?.input, options?.output, options?.context, options?.APIOptions);
+      const response = await handleRunGetter(options?.getterName, options?.getterOptions, options?.input, options?.output, options?.context, options?.APIOptions);
       return resolve(response);
     }
     resolve();
