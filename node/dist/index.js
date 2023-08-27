@@ -4,6 +4,7 @@ import { dirname } from "path";
 import sanitizeHTML from "sanitize-html";
 import _accounts from "./app/accounts";
 import _action from "./action/index.js";
+import _fixture from "./fixture/index.js";
 import _test from "./test/index.js";
 import _websockets from "./websockets";
 import api from "./api/index.js";
@@ -19,6 +20,7 @@ if (process.env.NODE_ENV !== "development" && process.env.IS_PUSH_DEPLOYED) {
 }
 const accounts = _accounts;
 const action = _action;
+const fixture = _fixture;
 const get = api.get;
 const set = api.set;
 const test = _test;
@@ -53,6 +55,7 @@ var src_default = {
   action,
   app,
   email,
+  fixture,
   get,
   id,
   origin,
@@ -69,6 +72,7 @@ export {
   action,
   src_default as default,
   email,
+  fixture,
   get,
   id,
   origin,

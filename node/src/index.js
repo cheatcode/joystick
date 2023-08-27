@@ -4,6 +4,7 @@ import { dirname } from "path";
 import sanitizeHTML from "sanitize-html";
 import _accounts from "./app/accounts";
 import _action from "./action/index.js";
+import _fixture from './fixture/index.js';
 import _test from './test/index.js';
 import _websockets from "./websockets";
 import api from "./api/index.js";
@@ -21,6 +22,9 @@ if (process.env.NODE_ENV !== "development" && process.env.IS_PUSH_DEPLOYED) {
 
 export const accounts = _accounts;
 export const action = _action;
+
+export const fixture = _fixture;
+
 export const get = api.get;
 export const set = api.set;
 export const test = _test;
@@ -61,6 +65,7 @@ export default {
   action,
   app,
   email,
+  fixture,
   get,
   id,
   origin,
