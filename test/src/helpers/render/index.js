@@ -1,6 +1,6 @@
 
 import { parseHTML } from 'linkedom';
-import joystick from '@joystick.js/ui-canary';
+import joystick from '@joystick.js/ui';
 import fetch from 'node-fetch';
 import { URL, URLSearchParams } from 'url';
 import event from './event.js';
