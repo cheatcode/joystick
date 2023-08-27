@@ -1,7 +1,7 @@
 {
   "name": "@joystick.js/test",
   "type": "module",
-  "version": "1.0.0-beta.1",
+  "version": "1.0.0-beta.2",
   "description": "Isomorphic testing framework for the Joystick JavaScript framework.",
   "main": "dist/index.js",
   "scripts": {
