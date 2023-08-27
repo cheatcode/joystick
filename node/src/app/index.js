@@ -44,6 +44,7 @@ import runUserQuery from "./accounts/runUserQuery.js";
 import wait from "../lib/wait.js";
 import dayjs from "dayjs";
 import trackFunctionCall from "../test/trackFunctionCall.js";
+import getBrowserSafeUser from "./accounts/getBrowserSafeUser.js";
 
 process.setMaxListeners(0);
 
@@ -243,7 +244,8 @@ export class App {
           const componentInstance = Component();
           const apiForDataFunctions = await getAPIForDataFunctions(req, this?.options?.api);
           const browserSafeRequest = getBrowserSafeRequest(req);
-          const data = await getDataFromComponent(componentInstance, apiForDataFunctions, browserSafeRequest);
+          const browserSafeUser = getBrowserSafeUser(req?.context?.user);
+          const data = await getDataFromComponent(componentInstance, apiForDataFunctions, browserSafeUser, browserSafeRequest);
           const translations = await getTranslations({ build: buildPath, page: req?.query?.pathToComponent }, req);
           const settings = loadSettings();
 

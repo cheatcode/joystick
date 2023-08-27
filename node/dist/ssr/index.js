@@ -24,7 +24,7 @@ const handleHTMLReplacementsForApp = ({
   componentInstance = {},
   dataFromComponent,
   dataForClient = {},
-  browserSafeUser: browserSafeUser2 = {},
+  browserSafeUser = {},
   browserSafeRequest = {},
   props = {},
   translations = {},
@@ -51,7 +51,7 @@ const handleHTMLReplacementsForApp = ({
       [componentInstance.id]: dataFromComponent?.data || {},
       ...dataForClient || {}
     })};
-          window.__joystick_user__ = ${JSON.stringify(browserSafeUser2)};
+          window.__joystick_user__ = ${JSON.stringify(browserSafeUser)};
           window.__joystick_req__ = ${JSON.stringify(browserSafeRequest)};
           window.__joystick_ssr_props__ = ${JSON.stringify(props)};
           window.__joystick_i18n__ = ${JSON.stringify(translations)};
@@ -95,7 +95,7 @@ const getHTMLWithTargetReplacements = ({
   baseHTML = "",
   dataFromComponent = {},
   dataForClient = {},
-  browserSafeUser: browserSafeUser2 = {},
+  browserSafeUser = {},
   browserSafeRequest = {},
   props = {},
   translations = {},
@@ -118,7 +118,7 @@ const getHTMLWithTargetReplacements = ({
       componentHTML,
       dataFromComponent,
       dataForClient,
-      browserSafeUser: browserSafeUser2,
+      browserSafeUser,
       browserSafeRequest,
       props,
       translations,
@@ -153,7 +153,7 @@ const processHTML = ({
   isEmailRender = false,
   emailSubject = "",
   emailPreheader = "",
-  browserSafeUser: browserSafeUser2 = {},
+  browserSafeUser = {},
   browserSafeRequest = {},
   props = {},
   translations = {},
@@ -177,7 +177,7 @@ const processHTML = ({
       dataFromComponent,
       dataFromTree,
       dataForClient,
-      browserSafeUser: browserSafeUser2,
+      browserSafeUser,
       browserSafeRequest,
       props,
       translations,
@@ -333,7 +333,7 @@ const ssr = async (options, { resolve, reject }) => {
   try {
     validateOptions(options);
     const apiForDataFunctions = getAPIForDataFunctions(options.req, options?.api);
-    const browserSaferUser = getBrowserSafeUser(options?.req?.context?.user);
+    const browserSafeUser = getBrowserSafeUser(options?.req?.context?.user);
     const browserSafeRequest = options?.email ? {} : getBrowserSafeRequest({ ...options?.req || {} });
     const componentInstance = getComponentInstance(options.componentFunction, {
       props: options?.props || {},
@@ -342,9 +342,10 @@ const ssr = async (options, { resolve, reject }) => {
       api: apiForDataFunctions,
       req: browserSafeRequest
     });
+    componentInstance.user = browserSafeUser;
     const ssrTree = getTreeForSSR(componentInstance);
     const ssrTreeForCSS = getTreeForSSR(componentInstance);
-    const dataFromComponent = await getDataFromComponent(componentInstance, apiForDataFunctions, browserSafeRequest).then((data) => data).catch((error) => {
+    const dataFromComponent = await getDataFromComponent(componentInstance, apiForDataFunctions, browserSafeUser, browserSafeRequest).then((data) => data).catch((error) => {
       return [{ error }];
     });
     buildTreeForComponent(componentInstance, ssrTree, options?.translations);

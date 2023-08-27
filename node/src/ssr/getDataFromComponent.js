@@ -1,9 +1,11 @@
 export default async (
   componentInstance = {},
   api = {},
+  browserSafeUser = {},
   browserSafeRequest = {}
 ) => {
   try {
+    componentInstance.user = browserSafeUser;
     const data = await componentInstance.handleFetchData(
       api,
       browserSafeRequest,

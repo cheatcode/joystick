@@ -456,7 +456,7 @@ const ssr = async (options, { resolve, reject }) => {
     validateOptions(options);
 
     const apiForDataFunctions = getAPIForDataFunctions(options.req, options?.api);
-    const browserSaferUser = getBrowserSafeUser(options?.req?.context?.user);
+    const browserSafeUser = getBrowserSafeUser(options?.req?.context?.user);
     const browserSafeRequest = options?.email
       ? {}
       : getBrowserSafeRequest({ ...(options?.req || {}) });
@@ -469,11 +469,14 @@ const ssr = async (options, { resolve, reject }) => {
       req: browserSafeRequest,
     });
 
+    componentInstance.user = browserSafeUser;
+
     const ssrTree = getTreeForSSR(componentInstance);
     const ssrTreeForCSS = getTreeForSSR(componentInstance);
     const dataFromComponent = await getDataFromComponent(
       componentInstance,
       apiForDataFunctions,
+      browserSafeUser,
       browserSafeRequest
     ).then((data) => data).catch((error) => {
       return [{ error }];

@@ -1,5 +1,6 @@
-var getDataFromComponent_default = async (componentInstance = {}, api = {}, browserSafeRequest = {}) => {
+var getDataFromComponent_default = async (componentInstance = {}, api = {}, browserSafeUser = {}, browserSafeRequest = {}) => {
   try {
+    componentInstance.user = browserSafeUser;
     const data = await componentInstance.handleFetchData(api, browserSafeRequest, {}, componentInstance);
     return {
       componentId: componentInstance?.id,
