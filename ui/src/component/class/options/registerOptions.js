@@ -46,6 +46,10 @@ export default (componentInstance = {}, componentOptions = {}) => {
     if (windowExists && window.__joystick_url__) {
       componentInstance.url = compileUrl(window.__joystick_url__);
     }
+    
+    if (windowExists && window.__joystick_user__) {
+      componentInstance.user = JSON.parse(window.__joystick_user__);
+    }
 
     if (windowExists && componentOptions?.websockets && isFunction(componentOptions?.websockets)) {
       // TODO: For each websocket entry, try to establish a connect and assign it back to the websockets object on the component instance.
