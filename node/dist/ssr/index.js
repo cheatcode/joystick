@@ -10,6 +10,7 @@ import setHeadTagsInHTML from "./setHeadTagsInHTML";
 import { parseHTML } from "linkedom";
 import getDataFromComponent from "./getDataFromComponent.js";
 import getAPIForDataFunctions from "./getAPIForDataFunctions.js";
+import getBrowserSafeUser from "../app/accounts/getBrowserSafeUser.js";
 const injectCSSIntoHTML = (html, baseCSS = "", css = "") => {
   try {
     return html.replace("${css}", css).replace("${globalCSS}", `<style>${baseCSS || ""}</style>`).replace("${componentCSS}", css);
@@ -23,6 +24,7 @@ const handleHTMLReplacementsForApp = ({
   componentInstance = {},
   dataFromComponent,
   dataForClient = {},
+  browserSafeUser: browserSafeUser2 = {},
   browserSafeRequest = {},
   props = {},
   translations = {},
@@ -49,6 +51,7 @@ const handleHTMLReplacementsForApp = ({
       [componentInstance.id]: dataFromComponent?.data || {},
       ...dataForClient || {}
     })};
+          window.__joystick_user__ = ${JSON.stringify(browserSafeUser2)};
           window.__joystick_req__ = ${JSON.stringify(browserSafeRequest)};
           window.__joystick_ssr_props__ = ${JSON.stringify(props)};
           window.__joystick_i18n__ = ${JSON.stringify(translations)};
@@ -92,6 +95,7 @@ const getHTMLWithTargetReplacements = ({
   baseHTML = "",
   dataFromComponent = {},
   dataForClient = {},
+  browserSafeUser: browserSafeUser2 = {},
   browserSafeRequest = {},
   props = {},
   translations = {},
@@ -114,6 +118,7 @@ const getHTMLWithTargetReplacements = ({
       componentHTML,
       dataFromComponent,
       dataForClient,
+      browserSafeUser: browserSafeUser2,
       browserSafeRequest,
       props,
       translations,
@@ -148,6 +153,7 @@ const processHTML = ({
   isEmailRender = false,
   emailSubject = "",
   emailPreheader = "",
+  browserSafeUser: browserSafeUser2 = {},
   browserSafeRequest = {},
   props = {},
   translations = {},
@@ -171,6 +177,7 @@ const processHTML = ({
       dataFromComponent,
       dataFromTree,
       dataForClient,
+      browserSafeUser: browserSafeUser2,
       browserSafeRequest,
       props,
       translations,
@@ -326,6 +333,7 @@ const ssr = async (options, { resolve, reject }) => {
   try {
     validateOptions(options);
     const apiForDataFunctions = getAPIForDataFunctions(options.req, options?.api);
+    const browserSaferUser = getBrowserSafeUser(options?.req?.context?.user);
     const browserSafeRequest = options?.email ? {} : getBrowserSafeRequest({ ...options?.req || {} });
     const componentInstance = getComponentInstance(options.componentFunction, {
       props: options?.props || {},
@@ -360,6 +368,7 @@ const ssr = async (options, { resolve, reject }) => {
       isEmailRender: options?.email,
       emailSubject: options?.emailSubject,
       emailPreheader: options?.emailPreheader,
+      browserSafeUser,
       browserSafeRequest,
       props: options?.props,
       translations: options?.translations,
@@ -380,6 +389,7 @@ const ssr = async (options, { resolve, reject }) => {
       isEmailRender: options?.email,
       emailSubject: options?.emailSubject,
       emailPreheader: options?.emailPreheader,
+      browserSafeUser,
       browserSafeRequest,
       props: options?.props,
       translations: options?.translations,
