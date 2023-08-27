@@ -674,6 +674,11 @@ class App {
                 req,
                 uploads: validatedUploads
               });
+              trackFunctionCall(`node.uploaders.${uploaderName}.onBeforeUpload`, [{
+                input,
+                req,
+                uploads: validatedUploads
+              }]);
             }
             const fileSize = parseInt(req.headers["content-length"], 10);
             const providers = uploaderOptions?.providers?.includes("local") ? uploaderOptions?.providers.length : uploaderOptions?.providers?.length + 1;
@@ -691,6 +696,11 @@ class App {
                 req,
                 uploads
               });
+              trackFunctionCall(`node.uploaders.${uploaderName}.onAfterUpload`, [{
+                input,
+                req,
+                uploads
+              }]);
             }
             res.status(200).send(JSON.stringify({
               status: 200,

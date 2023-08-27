@@ -1,4 +1,5 @@
 import log from "../lib/log";
+import trackFunctionCall from "../test/trackFunctionCall.js";
 const handleCheckUpload = ({
   uploaderName,
   maxSizeInMegabytes,
@@ -49,6 +50,16 @@ const formatUploads = ({
   try {
     return Promise.all(uploads.map(async (upload) => {
       const fileExtension = upload?.mimeType?.split("/").pop();
+      const fileNameIsFunction = typeof uploaderOptions?.fileName === "function";
+      if (fileNameIsFunction) {
+        trackFunctionCall(`node.uploaders.${uploaderName}.fileName`, [{
+          input,
+          fileName: upload?.originalname,
+          fileSize: upload?.size,
+          fileExtension,
+          mimeType: upload?.mimetype
+        }]);
+      }
       return {
         uploaderName,
         providers: uploaderOptions?.providers,
@@ -56,7 +67,7 @@ const formatUploads = ({
         s3: uploaderOptions?.s3,
         maxSizeInMegabytes: typeof uploaderOptions?.maxSizeInMegabytes === "function" ? await uploaderOptions?.maxSizeInMegabytes({ input, upload }) : uploaderOptions?.maxSizeInMegabytes,
         mimeTypes: uploaderOptions?.mimeTypes,
-        fileName: typeof uploaderOptions?.fileName === "function" ? uploaderOptions.fileName({ input, fileName: upload?.originalname, fileSize: upload?.size, fileExtension, mimeType: upload?.mimetype }) : upload?.originalname,
+        fileName: fileNameIsFunction ? uploaderOptions.fileName({ input, fileName: upload?.originalname, fileSize: upload?.size, fileExtension, mimeType: upload?.mimetype }) : upload?.originalname,
         originalFileName: upload?.originalname,
         fileSize: upload?.size,
         mimeType: upload?.mimetype,

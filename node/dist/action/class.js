@@ -1,7 +1,6 @@
 import formatAPIError from "../lib/formatAPIError";
 import validate from "../validation";
 import trackFunctionCall from "../test/trackFunctionCall.js";
-import z from "@joystick.js/ui/dist/forms/validators/semVer.js";
 class Action {
   constructor(input = {}) {
     this.name = input?.name;
