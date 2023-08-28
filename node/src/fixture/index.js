@@ -18,14 +18,14 @@ class Fixture {
       dataToCreate = await this.generateDataToCreate(input);
 
       if (typeof this?.options?.onCreate === 'function') {
-        await this.options.onCreate(this, dataToCreate, (input = {}) => {
-          return this?.options?.onAfterCreateEach(this, input);
+        await this.options.onCreate(this, dataToCreate, (onAfterCreateEachInput = {}) => {
+          return this?.options?.onAfterCreateEach(this, onAfterCreateEachInput, input);
         });
       }
     }
 
     if (typeof this?.options?.onAfterCreateAll === 'function') {
-      this.options.onAfterCreateAll(this, dataToCreate);
+      this.options.onAfterCreateAll(this, dataToCreate, input);
     }
   }
 
