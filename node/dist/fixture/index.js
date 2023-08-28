@@ -7,7 +7,7 @@ class Fixture {
   }
   async run(input = {}) {
     this.input = input;
-    const skip = typeof this?.options?.skip === "function" ? await this.options.skip(this) : false;
+    const skip = typeof this?.options?.skip === "function" ? await this.options.skip(this, input) : false;
     let dataToCreate = [];
     if (!skip) {
       dataToCreate = await this.generateDataToCreate(input);
