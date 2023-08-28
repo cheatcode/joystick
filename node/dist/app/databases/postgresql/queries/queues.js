@@ -66,7 +66,7 @@ var queues_default = {
       WHERE
         status = $1
       AND
-        next_run_at::date <= NOW()
+        next_run_at::timestamp <= NOW()
       AND
         locked_by IS NULL
       ORDER BY
