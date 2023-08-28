@@ -48,7 +48,7 @@ export default (componentInstance = {}, componentOptions = {}) => {
     }
     
     if (windowExists && window.__joystick_user__) {
-      componentInstance.user = JSON.parse(window.__joystick_user__);
+      componentInstance.user = window.__joystick_user__;
     }
 
     if (windowExists && componentOptions?.websockets && isFunction(componentOptions?.websockets)) {
