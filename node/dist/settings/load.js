@@ -1,11 +1,9 @@
 import isValidJSONString from "../lib/isValidJSONString";
 const defaultSettings = {
   config: {},
-  keys: {
-    global: {},
-    public: {},
-    private: {}
-  }
+  global: {},
+  public: {},
+  private: {}
 };
 var load_default = () => {
   try {
