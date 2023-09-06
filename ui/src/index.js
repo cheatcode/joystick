@@ -3,6 +3,7 @@ import _cache from "./cache";
 import _html from "./html";
 import _renderComponentToHTML from "./component/renderComponentToHTML";
 import _test from './test/index.js';
+import _trackExternal from './trackExternal.js';
 import _upload from "./upload";
 import attachJoystickToWindow from "./attachJoystickToWindow";
 import api from "./api";
@@ -19,6 +20,7 @@ export const html = _html;
 export const renderComponentToHTML = _renderComponentToHTML;
 export const set = api.set;
 export const test = _test;
+export const trackExternal = _trackExternal;
 export const upload = _upload;
 
 const environment = () => {
@@ -69,6 +71,7 @@ const joystick = {
   set,
   upload,
   timers: {},
+  trackExternal: _trackExternal,
 };
 
 attachJoystickToWindow(joystick);
