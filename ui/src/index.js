@@ -1,5 +1,6 @@
 import _accounts from "./accounts";
 import _cache from "./cache";
+import _getExternal from "./getExternal.js";
 import _html from "./html";
 import _renderComponentToHTML from "./component/renderComponentToHTML";
 import _test from './test/index.js';
@@ -16,6 +17,7 @@ import updateCSSInHead from "./css/update";
 export const accounts = _accounts;
 export const cache = _cache;
 export const get = api.get;
+export const getExternal = _getExternal;
 export const html = _html;
 export const renderComponentToHTML = _renderComponentToHTML;
 export const set = api.set;
@@ -64,6 +66,7 @@ const joystick = {
     test: environment() === 'test',
   },
   get,
+  getExternal,
   html,
   id: generateId,
   mount,
@@ -71,7 +74,7 @@ const joystick = {
   set,
   upload,
   timers: {},
-  trackExternal: _trackExternal,
+  trackExternal,
 };
 
 attachJoystickToWindow(joystick);
