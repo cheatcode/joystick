@@ -8,10 +8,10 @@ import validateSMTPSettings from "./validateSMTPSettings";
 import render from "./render";
 import getBuildPath from "../lib/getBuildPath";
 import trackFunctionCall from "../test/trackFunctionCall.js";
-var send_default = async (...args) => {
+var send_default = async (args) => {
   const { template: templateName, props, base: baseName, ...restOfOptions } = args;
   if (process.env.NODE_ENV === "test") {
-    trackFunctionCall("node.email.send", args);
+    trackFunctionCall("node.email.send", [args]);
     return;
   }
   const validSMTPSettings = validateSMTPSettings(settings?.config?.email?.smtp);
@@ -51,6 +51,7 @@ var send_default = async (...args) => {
     const htmlWithStylesInlined = juice(html);
     options.html = htmlWithStylesInlined;
     options.text = text;
+    console.log(html);
     return smtp.sendMail(options);
   }
   console.warn(`Template ${templateName} could not be found in /email. Double-check the template exists and try again.`);

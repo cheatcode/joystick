@@ -45,14 +45,23 @@ var queues_default = {
     return nextJob?.value;
   },
   initializeDatabase: function() {
+    const targetDatabase = getTargetDatabaseProvider("queues");
     const db = process.databases._queues?.collection(`queue_${this.queue.name}`);
-    db.createIndex({ status: 1 });
-    db.createIndex({ status: 1, nextRunAt: 1 });
-    if (this.queue.options?.cleanup?.completedAfterSeconds) {
-      db.createIndex({ completedAt: 1 }, { expireAfterSeconds: this?.queue?.options?.cleanup?.completedAfterSeconds });
+    if (targetDatabase === "mongodb") {
+      db.createIndex({ status: 1 });
+      db.createIndex({ status: 1, nextRunAt: 1 });
+      if (this.queue.options?.cleanup?.completedAfterSeconds) {
+        db.createIndex({ completedAt: 1 }, { expireAfterSeconds: this?.queue?.options?.cleanup?.completedAfterSeconds });
+      }
+      if (this.queue.options?.cleanup?.failedAfterSeconds) {
+        db.createIndex({ failedAt: 1 }, { expireAfterSeconds: this?.queue?.options?.cleanup?.failedAfterSeconds });
+      }
     }
-    if (this.queue.options?.cleanup?.failedAfterSeconds) {
-      db.createIndex({ failedAt: 1 }, { expireAfterSeconds: this?.queue?.options?.cleanup?.failedAfterSeconds });
+    if (targetDatabase === "postgresql") {
+      if (this.queue.options?.cleanup?.completedAfterSeconds) {
+      }
+      if (this.queue.options?.cleanup?.failedAfterSeconds) {
+      }
     }
   },
   requeueJob: function(jobId = "", nextRunAt = null) {

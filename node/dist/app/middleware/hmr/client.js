@@ -58,7 +58,7 @@ var client_default = (() => websocketClient({
       location.reload();
     }
     if (message?.settings) {
-      window.__joystick_settings__ = JSON.stringify(message?.settings);
+      window.__joystick_settings__ = message?.settings;
       window.joystick.settings = message?.settings;
     }
     if (clientIndex) {
@@ -71,13 +71,13 @@ var client_default = (() => websocketClient({
     if (CSS) {
       const updatedCSS = document.createElement("link");
       updatedCSS.setAttribute("rel", "stylesheet");
-      updatedCSS.setAttribute("href", "/_joystick/index.css");
+      updatedCSS.setAttribute("href", `/_joystick/index.css?v=${new Date().getTime()}`);
       document.head.appendChild(updatedCSS);
     }
     if (isFileChange && isPageInLayout) {
       (async () => {
         window.__joystick_childrenBeforeHMRUpdate__ = window.joystick?._internal?.tree?.instance?.children;
-        const layoutComponentFile = await import(`${window.__joystick_layout__}?t=${new Date().getTime()}`);
+        const layoutComponentFile = await import(`${window.__joystick_layout__}?v=${new Date().getTime()}`);
         const pageComponentFile = await import(`${window.window.__joystick_layout_page_url__}?t=${new Date().getTime()}`);
         const layout = layoutComponentFile.default;
         const page = pageComponentFile.default;
@@ -91,7 +91,7 @@ var client_default = (() => websocketClient({
     if (isFileChange && !isPageInLayout) {
       (async () => {
         window.__joystick_childrenBeforeHMRUpdate__ = window.joystick?._internal?.tree?.instance?.children;
-        const pageComponentFile = await import(`${window.__joystick_page_url__}?t=${new Date().getTime()}`);
+        const pageComponentFile = await import(`${window.__joystick_page_url__}?v=${new Date().getTime()}`);
         const page = pageComponentFile.default;
         window.joystick.mount(page, Object.assign({}, window.__joystick_ssr_props__), document.getElementById("app"));
         if (connection.send) {

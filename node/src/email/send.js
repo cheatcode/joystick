@@ -9,13 +9,13 @@ import render from "./render";
 import getBuildPath from "../lib/getBuildPath";
 import trackFunctionCall from "../test/trackFunctionCall.js";
 
-export default async (...args) => {
+export default async (args) => {
   const { template: templateName, props, base: baseName, ...restOfOptions } = args;
 
   if (process.env.NODE_ENV === 'test') {
     // NOTE: In a test environment, we do not actually want to send an email. Instead,
     // track the call and then return.
-    trackFunctionCall('node.email.send', args);
+    trackFunctionCall('node.email.send', [args]);
     return;
   }
 
@@ -43,6 +43,7 @@ export default async (...args) => {
     : null;
 
   let templatePath = `${process.cwd()}/${getBuildPath()}email/${templateName}.js`;
+
   const templateExists = templateName && fs.existsSync(templatePath);
 
   const options = {
@@ -69,6 +70,8 @@ export default async (...args) => {
     options.html = htmlWithStylesInlined;
     options.text = text;
     
+    console.log(html);
+
     return smtp.sendMail(options);
   }
 

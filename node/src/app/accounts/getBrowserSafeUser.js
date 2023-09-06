@@ -8,6 +8,7 @@ export default (user = null) => {
 
   const unsafeFields = [
     'password',
+    'passwordResetTokens',
     'sessions',
     'oauth',
   ];
