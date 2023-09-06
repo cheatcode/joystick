@@ -17,7 +17,11 @@ import updateCSSInHead from "./css/update";
 export const accounts = _accounts;
 export const cache = _cache;
 export const get = api.get;
-export const getExternal = _getExternal;
+
+export const external = {
+  get: _getExternal,
+  track: _trackExternal,
+};
 export const html = _html;
 export const renderComponentToHTML = _renderComponentToHTML;
 export const set = api.set;
@@ -65,8 +69,8 @@ const joystick = {
     development: environment() === 'development',
     test: environment() === 'test',
   },
+  external,
   get,
-  getExternal,
   html,
   id: generateId,
   mount,
@@ -74,7 +78,6 @@ const joystick = {
   set,
   upload,
   timers: {},
-  trackExternal,
 };
 
 attachJoystickToWindow(joystick);
