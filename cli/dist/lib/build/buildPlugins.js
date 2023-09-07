@@ -5,11 +5,13 @@ import {
   JOYSTICK_UI_REGEX,
   EXPORT_DEFAULT_REGEX,
   JOYSTICK_COMPONENT_REGEX,
-  JOYSTICK_COMMENT_REGEX
+  JOYSTICK_COMMENT_REGEX,
+  EXAMPLE_CODE_REGEX
 } from "../regexes.js";
 import generateId from "../generateId.js";
 import getPlatformSafePath from "../getPlatformSafePath.js";
 import setComponentId from "./setComponentId.js";
+import replaceExamples from "./replaceExamples.js";
 var buildPlugins_default = {
   bootstrapComponent: {
     name: "bootstrapComponent",
@@ -17,7 +19,7 @@ var buildPlugins_default = {
       const ssrId = generateId();
       build.onLoad({ filter: /\.js$/ }, (args = {}) => {
         try {
-          const shouldSetSSRId = [getPlatformSafePath("ui/")].some(
+          const shouldSetComponentId = [getPlatformSafePath("ui/")].some(
             (bootstrapTarget) => {
               return args.path.includes(bootstrapTarget);
             }
@@ -37,7 +39,7 @@ var buildPlugins_default = {
               return args.path.includes(bootstrapTarget);
             }
           );
-          if (shouldSetSSRId || isLayoutComponent || isPageComponent || isEmailComponent) {
+          if (shouldSetComponentId || isLayoutComponent || isPageComponent || isEmailComponent) {
             const code = fs.readFileSync(
               getPlatformSafePath(args.path),
               "utf-8"
@@ -56,7 +58,9 @@ var buildPlugins_default = {
               console.log(" ");
               return;
             }
-            let contents = setComponentId(code)?.replace(
+            const examples = code.match(EXAMPLE_CODE_REGEX) || [];
+            let contents = replaceExamples(code);
+            contents = contents?.replace(
               /\.component\(\/\*\*\//g,
               ".component("
             );
@@ -103,6 +107,10 @@ var buildPlugins_default = {
                 `
               );
             }
+            for (let i = 0; i < examples?.length; i += 1) {
+              const exampleToRestore = examples[i];
+              contents = contents.replace(`%example:${i}%`, exampleToRestore);
+            }
             return {
               contents,
               loader: "js"
@@ -125,11 +133,17 @@ var buildPlugins_default = {
             if (shouldSetComponentId) {
               const file = fs.readFileSync(`${build?.initialOptions?.outdir}/${entryPoint}`, "utf-8");
               const joystickUIMatches = file?.match(JOYSTICK_COMPONENT_REGEX) || [];
+              const examples = file.match(EXAMPLE_CODE_REGEX) || [];
+              let contents = replaceExamples(file);
               if (joystickUIMatches?.length > 0) {
-                let contents = setComponentId(file)?.replace(
+                contents = setComponentId(contents)?.replace(
                   /\.component\(\/\*\*\//g,
                   ".component("
                 );
+                for (let i2 = 0; i2 < examples?.length; i2 += 1) {
+                  const exampleToRestore = examples[i2];
+                  contents = contents.replace(`%example:${i2}%`, exampleToRestore);
+                }
                 fs.writeFileSync(`${build?.initialOptions?.outdir}/${entryPoint}`, contents);
               }
             }

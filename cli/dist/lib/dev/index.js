@@ -19,6 +19,8 @@ import { SETTINGS_FILE_NAME_REGEX } from "../regexes.js";
 import getCodependenciesForFile from "./getCodependenciesForFile.js";
 import removeDeletedDependenciesFromMap from "../build/removeDeletedDependenciesFromMap.js";
 import chalk from "chalk";
+import checkIfPortOccupied from "../checkIfPortOccupied.js";
+import { killPortProcess } from "kill-port-process";
 const processIds = [];
 const getDatabaseProcessIds = () => {
   try {
@@ -173,6 +175,29 @@ const handleServerProcessSTDIO = (options = {}) => {
     throw new Error(`[dev.handleServerProcessSTDIO] ${exception.message}`);
   }
 };
+const handleDeletePath = (context = {}, path2 = "", options = {}) => {
+  try {
+    if (context?.isDeletingPath) {
+      if (context.isExistingPathInBuild) {
+        const pathToUnlink = `./.joystick/build/${path2}`;
+        const stats = fs.lstatSync(pathToUnlink);
+        if (stats.isDirectory()) {
+          fs.rmdirSync(pathToUnlink, { recursive: true });
+        }
+        if (stats.isFile()) {
+          fs.unlinkSync(pathToUnlink);
+        }
+      }
+      if (context.isUIUpdate) {
+        handleNotifyHMRClients(context.isHTMLUpdate);
+      } else {
+        handleRestartApplicationProcess(options);
+      }
+    }
+  } catch (exception) {
+    throw new Error(`[dev.handleDeletePath] ${exception.message}`);
+  }
+};
 const handleAddOrChangeFile = async (context = {}, path2 = "", options = {}) => {
   try {
     if (context.isAddingOrChangingFile) {
@@ -205,6 +230,7 @@ const handleAddOrChangeFile = async (context = {}, path2 = "", options = {}) => 
       }
     }
   } catch (exception) {
+    console.warn(exception);
     throw new Error(`[dev.handleAddOrChangeFile] ${exception.message}`);
   }
 };
@@ -238,7 +264,7 @@ const handleCopyFile = (context = {}, path2 = "", options = {}) => {
 };
 const handleCopyDirectory = (context = {}, path2 = "", options = {}) => {
   try {
-    if (context.isFileToCopy && context.isDirectory && !context.isExistingDirectoryInBuild) {
+    if (context.isFileToCopy && context.isDirectory && !context.isExistingPathInBuild) {
       fs.mkdirSync(`./.joystick/build/${path2}`);
       if (context.isUIUpdate) {
         handleNotifyHMRClients(context.isHTMLUpdate);
@@ -287,7 +313,11 @@ const handleStartAppServer = async (options = {}) => {
 const handleNotifyHMRClients = async (indexHTMLChanged = false) => {
   try {
     if (process.hmrProcess) {
-      const settings = await loadSettings({ environment: process.env.NODE_ENV });
+      const databaseProcessIds = getDatabaseProcessIds();
+      const settings = await loadSettings({
+        environment: process.env.NODE_ENV,
+        processIds: [...processIds, ...databaseProcessIds]
+      });
       process.hmrProcess.send(
         JSON.stringify({
           type: "RESTART_SERVER",
@@ -307,27 +337,31 @@ const getWatchChangeContext = (event = "", path2 = "") => {
     const isUIPath = path2?.includes("ui/") || path2 === "index.css" || isHTMLUpdate;
     const isUIUpdate = process.hmrProcess && process.hmrProcess.hasConnections && isUIPath || false;
     const isSettingsUpdate = path2?.match(SETTINGS_FILE_NAME_REGEX)?.length > 0;
-    const isDirectory = fs.statSync(path2).isDirectory();
-    const isFile = fs.statSync(path2).isFile();
-    const isExistingDirectoryInSource = isDirectory && fs.existsSync(path2);
-    const isExistingDirectoryInBuild = !!fs.existsSync(`./.joystick/build/${path2}`);
-    const isAddDirectory = event === "addDir" && isExistingDirectoryInSource && !isExistingDirectoryInBuild;
+    const pathExists = fs.existsSync(path2);
+    const isDirectory = pathExists && fs.statSync(path2).isDirectory();
+    const isFile = pathExists && fs.statSync(path2).isFile();
+    const isExistingPathInSource = isDirectory && pathExists;
+    const isExistingPathInBuild = !!fs.existsSync(`./.joystick/build/${path2}`);
+    const isAddDirectory = event === "addDir" && isExistingPathInSource && !isExistingPathInBuild;
     const isFileToCopy = !!filesToCopy.find((fileToCopy) => fileToCopy.path === path2);
-    const isExistingFileInSource = isFile && fs.existsSync(path2);
+    const isExistingFileInSource = isFile && pathExists;
     const isAddingOrChangingFile = ["add", "change"].includes(event) && isExistingFileInSource;
+    const isDeletingPath = ["unlink", "unlinkDir"].includes(event);
     return {
+      pathExists,
       isHTMLUpdate,
       isUIPath,
       isUIUpdate,
       isSettingsUpdate,
       isDirectory,
       isFile,
-      isExistingDirectoryInSource,
-      isExistingDirectoryInBuild,
+      isExistingPathInSource,
+      isExistingPathInBuild,
       isAddDirectory,
       isFileToCopy,
       isExistingFileInSource,
-      isAddingOrChangingFile
+      isAddingOrChangingFile,
+      isDeletingPath
     };
   } catch (exception) {
     throw new Error(`[dev.getWatchChangeContext] ${exception.message}`);
@@ -349,10 +383,12 @@ const startFileWatcher = (options = {}) => {
       handleCopyFile(watchChangeContext, path2, options);
       handleAddDirectory(watchChangeContext, path2, options);
       await handleAddOrChangeFile(watchChangeContext, path2, options);
+      await handleDeletePath(watchChangeContext, path2, options);
       if (watchChangeContext?.isSettingsUpdate) {
+        const databaseProcessIds = getDatabaseProcessIds();
         await loadSettings({
           environment: options.environment,
-          process: options.process
+          processIds: [...processIds, ...databaseProcessIds]
         });
       }
     });
@@ -470,6 +506,16 @@ const warnInvalidJoystickEnvironment = () => {
     throw new Error(`[dev.warnInvalidJoystickEnvironment] ${exception.message}`);
   }
 };
+const handleCleanup = () => {
+  try {
+    if (process.cleanupProcess) {
+      const databaseProcessIds = getDatabaseProcessIds();
+      process.cleanupProcess.send(JSON.stringify({ processIds: [...processIds, ...databaseProcessIds] }));
+    }
+  } catch (exception) {
+    throw new Error(`[actionName.handleCleanup] ${exception.message}`);
+  }
+};
 const validateOptions = (options) => {
   try {
     if (!options)
@@ -483,6 +529,18 @@ const validateOptions = (options) => {
 const dev = async (options, { resolve, reject }) => {
   try {
     validateOptions(options);
+    const port = parseInt(options?.port || 2600, 10);
+    const appPortOccupied = await checkIfPortOccupied(port);
+    const hmrPortOccupied = await checkIfPortOccupied(port + 1);
+    if (appPortOccupied) {
+      CLILog(`Port ${options?.port} is already occupied. To start Joystick on this port, clear it and try again.`, {
+        level: "danger"
+      });
+      process.exit(0);
+    }
+    if (hmrPortOccupied) {
+      await killPortProcess(port + 1);
+    }
     initProcess(options);
     const nodeMajorVersion = parseInt(
       process?.version?.split(".")[0]?.replace("v", ""),

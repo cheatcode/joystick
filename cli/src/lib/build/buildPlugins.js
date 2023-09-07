@@ -5,11 +5,12 @@ import {
   JOYSTICK_UI_REGEX,
   EXPORT_DEFAULT_REGEX,
   JOYSTICK_COMPONENT_REGEX,
-  JOYSTICK_COMMENT_REGEX,
+  JOYSTICK_COMMENT_REGEX, EXAMPLE_CODE_REGEX,
 } from "../regexes.js";
 import generateId from "../generateId.js";
 import getPlatformSafePath from "../getPlatformSafePath.js";
 import setComponentId from "./setComponentId.js";
+import replaceExamples from "./replaceExamples.js";
 
 export default {
   bootstrapComponent: {
@@ -21,7 +22,7 @@ export default {
 
       build.onLoad({ filter: /\.js$/ }, (args = {}) => {
         try {
-          const shouldSetSSRId = [getPlatformSafePath("ui/")].some(
+          const shouldSetComponentId = [getPlatformSafePath("ui/")].some(
             (bootstrapTarget) => {
               return args.path.includes(bootstrapTarget);
             }
@@ -46,7 +47,7 @@ export default {
           );
 
           if (
-            shouldSetSSRId ||
+            shouldSetComponentId ||
             isLayoutComponent ||
             isPageComponent ||
             isEmailComponent
@@ -74,20 +75,20 @@ export default {
               return;
             }
 
-            let contents = setComponentId(code)?.replace(
+            // NOTE: Replace any <example> bracketed code with a placeholder. This ensures
+            // that we don't accidentally include any mounting code in example code included
+            // as content on the page.
+            const examples = code.match(EXAMPLE_CODE_REGEX) || [];
+            let contents = replaceExamples(code);
+
+            contents = contents?.replace(
               /\.component\(\/\*\*\//g,
               ".component("
-              );
-
-            // contents = contents.replace(
-            //   "ui.component({",
-            //   `ui.component({\n  _ssrId: '${ssrId}',`
-            // );
+            );
 
             // NOTE: Remove any commented code inside of render() so it doesn't get rendered during SSR
             // or in the browser.
             contents = contents.replace(JOYSTICK_COMMENT_REGEX, "");
-
             const exportDefaultMatchParts =
               (exportDefaultMatch && exportDefaultMatch.split(" ")) || [];
             const componentName = exportDefaultMatchParts.pop();
@@ -134,6 +135,11 @@ export default {
               );
             }
 
+            for (let i = 0; i < examples?.length; i += 1) {
+              const exampleToRestore = examples[i];
+              contents = contents.replace(`%example:${i}%`, exampleToRestore);
+            }
+
             return {
               contents,
               loader: "js",
@@ -160,21 +166,32 @@ export default {
               const joystickUIMatches =
               file?.match(JOYSTICK_COMPONENT_REGEX) || [];
 
+              // NOTE: Replace any <example> bracketed code with a placeholder. This ensures
+              // that we don't accidentally add a componentId to any example code included
+              // as content on the page.
+              const examples = file.match(EXAMPLE_CODE_REGEX) || [];
+              let contents = replaceExamples(file);
+
               if (joystickUIMatches?.length > 0) {
-                let contents = setComponentId(file)?.replace(
+                contents = setComponentId(contents)?.replace(
                   /\.component\(\/\*\*\//g,
                   ".component("
                 );
+
+                for (let i = 0; i < examples?.length; i += 1) {
+                  const exampleToRestore = examples[i];
+                  contents = contents.replace(`%example:${i}%`, exampleToRestore);
+                }
                 
                 fs.writeFileSync(`${build?.initialOptions?.outdir}/${entryPoint}`, contents);
               }
-            } 
+            }
           }
 
           resolve();
         });
       });
-      },
+    },
   },
   generateFileDependencyMap: {
     name: "generateFileDependencyMap",

@@ -1,7 +1,7 @@
 import fs from "fs";
 import CLILog from "../CLILog.js";
 import isValidJSONString from "../isValidJSONString.js";
-const warnIfInvalidJSONInSettings = (settings = "") => {
+const warnIfInvalidJSONInSettings = (settings = "", processIds = []) => {
   try {
     const isValidJSON = isValidJSONString(settings);
     const context = process.env.NODE_ENV === "test" ? "test" : "start";
@@ -14,6 +14,9 @@ const warnIfInvalidJSONInSettings = (settings = "") => {
           tools: [{ title: "JSON Linter", url: "https://jsonlint.com/" }]
         }
       );
+      if (process.cleanupProcess) {
+        process.cleanupProcess.send(JSON.stringify({ processIds }));
+      }
       process.exit(0);
     }
   } catch (exception) {
@@ -27,7 +30,7 @@ const getSettings = (settingsPath = "") => {
     throw new Error(`[loadSettings.getSettings] ${exception.message}`);
   }
 };
-const warnIfSettingsNotFound = (settingsPath = "") => {
+const warnIfSettingsNotFound = (settingsPath = "", processIds = []) => {
   try {
     const hasSettingsFile = fs.existsSync(settingsPath);
     const context = process.env.NODE_ENV === "test" ? "test" : "start";
@@ -39,6 +42,9 @@ const warnIfSettingsNotFound = (settingsPath = "") => {
           docs: `https://cheatcode.co/docs/joystick/cli/${context}`
         }
       );
+      if (process.cleanupProcess) {
+        process.cleanupProcess.send(JSON.stringify({ processIds }));
+      }
       process.exit(0);
     }
   } catch (exception) {
@@ -59,9 +65,9 @@ const loadSettings = (options, { resolve, reject }) => {
   try {
     validateOptions(options);
     const settingsPath = `${process.cwd()}/settings.${options.environment}.json`;
-    warnIfSettingsNotFound(settingsPath);
+    warnIfSettingsNotFound(settingsPath, options.processIds);
     const settings = getSettings(settingsPath);
-    warnIfInvalidJSONInSettings(settings);
+    warnIfInvalidJSONInSettings(settings, options.processIds);
     process.env.JOYSTICK_SETTINGS = settings;
     resolve({
       parsed: JSON.parse(settings),

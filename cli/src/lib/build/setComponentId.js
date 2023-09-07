@@ -27,7 +27,7 @@ export default (file = "") => {
       source: file.substring(
         part.index,
         nextPart ? nextPart.index : file.length
-        ),
+      ),
     };
   });
 
@@ -45,7 +45,7 @@ export default (file = "") => {
       () => {
         return `.component({\n  _componentId: '${componentId}',`;
       }
-      );
+    );
 
     file = file.replace(component.source, tainted);
   }

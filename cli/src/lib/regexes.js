@@ -1,3 +1,4 @@
+export const EXAMPLE_CODE_REGEX = new RegExp(/\<example\>[^%]+\<\/example\>/g);
 export const EXPORT_DEFAULT_REGEX = new RegExp(/export default [a-zA-Z0-9]+/g);
 export const JOYSTICK_COMMENT_REGEX = new RegExp(/\<\!\-\-(.|\n|\r)*?-->/g);
 export const JOYSTICK_COMPONENT_REGEX = new RegExp(/\.component\(\{/g);

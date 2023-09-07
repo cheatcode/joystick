@@ -30,7 +30,7 @@ var getFilesToBuild_default = (excludedPaths = [], context = null) => {
       return path.includes(excludedPath);
     });
   }).filter((path) => {
-    return !fs.lstatSync(path).isDirectory();
+    return fs.existsSync(path) && !fs.lstatSync(path).isDirectory();
   });
 };
 export {

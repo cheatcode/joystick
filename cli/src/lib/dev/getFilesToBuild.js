@@ -42,6 +42,6 @@ export default (excludedPaths = [], context = null) => {
       });
     })
     .filter((path) => {
-      return !fs.lstatSync(path).isDirectory();
+      return fs.existsSync(path) && !fs.lstatSync(path).isDirectory();
     });
 };

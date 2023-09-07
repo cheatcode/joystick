@@ -13,6 +13,11 @@ import onWarn from "./onWarn.js";
 
 const handleBuildException = (exception = {}, file = '') => {
   try {
+    console.warn({
+      exception,
+      file,
+    });
+
     const error = exception?.errors && exception?.errors[0];
     const snippet = fs.existsSync(file)
       ? getCodeFrame(file, {
@@ -33,7 +38,7 @@ const handleBuildException = (exception = {}, file = '') => {
 
     return snippet;
   } catch (exception) {
-    throw new Error(`[actionName.handleBuildException] ${exception.message}`);
+    throw new Error(`[buildFiles.handleBuildException] ${exception.message}`);
   }
 };
 
@@ -42,19 +47,19 @@ const handleParseFilePathFromException = (exception = {}) => {
     const rawErrorMessage = exception?.message?.split(':');
     return rawErrorMessage[1] && rawErrorMessage[1]?.replace('\n', '') || '';
   } catch (exception) {
-    throw new Error(`[actionName.handleParseFilePathFromException] ${exception.message}`);
+    throw new Error(`[buildFiles.handleParseFilePathFromException] ${exception.message}`);
   }
 };
 
 const handleBuildForNode = (nodePaths = [], options = {}) => {
   try {
     return esbuild.build({
+      allowOverwrite: true,
       platform: "node",
       format: "esm",
       bundle: false,
       entryPoints: nodePaths?.map((file) => file.path),
       entryNames: '[dir]/[name]',
-      // TODO: Make sure we don't need outbase here so the paths map correctly.
       outdir: options?.outputPath || "./.joystick/build",
       outbase: './',
       define: {
@@ -74,6 +79,7 @@ const handleBuildForNode = (nodePaths = [], options = {}) => {
 const handleBuildForBrowser = (browserPaths = [], options = {}) => {
   try {
     return esbuild.build({
+      allowOverwrite: true,
       target: "es2020",
       platform: "browser",
       format: "esm",
