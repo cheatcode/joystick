@@ -25,15 +25,17 @@ class ValidateForm {
     ];
 
     this.defaultValidationErrors = {
-      required: () => "This field is required.",
-      email: () => "Must be a valid email.",
       creditCard: () => "Must be a valid credit card number.",
+      custom: () => "Must return true.",
+      email: () => "Must be a valid email.",
       equals: (rule) => `Value must equal ${rule}.`,
       matches: (rule) => `Field must match ${rule}.`,
       maxLength: (rule) => `Field value can be no greater than ${rule}.`,
       minLength: (rule) => `Field value can be no less than ${rule}.`,
       phone: () => `Field value must be a valid telephone number.`,
       postalCode: () => `Field value must be a valid postal code.`,
+      regex: () => "Must match regex.",
+      required: () => "This field is required.",
       semVer: () => `Field value must be a valid semantic version.`,
       slug: () => `Field value must be a valid URL slug.`,
       strongPassword: () => `Field value must be a valid password.`,

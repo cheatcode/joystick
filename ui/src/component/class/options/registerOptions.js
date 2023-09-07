@@ -48,7 +48,6 @@ export default (componentInstance = {}, componentOptions = {}) => {
     }
     
     if (windowExists && window.__joystick_user__) {
-      console.log(window.__joystick_user__);
       componentInstance.user = window.__joystick_user__;
     }
 
