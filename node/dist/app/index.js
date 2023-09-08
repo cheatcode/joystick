@@ -6,6 +6,7 @@ import queryString from "query-string";
 import multer from "multer";
 import cron from "node-cron";
 import { execSync } from "child_process";
+import cluster from "./cluster.js";
 import initExpress from "./initExpress.js";
 import handleProcessErrors from "./handleProcessErrors";
 import registerGetters from "./registerGetters.js";
@@ -68,6 +69,7 @@ class App {
     this.initDeploy();
     this.initAPI(options?.api);
     this.initUploaders(options?.uploaders);
+    this.initIndexes(options?.indexes);
     this.initFixtures(options?.fixtures);
     this.initQueues(options?.queues);
     this.initCronJobs(options?.cronJobs);
@@ -729,6 +731,11 @@ class App {
       }
     });
   }
+  initIndexes(indexes = null) {
+    if (indexes && typeof indexes === "function") {
+      indexes();
+    }
+  }
   initFixtures(fixtures = null) {
     if (fixtures && typeof fixtures === "function") {
       fixtures();
@@ -766,11 +773,23 @@ class App {
     }
   }
 }
+;
+const handleStartApp = async (options = {}) => {
+  const app = new App(options);
+  await app.start(options);
+  return app;
+};
 var app_default = (options = {}) => {
   return new Promise(async (resolve) => {
-    const app = new App(options);
-    await app.start(options);
-    return resolve(app.express);
+    if (options?.cluster) {
+      cluster(async () => {
+        const app = await handleStartApp(options);
+        return resolve(app.express);
+      });
+    } else {
+      const app = await handleStartApp(options);
+      return resolve(app.express);
+    }
   });
 };
 export {

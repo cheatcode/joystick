@@ -118,6 +118,8 @@ class Queue {
       typeof this.options.jobs[nextJob?.job]?.run === "function"
     ) {
       try {
+        // TODO: Need to wrap the run function with a try catch itself so when the code it's
+        // running fails, it doesn't run the rest of its code.
         await this.options.jobs[nextJob.job].run(nextJob?.payload, {
           ...nextJob,
           queue: this,
