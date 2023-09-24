@@ -77,8 +77,12 @@ var client_default = (() => websocketClient({
     if (isFileChange && isPageInLayout) {
       (async () => {
         window.__joystick_childrenBeforeHMRUpdate__ = window.joystick?._internal?.tree?.instance?.children;
-        const layoutComponentFile = await import(`${window.__joystick_layout__}?v=${new Date().getTime()}`);
-        const pageComponentFile = await import(`${window.window.__joystick_layout_page_url__}?t=${new Date().getTime()}`);
+        const layoutComponentFile = await import(`${window.__joystick_layout__}?v=${new Date().getTime()}`).catch(() => {
+          location.reload();
+        });
+        const pageComponentFile = await import(`${window.window.__joystick_layout_page_url__}?t=${new Date().getTime()}`).catch(() => {
+          location.reload();
+        });
         const layout = layoutComponentFile.default;
         const page = pageComponentFile.default;
         window.joystick.mount(layout, Object.assign({ page }, window.__joystick_ssr_props__), document.getElementById("app"));
@@ -91,11 +95,13 @@ var client_default = (() => websocketClient({
     if (isFileChange && !isPageInLayout) {
       (async () => {
         window.__joystick_childrenBeforeHMRUpdate__ = window.joystick?._internal?.tree?.instance?.children;
-        const pageComponentFile = await import(`${window.__joystick_page_url__}?v=${new Date().getTime()}`);
+        const pageComponentFile = await import(`${window.__joystick_page_url__}?v=${new Date().getTime()}`).catch(() => {
+          location.reload();
+        });
         const page = pageComponentFile.default;
         window.joystick.mount(page, Object.assign({}, window.__joystick_ssr_props__), document.getElementById("app"));
         if (connection.send) {
-          const sessions = await fetch(`${location.origin}/api/_joystick/sessions`)?.then((response) => response.strin());
+          const sessions = await fetch(`${location.origin}/api/_joystick/sessions`)?.then((response) => response.text());
           connection.send({ type: "HMR_UPDATE_COMPLETE", sessions });
         }
       })();

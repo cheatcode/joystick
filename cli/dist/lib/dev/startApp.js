@@ -3,7 +3,7 @@ import path from "path";
 const handleStartServerProcess = (execArgv = {}, options = {}) => {
   try {
     if (!options?.watch) {
-      process.loader.text("Starting app...");
+      process.loader.print("Starting app...");
     }
     return child_process.fork(
       path.resolve(".joystick/build/index.server.js"),

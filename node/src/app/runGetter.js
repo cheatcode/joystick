@@ -27,7 +27,7 @@ const handleRunGetter = async (
       sanitizedContext,
     ]);
 
-    const data = (await getterOptions?.get(input, context)) || {};
+    const data = (await getterOptions?.get(input, context));
     const response = output ? getOutput(data, output) : data;
     
     return !shouldDisableSanitizationForGetter && shouldSanitizeOutput ? sanitizeAPIResponse(

@@ -51,7 +51,6 @@ var send_default = async (args) => {
     const htmlWithStylesInlined = juice(html);
     options.html = htmlWithStylesInlined;
     options.text = text;
-    console.log(html);
     return smtp.sendMail(options);
   }
   console.warn(`Template ${templateName} could not be found in /email. Double-check the template exists and try again.`);

@@ -105,10 +105,10 @@ const handleHMRProcessMessages = (options = {}) => {
         "HAS_HMR_CONNECTIONS",
         "HAS_NO_HMR_CONNECTIONS",
         "HMR_UPDATE_COMPLETED",
-        ];
+      ];
 
       if (!processMessages.includes(message?.type)) {
-        process.loader.stable(message);
+        process.loader.print(message);
       }
 
       if (message?.type === "HAS_HMR_CONNECTIONS") {
@@ -169,7 +169,7 @@ const handleServerProcessMessages = () => {
       const processMessages = ["SERVER_CLOSED"];
 
       if (!processMessages.includes(message)) {
-        process.loader.stable(message);
+        process.loader.print(message);
       }
     });
   } catch (exception) {
@@ -181,6 +181,7 @@ const handleServerProcessSTDIO = (options = {}) => {
   try {
     if (process.serverProcess) {
       process.serverProcess.on("error", (error) => {
+        process.serverProcessLock = false;
         console.log(error);
       });
 
@@ -188,7 +189,12 @@ const handleServerProcessSTDIO = (options = {}) => {
         const message = data.toString();
 
         if (message && message.includes("App running at:") && !options?.watch) {
-          process.loader.stable(message);
+          process.loader.print(message);
+          // NOTE: Clear the lock created by handleRestartApplicationProcess to mitigate
+          // race conditions in back-to-back calls on rebuild.
+          process.serverProcessLock = false;
+          // NOTE: Clear the build error flag for the server process.
+          process.server_process_has_build_error = false;
         } else {
           if (message && !message.includes("BUILD_ERROR")) {
             console.log(message);
@@ -198,6 +204,7 @@ const handleServerProcessSTDIO = (options = {}) => {
 
       process.serverProcess.stderr.on("data", (data) => {
         process.loader.stop();
+        process.serverProcessLock = false;
 
         CLILog(data.toString(), {
           level: "danger",
@@ -226,7 +233,7 @@ const handleDeletePath = (context = {}, path = '', options = {}) => {
         }
       }
 
-      if (context.isUIUpdate) {
+      if (context.isUIUpdate && !process.server_process_has_build_error) {
         handleNotifyHMRClients(context.isHTMLUpdate);
       } else {
         handleRestartApplicationProcess(options);
@@ -254,11 +261,18 @@ const handleAddOrChangeFile = async (context = {}, path = '', options = {}) => {
       removeDeletedDependenciesFromMap(codependencies.deleted);
 
       if (process.serverProcess && fileResultsHaveErrors) {
+        // NOTE: Track whether or not we have a build error so that we can avoid
+        // sending an HMR message to the client that it can't receive. Instead,
+        // use this flag to fall back to a regular server restart as build errors
+        // are corrected and rely on the below error page message to prompt the
+        // developer to refresh the browser.
+        process.server_process_has_build_error = true;
+
         // NOTE: If there's a build error while the app is running, relay it to
         // the app's server process to display an error page in the browser.
         process.serverProcess.send(
           JSON.stringify({
-            error: "BUILD_ERROR",
+            type: "BUILD_ERROR",
             paths: fileResults
               .filter(({ success }) => !success)
               .map(({ path: pathWithError, error }) => ({
@@ -274,7 +288,7 @@ const handleAddOrChangeFile = async (context = {}, path = '', options = {}) => {
       if (!fileResultsHaveErrors) {
         process.initialBuildComplete = true;
 
-        if (context.isUIUpdate) {
+        if (context.isUIUpdate && !process.server_process_has_build_error) {
           handleNotifyHMRClients(context.isHTMLUpdate);
         } else {
           handleRestartApplicationProcess(options);
@@ -292,7 +306,7 @@ const handleAddDirectory = (context = {}, path = '', options = {}) => {
     if (context.isAddDirectory) {
       fs.mkdirSync(`./.joystick/build/${path}`);
 
-      if (context.isUIUpdate) {
+      if (context.isUIUpdate && !process.server_process_has_build_error) {
         handleNotifyHMRClients(context.isHTMLUpdate);
       } else {
         handleRestartApplicationProcess(options);
@@ -308,7 +322,7 @@ const handleCopyFile = (context = {}, path = '', options = {}) => {
     if (context.isFileToCopy && !context.isDirectory) {
       fs.writeFileSync(`./.joystick/build/${path}`, fs.readFileSync(path));
 
-      if (context.isUIUpdate) {
+      if (context.isUIUpdate && !process.server_process_has_build_error) {
         handleNotifyHMRClients(context.isHTMLUpdate);
       } else {
         handleRestartApplicationProcess(options);
@@ -324,7 +338,7 @@ const handleCopyDirectory = (context = {}, path = '', options = {}) => {
     if (context.isFileToCopy && context.isDirectory && !context.isExistingPathInBuild) {
       fs.mkdirSync(`./.joystick/build/${path}`);
 
-      if (context.isUIUpdate) {
+      if (context.isUIUpdate && !process.server_process_has_build_error) {
         handleNotifyHMRClients(context.isHTMLUpdate);
       } else {
         handleRestartApplicationProcess(options);
@@ -337,20 +351,23 @@ const handleCopyDirectory = (context = {}, path = '', options = {}) => {
 
 const handleRestartApplicationProcess = async (options = {}) => {
   try {
-      if (process.serverProcess && process.serverProcess.pid) {
-        process.serverProcess.kill();
+    if (!process.serverProcessLock && process.serverProcess && process.serverProcess.pid) {
+      process.serverProcess.kill('SIGINT');
+    }
 
-        await handleStartAppServer(options);
-
-        return Promise.resolve();
-      }
-
-      // NOTE: Original process was never initialized due to an error.
+    // NOTE: When renaming files, a race condition can occur where multiple calls
+    // to handleRestartApplicationProcess occur. To avoid port errors, put a lock
+    // in place to prevent sequential calls attempting multiple server restarts.
+    if (!process.serverProcessLock) {
+      process.serverProcessLock = true;
       await handleStartAppServer(options);
+    }
 
-      if (!process.hmrProcess) {
-        startHMR();
-      }
+    return Promise.resolve();
+
+    if (!process.hmrProcess) {
+      startHMR();
+    }
   } catch (exception) {
     throw new Error(`[dev.handleRestartApplicationProcess] ${exception.message}`);
   }
@@ -449,10 +466,6 @@ const startFileWatcher = (options = {}) => {
       // NOTE: Do this here in case a required file/folder goes missing inbetween builds.
       checkForRequiredFiles();
 
-      if (!options?.watch) {
-        process.loader.text("Rebuilding app...");
-      }
-
       const watchChangeContext = getWatchChangeContext(event, path);
 
       handleCopyDirectory(watchChangeContext, path, options);
@@ -477,7 +490,7 @@ const startFileWatcher = (options = {}) => {
 
 const runInitialBuild = async (buildSettings = {}) => {
   try {
-    process.loader.text('Building app...');
+    process.loader.print('Building app...');
 
     const filesToBuild = getFilesToBuild(buildSettings?.excludedPaths, "start");
     const fileResults = await buildFiles({
@@ -628,6 +641,10 @@ const validateOptions = (options) => {
 const dev = async (options, { resolve, reject }) => {
   try {
     validateOptions(options);
+
+    if (fs.existsSync('./.joystick/build')) {
+      child_process.execSync(`rm -rf ./.joystick/build`);
+    }
 
     const port = parseInt(options?.port || 2600, 10);
     const appPortOccupied = await checkIfPortOccupied(port);

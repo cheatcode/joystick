@@ -43,7 +43,12 @@ export default (express, setters = [], context = {}, APIOptions = {}, appInstanc
             );
           }).catch((error) => {
             if (typeof error === 'string') {
-              return res.status(500).send(error);
+              const sanitized_error = error?.replace('[runSetter] ', '')?.replace('[runSetter.handleRunSetter] ', '');
+              return res.status(500).send(
+                JSON.stringify({
+                  errors: [formatAPIError(new Error(sanitized_error))],
+                })
+              );
             }
 
             if (typeof error === 'object' && !Array.isArray(error)) {

@@ -15,6 +15,7 @@ export default (onInit = () => {}, options = {}, appInstance = {}) => {
     const server = ssl
       ? https.createServer(ssl, app).listen(port)
       : app.listen(port);
+
     const config = joystick?.settings?.config || {};
 
     middleware({
@@ -38,7 +39,7 @@ export default (onInit = () => {}, options = {}, appInstance = {}) => {
     };
 
     if (onInit) {
-      onInit(instance);
+      onInit(instance, appInstance);
     }
 
     return instance;

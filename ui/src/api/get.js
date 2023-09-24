@@ -39,6 +39,10 @@ export default (getterName = "", getterOptions = {}) => {
           });
         }
 
+        if (getterOptions?.loader?.instance) {
+          getterOptions?.loader?.instance?.setState({ [getterOptions?.loader?.state || `${getterName}_loading`]: true });
+        }
+
         return fetch(url, {
           method: 'GET',
           mode: "cors",
@@ -46,7 +50,11 @@ export default (getterName = "", getterOptions = {}) => {
           credentials: "include",
         }).then(async (response) => {
           const dataFromResponse = await handleParseResponse(response);
-  
+
+          if (getterOptions?.loader?.instance) {
+            getterOptions?.loader?.instance?.setState({ [getterOptions?.loader?.state || `${getterName}_loading`]: false });
+          }
+
           if (dataFromResponse?.errors) {
             logRequestErrors(`get request`, dataFromResponse.errors);
             return reject(dataFromResponse);
@@ -55,6 +63,11 @@ export default (getterName = "", getterOptions = {}) => {
           return resolve(dataFromResponse);
         }).catch((error) => {
           logRequestErrors(`get request`, [error]);
+
+          if (getterOptions?.loader?.instance) {
+            getterOptions?.loader?.instance?.setState({ [getterOptions?.loader?.state || `${getterName}_loading`]: false });
+          }
+
           return reject({ errors: [error] });
         });
       });

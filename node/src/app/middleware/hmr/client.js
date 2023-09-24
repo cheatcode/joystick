@@ -120,12 +120,20 @@ export default (() =>
 
           const layoutComponentFile = await import(
             `${window.__joystick_layout__}?v=${new Date().getTime()}`
-          );
+          ).catch(() => {
+            // NOTE: If this fails, the file was likely deleted or renamed. Trigger a full reload
+            // so the developer is aware.
+            location.reload();
+          });
           const pageComponentFile = await import(
             `${
               window.window.__joystick_layout_page_url__
             }?t=${new Date().getTime()}`
-          );
+          ).catch(() => {
+            // NOTE: If this fails, the file was likely deleted or renamed. Trigger a full reload
+            // so the developer is aware.
+            location.reload();
+          });
           const layout = layoutComponentFile.default;
           const page = pageComponentFile.default;
 
@@ -151,7 +159,11 @@ export default (() =>
 
           const pageComponentFile = await import(
             `${window.__joystick_page_url__}?v=${new Date().getTime()}`
-          );
+          ).catch(() => {
+            // NOTE: If this fails, the file was likely deleted or renamed. Trigger a full reload
+            // so the developer is aware.
+            location.reload();
+          });
           const page = pageComponentFile.default;
 
           window.joystick.mount(
@@ -161,7 +173,7 @@ export default (() =>
           );
 
           if (connection.send) {
-            const sessions = await fetch(`${location.origin}/api/_joystick/sessions`)?.then((response) => response.strin());
+            const sessions = await fetch(`${location.origin}/api/_joystick/sessions`)?.then((response) => response.text());
             connection.send({ type: "HMR_UPDATE_COMPLETE", sessions });
           }
         })();

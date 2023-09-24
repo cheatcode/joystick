@@ -135,18 +135,18 @@ const initDeployment = async (options, { resolve, reject }) => {
     validateOptions(options);
     console.log("");
     const loader = new Loader({ padding: "  ", defaultMessage: "Deploying app..." });
-    loader.text("Deploying app...");
+    loader.print("Deploying app...");
     const deploymentTimestamp = (/* @__PURE__ */ new Date()).toISOString();
     await buildApp(options?.deployment?.environment || options?.environment);
     const appSettings = getAppSettings(options?.environment);
-    loader.text("Uploading deployment...");
+    loader.print("Uploading deployment...");
     await uploadVersionToCDN({
       loader,
       loginSessionToken: options?.loginSessionToken,
       deployment: options?.deployment,
       version: deploymentTimestamp
     });
-    loader.text("Starting deployment...");
+    loader.print("Starting deployment...");
     await startDeployment({
       isInitialDeployment: options?.isInitialDeployment,
       loginSessionToken: options?.loginSessionToken,

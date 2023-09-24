@@ -56,9 +56,12 @@ const getUserToCreate = async (options = {}) => {
     if (options?.metadata && isObject(options.metadata) && usersDatabaseType === "sql") {
       const sqlizedMetadata = sqlizeMetadata(options.metadata);
       await createMetadataTableColumns(usersDatabase, sqlizedMetadata);
-      const { roles: [], ...restOfMetadata } = options?.metadata;
+      const metadata = { ...options?.metadata || {} };
+      if (metadata?.roles) {
+        delete metadata.roles;
+      }
       user = {
-        ...sqlizeMetadata(restOfMetadata),
+        ...sqlizeMetadata(metadata),
         ...user
       };
     }
@@ -112,6 +115,13 @@ const signup = async (options, { resolve, reject }) => {
         const role = options?.metadata?.roles[i];
         roles.grant(user?._id || user?.user_id, role);
       }
+    }
+    if (typeof process.joystick?._app?.options?.accounts?.onSignup === "function") {
+      process.joystick?._app?.options?.accounts?.onSignup({
+        ...session,
+        userId,
+        user
+      });
     }
     return resolve({
       ...session,

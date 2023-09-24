@@ -68,6 +68,13 @@ export class App {
     this.databases = [];
     this.express = {};
     this.options = options || {};
+
+    // NOTE: Make options passed to node.app() accessible globally.
+    process.joystick = {
+      _app: {
+        options,
+      }
+    };
   }
 
   async start(options = {}) {
@@ -78,7 +85,7 @@ export class App {
     
     this.initWebsockets(options?.websockets || {});
     this.initDevelopmentRoutes();
-    this.initAccounts();
+    this.initAccounts(options?.accounts);
     this.initTests();
     this.initDeploy();
     this.initAPI(options?.api);
@@ -88,15 +95,6 @@ export class App {
     this.initQueues(options?.queues);
     this.initCronJobs(options?.cronJobs);
     this.initRoutes(options?.routes);
-
-    if (process.env.NODE_ENV === "development") {
-      process.on("message", (message) => {
-        const parsedMessage = typeof message === 'string' ? JSON.parse(message) : message;
-        if (parsedMessage?.type === " RESTART_SERVER") {
-          this.express?.server?.close();
-        }
-      });
-    }
   }
 
   async invalidateCache() {
@@ -202,13 +200,21 @@ export class App {
     return process.databases;
   }
 
-  onStartApp(express = {}) {
+  onStartApp(express = {}, joystick_app_instance = {}) {
     // NOTE: Any console.log here is picked up by the stdout listener inside of
     // the start script of the CLI.
 
     process.on("message", (message) => {
       if (typeof message === 'string') {
-        process.BUILD_ERROR = JSON.parse(message);
+        const parsed_message = JSON.parse(message);
+
+        if (parsed_message?.type === 'BUILD_ERROR') {
+          process.BUILD_ERROR = JSON.parse(message);
+        }
+
+        if (parsed_message?.type === 'RESTART_SERVER') {
+          console.log('HANDLE RESTART');
+        }
       }
     });
 
@@ -753,7 +759,7 @@ export class App {
     }
   }
 
-  initAccounts() {
+  initAccounts(options = {}) {
     this.express.app.get("/api/_accounts/authenticated", async (req, res) => {
       const loginTokenHasExpired = await hasLoginTokenExpired(
         res,
@@ -860,6 +866,11 @@ export class App {
       try {
         this.sessions.delete(req?.context?.user?._id || req?.context?.user?.user_id);
         accounts._unsetAuthenticationCookie(res);
+
+        if (typeof options?.onLogout === 'function') {
+          options.onLogout(req?.context?.user);
+        }
+
         res.status(200).send(JSON.stringify({}));
       } catch (exception) {
         console.log(exception);

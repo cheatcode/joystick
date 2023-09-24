@@ -90,7 +90,7 @@ const handleHMRProcessMessages = (options = {}) => {
         "HMR_UPDATE_COMPLETED"
       ];
       if (!processMessages.includes(message?.type)) {
-        process.loader.stable(message);
+        process.loader.print(message);
       }
       if (message?.type === "HAS_HMR_CONNECTIONS") {
         process.hmrProcess.hasConnections = true;
@@ -140,7 +140,7 @@ const handleServerProcessMessages = () => {
     process.serverProcess.on("message", (message) => {
       const processMessages = ["SERVER_CLOSED"];
       if (!processMessages.includes(message)) {
-        process.loader.stable(message);
+        process.loader.print(message);
       }
     });
   } catch (exception) {
@@ -151,12 +151,15 @@ const handleServerProcessSTDIO = (options = {}) => {
   try {
     if (process.serverProcess) {
       process.serverProcess.on("error", (error) => {
+        process.serverProcessLock = false;
         console.log(error);
       });
       process.serverProcess.stdout.on("data", (data) => {
         const message = data.toString();
         if (message && message.includes("App running at:") && !options?.watch) {
-          process.loader.stable(message);
+          process.loader.print(message);
+          process.serverProcessLock = false;
+          process.server_process_has_build_error = false;
         } else {
           if (message && !message.includes("BUILD_ERROR")) {
             console.log(message);
@@ -165,6 +168,7 @@ const handleServerProcessSTDIO = (options = {}) => {
       });
       process.serverProcess.stderr.on("data", (data) => {
         process.loader.stop();
+        process.serverProcessLock = false;
         CLILog(data.toString(), {
           level: "danger",
           docs: "https://cheatcode.co/docs/joystick"
@@ -188,7 +192,7 @@ const handleDeletePath = (context = {}, path2 = "", options = {}) => {
           fs.unlinkSync(pathToUnlink);
         }
       }
-      if (context.isUIUpdate) {
+      if (context.isUIUpdate && !process.server_process_has_build_error) {
         handleNotifyHMRClients(context.isHTMLUpdate);
       } else {
         handleRestartApplicationProcess(options);
@@ -209,9 +213,10 @@ const handleAddOrChangeFile = async (context = {}, path2 = "", options = {}) => 
       const fileResultsHaveErrors = fileResults.filter((result) => !!result).map(({ success }) => success).includes(false);
       removeDeletedDependenciesFromMap(codependencies.deleted);
       if (process.serverProcess && fileResultsHaveErrors) {
+        process.server_process_has_build_error = true;
         process.serverProcess.send(
           JSON.stringify({
-            error: "BUILD_ERROR",
+            type: "BUILD_ERROR",
             paths: fileResults.filter(({ success }) => !success).map(({ path: pathWithError, error }) => ({
               path: pathWithError,
               error
@@ -222,7 +227,7 @@ const handleAddOrChangeFile = async (context = {}, path2 = "", options = {}) => 
       }
       if (!fileResultsHaveErrors) {
         process.initialBuildComplete = true;
-        if (context.isUIUpdate) {
+        if (context.isUIUpdate && !process.server_process_has_build_error) {
           handleNotifyHMRClients(context.isHTMLUpdate);
         } else {
           handleRestartApplicationProcess(options);
@@ -238,7 +243,7 @@ const handleAddDirectory = (context = {}, path2 = "", options = {}) => {
   try {
     if (context.isAddDirectory) {
       fs.mkdirSync(`./.joystick/build/${path2}`);
-      if (context.isUIUpdate) {
+      if (context.isUIUpdate && !process.server_process_has_build_error) {
         handleNotifyHMRClients(context.isHTMLUpdate);
       } else {
         handleRestartApplicationProcess(options);
@@ -252,7 +257,7 @@ const handleCopyFile = (context = {}, path2 = "", options = {}) => {
   try {
     if (context.isFileToCopy && !context.isDirectory) {
       fs.writeFileSync(`./.joystick/build/${path2}`, fs.readFileSync(path2));
-      if (context.isUIUpdate) {
+      if (context.isUIUpdate && !process.server_process_has_build_error) {
         handleNotifyHMRClients(context.isHTMLUpdate);
       } else {
         handleRestartApplicationProcess(options);
@@ -266,7 +271,7 @@ const handleCopyDirectory = (context = {}, path2 = "", options = {}) => {
   try {
     if (context.isFileToCopy && context.isDirectory && !context.isExistingPathInBuild) {
       fs.mkdirSync(`./.joystick/build/${path2}`);
-      if (context.isUIUpdate) {
+      if (context.isUIUpdate && !process.server_process_has_build_error) {
         handleNotifyHMRClients(context.isHTMLUpdate);
       } else {
         handleRestartApplicationProcess(options);
@@ -278,12 +283,14 @@ const handleCopyDirectory = (context = {}, path2 = "", options = {}) => {
 };
 const handleRestartApplicationProcess = async (options = {}) => {
   try {
-    if (process.serverProcess && process.serverProcess.pid) {
-      process.serverProcess.kill();
-      await handleStartAppServer(options);
-      return Promise.resolve();
+    if (!process.serverProcessLock && process.serverProcess && process.serverProcess.pid) {
+      process.serverProcess.kill("SIGINT");
     }
-    await handleStartAppServer(options);
+    if (!process.serverProcessLock) {
+      process.serverProcessLock = true;
+      await handleStartAppServer(options);
+    }
+    return Promise.resolve();
     if (!process.hmrProcess) {
       startHMR();
     }
@@ -375,9 +382,6 @@ const startFileWatcher = (options = {}) => {
     );
     watcher.on("all", async (event, path2) => {
       checkForRequiredFiles();
-      if (!options?.watch) {
-        process.loader.text("Rebuilding app...");
-      }
       const watchChangeContext = getWatchChangeContext(event, path2);
       handleCopyDirectory(watchChangeContext, path2, options);
       handleCopyFile(watchChangeContext, path2, options);
@@ -398,7 +402,7 @@ const startFileWatcher = (options = {}) => {
 };
 const runInitialBuild = async (buildSettings = {}) => {
   try {
-    process.loader.text("Building app...");
+    process.loader.print("Building app...");
     const filesToBuild = getFilesToBuild(buildSettings?.excludedPaths, "start");
     const fileResults = await buildFiles({
       files: filesToBuild,
@@ -529,6 +533,9 @@ const validateOptions = (options) => {
 const dev = async (options, { resolve, reject }) => {
   try {
     validateOptions(options);
+    if (fs.existsSync("./.joystick/build")) {
+      child_process.execSync(`rm -rf ./.joystick/build`);
+    }
     const port = parseInt(options?.port || 2600, 10);
     const appPortOccupied = await checkIfPortOccupied(port);
     const hmrPortOccupied = await checkIfPortOccupied(port + 1);

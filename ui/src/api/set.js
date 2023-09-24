@@ -16,7 +16,13 @@ const handleParseResponse = async (response = {}) => {
 
 const getBody = (setterOptions = {}) => {
   try {
-    return JSON.stringify(setterOptions);
+    const sanitized_setter_options = { ...setterOptions };
+
+    if (sanitized_setter_options?.loader) {
+      delete sanitized_setter_options.loader;
+    }
+
+    return JSON.stringify(sanitized_setter_options);
   } catch (exception) {
     throwFrameworkError('api.set.getBody', exception);
   }
@@ -46,6 +52,10 @@ export default (setterName = "", setterOptions = {}) => {
           });
         }
 
+        if (setterOptions?.loader?.instance) {
+          setterOptions?.loader?.instance?.setState({ [setterOptions?.loader?.state || `${setterName}_loading`]: true });
+        }
+
         return fetch(url, {
           method: 'POST',
           mode: "cors",
@@ -55,14 +65,23 @@ export default (setterName = "", setterOptions = {}) => {
         }).then(async (response) => {
           const dataFromResponse = await handleParseResponse(response);
   
+          if (setterOptions?.loader?.instance) {
+            setterOptions?.loader?.instance?.setState({ [setterOptions?.loader?.state || `${setterName}_loading`]: false });
+          }
+
           if (dataFromResponse?.errors) {
             logRequestErrors(`set request`, dataFromResponse.errors);
             return reject(dataFromResponse);
           }
-      
+
           return resolve(dataFromResponse);
         }).catch((error) => {
           logRequestErrors(`set request`, [error]);
+
+          if (setterOptions?.loader?.instance) {
+            setterOptions?.loader?.instance?.setState({ [setterOptions?.loader?.state || `${setterName}_loading`]: false });
+          }
+
           return reject({ errors: [error] });
         });
       });

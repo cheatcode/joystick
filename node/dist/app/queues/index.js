@@ -35,12 +35,12 @@ class Queue {
     }
   }
   add(options = {}) {
-    const nextRunAt2 = options?.nextRunAt === "now" || !options?.nextRunAt ? dayjs().format() : options?.nextRunAt;
+    const nextRunAt = options?.nextRunAt === "now" || !options?.nextRunAt ? dayjs().format() : options?.nextRunAt;
     this.db.addJob({
       _id: generateId(),
       status: "pending",
       ...options,
-      nextRunAt: nextRunAt2
+      nextRunAt
     });
   }
   async _checkIfOkayToRunJobs() {
@@ -83,12 +83,12 @@ class Queue {
           completed: () => this._handleJobCompleted(nextJob?._id),
           failed: (error) => this._handleJobFailed(nextJob?._id, error),
           delete: () => this._handleDeleteJob(nextJob?._id),
-          requeue: (nextRunAt2 = "") => this._handleRequeueJob(nextJob, nextRunAt2)
+          requeue: (nextRunAt = "") => this._handleRequeueJob(nextJob, nextRunAt)
         });
       } catch (exception) {
         this._handleJobFailed(nextJob?._id, exception);
         if (this.options.jobs[nextJob.job]?.requeueOnFailure) {
-          this._handleRequeueJob(nextRunAt, dayjs().add(10, "seconds").format());
+          this._handleRequeueJob(nextJob?.nextRunAt, dayjs().add(10, "seconds").format());
         }
       }
     }
@@ -102,8 +102,8 @@ class Queue {
   _handleDeleteJob(jobId = "") {
     return this.db.deleteJob(jobId);
   }
-  _handleRequeueJob(job = {}, nextRunAt2 = dayjs().format()) {
-    return this.db.requeueJob(job?._id, nextRunAt2);
+  _handleRequeueJob(job = {}, nextRunAt = dayjs().format()) {
+    return this.db.requeueJob(job?._id, nextRunAt);
   }
   list(status = "") {
     const query = {};

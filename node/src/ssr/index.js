@@ -67,7 +67,7 @@ const handleHTMLReplacementsForApp = ({
               : ""
           }
           window.__joystick_data__ = ${JSON.stringify({
-            [componentInstance.id]: dataFromComponent?.data || {},
+            [componentInstance.id]: dataFromComponent?.data,
             ...(dataForClient || {}),
           })};
           window.__joystick_user__ = ${JSON.stringify(browserSafeUser)};

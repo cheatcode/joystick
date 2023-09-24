@@ -19,7 +19,7 @@ var build_default = async (args = {}, options = {}) => {
     padding: options?.isDeploy ? "  " : "",
     defaultMessage: "Building app..."
   });
-  loader.text("Building app...");
+  loader.print("Building app...");
   const environment = options?.environment || "production";
   const settings = !options?.continuousIntegration ? await loadSettings(environment) : null;
   const filesToBuild = getFilesToBuild(settings?.config?.build?.excludedPaths);
@@ -41,7 +41,7 @@ var build_default = async (args = {}, options = {}) => {
     );
     child_process.execSync(`cd ${outputPath} && rm -rf .tar`);
   }
-  loader.stable("");
+  loader.print("");
   loader.stop();
   console.log(
     chalk.greenBright(`App built as ${options?.type} to ${outputPath}!

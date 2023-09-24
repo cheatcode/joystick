@@ -108,7 +108,7 @@ const reset = async () => {
   }
   process.isReset = true;
   process.loader = new Loader();
-  process.loader.start("Resetting database...");
+  process.loader.print("Resetting database...");
   const mongodbExists = commandExists.sync("mongod");
   if (mongodbExists) {
     const mongoProcessId = await startMongoDB();
@@ -116,7 +116,7 @@ const reset = async () => {
     const mongodb = await connectToMongoDB();
     await resetDatabase(mongodb);
     ps.kill(mongoProcessId);
-    process.loader.stable("Database reset!\n\n");
+    process.loader.print("Database reset!\n\n");
     process.exit();
   } else {
     process.loader.stop();

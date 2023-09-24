@@ -64,6 +64,13 @@ const login = async (options, { resolve, reject }) => {
     await addSessionToUser(user?._id || user?.user_id, session);
     const { password, sessions, ...restOfUser } = user;
 
+    if (typeof process.joystick?._app?.options?.accounts?.onLogin === 'function') {
+      process.joystick?._app?.options?.accounts?.onLogin({
+        ...session,
+        user,
+      });
+    }
+
     return resolve({
       ...session,
       user: getOutput(

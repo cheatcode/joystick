@@ -66,7 +66,7 @@ const handleDeployment = async ({
       deploymentToInitialize = await getDeploymentToInitialize(user, loginSessionToken);
       await checkIfProvisionAvailable();
       console.log("\n");
-      loader.text("Building deployment summary...");
+      loader.print("Building deployment summary...");
       const deploymentSummary = await getDeploymentSummary(
         deploymentToInitialize,
         loginSessionToken,

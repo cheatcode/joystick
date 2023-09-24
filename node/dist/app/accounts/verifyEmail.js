@@ -33,6 +33,9 @@ const verifyEmail = async (options, { resolve, reject }) => {
       throw new Error(`A user with this token could not be found.`);
     }
     await markEmailVerifiedAt(user?._id || user?.user_id, options?.token);
+    if (typeof process.joystick?._app?.options?.accounts?.onVerifyEmail === "function") {
+      process.joystick?._app?.options?.accounts?.onVerifyEmail(user?.emailAddress || user?.email_address);
+    }
     resolve();
   } catch (exception) {
     reject(`[verifyEmail] ${exception.message}`);

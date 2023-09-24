@@ -7,8 +7,8 @@ var hmrServer_default = (() => {
     path: "/_joystick/hmr"
   });
   process.on("message", (message) => {
-    if (typeof process.HMR_CONNECTIONS === "object") {
-      const parsedMessage = JSON.parse(message);
+    const parsedMessage = JSON.parse(message);
+    if (typeof process.HMR_CONNECTIONS === "object" && parsedMessage?.type === "RESTART_SERVER") {
       const connections = Object.values(process.HMR_CONNECTIONS);
       for (let i = 0; i < connections?.length; i += 1) {
         const connection = connections[i];

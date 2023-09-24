@@ -5,7 +5,7 @@ const startDatabaseProvider = async (environment = "development", database = {},
   try {
     const provider = providerMap[database?.provider];
     if (provider) {
-      process.loader.text(`Starting ${provider?.name}...`);
+      process.loader.print(`Starting ${provider?.name}${database?.name ? ` (${database?.name})` : ""}...`);
       process._databases = {
         ...process._databases || {},
         [database.provider]: !hasMultipleOfProvider ? await provider.connect(database, port, environment) : {

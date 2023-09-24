@@ -134,7 +134,7 @@ class Queue {
 
         if (this.options.jobs[nextJob.job]?.requeueOnFailure) {
           this._handleRequeueJob(
-            nextRunAt,
+            nextJob?.nextRunAt,
             dayjs().add(10, "seconds").format()
           );
         }

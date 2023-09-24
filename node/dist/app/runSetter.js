@@ -14,7 +14,7 @@ const handleRunSetter = async (name = "", setterOptions = {}, input = {}, output
       input,
       sanitizedContext
     ]);
-    const data = await setterOptions?.set(input, context) || {};
+    const data = await setterOptions?.set(input, context);
     const response = output ? getOutput(data, output) : data;
     return !shouldDisableSanitizationForSetter && shouldSanitizeOutput ? sanitizeAPIResponse(response, setterOptions?.sanitize || APIOptions?.sanitize) : response;
   } catch (exception) {

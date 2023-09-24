@@ -42,6 +42,7 @@ var middleware_default = ({
     next();
   });
   app.use(requestMethods);
+  app.enable("trust proxy");
   if (cspConfig) {
     app.use((req, res, next) => csp(req, res, next, cspConfig));
   }

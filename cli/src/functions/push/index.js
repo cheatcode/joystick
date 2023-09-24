@@ -81,7 +81,7 @@ const handleDeployment = async ({
       await checkIfProvisionAvailable();
 
       console.log("\n");
-      loader.text("Building deployment summary...");
+      loader.print("Building deployment summary...");
 
       const deploymentSummary = await getDeploymentSummary(
         deploymentToInitialize,

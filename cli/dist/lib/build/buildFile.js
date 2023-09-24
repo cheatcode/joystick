@@ -5,7 +5,6 @@ import getCodeFrame from "./getCodeFrame.js";
 import buildConfigs from "./buildConfigs.js";
 const handleBuildException = (exception = {}, file = "") => {
   try {
-    console.warn(exception);
     const error = exception?.errors && exception?.errors[0];
     const snippet = fs.existsSync(file) ? getCodeFrame(file, {
       line: error?.location?.line,

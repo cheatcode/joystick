@@ -29,7 +29,7 @@ var initExpress_default = (onInit = () => {
       server
     };
     if (onInit) {
-      onInit(instance);
+      onInit(instance, appInstance);
     }
     return instance;
   } catch (exception) {

@@ -54,6 +54,10 @@ export default ({
 
   app.use(requestMethods);
 
+  // NOTE: Ensures that req.ip is defined by Express when request is forwarded via
+  // a proxy server.
+  app.enable('trust proxy');
+
   if (cspConfig) {
     app.use((req, res, next) => csp(req, res, next, cspConfig));
   }

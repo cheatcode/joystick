@@ -41,6 +41,10 @@ const verifyEmail = async (options, { resolve, reject }) => {
 
     await markEmailVerifiedAt(user?._id || user?.user_id, options?.token);
 
+    if (typeof process.joystick?._app?.options?.accounts?.onVerifyEmail === 'function') {
+      process.joystick?._app?.options?.accounts?.onVerifyEmail(user?.emailAddress || user?.email_address);
+    }
+
     resolve();
   } catch (exception) {
     reject(`[verifyEmail] ${exception.message}`);

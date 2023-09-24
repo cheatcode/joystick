@@ -6,8 +6,6 @@ import buildConfigs from "./buildConfigs.js";
 
 const handleBuildException = (exception = {}, file = '') => {
   try {
-    console.warn(exception); // TODO: Keep this?
-    
     const error = exception?.errors && exception?.errors[0];
 
     const snippet = fs.existsSync(file)

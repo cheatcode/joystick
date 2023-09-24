@@ -70,8 +70,6 @@ export default async (args) => {
     options.html = htmlWithStylesInlined;
     options.text = text;
     
-    console.log(html);
-
     return smtp.sendMail(options);
   }
 

@@ -11,6 +11,9 @@ var recoverPassword_default = async (options = {}) => {
     if (process.env.NODE_ENV === "development") {
       console.log({ url });
     }
+    if (typeof process.joystick?._app?.options?.accounts?.onRecoverPassword === "function") {
+      process.joystick?._app?.options?.accounts?.onRecoverPassword(options?.emailAddress);
+    }
     await sendEmail({
       to: options.emailAddress,
       from: settings?.config?.email?.from,

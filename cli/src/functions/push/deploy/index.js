@@ -152,7 +152,7 @@ const initDeployment = async (options, { resolve, reject }) => {
     
     console.log("");
     const loader = new Loader({ padding: '  ', defaultMessage: "Deploying app..." });
-    loader.text("Deploying app...");
+    loader.print("Deploying app...");
     
     const deploymentTimestamp = new Date().toISOString();
 
@@ -162,7 +162,7 @@ const initDeployment = async (options, { resolve, reject }) => {
 
     const appSettings = getAppSettings(options?.environment);
 
-    loader.text("Uploading deployment...");
+    loader.print("Uploading deployment...");
 
     await uploadVersionToCDN({
       loader,
@@ -171,7 +171,7 @@ const initDeployment = async (options, { resolve, reject }) => {
       version: deploymentTimestamp,
     });
 
-    loader.text("Starting deployment...");
+    loader.print("Starting deployment...");
 
     await startDeployment({
       isInitialDeployment: options?.isInitialDeployment,

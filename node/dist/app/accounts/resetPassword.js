@@ -57,6 +57,12 @@ const resetPassword = async (options, { resolve, reject }) => {
       password: hashedNewPassword
     });
     await addSessionToUser(updatedUser?._id || updatedUser?.user_id, session);
+    if (typeof process.joystick?._app?.options?.accounts?.onResetPassword === "function") {
+      process.joystick?._app?.options?.accounts?.onResetPassword({
+        user: updatedUser,
+        ...session
+      });
+    }
     resolve({
       user: getOutput(updatedUser, options?.output),
       ...session

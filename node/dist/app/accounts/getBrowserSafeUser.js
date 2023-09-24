@@ -8,7 +8,8 @@ var getBrowserSafeUser_default = (user = null) => {
     "password",
     "passwordResetTokens",
     "sessions",
-    "oauth"
+    "oauth",
+    "verifyEmailTokens"
   ];
   const browserSafeUser = Object.entries(user).filter(([field]) => {
     return !unsafeFields.includes(field);
@@ -18,7 +19,7 @@ var getBrowserSafeUser_default = (user = null) => {
       return fields;
     }
   }, {});
-  return escapeKeyValuePair(browserSafeUser);
+  return browserSafeUser;
 };
 export {
   getBrowserSafeUser_default as default

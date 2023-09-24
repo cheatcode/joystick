@@ -138,7 +138,7 @@ const reset = async () => {
 
   process.isReset = true; // NOTE: Set this so we can signal context to dependencies.
   process.loader = new Loader();
-  process.loader.start("Resetting database...");
+  process.loader.print("Resetting database...");
 
   const mongodbExists = commandExists.sync("mongod");
 
@@ -151,7 +151,7 @@ const reset = async () => {
 
     ps.kill(mongoProcessId);
 
-    process.loader.stable("Database reset!\n\n");
+    process.loader.print("Database reset!\n\n");
     process.exit();
   } else {
     process.loader.stop();

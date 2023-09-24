@@ -74,7 +74,7 @@ var accounts_default = {
     });
     return user;
   },
-  createVerifyEmailToken: async (input) => {
+  createEmailVerificationToken: async (input) => {
     const token = generateId();
     await process.databases._users?.collection("users").updateOne({
       _id: input?.userId

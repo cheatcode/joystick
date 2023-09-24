@@ -11,6 +11,7 @@ export default (user = null) => {
     'passwordResetTokens',
     'sessions',
     'oauth',
+    'verifyEmailTokens',
   ];
 
   const browserSafeUser = Object.entries(user).filter(([field]) => {
@@ -22,5 +23,5 @@ export default (user = null) => {
     }
   }, {});
 
-  return escapeKeyValuePair(browserSafeUser);
+  return browserSafeUser;
 };

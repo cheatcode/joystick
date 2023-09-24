@@ -58,6 +58,7 @@ class ValidateForm {
     this.rules = options.rules || {};
     this.messages = options.messages || {};
     this.onSubmit = options.onSubmit;
+    this.onRenderError = options.onRenderError;
     this.fields = this.serialize();
   }
 
@@ -96,7 +97,9 @@ class ValidateForm {
         };
       });
 
-      return fields;
+      return fields?.filter((field) => {
+        return !!field?.element;
+      });
     }
   }
 
@@ -154,8 +157,8 @@ class ValidateForm {
 
       return this.checkIfValid();
     } else {
-      this.clearExistingErrors();
       const field = this.fields.find((field) => field.name === fieldName);
+      this.clearExistingError(fieldName);
       this.validateField(field);
       return this.checkIfValid();
     }
@@ -239,20 +242,26 @@ class ValidateForm {
     if (this.form) {
       this.form
         .querySelectorAll(".input-hint.error")
-        .forEach((element) => element.remove());
+        .forEach((element) => element.parentNode.removeChild(element));
     }
   }
 
   clearExistingError(name = "") {
     const existingError = document.getElementById(`error-${name}`);
     if (existingError) {
-      existingError.remove();
+      existingError.parentNode.removeChild(existingError);
     }
   }
 
   renderError(element, message = "") {
     if (element) {
       this.clearExistingError(element.name);
+
+      // NOTE: Developer has provided an onRenderError hook. Prefer that here
+      // instead of doing the default error rendering.
+      if (typeof this.onRenderError === 'function') {
+        return this.onRenderError(element, message);
+      }
 
       const error = document.createElement("p");
 
