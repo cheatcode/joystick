@@ -74,7 +74,7 @@ export const addToValidationQueue = (
   const rulesOnlySchema = !!(schema.type && constants.types.includes(schema.type));
 
   if (!rulesOnlySchema) {
-    Object.entries(schema).forEach(([field, rules]) => {
+    Object.entries(schema || {}).forEach(([field, rules]) => {
       const path = `${parentPath ? `${parentPath}.${field}` : field}`;
       const validationTask = addValidationTask({
         queue,
@@ -114,14 +114,14 @@ const validateInputWithSchema = async (
     // throwError("Input is required.");
   }
 
-  if (schema && Object.keys(schema) && !schema.type) {
+  if (schema && Object.keys(schema || {}) && !schema.type) {
     validateSchema(schema);
   }
 
   const queue = addToValidationQueue([], schema, input, parentPath);
 
   await Promise.all(queue.flatMap((validationTask) => {
-    return Object.entries(validationTask.rules).flatMap(
+    return Object.entries(validationTask.rules || {}).flatMap(
       async ([ruleName, ruleValue]) => {        
         const validator = constants.rules[ruleName];
         

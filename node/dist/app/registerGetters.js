@@ -1,10 +1,6 @@
 import getAPIURLComponent from "./getAPIURLComponent";
 import getAPIContext from "./getAPIContext";
 import formatAPIError from "../lib/formatAPIError";
-import validate from "../validation/index.js";
-import getOutput from "./getOutput";
-import sanitizeAPIResponse from "./sanitizeAPIResponse";
-import { isObject } from "../validation/lib/typeValidators";
 import validateSession from "./validateSession.js";
 import runGetter from "./runGetter.js";
 var registerGetters_default = (express, getters = [], context = {}, APIOptions = {}, appInstance = {}) => {
@@ -12,7 +8,7 @@ var registerGetters_default = (express, getters = [], context = {}, APIOptions =
   if (app) {
     for (const [getterName, getterOptions] of getters) {
       app.get(`/api/_getters/${getAPIURLComponent(getterName)}`, ...Array.isArray(getterOptions?.middleware) ? getterOptions?.middleware : [], async (req, res) => {
-        const isValidSession = validateSession(req, res, appInstance?.sessions);
+        const isValidSession = await validateSession(req, res);
         if (!isValidSession) {
           return;
         }

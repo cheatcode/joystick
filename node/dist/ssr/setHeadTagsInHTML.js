@@ -28,7 +28,7 @@ var setHeadTagsInHTML_default = (htmlString = "", head = null, req = {}) => {
       const metaTag = head.tags.meta[currentMetaTag];
       const existingTag = headTag.querySelector(`meta[name="${metaTag.name}"]`);
       const newTag = htmlParser.parse(`<meta />`);
-      const metaTagEntries = Object.entries(metaTag);
+      const metaTagEntries = Object.entries(metaTag || {});
       let currentMetaTagEntry = metaTagEntries.length;
       while (currentMetaTagEntry--) {
         const [attributeName, attributeValue] = metaTagEntries[currentMetaTagEntry];
@@ -47,7 +47,7 @@ var setHeadTagsInHTML_default = (htmlString = "", head = null, req = {}) => {
     while (currentLinkTag--) {
       const linkTag = head.tags.link[currentLinkTag];
       const newTag = htmlParser.parse(`<link />`);
-      let linkTagEntries = Object.entries(linkTag);
+      let linkTagEntries = Object.entries(linkTag || {});
       let currentLinkTagEntry = linkTagEntries.length;
       while (currentLinkTagEntry--) {
         const [attributeName, attributeValue] = linkTagEntries[currentLinkTagEntry];
@@ -61,7 +61,7 @@ var setHeadTagsInHTML_default = (htmlString = "", head = null, req = {}) => {
     while (currentScriptTag--) {
       const scriptTag = head.tags.script[currentScriptTag];
       const newTag = htmlParser.parse(`<script><\/script>`);
-      let scriptTagEntries = Object.entries(scriptTag);
+      let scriptTagEntries = Object.entries(scriptTag || {});
       let currentScriptTagEntry = scriptTagEntries.length;
       while (currentScriptTagEntry--) {
         const [attributeName, attributeValue] = scriptTagEntries[currentScriptTagEntry];

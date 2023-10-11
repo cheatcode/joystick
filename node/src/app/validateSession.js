@@ -1,9 +1,11 @@
 import formatAPIError from "../lib/formatAPIError.js";
+import runSessionQuery from "./runSessionQuery.js";
 
-export default (req = null, res = null, sessions = null) => {
-  const sessionToken = req?.cookies?.joystickSession;
+export default async (req = null, res = null) => {
   const csrfToken = req?.headers['x-joystick-csrf'];
-  const session = sessions?.get(sessionToken);
+  const session = await runSessionQuery('get_session', {
+    session_id: req?.cookies?.joystickSession,
+  });
 
   if (csrfToken === 'joystick_test') {
     return true;

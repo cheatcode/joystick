@@ -14,7 +14,7 @@ export default (user = null) => {
     'verifyEmailTokens',
   ];
 
-  const browserSafeUser = Object.entries(user).filter(([field]) => {
+  const browserSafeUser = Object.entries(user || {}).filter(([field]) => {
     return !unsafeFields.includes(field);
   }).reduce((fields, [field, value]) => {
     if (!fields[field]) {

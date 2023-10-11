@@ -1,31 +1,33 @@
 import setCookie from "../../lib/setCookie.js";
-import generateId from "../../lib/generateId.js";
+import runSessionQuery from "../runSessionQuery.js";
 
-export default (req, res, next, appInstance = {}) => {
-  // NOTE: Check if we have a joystickSession ID in the cookies and if we don't,
-  // generate one and assign it to the request.
-  
-  let sessionId = req?.cookies?.joystickSession;
-  
-  // NOTE: If cookie didn't exist or it has expired, generate a fresh session and add it to the
-  // sessions array on the app instance.
-  if (!sessionId) {
-    sessionId = generateId(32);
-    setCookie(res, 'joystickSession', sessionId);
+export default async (req, res, next) => {
+  // NOTE: Obnoxious but we don't have a choice because of SQL databases. MongoDB has
+  // a TTL index that can auto-expire records, but SQL databases do not. Need to manually
+  // trigger cleanup on sessions to make sure data stays tidy.
+  await runSessionQuery('delete_expired_sessions');
+
+  let session_id = req?.cookies?.joystickSession;
+
+  const existing_session = session_id ? await runSessionQuery('get_session', {
+    session_id,
+  }) : null;
+
+  // NOTE: If cookie didn't exist, generate a fresh session and add it to the
+  // sessions database along with a new CSRF token.
+  if (!existing_session) {
+    session_id = await runSessionQuery('create_session');
+    setCookie(res, 'joystickSession', session_id);
   }
   
-  if (!appInstance.sessions.get(sessionId)) {
-    appInstance.sessions.set(sessionId, { id: sessionId, csrf: generateId(32) });
-  }
-
   req.cookies = {
     ...(req?.cookies || {}),
-    joystickSession: sessionId,
+    joystickSession: session_id,
   }
   
   req.context = {
     ...(req?.context || {}),
-    session: appInstance?.sessions?.get(sessionId),
+    session: await runSessionQuery('get_session', { session_id }),
   };
   
   next();

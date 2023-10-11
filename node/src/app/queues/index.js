@@ -32,7 +32,7 @@ class Queue {
     const db = queryMap[queuesDatabase]?.queues;
 
     if (db && typeof db === "object" && !Array.isArray(db)) {
-      this.db = Object.entries(db)?.reduce(
+      this.db = Object.entries(db || {})?.reduce(
         (boundQueries = {}, [queryFunctionName, queryFunction]) => {
           boundQueries[queryFunctionName] = queryFunction.bind({
             machineId: this.machineId,

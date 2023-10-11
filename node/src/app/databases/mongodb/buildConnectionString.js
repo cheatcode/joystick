@@ -20,7 +20,7 @@ export default (connection = {}) => {
 
   const queryParameters = buildQueryParameters(connection);
 
-  if (Object.keys(queryParameters)?.length > 0 ) {
+  if (Object.keys(queryParameters || {})?.length > 0 ) {
     connectionString = `${connectionString}?${serializeQueryParameters(queryParameters)}`;
   }
 

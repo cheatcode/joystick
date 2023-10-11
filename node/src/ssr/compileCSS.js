@@ -41,7 +41,7 @@ export default (css = "", componentInstance = {}) => {
       }
 
       if (hasMinRules && hasMinWidthRules) {
-        const minWidthRules = Object.entries(css?.min?.width);
+        const minWidthRules = Object.entries(css?.min?.width || {});
         for (let i = 0; i < minWidthRules.length; i += 1) {
           const [minWidth, minWidthRule] = minWidthRules[i];
           compiledCSS += `
@@ -57,7 +57,7 @@ export default (css = "", componentInstance = {}) => {
       }
 
       if (hasMinRules && hasMinHeightRules) {
-        const minHeightRules = Object.entries(css?.min?.height);
+        const minHeightRules = Object.entries(css?.min?.height || {});
         for (let i = 0; i < minHeightRules.length; i += 1) {
           const [minHeight, minHeightRule] = minHeightRules[i];
           compiledCSS += `
@@ -73,7 +73,7 @@ export default (css = "", componentInstance = {}) => {
       }
 
       if (hasMaxRules && hasMaxWidthRules) {
-        const maxWidthRules = Object.entries(css?.max?.width);
+        const maxWidthRules = Object.entries(css?.max?.width || {});
         for (let i = 0; i < maxWidthRules.length; i += 1) {
           const [maxWidth, maxWidthRule] = maxWidthRules[i];
           compiledCSS += `
@@ -89,7 +89,7 @@ export default (css = "", componentInstance = {}) => {
       }
 
       if (hasMaxRules && hasMaxHeightRules) {
-        const maxHeightRules = Object.entries(css?.max?.height);
+        const maxHeightRules = Object.entries(css?.max?.height || {});
         for (let i = 0; i < maxHeightRules.length; i += 1) {
           const [maxHeight, maxHeightRule] = maxHeightRules[i];
           compiledCSS += `

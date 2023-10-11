@@ -26,7 +26,7 @@ var middleware_default = ({
   appInstance,
   cspConfig
 }) => {
-  if (process.env.NODE_ENV === "production") {
+  if (process.env.NODE_ENV !== "development") {
     app.use(insecure);
   }
   const buildPath = getBuildPath();
@@ -72,7 +72,9 @@ var middleware_default = ({
   app.use(cookieParser());
   app.use(bodyParser(middlewareConfig?.bodyParser));
   app.use(cors(middlewareConfig?.cors, port));
-  app.use((req, res, next) => session(req, res, next, appInstance));
+  if (process.databases?._sessions) {
+    app.use((req, res, next) => session(req, res, next));
+  }
   app.use(async (req, res, next) => {
     const loginTokenHasExpired = await hasLoginTokenExpired(res, req?.cookies?.joystickLoginToken, req?.cookies?.joystickLoginTokenExpiresAt);
     req.context = {

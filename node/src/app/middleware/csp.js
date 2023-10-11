@@ -32,7 +32,7 @@ export default (req, res, next, config = null) => {
       directiveDefaults["connect-src"].push("ws:");
     }
     
-    const directiveNames = Object.keys(directiveDefaults);
+    const directiveNames = Object.keys(directiveDefaults || {});
     
     for (let i = 0; i < directiveNames?.length; i += 1) {
       const directive = directiveNames[i];
@@ -43,7 +43,7 @@ export default (req, res, next, config = null) => {
       ];
     }
     
-    const csp = Object.keys(directiveDefaults).map((source) => {
+    const csp = Object.keys(directiveDefaults || {}).map((source) => {
       return `${source} ${directiveDefaults[source].join(" ")}`;
     })?.join('; ');
     

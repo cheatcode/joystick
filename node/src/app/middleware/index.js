@@ -31,7 +31,7 @@ export default ({
   appInstance,
   cspConfig,
 }) => {
-  if (process.env.NODE_ENV === "production") {
+  if (process.env.NODE_ENV !== "development") {
     app.use(insecure);
   }
 
@@ -115,7 +115,13 @@ export default ({
   app.use(cookieParser());
   app.use(bodyParser(middlewareConfig?.bodyParser));
   app.use(cors(middlewareConfig?.cors, port));
-  app.use((req, res, next) => session(req, res, next, appInstance));
+
+  // NOTE: Make sessions optional relative to database connection. This
+  // avoids unnecessary authorization errors and bad UX.
+  if (process.databases?._sessions) {
+    app.use((req, res, next) => session(req, res, next));
+  }
+
   app.use(async (req, res, next) => {
     const loginTokenHasExpired = await hasLoginTokenExpired(
       res,

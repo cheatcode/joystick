@@ -1,7 +1,7 @@
 import { isObject } from "../validation/lib/typeValidators";
 import camelPascalToSnake from "./camelPascalToSnake";
 const objectToSQLKeys = (objectToConvert = {}, target = []) => {
-  const keyValuePairs = Object.entries(objectToConvert);
+  const keyValuePairs = Object.entries(objectToConvert || {});
   keyValuePairs.forEach(([key, value]) => {
     if (isObject(value)) {
       target.push(camelPascalToSnake(key));

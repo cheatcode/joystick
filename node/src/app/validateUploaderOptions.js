@@ -23,7 +23,7 @@ const allowedS3Options = [
 
 export default (options = {}) => {
   const errors = [];
-  const optionNames = Object.keys(options);
+  const optionNames = Object.keys(options || {});
 
   optionNames.forEach((optionName) => {
     if (!allowedOptions.includes(optionName)) {
@@ -40,7 +40,7 @@ export default (options = {}) => {
   }
 
   if (options?.provider?.includes('local') && options.local) {
-    Object.keys(options.local).forEach((optionName) => {
+    Object.keys(options.local || {}).forEach((optionName) => {
       if (!allowedLocalOptions.includes(optionName)) {
         errors.push(`local.${optionName} is not an allowed uploader option.`);
       }
@@ -48,7 +48,7 @@ export default (options = {}) => {
   }
 
   if (options?.provider?.includes('s3') && options.s3) {
-    Object.keys(options.s3).forEach((optionName) => {
+    Object.keys(options.s3 || {}).forEach((optionName) => {
       if (!allowedS3Options.includes(optionName)) {
         errors.push(`s3.${optionName} is not an allowed uploader option.`);
       }

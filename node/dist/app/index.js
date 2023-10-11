@@ -6,6 +6,7 @@ import queryString from "query-string";
 import multer from "multer";
 import cron from "node-cron";
 import { execSync } from "child_process";
+import dayjs from "dayjs";
 import cluster from "./cluster.js";
 import initExpress from "./initExpress.js";
 import handleProcessErrors from "./handleProcessErrors";
@@ -27,8 +28,11 @@ import generateId from "../lib/generateId.js";
 import getOutput from "./getOutput.js";
 import defaultUserOutputFields from "./accounts/defaultUserOutputFields.js";
 import createMongoDBAccountsIndexes from "./databases/mongodb/createAccountsIndexes";
+import createMongoDBSessionsIndexes from "./databases/mongodb/createSessionsIndexes";
 import createPostgreSQLAccountsTables from "./databases/postgresql/createAccountsTables";
 import createPostgreSQLAccountsIndexes from "./databases/postgresql/createAccountsIndexes";
+import createPostgreSQLSessionsTables from "./databases/postgresql/createSessionsTables";
+import createPostgreSQLSessionsIndexes from "./databases/postgresql/createSessionsIndexes";
 import loadSettings from "../settings/load.js";
 import Queue from "./queues/index.js";
 import readDirectory from "../lib/readDirectory.js";
@@ -43,7 +47,6 @@ import getDataFromComponent from "../ssr/getDataFromComponent.js";
 import getTranslations from "./middleware/getTranslations.js";
 import runUserQuery from "./accounts/runUserQuery.js";
 import wait from "../lib/wait.js";
-import dayjs from "dayjs";
 import trackFunctionCall from "../test/trackFunctionCall.js";
 import getBrowserSafeUser from "./accounts/getBrowserSafeUser.js";
 process.setMaxListeners(0);
@@ -52,8 +55,6 @@ class App {
     this.setMachineId();
     this.setJoystickProcessId();
     handleProcessErrors(options?.events);
-    const HMRSessions = JSON.parse(process.env.HMR_SESSIONS || "{}");
-    this.sessions = new Map(HMRSessions ? Object.entries(HMRSessions) : []);
     this.databases = [];
     this.express = {};
     this.options = options || {};
@@ -68,7 +69,6 @@ class App {
     this.databases = await this.loadDatabases();
     this.express = initExpress(this.onStartApp, options, this);
     this.initWebsockets(options?.websockets || {});
-    this.initDevelopmentRoutes();
     this.initAccounts(options?.accounts);
     this.initTests();
     this.initDeploy();
@@ -96,11 +96,20 @@ class App {
     const hasQueuesDatabase = settings?.config?.databases?.some((database = {}) => {
       return !!database?.queues;
     });
+    const hasSessionsDatabase = settings?.config?.databases?.some((database = {}) => {
+      return !!database?.sessions;
+    });
     const hasMongoDBUsersDatabase = settings?.config?.databases?.some((database = {}) => {
       return database?.provider === "mongodb" && database?.users;
     });
+    const hasMongoDBSessionsDatabase = settings?.config?.databases?.some((database = {}) => {
+      return database?.provider === "mongodb" && database?.sessions;
+    });
     const hasPostgreSQLUsersDatabase = settings?.config?.databases?.some((database = {}) => {
       return database?.provider === "postgresql" && database?.users;
+    });
+    const hasPostgreSQLSessionsDatabase = settings?.config?.databases?.some((database = {}) => {
+      return database?.provider === "postgresql" && database?.sessions;
     });
     const databases = settings?.config?.databases?.map((database) => {
       return {
@@ -145,12 +154,22 @@ class App {
     if (hasQueuesDatabase) {
       process.databases._queues = getTargetDatabaseConnection("queues")?.connection;
     }
+    if (hasSessionsDatabase) {
+      process.databases._sessions = getTargetDatabaseConnection("sessions")?.connection;
+    }
     if (hasMongoDBUsersDatabase) {
       await createMongoDBAccountsIndexes();
+    }
+    if (hasMongoDBSessionsDatabase) {
+      await createMongoDBSessionsIndexes();
     }
     if (hasPostgreSQLUsersDatabase) {
       await createPostgreSQLAccountsTables();
       await createPostgreSQLAccountsIndexes();
+    }
+    if (hasPostgreSQLSessionsDatabase) {
+      await createPostgreSQLSessionsTables();
+      await createPostgreSQLSessionsIndexes();
     }
     return process.databases;
   }
@@ -292,15 +311,15 @@ class App {
     const setters = api?.setters;
     const options = api?.options;
     const context = api?.context;
-    if (getters && isObject(getters) && Object.keys(getters).length > 0) {
-      registerGetters(this.express, Object.entries(getters), context, options, this);
+    if (getters && isObject(getters) && Object.keys(getters || {}).length > 0) {
+      registerGetters(this.express, Object.entries(getters || {}), context, options, this);
     }
-    if (setters && isObject(setters) && Object.keys(setters).length > 0) {
-      registerSetters(this.express, Object.entries(setters), context, options, this);
+    if (setters && isObject(setters) && Object.keys(setters || {}).length > 0) {
+      registerSetters(this.express, Object.entries(setters || {}), context, options, this);
     }
   }
   initRoutes(routes = {}) {
-    Object.entries(routes).forEach(([path, callback]) => {
+    Object.entries(routes || {}).forEach(([path, callback]) => {
       const isObjectBasedRoute = path && callback && typeof callback === "object";
       const isFunctionBasedRoute = path && callback && typeof callback === "function";
       const method = callback?.method?.toLowerCase();
@@ -424,7 +443,7 @@ class App {
           path: "/api/_websockets/uploaders"
         })
       },
-      ...Object.entries(userWebsockets).reduce((definitions = {}, [userWebsocketName, userWebsocketDefinition]) => {
+      ...Object.entries(userWebsockets || {}).reduce((definitions = {}, [userWebsocketName, userWebsocketDefinition]) => {
         definitions[userWebsocketName] = {
           server: new WebSocket.WebSocketServer({
             noServer: true,
@@ -446,7 +465,7 @@ class App {
         return definitions;
       }, {})
     };
-    Object.entries(websocketServers).forEach(([websocketName, websocketDefinition]) => {
+    Object.entries(websocketServers || {}).forEach(([websocketName, websocketDefinition]) => {
       websocketDefinition.server.on("connection", function connection(websocketConnection, connectionRequest) {
         try {
           const [_path, params] = connectionRequest?.url?.split("?");
@@ -501,17 +520,6 @@ class App {
         });
       }
     });
-  }
-  initDevelopmentRoutes() {
-    if (["development", "test"].includes(process.env.NODE_ENV)) {
-      this.express.app.get("/api/_joystick/sessions", async (req, res) => {
-        const sessions = Array.from(this.sessions.entries())?.reduce((acc = {}, [key, value]) => {
-          acc[key] = value;
-          return acc;
-        }, {});
-        res.status(200).send(JSON.stringify(sessions));
-      });
-    }
   }
   initAccounts(options = {}) {
     this.express.app.get("/api/_accounts/authenticated", async (req, res) => {
@@ -646,7 +654,7 @@ class App {
   }
   initUploaders(uploaders = {}) {
     const { app } = this.express;
-    Object.entries(uploaders).forEach(([uploaderName, uploaderOptions]) => {
+    Object.entries(uploaders || {}).forEach(([uploaderName, uploaderOptions]) => {
       const errors = validateUploaderOptions(uploaderOptions);
       if (errors?.length > 0) {
         log(errors, {
@@ -749,7 +757,7 @@ class App {
   }
   initQueues(queues = null) {
     if (queues && typeof queues === "object" && !Array.isArray(queues)) {
-      const queueDefinitions = Object.entries(queues);
+      const queueDefinitions = Object.entries(queues || {});
       for (let i = 0; i < queueDefinitions.length; i += 1) {
         const [queueName, queueOptions] = queueDefinitions[i];
         process.queues = {
@@ -761,7 +769,7 @@ class App {
   }
   initCronJobs(cronJobs = null) {
     if (cronJobs && typeof cronJobs === "object" && !Array.isArray(cronJobs)) {
-      const cronJobDefinitions = Object.entries(cronJobs);
+      const cronJobDefinitions = Object.entries(cronJobs || {});
       for (let i = 0; i < cronJobDefinitions.length; i += 1) {
         const [cronJobName, cronJobOptions] = cronJobDefinitions[i];
         if (cronJobOptions?.schedule && cronJobOptions?.run && typeof cronJobOptions?.run === "function") {

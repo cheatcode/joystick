@@ -1,21 +1,22 @@
 import setCookie from "../../lib/setCookie.js";
-import generateId from "../../lib/generateId.js";
-var session_default = (req, res, next, appInstance = {}) => {
-  let sessionId = req?.cookies?.joystickSession;
-  if (!sessionId) {
-    sessionId = generateId(32);
-    setCookie(res, "joystickSession", sessionId);
-  }
-  if (!appInstance.sessions.get(sessionId)) {
-    appInstance.sessions.set(sessionId, { id: sessionId, csrf: generateId(32) });
+import runSessionQuery from "../runSessionQuery.js";
+var session_default = async (req, res, next) => {
+  await runSessionQuery("delete_expired_sessions");
+  let session_id = req?.cookies?.joystickSession;
+  const existing_session = session_id ? await runSessionQuery("get_session", {
+    session_id
+  }) : null;
+  if (!existing_session) {
+    session_id = await runSessionQuery("create_session");
+    setCookie(res, "joystickSession", session_id);
   }
   req.cookies = {
     ...req?.cookies || {},
-    joystickSession: sessionId
+    joystickSession: session_id
   };
   req.context = {
     ...req?.context || {},
-    session: appInstance?.sessions?.get(sessionId)
+    session: await runSessionQuery("get_session", { session_id })
   };
   next();
 };

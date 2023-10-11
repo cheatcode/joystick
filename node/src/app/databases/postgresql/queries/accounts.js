@@ -36,7 +36,7 @@ export default {
   createUser: async (input = {}) => {
     const userId = generateId();
 
-    const keys = ['user_id', ...(Object.keys(input) || [])]?.map((inputKey) => {
+    const keys = ['user_id', ...(Object.keys(input || {}) || [])]?.map((inputKey) => {
       return camelPascalToSnake(inputKey);
     })?.join(',');
 
@@ -87,7 +87,7 @@ export default {
   },
   deleteOldSessions: async (input = {}) => {
     await process.databases._users?.query(
-      `DELETE FROM users_sessions WHERE user_id = $1 AND token_expires_at::date < NOW()`,
+      `DELETE FROM users_sessions WHERE user_id = $1 AND token_expires_at::timestamp < NOW()`,
       [input?.userId]
     );
   },

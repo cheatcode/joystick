@@ -87,8 +87,7 @@ var client_default = (() => websocketClient({
         const page = pageComponentFile.default;
         window.joystick.mount(layout, Object.assign({ page }, window.__joystick_ssr_props__), document.getElementById("app"));
         if (connection.send) {
-          const sessions = await fetch(`${location.origin}/api/_joystick/sessions`)?.then((response) => response.text());
-          connection.send({ type: "HMR_UPDATE_COMPLETE", sessions });
+          connection.send({ type: "HMR_UPDATE_COMPLETE" });
         }
       })();
     }
@@ -101,8 +100,7 @@ var client_default = (() => websocketClient({
         const page = pageComponentFile.default;
         window.joystick.mount(page, Object.assign({}, window.__joystick_ssr_props__), document.getElementById("app"));
         if (connection.send) {
-          const sessions = await fetch(`${location.origin}/api/_joystick/sessions`)?.then((response) => response.text());
-          connection.send({ type: "HMR_UPDATE_COMPLETE", sessions });
+          connection.send({ type: "HMR_UPDATE_COMPLETE" });
         }
       })();
     }

@@ -1,8 +1,7 @@
+import get_insecure_landing_page_html from "./get_insecure_landing_page_html.js";
 var insecure_default = (req, res, next) => {
-  const forwardedProtocol = req.get("x-forwarded-proto");
-  const isForwardedFromHTTPS = forwardedProtocol && forwardedProtocol === "https";
-  if (process.env.NODE_ENV != "development" && !req.secure && !isForwardedFromHTTPS) {
-    return res.redirect("https://" + req.headers.host + req.url);
+  if (!req.secure) {
+    return res.send(get_insecure_landing_page_html(req?.headers?.host, req?.url));
   }
   next();
 };

@@ -40,7 +40,7 @@ export default (htmlString = '', head = null, req = {}) => {
       const existingTag = headTag.querySelector(`meta[name="${metaTag.name}"]`);
       const newTag = htmlParser.parse(`<meta />`);
 
-      const metaTagEntries = Object.entries(metaTag);
+      const metaTagEntries = Object.entries(metaTag || {});
       let currentMetaTagEntry = metaTagEntries.length;
 
       while (currentMetaTagEntry--) {
@@ -65,7 +65,7 @@ export default (htmlString = '', head = null, req = {}) => {
       const linkTag = head.tags.link[currentLinkTag];
       const newTag = htmlParser.parse(`<link />`);
 
-      let linkTagEntries = Object.entries(linkTag);
+      let linkTagEntries = Object.entries(linkTag || {});
       let currentLinkTagEntry = linkTagEntries.length;
   
       while(currentLinkTagEntry--) {
@@ -84,7 +84,7 @@ export default (htmlString = '', head = null, req = {}) => {
       const scriptTag = head.tags.script[currentScriptTag];
       const newTag = htmlParser.parse(`<script></script>`);
 
-      let scriptTagEntries = Object.entries(scriptTag);
+      let scriptTagEntries = Object.entries(scriptTag || {});
       let currentScriptTagEntry = scriptTagEntries.length;
 
       while(currentScriptTagEntry--) {

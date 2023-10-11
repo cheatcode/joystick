@@ -1,10 +1,6 @@
 import getAPIURLComponent from "./getAPIURLComponent.js";
 import getAPIContext from "./getAPIContext.js";
 import formatAPIError from "../lib/formatAPIError.js";
-import validate from "../validation/index.js";
-import getOutput from "./getOutput.js";
-import sanitizeAPIResponse from "./sanitizeAPIResponse.js";
-import { isObject } from "../validation/lib/typeValidators.js";
 import validateSession from "./validateSession.js";
 import runSetter from "./runSetter.js";
 var registerSetters_default = (express, setters = [], context = {}, APIOptions = {}, appInstance = {}) => {
@@ -12,7 +8,7 @@ var registerSetters_default = (express, setters = [], context = {}, APIOptions =
   if (app) {
     for (const [setterName, setterOptions] of setters) {
       app.post(`/api/_setters/${getAPIURLComponent(setterName)}`, ...Array.isArray(setterOptions?.middleware) ? setterOptions?.middleware : [], async (req, res) => {
-        const isValidSession = validateSession(req, res, appInstance?.sessions);
+        const isValidSession = await validateSession(req, res);
         if (!isValidSession) {
           return;
         }

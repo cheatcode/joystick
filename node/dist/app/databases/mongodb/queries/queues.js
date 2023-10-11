@@ -1,4 +1,5 @@
 import dayjs from "dayjs";
+import getTargetDatabaseProvider from "../../getTargetDatabaseProvider.js";
 var queues_default = {
   addJob: function(jobToAdd = {}) {
     const db = process.databases._queues?.collection(`queue_${this.queue.name}`);

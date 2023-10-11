@@ -4,7 +4,7 @@ const isObject = (value) => {
 const findComponentInTree = (tree = {}, componentId = "", callback = {}) => {
   const isTree = tree && tree.id;
   if (isObject(tree) && isTree) {
-    const entries = Object.entries(tree);
+    const entries = Object.entries(tree || {});
     for (let i = 0; i < entries.length; i += 1) {
       const [treeKey, treeValue] = entries[i];
       if (treeKey === "id" && treeValue === componentId) {

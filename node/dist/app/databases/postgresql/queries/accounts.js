@@ -21,7 +21,7 @@ var accounts_default = {
   },
   createUser: async (input = {}) => {
     const userId = generateId();
-    const keys = ["user_id", ...Object.keys(input) || []]?.map((inputKey) => {
+    const keys = ["user_id", ...Object.keys(input || {}) || []]?.map((inputKey) => {
       return camelPascalToSnake(inputKey);
     })?.join(",");
     const values = [userId, ...Object.values(input) || []];
@@ -47,7 +47,7 @@ var accounts_default = {
     await process.databases._users?.query(`DELETE FROM users WHERE user_id = $1`, [input?.userId]);
   },
   deleteOldSessions: async (input = {}) => {
-    await process.databases._users?.query(`DELETE FROM users_sessions WHERE user_id = $1 AND token_expires_at::date < NOW()`, [input?.userId]);
+    await process.databases._users?.query(`DELETE FROM users_sessions WHERE user_id = $1 AND token_expires_at::timestamp < NOW()`, [input?.userId]);
   },
   addSession: async (input = {}) => {
     await process.databases._users?.query(`INSERT INTO users_sessions(user_id, token, token_expires_at) VALUES ($1, $2, $3);`, [input?.userId, input?.session?.token, input?.session?.tokenExpiresAt]);

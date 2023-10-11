@@ -17,7 +17,7 @@ const sanitizeAPIResponse = (data = null) => {
   }
 
   if (util.isObject(sanitizedData) && !Array.isArray(sanitizedData)) {
-    sanitizedData = Object.entries(sanitizedData)?.reduce((result = {}, [key, value]) => {
+    sanitizedData = Object.entries(sanitizedData || {})?.reduce((result = {}, [key, value]) => {
       result[key] = sanitizeAPIResponse(value);
       return result;
     }, {});

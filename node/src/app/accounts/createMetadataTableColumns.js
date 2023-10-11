@@ -2,7 +2,7 @@ import escape from 'pg-escape';
 
 export default async (usersDatabase = '', sqlizedMetadata = {}) => {
   if (usersDatabase === 'postgresql') {
-    const columns = Object.keys(sqlizedMetadata);
+    const columns = Object.keys(sqlizedMetadata || {});
     
     for (let i = 0; i < columns?.length; i += 1) {
       await process.databases.postgresql.query(

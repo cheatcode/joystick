@@ -291,7 +291,7 @@ const getBaseCSS = (baseHTMLName = "") => {
 
 const addAttributesToDOM = (dom = {}, attributes = {}) => {
   try {
-    const attributeKeys = Object.keys(attributes);
+    const attributeKeys = Object.keys(attributes || {});
     const attributeKeysWithoutClassList = attributeKeys?.filter(
       (key) => key !== "class"
     );

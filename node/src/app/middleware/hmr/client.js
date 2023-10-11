@@ -144,8 +144,7 @@ export default (() =>
           );
 
           if (connection.send) {
-            const sessions = await fetch(`${location.origin}/api/_joystick/sessions`)?.then((response) => response.text());
-            connection.send({ type: "HMR_UPDATE_COMPLETE", sessions });
+            connection.send({ type: "HMR_UPDATE_COMPLETE" });
           }
         })();
       }
@@ -173,8 +172,7 @@ export default (() =>
           );
 
           if (connection.send) {
-            const sessions = await fetch(`${location.origin}/api/_joystick/sessions`)?.then((response) => response.text());
-            connection.send({ type: "HMR_UPDATE_COMPLETE", sessions });
+            connection.send({ type: "HMR_UPDATE_COMPLETE" });
           }
         })();
       }

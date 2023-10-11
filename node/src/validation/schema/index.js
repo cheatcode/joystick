@@ -3,7 +3,7 @@ import { isObject } from "../lib/typeValidators";
 import constants from "../lib/constants";
 
 const validateRuleType = (schema) => {
-  Object.entries(schema).forEach(([field, rules]) => {
+  Object.entries(schema || {}).forEach(([field, rules]) => {
     if (rules && rules.type && !constants.types.includes(rules.type)) {
       throw new Error(
         `Invalid value for schema field "${field}" type rule. ${
@@ -17,9 +17,9 @@ const validateRuleType = (schema) => {
 };
 
 const validateRuleNames = (schema) => {
-  Object.entries(schema).forEach(([field, rules]) => {
-    Object.keys(rules).forEach((ruleName) => {
-      const ruleNames = Object.keys(constants.rules);
+  Object.entries(schema || {}).forEach(([field, rules]) => {
+    Object.keys(rules || {}).forEach((ruleName) => {
+      const ruleNames = Object.keys(constants.rules || {});
       if (!ruleNames.includes(ruleName)) {
         throw new Error(
           `Invalid rule name ${ruleName} in rule for ${field} field.`
@@ -30,7 +30,7 @@ const validateRuleNames = (schema) => {
 };
 
 const validateRulesAreObjects = (schema) => {
-  Object.entries(schema).forEach(([field, rules]) => {
+  Object.entries(schema || {}).forEach(([field, rules]) => {
     if (!isObject(rules)) {
       throw new Error(
         `Must pass an object containing rules to validate by for ${field} field.`

@@ -1,10 +1,6 @@
 import getAPIURLComponent from "./getAPIURLComponent.js";
 import getAPIContext from "./getAPIContext.js";
 import formatAPIError from "../lib/formatAPIError.js";
-import validate from "../validation/index.js";
-import getOutput from "./getOutput.js";
-import sanitizeAPIResponse from "./sanitizeAPIResponse.js";
-import { isObject } from "../validation/lib/typeValidators.js";
 import validateSession from "./validateSession.js";
 import runSetter from "./runSetter.js";
 
@@ -19,7 +15,7 @@ export default (express, setters = [], context = {}, APIOptions = {}, appInstanc
           ? setterOptions?.middleware
           : []),
         async (req, res) => {
-          const isValidSession = validateSession(req, res, appInstance?.sessions);
+          const isValidSession = await validateSession(req, res);
 
           if (!isValidSession) {
             // NOTE: validateSession handles the 403 error so just return here.

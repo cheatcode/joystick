@@ -1,4 +1,3 @@
-import getErrorObject from "./getErrorObject";
 var formatAPIError_default = (exception = {}, location = "", code = 0) => {
   return {
     code,

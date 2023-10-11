@@ -27,7 +27,7 @@ var csp_default = (req, res, next, config = null) => {
       directiveDefaults["script-src"].push("'unsafe-eval'");
       directiveDefaults["connect-src"].push("ws:");
     }
-    const directiveNames = Object.keys(directiveDefaults);
+    const directiveNames = Object.keys(directiveDefaults || {});
     for (let i = 0; i < directiveNames?.length; i += 1) {
       const directive = directiveNames[i];
       directiveDefaults[directive] = [
@@ -36,7 +36,7 @@ var csp_default = (req, res, next, config = null) => {
         ...directives[directive] || []
       ];
     }
-    const csp = Object.keys(directiveDefaults).map((source) => {
+    const csp = Object.keys(directiveDefaults || {}).map((source) => {
       return `${source} ${directiveDefaults[source].join(" ")}`;
     })?.join("; ");
     res.setHeader("Content-Security-Policy", csp);

@@ -12,7 +12,7 @@ var buildConnectionString_default = (connection = {}) => {
     connectionString = `${connectionString}/${connection.database}`;
   }
   const queryParameters = buildQueryParameters(connection);
-  if (Object.keys(queryParameters)?.length > 0) {
+  if (Object.keys(queryParameters || {})?.length > 0) {
     connectionString = `${connectionString}?${serializeQueryParameters(queryParameters)}`;
   }
   return connectionString;

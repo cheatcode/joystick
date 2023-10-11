@@ -38,7 +38,7 @@ const insertUserInDatabase = async (user = {}) => {
 
 const sqlizeMetadata = (metadata = {}) => {
   try {
-    return Object.entries(metadata).reduce((sqlized = {}, [key, value]) => {
+    return Object.entries(metadata || {}).reduce((sqlized = {}, [key, value]) => {
       sqlized[stringToSnakeCase(key)] = value;
       return sqlized;
     }, {});

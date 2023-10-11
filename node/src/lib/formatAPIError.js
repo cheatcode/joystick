@@ -1,5 +1,3 @@
-import getErrorObject from "./getErrorObject";
-
 export default (exception = {}, location = "", code = 0) => {
   return {
     code,

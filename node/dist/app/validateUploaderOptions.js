@@ -20,7 +20,7 @@ const allowedS3Options = [
 ];
 var validateUploaderOptions_default = (options = {}) => {
   const errors = [];
-  const optionNames = Object.keys(options);
+  const optionNames = Object.keys(options || {});
   optionNames.forEach((optionName) => {
     if (!allowedOptions.includes(optionName)) {
       errors.push(`${optionName} is not an allowed uploader option.`);
@@ -33,14 +33,14 @@ var validateUploaderOptions_default = (options = {}) => {
     errors.push(`If an uploader provider is 's3', s3 object must be specified with configuration.`);
   }
   if (options?.provider?.includes("local") && options.local) {
-    Object.keys(options.local).forEach((optionName) => {
+    Object.keys(options.local || {}).forEach((optionName) => {
       if (!allowedLocalOptions.includes(optionName)) {
         errors.push(`local.${optionName} is not an allowed uploader option.`);
       }
     });
   }
   if (options?.provider?.includes("s3") && options.s3) {
-    Object.keys(options.s3).forEach((optionName) => {
+    Object.keys(options.s3 || {}).forEach((optionName) => {
       if (!allowedS3Options.includes(optionName)) {
         errors.push(`s3.${optionName} is not an allowed uploader option.`);
       }
