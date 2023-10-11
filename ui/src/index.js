@@ -13,6 +13,7 @@ import generateId from "./lib/generateId";
 import mount from "./mount";
 import QueueArray from "./lib/queueArray";
 import updateCSSInHead from "./css/update";
+import debounce from './lib/debounce';
 
 export const accounts = _accounts;
 export const cache = _cache;
@@ -46,6 +47,7 @@ const joystick = {
   // directly manipulate the DOM.
   _external: {},
   _internal: {
+    last_interaction: null,
     css: {
       update: updateCSSInHead,
     },
@@ -79,6 +81,25 @@ const joystick = {
   upload,
   timers: {},
 };
+
+// NOTE: UX detail. CSRF tokens expire after 1 hour. This gives us a 30 minute refresh
+// after no interaction from the user to keep the CSRF token valid.
+if (typeof window !== 'undefined' && environment() !== 'test') {
+  document.body.addEventListener('mouseover', () => {
+    debounce(() => {
+      joystick._internal.last_interaction = new Date().toISOString();
+    }, 1000);
+  });
+
+  setInterval(() => {
+    const half_hour_ago = new Date();
+    half_hour_ago.setMinutes(half_hour_ago.getMinutes() - 30);
+
+    if (joystick._internal.last_interaction <= half_hour_ago.toISOString()) {
+      location.reload();
+    }
+  }, 30 * 1000);
+}
 
 attachJoystickToWindow(joystick);
 
