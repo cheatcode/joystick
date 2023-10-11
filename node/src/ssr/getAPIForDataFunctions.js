@@ -12,6 +12,7 @@ export default (req = {}, api = {}) => {
         return get({
           getterName,
           getterOptions: api?.getters[getterName] || {},
+          skip: getterOptions?.skip,
           input: getterOptions?.input,
           output: getterOptions?.output,
           context: req?.context,
@@ -22,6 +23,7 @@ export default (req = {}, api = {}) => {
         return set({
           setterName,
           setterOptions: api?.setters[setterName] || {},
+          skip: setterOptions?.skip,
           input: setterOptions?.input,
           output: setterOptions?.output,
           context: req?.context,

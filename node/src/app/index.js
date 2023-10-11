@@ -870,7 +870,6 @@ export class App {
 
     this.express.app.post("/api/_accounts/logout", async (req, res) => {
       try {
-        this.sessions.delete(req?.context?.user?._id || req?.context?.user?.user_id);
         accounts._unsetAuthenticationCookie(res);
 
         if (typeof options?.onLogout === 'function') {
