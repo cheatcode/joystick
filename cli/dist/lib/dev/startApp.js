@@ -19,8 +19,7 @@ const handleStartServerProcess = (execArgv = {}, options = {}) => {
           NODE_ENV: process.env.NODE_ENV,
           ROOT_URL: process.env.ROOT_URL,
           PORT: process.env.PORT,
-          JOYSTICK_SETTINGS: process.env.JOYSTICK_SETTINGS,
-          HMR_SESSIONS: options?.sessionsBeforeHMRUpdate || "{}"
+          JOYSTICK_SETTINGS: process.env.JOYSTICK_SETTINGS
         }
       }
     );

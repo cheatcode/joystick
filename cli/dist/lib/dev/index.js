@@ -101,8 +101,7 @@ const handleHMRProcessMessages = (options = {}) => {
       if (message?.type === "HMR_UPDATE_COMPLETED") {
         setTimeout(() => {
           handleRestartApplicationProcess({
-            ...options,
-            sessionsBeforeHMRUpdate: message?.sessions
+            ...options
           });
         }, 500);
       }
@@ -303,8 +302,7 @@ const handleStartAppServer = async (options = {}) => {
     const serverProcess = await startApp({
       watch: options?.watch,
       nodeMajorVersion: options?.nodeMajorVersion,
-      port: options?.port,
-      sessionsBeforeHMRUpdate: options?.sessionsBeforeHMRUpdate
+      port: options?.port
     });
     if (serverProcess) {
       processIds.push(serverProcess.pid);

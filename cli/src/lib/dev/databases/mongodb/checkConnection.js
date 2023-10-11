@@ -5,10 +5,7 @@ import buildConnectionString from "./buildConnectionString.js";
 
 export default async (connection = {}, options = {}) => {
   const connectionString = buildConnectionString(connection);
-  console.log({
-    connectionString
-  })
-
+  
   try {
     const connectionOptions = {
       connectTimeoutMS: 3000,

@@ -44,6 +44,7 @@ const validateDatabasesFromSettings = (databases = []) => {
     );
     const userDatabases = databases.filter((database) => !!database.users);
     const queueDatabases = databases.filter((database) => !!database.queues);
+    const sessionDatabases = databases.filter((database) => !!database.sessions);
     if (databasesNotAsObjects && databasesNotAsObjects.length > 0) {
       CLILog(`Please ensure that each database in the config.databases array in your settings.${process.env.NODE_ENV}.json is an object. Correct the array and restart your app.`, {
         level: "danger",
@@ -62,6 +63,13 @@ const validateDatabasesFromSettings = (databases = []) => {
       CLILog(`Please select a single database for your queues and restart your app.`, {
         level: "danger",
         docs: "https://cheatcode.co/docs/joystick/cli/databases#queues"
+      });
+      process.exit(1);
+    }
+    if (sessionDatabases && sessionDatabases.length > 1) {
+      CLILog(`Please select a single database for your sessions and restart your app.`, {
+        level: "danger",
+        docs: "https://cheatcode.co/docs/joystick/cli/databases#sessions"
       });
       process.exit(1);
     }

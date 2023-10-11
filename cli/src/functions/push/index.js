@@ -1,245 +1,202 @@
-import fs from "fs";
+import chalk from 'chalk';
 import inquirer from "inquirer";
-import chalk from "chalk";
-import CLILog from "../../lib/CLILog.js";
-import prompts from "./prompts.js";
-import getDeployment from "../../lib/getDeployment.js";
-import getDeploymentSummary from "./getDeploymentSummary.js";
-import providerMap from "./providerMap.js";
-import Loader from "../../lib/loader.js";
-import getSessionToken from "./getSessionToken.js";
-import getUserFromSessionToken from "./getUserFromSessionToken.js";
-import colorLog from "../../lib/colorLog.js";
-import checkIfProvisionAvailable from "./checkIfProvisionAvailable.js     ";
-import deploy from './deploy/index.js';
+import get_settings_file from './get_settings_file.js';
+import validate_push_config from './validate_push_config.js';
+import get_session_token from './get_session_token.js';
+import CLILog from '../../lib/CLILog.js';
+import get_provision_domain from './get_provision_domain.js';
+import get_app_domain from './get_app_domain.js';
+import get_deployment from './get_deployment.js';
+import validate_deployment from './validate_deployment.js';
+import Loader from '../../lib/loader.js';
+import build from '../../lib/build/index.js';
+import create_version from './create_version.js';
+import upload_build_to_cdn from './upload_build_to_cdn.js';
+import confirm_deployment_prompt from './prompts/confirm_deployment.js';
+import handle_initial_deployment from './handle_initial_deployment.js';
+import handle_version_deployment from './handle_version_deployment.js';
 
-const warnUnfeasibleDeployment = (deploymentToInitialize = {}, deploymentSummary = {}) => {
+const log_validation_error_response = (validation_type = '', root_error = '', validation_response = {}) => {
   try {
-    const totalInstancesRequested =
-        deploymentToInitialize?.loadBalancerInstances +
-        deploymentToInitialize?.appInstances;
-    const deploymentFeasible =
-        totalInstancesRequested <= deploymentSummary?.limits?.available;
+  	let errors_list = ``;
 
-    if (!deploymentFeasible) {
-      CLILog(
-        `${chalk.yellowBright(
-          `Cannot push with this configuration as it would exceed the instance limits set by your selected provider (${
-            providerMap[deploymentToInitialize?.provider]
-          }).`
-          )} Your account there is limited to ${
-          deploymentSummary?.limits?.account
-        } instances (currently using ${
-          deploymentSummary?.limits?.existing
-        }).\n\n You requested ${totalInstancesRequested} instances which would go over your account limit. Please adjust your configuration (or request an increase from your provider) and try again.`,
-        {
-          padding: " ",
-          level: "danger",
-          docs: "https://cheatcode.co/docs/push/provider-limits",
-        }
-        );
-      process.exit(0);
-    }
-  } catch (exception) {
-    throw new Error(`[actionName.warnUnfeasibleDeployment] ${exception.message}`);
-  }
-};
+  	for (let i = 0; i < validation_response?.errors?.length; i += 1) {
+  		const validation_error = validation_response?.errors[i];
 
-const getDeploymentToInitialize = async (user, loginSessionToken) => {
-  try {
-    const deploymentToInitialize = await inquirer.prompt(
-      prompts.initialDeployment(user, loginSessionToken)
+  		if (validation_type === 'push_config') {
+  			errors_list += `${chalk.yellowBright(`> ${validation_error.field}`)}\n`;
+  		}
+
+  		errors_list += `${validation_error?.error}\n${i + 1 === validation_response?.errors?.length ? '' : '\n'}`;
+  	}
+
+  	CLILog(
+      `${root_error ? `${chalk.yellowBright(root_error)}\n\n\n` : ''}${errors_list}`,
+      {
+        level: "danger",
+        docs: {
+        	push_config: "https://cheatcode.co/docs/push/config",
+        	deployment: "https://cheatcode.co/docs/push/subscription",
+        }[validation_type],
+      }
     );
 
-    return {
-      ...deploymentToInitialize,
-      loadBalancerInstances: deploymentToInitialize?.loadBalancerInstances || 1,
-      appInstances: deploymentToInitialize?.appInstances || 2,
-    };
+    process.exit(0);
   } catch (exception) {
-    throw new Error(`[actionName.getDeploymentToInitialize] ${exception.message}`);
+  	console.warn(exception);
   }
 };
 
-const handleDeployment = async ({
-  isInitialDeployment = false,
-  loginSessionToken = "",
-  domain = "",
-  deployment = {},
-  user = {},
-  environment = "production",
-  server = 'production',
-}) => {
-  try {
-    let confirmation = null; // NOTE: Do this here because of the guard below to check if we're running an initial deployment.
-    let deploymentToInitialize = null;
+const get_session_for_deployment = async () => {
+	try {
+		const session_token = await get_session_token();
 
-    if (isInitialDeployment) {
-      const loader = new Loader({ padding: " ", defaultMessage: "" });
-      deploymentToInitialize = await getDeploymentToInitialize(user, loginSessionToken);
-
-      await checkIfProvisionAvailable();
-
-      console.log("\n");
-      loader.print("Building deployment summary...");
-
-      const deploymentSummary = await getDeploymentSummary(
-        deploymentToInitialize,
-        loginSessionToken,
-        domain
-      );
-
-      loader.stop();
-
-      warnUnfeasibleDeployment(deploymentToInitialize, deploymentSummary);
-
-      const response = await inquirer.prompt(
-        prompts.confirmInitialDeployment(
-          deploymentToInitialize,
-          deploymentSummary?.costs
-        )
-      );
-
-      confirmation = response.confirmation;
-    }
-
-    if (!confirmation) {
-      process.exit();
-    }
-
-    await deploy({
-      environment,
-      loginSessionToken,
-      isInitialDeployment,
-      deployment: {
-        _id: deployment?._id,
-        environment: deployment?.environment,
-        domain,
-        ...(deploymentToInitialize || {}),
-      },
-      server,
-    });
-
-    return Promise.resolve();
-  } catch (exception) {
-    throw new Error(`[push.handleDeployment] ${exception.message}`);
-  }
-};
-
-const getDomain = async (domainFromOptions = '') => {
-  try {
-    let domain = domainFromOptions;
-
-    if (!domain) {
-      domain = await inquirer
-        .prompt(prompts.domain())
-        .then((answers) => answers?.domain);
-    }
-
-    return domain;
-  } catch (exception) {
-    throw new Error(`[push.getDomain] ${exception.message}`);
-  }
-};
-
-const onboardingWarning = (user = null) => {
-  try {
-    if (!user?.onboarding?.complete && user?.onboarding?.step < 4) {
-      console.log(
-        chalk.yellowBright(
-          `\nPlease visit push.cheatcode.co to finish setting up your account before deploying.\n`
-        )
-      );
-      process.exit(0);
-    }
-  } catch (exception) {
-    throw new Error(`[push.onboardingWarning] ${exception.message}`);
-  }
-};
-
-const noUserWarning = (user = null) => {
-  try {
-    if (!user) {
-      console.log(
-        chalk.redBright(
-          `\nUser not found. Please try again. If this is a mistake, please contact push@cheatcode.co for assistance.\n`
-        )
-      );
-
-      process.exit();
-    }
-  } catch (exception) {
-    throw new Error(`[push.noUserWarning] ${exception.message}`);
-  }
-};
-
-const getUser = async (loginSessionToken = '') => {
-  try {
-    const user = await getUserFromSessionToken(loginSessionToken);
-
-    if (user) {
-      colorLog(`\n✔ Logged in as ${user?.emailAddress}\n`, "greenBright");
-    }
-
-    return user;
-  } catch (exception) {
-    throw new Error(`[push.getUser] ${exception.message}`);
-  }
-};
-
-const checkForJoystickFolder = () => {
-  try {
-    const hasJoystickFolder = fs.existsSync(".joystick");
-
-    if (!hasJoystickFolder) {
+		if (!session_token) {
       CLILog(
-        "This is not a Joystick project. A .joystick folder could not be found.",
+        data?.error?.message,
         {
           level: "danger",
-          docs: "https://github.com/cheatcode/joystick",
+          docs: "https://cheatcode.co/docs/push/cli#authentication"
         }
-        );
+      );
 
-      process.exit(0);
-    }
+      return process.exit(0);
+		}
+
+		return session_token;
+	} catch (exception) {
+		console.warn(exception);
+	}
+};
+
+const warn_no_push_config = (environment = '') => {
+  try {
+    CLILog(
+      `settings.${environment}.json must contain a push config object. Add this following the docs link below and try again.`,
+      {
+        level: "danger",
+        docs: "https://cheatcode.co/docs/push/config"
+      }
+    );
+
+    return process.exit(0);
   } catch (exception) {
-    throw new Error(`[push.checkForJoystickFolder] ${exception.message}`);
+    throw new Error(`[push.warn_no_push_config] ${exception.message}`);
   }
 };
 
 export default async (args = {}, options = {}) => {
-  try {
-    checkForJoystickFolder();
-    await checkIfProvisionAvailable();
+	process.loader = new Loader();
 
-    const loginSessionToken = await getSessionToken();
-    const user = await getUser(loginSessionToken);
+	process.loader.print('Starting deployment...');
 
-    noUserWarning(user);
-    onboardingWarning(user);
+	const session_token = await get_session_for_deployment();
 
-    const domain = await getDomain(options?.domain);
-    await checkIfProvisionAvailable();
+	const environment = options?.environment || 'production';
+  const settings = await get_settings_file({ environment });
 
-    const deployment = await getDeployment({
-      domain,
-      loginSessionToken,
-      environment: options?.environment,
-    });
-
-    await handleDeployment({
-      isInitialDeployment: deployment?.status === "undeployed",
-      loginSessionToken,
-      domain,
-      deployment,
-      user,
-      environment: options?.environment || "production",
-      server: options?.server,
-    });
-
-    return Promise.resolve();
-  } catch (exception) {
-    console.warn(exception);
-    throw new Error(`[push] ${exception.message}`);
+  if (!settings?.push) {
+    return warn_no_push_config(environment);
   }
+
+	const push_provision_domain = get_provision_domain(options?.provision_server);
+	const push_app_domain = get_app_domain(options?.provision_server);
+	const deployment = await get_deployment({
+		domain: settings?.push?.domain,
+		session_token,
+		push_provision_domain,
+	});
+
+	let push_config_validation_response;
+
+	if (deployment?.status === 'undeployed') {
+		push_config_validation_response = await validate_push_config({
+			push_provision_domain,
+			push_config: settings?.push,
+		});
+
+		if (push_config_validation_response?.errors?.length > 0) {
+			log_validation_error_response(
+				'push_config',
+				`Push config in settings.${environment}.json failed validation with the following errors:`,
+				push_config_validation_response,
+			);
+		}
+	}
+
+	const deployment_validation_response = await validate_deployment({
+		session_token,
+		push_provision_domain,
+		push_config: settings?.push,
+	});
+
+	if (deployment_validation_response?.errors?.length > 0) {
+		log_validation_error_response(
+			'deployment',
+			`Deployment failed validation with the following errors:`,
+			deployment_validation_response,
+		);
+	}
+
+	// NOTE: A bit hacky but removes need for weird if {} statement nesting.
+	const { confirm_deployment } = deployment?.status === 'undeployed' ? await inquirer.prompt(
+		confirm_deployment_prompt(push_config_validation_response?.instances)
+	) : { confirm_deployment: true };
+
+	if (confirm_deployment) {
+		// NOTE: Do this to create a gap between the confirmation text above (only applies if
+		// the deployment is a first-run).
+		if (deployment?.status === 'undeployed') {
+			console.log('\n');
+		}
+
+		const build_timestamp = new Date().toISOString();
+		await build({
+			environment,
+			encrypt_build: true,
+			encryption_key: deployment?.deployment_secret,
+			silence_confirmation: true,
+		});
+
+		process.loader.print('Uploading version...');
+
+		await upload_build_to_cdn(
+			build_timestamp,
+			deployment,
+			session_token,
+		);
+
+		const create_version_response = await create_version({
+			push_provision_domain,
+			domain: settings?.push?.domain,
+			session_token,
+			body: {
+				// NOTE: Endpoint anticipates a stringified version of settings.
+				settings: JSON.stringify(settings),
+				build_timestamp,
+			},
+		});
+
+		process.loader.print('Deploying app...');
+
+		if (deployment?.status === 'undeployed') {
+			return handle_initial_deployment({
+				push_provision_domain,
+				push_app_domain,
+				session_token,
+				environment,
+				build_timestamp,
+				deployment,
+			});
+		}
+
+		return handle_version_deployment({
+			push_provision_domain,
+			push_app_domain,
+			session_token,
+			environment,
+			build_timestamp,
+			deployment,
+		});
+	}
 };

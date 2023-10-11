@@ -1,6 +1,7 @@
 import build from "./build/index.js";
 import create from "./create/index.js";
 import logout from "./logout/index.js";
+import push from "./push/index.js";
 import start from "./start/index.js";
 import update from "./update/index.js";
 import use from "./use/index.js";
@@ -96,59 +97,59 @@ var functions_default = {
     options: {},
     function: logout
   },
-  //  push: {
-  //    set: !!rawArgs.includes('push'),
-  //    description: 'Deploy your Joystick app.',
-  //    args: {},
-  //    options: {
-  //      domain: {
-  //        flags: {
-  //          '-d': {
-  //            set: !!rawArgs.includes('-d'),
-  //            value: !!rawArgs.includes('-d') && rawArgs[rawArgs.indexOf('-d') + 1],
-  //            parent: 'push',
-  //          },
-  //          '--domain': {
-  //            set: !!rawArgs.includes('--domain'),
-  //            value: !!rawArgs.includes('--domain') && rawArgs[rawArgs.indexOf('--domain') + 1],
-  //            parent: 'push',
-  //          },
-  //        },
-  //        description: 'The domain name you want to deploy your app to.',
-  //      },
-  //      environment: {
-  //        flags: {
-  //          '-e': {
-  //            set: !!rawArgs.includes('-e'),
-  //            value: !!rawArgs.includes('-e') && rawArgs[rawArgs.indexOf('-e') + 1],
-  //            parent: 'push',
-  //          },
-  //          '--environment': {
-  //            set: !!rawArgs.includes('--environment'),
-  //            value: !!rawArgs.includes('--environment') && rawArgs[rawArgs.indexOf('--environment') + 1],
-  //            parent: 'push',
-  //          },
-  //        },
-  //        description: 'The value you want to use for NODE_ENV in the deployed app (e.g., staging or production). Default is production.',
-  //      },
-  //      server: {
-  //        flags: {
-  //          '-s': {
-  //            set: !!rawArgs.includes('-s'),
-  //            value: !!rawArgs.includes('-s') && rawArgs[rawArgs.indexOf('-s') + 1],
-  //            parent: 'push',
-  //          },
-  //          '--server': {
-  //            set: !!rawArgs.includes('--server'),
-  //            value: !!rawArgs.includes('--server') && rawArgs[rawArgs.indexOf('--server') + 1],
-  //            parent: 'push',
-  //          },
-  //        },
-  //        description: 'The Push provision server to target (either "local" or "production").',
-  //      },
-  //    },
-  //    function: push,
-  //  },
+  push: {
+    set: !!rawArgs.includes("push"),
+    description: "Deploy your Joystick app using Push.",
+    args: {},
+    options: {
+      domain: {
+        flags: {
+          "-d": {
+            set: !!rawArgs.includes("-d"),
+            value: !!rawArgs.includes("-d") && rawArgs[rawArgs.indexOf("-d") + 1],
+            parent: "push"
+          },
+          "--domain": {
+            set: !!rawArgs.includes("--domain"),
+            value: !!rawArgs.includes("--domain") && rawArgs[rawArgs.indexOf("--domain") + 1],
+            parent: "push"
+          }
+        },
+        description: "The domain name where your app will be accessible."
+      },
+      environment: {
+        flags: {
+          "-e": {
+            set: !!rawArgs.includes("-e"),
+            value: !!rawArgs.includes("-e") && rawArgs[rawArgs.indexOf("-e") + 1],
+            parent: "push"
+          },
+          "--environment": {
+            set: !!rawArgs.includes("--environment"),
+            value: !!rawArgs.includes("--environment") && rawArgs[rawArgs.indexOf("--environment") + 1],
+            parent: "push"
+          }
+        },
+        description: "The value you want to use for NODE_ENV in the deployed app (e.g., staging or production). Default is production."
+      },
+      provision_server: {
+        flags: {
+          "-p": {
+            set: !!rawArgs.includes("-p"),
+            value: !!rawArgs.includes("-p") && rawArgs[rawArgs.indexOf("-p") + 1],
+            parent: "push"
+          },
+          "--provision-server": {
+            set: !!rawArgs.includes("--provision-server"),
+            value: !!rawArgs.includes("--provision-server") && rawArgs[rawArgs.indexOf("--provision-server") + 1],
+            parent: "push"
+          }
+        },
+        description: 'The Push provision server to target (either "development" or "production").'
+      }
+    },
+    function: push
+  },
   start: {
     set: !!rawArgs.includes("start"),
     description: "Start an existing Joystick app.",

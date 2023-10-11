@@ -126,7 +126,6 @@ const handleHMRProcessMessages = (options = {}) => {
         setTimeout(() => {
           handleRestartApplicationProcess({
             ...options,
-            sessionsBeforeHMRUpdate: message?.sessions,
           });
         }, 500);
       }
@@ -379,7 +378,6 @@ const handleStartAppServer = async (options = {}) => {
       watch: options?.watch,
       nodeMajorVersion: options?.nodeMajorVersion,
       port: options?.port,
-      sessionsBeforeHMRUpdate: options?.sessionsBeforeHMRUpdate,
     });
 
     if (serverProcess) {

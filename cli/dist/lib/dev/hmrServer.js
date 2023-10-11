@@ -42,7 +42,7 @@ var hmrServer_default = (() => {
     websocketConnection.on("message", (message) => {
       const parsedMessage = JSON.parse(message);
       if (parsedMessage?.type === "HMR_UPDATE_COMPLETE") {
-        process.send({ type: "HMR_UPDATE_COMPLETED", sessions: parsedMessage?.sessions });
+        process.send({ type: "HMR_UPDATE_COMPLETED" });
       }
       if (parsedMessage?.type === "HMR_WATCHLIST") {
         process.HMR_CONNECTIONS[connectionId]?.watchlist?.push(

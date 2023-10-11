@@ -4,12 +4,12 @@ import colorLog from '../../lib/colorLog.js';
 
 export default async () => {
   try {
-    const homeDirectory = os.homedir();
-    const sessionTokenPath = `${homeDirectory}/.cheatcode/session`;
-    const sessionTokenExists = fs.existsSync(sessionTokenPath);
+    const home_directory = os.homedir();
+    const session_token_path = `${home_directory}/.push/session_token`;
+    const session_token_exists = fs.existsSync(session_token_path);
 
-    if (sessionTokenExists) {
-      fs.unlinkSync(sessionTokenPath, 'utf-8');
+    if (session_token_exists) {
+      fs.unlinkSync(session_token_path, 'utf-8');
       colorLog('\n✔ Logged out\n', 'greenBright');
     }
 

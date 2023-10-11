@@ -4,9 +4,6 @@ import fs from "fs";
 import buildConnectionString from "./buildConnectionString.js";
 var checkConnection_default = async (connection = {}, options = {}) => {
   const connectionString = buildConnectionString(connection);
-  console.log({
-    connectionString
-  });
   try {
     const connectionOptions = {
       connectTimeoutMS: 3e3,

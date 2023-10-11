@@ -22,7 +22,6 @@ const handleStartServerProcess = (execArgv = {}, options = {}) => {
           ROOT_URL: process.env.ROOT_URL,
           PORT: process.env.PORT,
           JOYSTICK_SETTINGS: process.env.JOYSTICK_SETTINGS,
-          HMR_SESSIONS: options?.sessionsBeforeHMRUpdate || '{}',
         },
       }
     );
