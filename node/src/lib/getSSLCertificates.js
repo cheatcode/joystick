@@ -1,8 +1,8 @@
 import fs from 'fs';
 
 export default (ssl = null) => {
-  const pushCertificatePath = '/lib/push/certs/cert.pem';
-  const pushKeyPath = '/lib/push/certs/key.pem';
+  const pushCertificatePath = '/root/push/certs/cert.pem';
+  const pushKeyPath = '/root/push/certs/key.pem';
 
   const certPath = process.env.IS_PUSH_DEPLOYED ? pushCertificatePath : (ssl?.cert || null);
   const keyPath = process.env.IS_PUSH_DEPLOYED ? pushKeyPath : (ssl?.key || null);
