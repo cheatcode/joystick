@@ -1,6 +1,6 @@
 # Source Available Under Commercial Restriction (SAUCR) License
 
-Copyright &copy; 2021-2023 CheatCode Software LLC
+Copyright &copy; 2021-2024 CheatCode Software LLC
 
 ---
 
