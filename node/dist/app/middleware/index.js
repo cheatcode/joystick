@@ -17,6 +17,7 @@ import replaceFileProtocol from "../../lib/replaceFileProtocol.js";
 import getBuildPath from "../../lib/getBuildPath.js";
 import session from "./session.js";
 import csp from "./csp.js";
+const { readFile } = fs.promises;
 const cwd = replaceFileProtocol(replaceBackslashesWithForwardSlashes(process.cwd()));
 const faviconPath = "public/favicon.ico";
 var middleware_default = ({
@@ -52,9 +53,9 @@ var middleware_default = ({
   app.use("/_joystick/heartbeat", (_req, res) => {
     res.status(200).send("<3");
   });
-  app.use("/_joystick/utils/process.js", (_req, res) => {
+  app.use("/_joystick/utils/process.js", async (_req, res) => {
     res.set("Content-Type", "text/javascript");
-    const processPolyfill = fs.readFileSync(`${__package}/app/utils/process.js`, "utf-8");
+    const processPolyfill = await readFile(`${__package}/app/utils/process.js`, "utf-8");
     res.send(processPolyfill.replace("${NODE_ENV}", process.env.NODE_ENV));
   });
   app.use("/_joystick/index.client.js", express.static(`${buildPath}index.client.js`, {
@@ -63,9 +64,9 @@ var middleware_default = ({
   }));
   app.use("/_joystick/index.css", express.static(`${buildPath}index.css`, { eTag: false, maxAge: "0" }));
   app.use("/_joystick/ui", express.static(`${buildPath}ui`, { eTag: false, maxAge: "0" }));
-  app.use("/_joystick/hmr/client.js", (_req, res) => {
+  app.use("/_joystick/hmr/client.js", async (_req, res) => {
     res.set("Content-Type", "text/javascript");
-    const hmrClient = fs.readFileSync(`${__package}/app/middleware/hmr/client.js`, "utf-8");
+    const hmrClient = await readFile(`${__package}/app/middleware/hmr/client.js`, "utf-8");
     res.send(hmrClient.replace("${process.env.PORT}", parseInt(process.env.PORT, 10) + 1));
   });
   app.use(favicon(faviconPath));

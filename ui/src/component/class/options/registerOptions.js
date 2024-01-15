@@ -5,6 +5,7 @@ import throwFrameworkError from "../../../lib/throwFrameworkError";
 import compileProps from "../props/compile";
 import compileCSS from '../css/compile';
 import compileState from '../state/compile';
+import compileValues from '../values/compile';
 import compileLifecycle from '../lifecycle/compile';
 import compileMethods from "../methods/compile";
 import compileUrl from "../url/compile";
@@ -24,6 +25,7 @@ export default (componentInstance = {}, componentOptions = {}) => {
     componentInstance.defaultProps = compileDefaultProps(componentInstance, componentOptions?.defaultProps);
     componentInstance.props = compileProps(componentInstance?.defaultProps, componentOptions?.props);
     componentInstance.state = compileState(componentInstance, componentOptions?.state);
+    componentInstance.values = compileValues(componentInstance, componentOptions?.values);
     componentInstance.events = componentOptions?.events || {};
     componentInstance.lifecycle = compileLifecycle(componentInstance, componentOptions?.lifecycle);
     componentInstance.methods = compileMethods(componentInstance, componentOptions?.methods);

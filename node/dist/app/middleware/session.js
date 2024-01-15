@@ -1,7 +1,6 @@
 import setCookie from "../../lib/setCookie.js";
 import runSessionQuery from "../runSessionQuery.js";
 var session_default = async (req, res, next) => {
-  await runSessionQuery("delete_expired_sessions");
   let session_id = req?.cookies?.joystickSession;
   const existing_session = session_id ? await runSessionQuery("get_session", {
     session_id

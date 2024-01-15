@@ -12,6 +12,7 @@ import escapeHTML from "../../lib/escapeHTML.js";
 import escapeKeyValuePair from "../../lib/escapeKeyValuePair.js";
 import importFile from "../../lib/importFile.js";
 import getTranslations from "./getTranslations.js";
+import path_exists from '../../lib/path_exists.js';
 
 const generateHash = (input = '') => {
   return crypto.createHash('sha256').update(input).digest('hex');
@@ -98,7 +99,7 @@ export default (req, res, next, appInstance = {}) => {
     const cachePath = pagePathParts?.slice(0, pagePathParts.length - 1)?.join('/');
     let currentDiff; // NOTE: Set as undefined here so we can reference it if need be when writing a new cache.
 
-    if (!fs.existsSync(pagePath)) {
+    if (!(await path_exists(pagePath))) {
       return res.status(404).send(
         generateErrorPage({
           type: 'pageNotFound',
@@ -109,7 +110,7 @@ export default (req, res, next, appInstance = {}) => {
       );
     }
 
-    if (layoutPath && !fs.existsSync(layoutPath)) {
+    if (layoutPath && !(await path_exists(layoutPath))) {
       return res.status(404).send(
         generateErrorPage({
           type: 'layoutNotFound',

@@ -8,7 +8,7 @@ var hmrServer_default = (() => {
   });
   process.on("message", (message) => {
     const parsedMessage = JSON.parse(message);
-    if (typeof process.HMR_CONNECTIONS === "object" && parsedMessage?.type === "RESTART_SERVER") {
+    if (typeof process.HMR_CONNECTIONS === "object" && parsedMessage?.type === "FILE_CHANGE") {
       const connections = Object.values(process.HMR_CONNECTIONS);
       for (let i = 0; i < connections?.length; i += 1) {
         const connection = connections[i];

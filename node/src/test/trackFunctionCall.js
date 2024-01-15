@@ -7,7 +7,7 @@ export default (path = '', args = []) => {
         [path]: [
           ...((process?.test?.functionCalls && process?.test?.functionCalls[path]) || []),
           { calledAt: new Date().toISOString(), args },
-          ]
+        ]
       }
     };
   }

@@ -41,7 +41,7 @@ const handleTranslationReplacement = (translation = '', replacementsAsArray = []
 const getTranslationAtPath = (key = '', translations = {}) => {
   try {
     return key?.split('.').reduce((objectToTraverse, keyToMatch)=> {
-      return objectToTraverse[keyToMatch];
+      return (objectToTraverse && objectToTraverse[keyToMatch]) || '';
     }, translations);
   } catch (exception) {
     throwFrameworkError('component.renderMethods.i18n.getTranslationAtPath', exception);

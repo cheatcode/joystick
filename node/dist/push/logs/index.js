@@ -1,5 +1,5 @@
-import dayjs from "dayjs";
-import TuskDB from "@tuskdb/node";
+import timestamps from "../../lib/timestamps";
+import connectMongoDB from "../connectMongoDB.js";
 const captureLog = (callback = null) => {
   process.stdout.write = (data) => {
     if (callback) {
@@ -13,42 +13,39 @@ const captureLog = (callback = null) => {
   };
   process.on("uncaughtException", (error) => {
     if (callback) {
-      callback("uncaughtException", error);
+      callback("uncaughtException", error?.message || "Uncaught Exception");
+    }
+  });
+  process.on("unhandledRejection", (error) => {
+    if (callback) {
+      callback("unhandledRejection", error?.message || "Unhandled Rejection");
     }
   });
 };
-const writeLogsToDisk = () => {
-  const db = new TuskDB({
-    file: {
-      development: "logs.json",
-      production: "/root/logs.json"
-    }[process.env.NODE_ENV || "development"],
-    collections: {
-      logs: []
-    }
-  });
-  captureLog((source = "", data = "") => {
+var logs_default = async () => {
+  const mongodb = await connectMongoDB();
+  return captureLog(async (source = "", data = "") => {
     switch (source) {
       case "stdout":
-        return db.collection("logs").insertOne({
+        return mongodb.collection("logs").insertOne({
           error: false,
-          timestamp: dayjs().format(),
+          timestamp: timestamps.get_current_time(),
+          process_id: process.pid,
           data
         });
       case "stderr":
       case "uncaughtException":
-        return db.collection("logs").insertOne({
+      case "unhandledRejection":
+        return mongodb.collection("logs").insertOne({
           error: true,
-          timestamp: dayjs().format(),
+          timestamp: timestamps.get_current_time(),
+          process_id: process.pid,
           data
         });
       default:
-        return;
+        return true;
     }
   });
-};
-var logs_default = () => {
-  return writeLogsToDisk();
 };
 export {
   logs_default as default

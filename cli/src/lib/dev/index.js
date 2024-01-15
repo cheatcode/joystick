@@ -120,14 +120,17 @@ const handleHMRProcessMessages = (options = {}) => {
       }
 
       if (message?.type === "HMR_UPDATE_COMPLETED") {
+        // TODO: Handle failed builds between HMR updates. Under these conditions
+        // we *do* want to trigger a server restart.
+
         // NOTE: Do a setTimeout to ensure that server is still available while the HMR update completes.
         // Necessary because some updates are instant, but others might mount a UI that needs a server
         // available (e.g., runs API requests).
-        setTimeout(() => {
-          handleRestartApplicationProcess({
-            ...options,
-          });
-        }, 500);
+        // setTimeout(() => {
+        //   handleRestartApplicationProcess({
+        //     ...options,
+        //   });
+        // }, 500);
       }
     });
   } catch (exception) {
@@ -235,7 +238,9 @@ const handleDeletePath = (context = {}, path = '', options = {}) => {
       if (context.isUIUpdate && !process.server_process_has_build_error) {
         handleNotifyHMRClients(context.isHTMLUpdate);
       } else {
-        handleRestartApplicationProcess(options);
+        if (!context.isFileToCopy) {
+          handleRestartApplicationProcess(options);
+        }
       }
     }
   } catch (exception) {
@@ -267,6 +272,9 @@ const handleAddOrChangeFile = async (context = {}, path = '', options = {}) => {
         // developer to refresh the browser.
         process.server_process_has_build_error = true;
 
+        // TODO: When a build error occurs, make sure to handle HMR getting nuked here. We need to
+        // force a full browser reload via HMR so this resets properly.
+
         // NOTE: If there's a build error while the app is running, relay it to
         // the app's server process to display an error page in the browser.
         process.serverProcess.send(
@@ -290,7 +298,9 @@ const handleAddOrChangeFile = async (context = {}, path = '', options = {}) => {
         if (context.isUIUpdate && !process.server_process_has_build_error) {
           handleNotifyHMRClients(context.isHTMLUpdate);
         } else {
-          handleRestartApplicationProcess(options);
+          if (!context.isFileToCopy) {
+            handleRestartApplicationProcess(options);
+          }
         }
       }
     }
@@ -308,7 +318,9 @@ const handleAddDirectory = (context = {}, path = '', options = {}) => {
       if (context.isUIUpdate && !process.server_process_has_build_error) {
         handleNotifyHMRClients(context.isHTMLUpdate);
       } else {
-        handleRestartApplicationProcess(options);
+        if (!context.isFileToCopy) {
+          handleRestartApplicationProcess(options);
+        }
       }
     }
   } catch (exception) {
@@ -323,8 +335,6 @@ const handleCopyFile = (context = {}, path = '', options = {}) => {
 
       if (context.isUIUpdate && !process.server_process_has_build_error) {
         handleNotifyHMRClients(context.isHTMLUpdate);
-      } else {
-        handleRestartApplicationProcess(options);
       }
     }
   } catch (exception) {
@@ -339,8 +349,6 @@ const handleCopyDirectory = (context = {}, path = '', options = {}) => {
 
       if (context.isUIUpdate && !process.server_process_has_build_error) {
         handleNotifyHMRClients(context.isHTMLUpdate);
-      } else {
-        handleRestartApplicationProcess(options);
       }
     }
   } catch (exception) {
@@ -362,11 +370,11 @@ const handleRestartApplicationProcess = async (options = {}) => {
       await handleStartAppServer(options);
     }
 
-    return Promise.resolve();
-
     if (!process.hmrProcess) {
       startHMR();
     }
+
+    return Promise.resolve();
   } catch (exception) {
     throw new Error(`[dev.handleRestartApplicationProcess] ${exception.message}`);
   }
@@ -403,7 +411,7 @@ const handleNotifyHMRClients = async (indexHTMLChanged = false) => {
 
       process.hmrProcess.send(
         JSON.stringify({
-          type: "RESTART_SERVER",
+          type: "FILE_CHANGE",
           settings: settings.parsed,
           indexHTMLChanged,
         })
@@ -461,6 +469,14 @@ const startFileWatcher = (options = {}) => {
     );
 
     watcher.on('all', async (event, path) => {
+      if (options?.settings?.config?.watch?.excludedPaths) {
+        const change_is_excluded = options?.settings?.config?.watch?.excludedPaths?.includes(path);
+
+        if (change_is_excluded) {
+          return;
+        }
+      }
+      
       // NOTE: Do this here in case a required file/folder goes missing inbetween builds.
       checkForRequiredFiles();
 
@@ -676,7 +692,7 @@ const dev = async (options, { resolve, reject }) => {
     const settings = await loadSettings({
       environment: options.environment,
     });
-
+    
     await startDatabases({
       environment: options.environment,
       port: options.port,
@@ -684,9 +700,11 @@ const dev = async (options, { resolve, reject }) => {
     });
 
     await runInitialBuild(settings?.parsed?.config?.build);
-    await startFileWatcher({
+
+    startFileWatcher({
       ...options,
       nodeMajorVersion,
+      settings: settings?.parsed,
     });
 
     await handleStartAppServer({
@@ -709,7 +727,6 @@ const dev = async (options, { resolve, reject }) => {
         nodeMajorVersion,
       });
     }
-
 
     handleSignalEvents(
       processIds,

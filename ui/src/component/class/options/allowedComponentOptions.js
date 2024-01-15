@@ -24,6 +24,7 @@ export default [
   "test",
   "translations",
   "url",
+  "values",
   "websockets",
   "wrapper",
 ];

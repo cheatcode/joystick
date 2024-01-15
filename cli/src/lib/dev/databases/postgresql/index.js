@@ -23,11 +23,6 @@ const setupDataDirectory = (postgresqlPort = 2610) => {
     dataDirectoryExists = true;
   }
 
-  if (!dataDirectoryExists) {
-    fs.mkdirSync(`.joystick/data/postgresql_${postgresqlPort}`, { recursive: true });
-    dataDirectoryExists = true;
-  }
-
   return dataDirectoryExists;
 };
 
@@ -76,7 +71,7 @@ const startPostgreSQL = async (port = 2610) => {
     if (!dataDirectoryExists && postgreSQLControlExists) {
       await exec(
         `pg_ctl init -D .joystick/data/postgresql_${port}`
-        );
+      );
     }
 
     const postgreSQLPort = port;
@@ -94,6 +89,11 @@ const startPostgreSQL = async (port = 2610) => {
     );
 
     return new Promise((resolve) => {
+      databaseProcess.stderr.on('data', async (data) => {
+        const stderr = data?.toString();
+        console.warn(stderr);
+      });
+
       databaseProcess.stdout.on('data', async (data) => {
         const stdout = data?.toString();
         if (stdout.includes('database system is ready to accept connections')) {

@@ -16,6 +16,7 @@ const startDatabaseProvider = async (environment = "development", database = {},
     }
     return Promise.resolve(process._databases || {});
   } catch (exception) {
+    console.warn(exception);
     throw new Error(`[startDatabases.startDatabaseProvider] ${exception.message}`);
   }
 };
@@ -34,6 +35,7 @@ const startDatabaseProviders = async (databases = [], databasePortStart = 2610, 
       );
     }
   } catch (exception) {
+    console.warn(exception);
     throw new Error(`[startDatabases.startDatabaseProviders] ${exception.message}`);
   }
 };
@@ -60,7 +62,7 @@ const validateDatabasesFromSettings = (databases = []) => {
       process.exit(1);
     }
     if (queueDatabases && queueDatabases.length > 1) {
-      CLILog(`Please select a single database for your queues and restart your app.`, {
+      CLILog(`Please select a single database for your queues and restart your app. If you need to spread queues across databases, use the database object on the queue definition instead (see documentation link below).`, {
         level: "danger",
         docs: "https://cheatcode.co/docs/joystick/cli/databases#queues"
       });

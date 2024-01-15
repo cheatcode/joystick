@@ -212,8 +212,9 @@ const generateComponentFunction = function () {
     const componentInExistingStateMap =
       existingStateMapForComponent[childrenForComponentIdOnParent?.length];
 
-    // NOTE: Write pre-existing state (if available) back on to the child.
+    // NOTE: Write pre-existing state and values (if available) back on to the child.
     component.state = componentInExistingStateMap?.state || component.state;
+    component.values = componentInExistingStateMap?.values || component.values;
 
     // NOTE: Add child instance back on to parent.
     parent.children[component.id] = [

@@ -99,11 +99,6 @@ const handleHMRProcessMessages = (options = {}) => {
         process.hmrProcess.hasConnections = false;
       }
       if (message?.type === "HMR_UPDATE_COMPLETED") {
-        setTimeout(() => {
-          handleRestartApplicationProcess({
-            ...options
-          });
-        }, 500);
       }
     });
   } catch (exception) {
@@ -194,7 +189,9 @@ const handleDeletePath = (context = {}, path2 = "", options = {}) => {
       if (context.isUIUpdate && !process.server_process_has_build_error) {
         handleNotifyHMRClients(context.isHTMLUpdate);
       } else {
-        handleRestartApplicationProcess(options);
+        if (!context.isFileToCopy) {
+          handleRestartApplicationProcess(options);
+        }
       }
     }
   } catch (exception) {
@@ -229,7 +226,9 @@ const handleAddOrChangeFile = async (context = {}, path2 = "", options = {}) => 
         if (context.isUIUpdate && !process.server_process_has_build_error) {
           handleNotifyHMRClients(context.isHTMLUpdate);
         } else {
-          handleRestartApplicationProcess(options);
+          if (!context.isFileToCopy) {
+            handleRestartApplicationProcess(options);
+          }
         }
       }
     }
@@ -245,7 +244,9 @@ const handleAddDirectory = (context = {}, path2 = "", options = {}) => {
       if (context.isUIUpdate && !process.server_process_has_build_error) {
         handleNotifyHMRClients(context.isHTMLUpdate);
       } else {
-        handleRestartApplicationProcess(options);
+        if (!context.isFileToCopy) {
+          handleRestartApplicationProcess(options);
+        }
       }
     }
   } catch (exception) {
@@ -258,8 +259,6 @@ const handleCopyFile = (context = {}, path2 = "", options = {}) => {
       fs.writeFileSync(`./.joystick/build/${path2}`, fs.readFileSync(path2));
       if (context.isUIUpdate && !process.server_process_has_build_error) {
         handleNotifyHMRClients(context.isHTMLUpdate);
-      } else {
-        handleRestartApplicationProcess(options);
       }
     }
   } catch (exception) {
@@ -272,8 +271,6 @@ const handleCopyDirectory = (context = {}, path2 = "", options = {}) => {
       fs.mkdirSync(`./.joystick/build/${path2}`);
       if (context.isUIUpdate && !process.server_process_has_build_error) {
         handleNotifyHMRClients(context.isHTMLUpdate);
-      } else {
-        handleRestartApplicationProcess(options);
       }
     }
   } catch (exception) {
@@ -289,10 +286,10 @@ const handleRestartApplicationProcess = async (options = {}) => {
       process.serverProcessLock = true;
       await handleStartAppServer(options);
     }
-    return Promise.resolve();
     if (!process.hmrProcess) {
       startHMR();
     }
+    return Promise.resolve();
   } catch (exception) {
     throw new Error(`[dev.handleRestartApplicationProcess] ${exception.message}`);
   }
@@ -325,7 +322,7 @@ const handleNotifyHMRClients = async (indexHTMLChanged = false) => {
       });
       process.hmrProcess.send(
         JSON.stringify({
-          type: "RESTART_SERVER",
+          type: "FILE_CHANGE",
           settings: settings.parsed,
           indexHTMLChanged
         })
@@ -379,6 +376,12 @@ const startFileWatcher = (options = {}) => {
       { ignoreInitial: true }
     );
     watcher.on("all", async (event, path2) => {
+      if (options?.settings?.config?.watch?.excludedPaths) {
+        const change_is_excluded = options?.settings?.config?.watch?.excludedPaths?.includes(path2);
+        if (change_is_excluded) {
+          return;
+        }
+      }
       checkForRequiredFiles();
       const watchChangeContext = getWatchChangeContext(event, path2);
       handleCopyDirectory(watchChangeContext, path2, options);
@@ -564,9 +567,10 @@ const dev = async (options, { resolve, reject }) => {
       settings: settings.parsed
     });
     await runInitialBuild(settings?.parsed?.config?.build);
-    await startFileWatcher({
+    startFileWatcher({
       ...options,
-      nodeMajorVersion
+      nodeMajorVersion,
+      settings: settings?.parsed
     });
     await handleStartAppServer({
       ...options,

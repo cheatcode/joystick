@@ -18,7 +18,7 @@ export default (req = {}, api = {}) => {
           context: req?.context,
           APIOptions: api?.options,
         });
-        },
+      },
       set: (setterName = "", setterOptions = {}) => {
         return set({
           setterName,

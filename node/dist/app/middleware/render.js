@@ -12,6 +12,7 @@ import escapeHTML from "../../lib/escapeHTML.js";
 import escapeKeyValuePair from "../../lib/escapeKeyValuePair.js";
 import importFile from "../../lib/importFile.js";
 import getTranslations from "./getTranslations.js";
+import path_exists from "../../lib/path_exists.js";
 const generateHash = (input = "") => {
   return crypto.createHash("sha256").update(input).digest("hex");
 };
@@ -85,7 +86,7 @@ var render_default = (req, res, next, appInstance = {}) => {
     const pagePathParts = `${buildPathForEnvironment}${path}`?.split("/")?.filter((part) => !!part);
     const cachePath = pagePathParts?.slice(0, pagePathParts.length - 1)?.join("/");
     let currentDiff;
-    if (!fs.existsSync(pagePath)) {
+    if (!await path_exists(pagePath)) {
       return res.status(404).send(generateErrorPage({
         type: "pageNotFound",
         path: `res.render('${path}')`,
@@ -93,7 +94,7 @@ var render_default = (req, res, next, appInstance = {}) => {
         stack: `A page component at the path ${path} could not be found.`
       }));
     }
-    if (layoutPath && !fs.existsSync(layoutPath)) {
+    if (layoutPath && !await path_exists(layoutPath)) {
       return res.status(404).send(generateErrorPage({
         type: "layoutNotFound",
         path: `res.render('${path}', { layout: '${options.layout}' })`,

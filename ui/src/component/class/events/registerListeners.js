@@ -46,11 +46,11 @@ const getListeners = (instance = {}, renderMethods = {}, listenersToRegister = [
 
     return listenersToRegister;
   } catch (exception) {
-    throwFrameworkError('component.eve!nts.registerListenersFix.getListeners', exception);
+    throwFrameworkError('component.events.registerListeners.getListeners', exception);
   }
 };
 
-const registerListenersFix = (rootInstance = {}, renderMethods = {}) => {
+const registerListeners = (rootInstance = {}, renderMethods = {}) => {
   try {
     const listenersToRegister = getListeners(rootInstance, renderMethods, []);
     const eventsToRegister = listenersToRegister?.flatMap((listener = {}) => {
@@ -64,17 +64,17 @@ const registerListenersFix = (rootInstance = {}, renderMethods = {}) => {
     });
 
     for (let i = 0; i < eventsToRegister?.length; i += 1) {
-      const { instance, element, elementSelector, type, handler } = eventsToRegister[i];
+      const { instance, element, selector, type, handler } = eventsToRegister[i];
       element.addEventListener(type, handler);
 
       instance._eventListeners = [
         ...(instance?._eventListeners || []),
-        { instance, element, elementSelector, type, handler },
+        { instance, element, selector, type, handler },
       ];
     }
   } catch (exception) {
-    throwFrameworkError('component.events.registerListenersFix', exception);
+    throwFrameworkError('component.events.registerListeners', exception);
   }
 };
 
-export default registerListenersFix;
+export default registerListeners;

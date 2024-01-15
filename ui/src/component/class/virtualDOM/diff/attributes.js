@@ -1,9 +1,11 @@
+import isValidAttributeName from '../../../../lib/isValidAttributeName.js';
+
 const diffAttributes = (oldAttributes = {}, newAttributes = {}) => {
   const patches = [];
 
   for (const [attributeKey, attributeValue] of Object.entries(newAttributes)) {
     patches.push((node) => {
-      if (node && node.setAttribute) {
+      if (node && node.setAttribute && isValidAttributeName(attributeKey)) {
         node.setAttribute(attributeKey, attributeValue);
       }
 

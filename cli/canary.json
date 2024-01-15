@@ -1,6 +1,6 @@
 {
   "name": "@joystick.js/cli-canary",
-  "version": "0.0.0-canary.460",
+  "version": "0.0.0-canary.493",
   "type": "module",
   "description": "CLI for the Joystick JavaScript framework.",
   "main": "development.js",

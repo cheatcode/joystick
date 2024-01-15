@@ -6,6 +6,7 @@ const buildMapForChildren = (children = {}) => {
       stateMap[componentId] = childInstances?.map((childInstance = {}) => {
         return {
           state: childInstance?.state,
+          values: childInstance?.values,
           children: buildMapForChildren(childInstance?.children),
         };
       });

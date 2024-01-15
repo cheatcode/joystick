@@ -2,6 +2,7 @@ import fs from "fs";
 import importFile from "../../lib/importFile.js";
 import { isObject } from "../../validation/lib/typeValidators.js";
 import settings from "../../settings/index.js";
+const { readdir } = fs.promises;
 const getTranslationsFile = async (languageFilePath = "", paths = "") => {
   const languageFile = await importFile(`${paths.build}/i18n/${languageFilePath}`);
   const isValidLanguageFile = languageFile && isObject(languageFile);
@@ -44,7 +45,7 @@ const parseBrowserLanguages = (languages = "") => {
   return rawLanguages?.map((rawLanguage) => rawLanguage.split(";")[0]);
 };
 var getTranslations_default = async (paths = {}, req = {}) => {
-  const languageFiles = fs.readdirSync(`${paths.build}/i18n`);
+  const languageFiles = await readdir(`${paths.build}/i18n`);
   const browserLanguages = parseBrowserLanguages(req?.headers["accept-language"]);
   const languagePreferences = getLanguagePreferenceRegexes(req?.context?.user?.language, browserLanguages);
   let matchingFile = null;

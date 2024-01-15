@@ -1,5 +1,5 @@
-import dayjs from 'dayjs';
-import TuskDB from '@tuskdb/node';
+import timestamps from '../../lib/timestamps';
+import connectMongoDB from '../connectMongoDB.js';
 
 const captureLog = (callback = null) => {
   process.stdout.write = (data) => {
@@ -16,43 +16,44 @@ const captureLog = (callback = null) => {
   
   process.on('uncaughtException', (error) => {
     if (callback) {
-      callback('uncaughtException', error);
+      // NOTE: Logger expects strings for data field. When receiving an error
+      // object, attempt to parse out the message and fall back if none available.
+      callback('uncaughtException', error?.message || 'Uncaught Exception');
+    }
+  });
+
+  process.on('unhandledRejection', (error) => {
+    if (callback) {
+      // NOTE: Logger expects strings for data field. When receiving an error
+      // object, attempt to parse out the message and fall back if none available.
+      callback('unhandledRejection', error?.message || 'Unhandled Rejection');
     }
   });
 };
 
-const writeLogsToDisk = () => {
-  const db = new TuskDB({
-    file: {
-      development: 'logs.json',
-      production: '/root/logs.json', // NOTE: Assume we're writing to .json file in root of machine in production.
-    }[process.env.NODE_ENV || 'development'],
-    collections: {
-      logs: [],
-    },
-  });
+export default async () => {
+  const mongodb = await connectMongoDB();
 
-  captureLog((source = '', data = '') => {
+  return captureLog(async (source = '', data = '') => {
     switch(source) {
       case 'stdout':
-        return db.collection('logs').insertOne({
+        return mongodb.collection('logs').insertOne({
           error: false,
-          timestamp: dayjs().format(),
+          timestamp: timestamps.get_current_time(),
+          process_id: process.pid,
           data,
         });
       case 'stderr':
       case 'uncaughtException':
-        return db.collection('logs').insertOne({
+      case 'unhandledRejection':
+        return mongodb.collection('logs').insertOne({
           error: true,
-          timestamp: dayjs().format(),
+          timestamp: timestamps.get_current_time(),
+          process_id: process.pid,
           data,
         });
       default:
-        return;
+        return true;
     }
   });
-};
-
-export default () => {
-  return writeLogsToDisk();
 };

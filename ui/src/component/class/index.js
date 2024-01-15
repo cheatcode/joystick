@@ -162,6 +162,10 @@ class Component {
       if (this.parent) {
         this.parent.onUpdateChildComponent(this.id, this.instanceId);
       }
+
+      if (typeof renderOptions?.onRenderComplete === 'function') {
+        renderOptions.onRenderComplete();
+      }
     }
   }
 
@@ -183,6 +187,22 @@ class Component {
         }
       },
     });
+  }
+
+  setValues(values = {}, callback = null) {
+    trackFunctionCall(`ui.${this?.options?.test?.name || generateId()}.setValue`, [
+      values,
+      callback,
+    ]);
+
+    this.values = compileState(this, {
+      ...(this.values || {}),
+      ...values,
+    });
+
+    if (typeof callback === 'function') {
+      callback();
+    }
   }
 
   setTimeout(callback = null, delay = 0) {

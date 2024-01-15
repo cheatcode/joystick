@@ -80,7 +80,7 @@ export class App {
     this.initWebsockets(options?.websockets || {});
     this.initAccounts(options?.accounts);
     this.initTests();
-    this.initDeploy();
+    this.initPush();
     this.initAPI(options?.api);
     this.initUploaders(options?.uploaders);
     this.initIndexes(options?.indexes);
@@ -173,12 +173,22 @@ export class App {
           ...(process.databases || {}),
           postgresql: !hasMultipleOfProvider ? {
             ...postgresql?.pool,
+            add_column: postgresql?.add_column,
+            create_table: postgresql?.create_table,
+            insert: postgresql?.insert,
             query: postgresql?.query,
+            select: postgresql?.select,
+            update: postgresql?.update,
           } : {
             ...(process?.databases?.postgresql || {}),
             [database?.settings?.name || `postgresql_${databasePort}`]: {
               ...postgresql?.pool,
+              add_column: postgresql?.add_column,
+              create_table: postgresql?.create_table,
+              insert: postgresql?.insert,
               query: postgresql?.query,
+              select: postgresql?.select,
+              update: postgresql?.update,
             },
           },
         };
@@ -346,10 +356,10 @@ export class App {
     }
   }
 
-  initDeploy() {
-    if (process.env.NODE_ENV === "production" && process.env.IS_PUSH_DEPLOYED) {
+  initPush() {
+    if (process.env.NODE_ENV !== "development" && process.env.IS_PUSH_DEPLOYED) {
       this.express.app.get("/api/_push/pre-version", async (req, res) => {
-        const instanceToken = fs.readFileSync("/root/token.txt", "utf-8");
+        const instanceToken = fs.readFileSync("/root/push/instance_token.txt", "utf-8");
 
         if (
           req?.headers["x-instance-token"] === instanceToken?.replace("\n", "")
@@ -377,51 +387,12 @@ export class App {
       });
 
       this.express.app.get("/api/_push/health", async (req, res) => {
-        const instanceToken = fs.readFileSync("/root/token.txt", "utf-8");
+        const instanceToken = fs.readFileSync("/root/push/instance_token.txt", "utf-8");
 
         if (
           req?.headers["x-instance-token"] === instanceToken?.replace("\n", "")
         ) {
           return res.status(200).send("ok");
-        }
-
-        return res
-          .status(403)
-          .send(
-            "Sorry, you must pass a valid instance token to access this endpoint."
-          );
-      });
-
-      this.express.app.get("/api/_push/logs", async (req, res) => {
-        const instanceToken = fs.readFileSync("/root/token.txt", "utf-8");
-        if (
-          req?.headers["x-instance-token"] === instanceToken?.replace("\n", "")
-        ) {
-          const logs = execSync(
-            `export NODE_ENV=production && instance logs${
-              req?.query?.before ? ` --before ${req?.query?.before}` : ""
-            }${req?.query?.after ? ` --after ${req?.query?.after}` : ""}`
-          );
-          return res.status(200).send(logs);
-        }
-
-        return res
-          .status(403)
-          .send(
-            "Sorry, you must pass a valid instance token to access this endpoint."
-          );
-      });
-
-      this.express.app.get("/api/_push/metrics", async (req, res) => {
-        const instanceToken = fs.readFileSync("/root/token.txt", "utf-8");
-
-        if (
-          req?.headers["x-instance-token"] === instanceToken?.replace("\n", "")
-        ) {
-          const metrics = execSync(
-            `export NODE_ENV=production && instance metrics`
-          );
-          return res.status(200).send(metrics);
         }
 
         return res

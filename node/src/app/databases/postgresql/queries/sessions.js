@@ -32,14 +32,4 @@ export default {
 
 		return session;
 	},
-	delete_expired_sessions: async () => {
-		const date = new Date();
-		date.setHours(date.getHours() - 1);
-
-    return process.databases.postgresql.query(`
-			DELETE FROM sessions WHERE created_at::timestamp < $1
-		`, [
-			date.toISOString(),
-		]);
-	},
 };

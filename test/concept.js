@@ -48,25 +48,25 @@
 //  `);
 //});
 //
-//server.test('returns the correct HTML', async (app = {}, expect = {}) => {
-//  // routes.get, routes.post, routes.patch, etc.
-//  const html = await app.routes.get('/path/to/my/route', {
-//    headers: {
-//      'Cookie': 'joystickLoginToken=3029840923840923',
-//    },
-//  });
-//
-//  expect(html).toContain('<div class="user">me@ryanglover.net</div>');
-//});
-//
-//browser.test('runs the api request properly', async (app = {}, expect = {}) => {
-//  const dayjs = await app.import('dayjs');
-//  const request = app.api.set('updateRequirementOrder', {
-//    input: {
-//      date: dayjs().format(),
-//    },
-//  });
-//});
+server.test('returns the correct HTML', async (app = {}, expect = {}) => {
+ // routes.get, routes.post, routes.patch, etc.
+ const html = await app.routes.get('/path/to/my/route', {
+   headers: {
+     'Cookie': 'joystickLoginToken=3029840923840923',
+   },
+ });
+
+ expect(html).toContain('<div class="user">me@ryanglover.net</div>');
+});
+
+browser.test('runs the api request properly', async (app = {}, expect = {}) => {
+ const dayjs = await app.import('dayjs');
+ const request = app.api.set('updateRequirementOrder', {
+   input: {
+     date: dayjs().format(),
+   },
+ });
+});
 //
 //browser.test('renders the component properly', async (test = {}, expect = {}) => {
 //  const instance = test.component.instance(SomeComponent);

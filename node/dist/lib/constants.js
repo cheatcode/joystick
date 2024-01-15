@@ -1,3 +1,5 @@
+const KILOBYTE = 1e3;
+const MEGABYTE = KILOBYTE * 1e3;
 const HTML_ENTITY_MAP = {
   "&": "&amp;",
   "<": "&lt;",
@@ -9,5 +11,7 @@ const HTML_ENTITY_MAP = {
   "=": "&#x3D;"
 };
 export {
-  HTML_ENTITY_MAP
+  HTML_ENTITY_MAP,
+  KILOBYTE,
+  MEGABYTE
 };

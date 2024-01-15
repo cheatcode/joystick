@@ -1,6 +1,6 @@
 {
   "name": "@joystick.js/node-canary",
-  "version": "0.0.0-canary.241",
+  "version": "0.0.0-canary.354",
   "type": "module",
   "description": "A Node.js framework for building web apps.",
   "main": "./dist/index.js",
@@ -16,7 +16,6 @@
   "author": "",
   "license": "SAUCR",
   "dependencies": {
-    "@tuskdb/node": "^0.11.0",
     "aws-sdk": "^2.1046.0",
     "bcrypt": "^5.0.1",
     "chalk": "^4.1.2",
