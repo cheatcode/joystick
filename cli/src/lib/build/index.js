@@ -13,7 +13,7 @@ import Loader from "../loader.js";
 import path_exists from "../path_exists.js";
 import encrypt_buffer from '../../lib/encrypt_buffer.js';
 
-const { mkdir, copyFile, readFile, writeFile } = fs.promises;
+const { mkdir, copyFile, readFile, writeFile, readdir } = fs.promises;
 const exec = util.promisify(child_process.exec);
 
 const get_files_to_build_with_operation_and_platform = (files = []) => {
@@ -44,13 +44,25 @@ const build = async (options = {}) => {
     await exec(`rm -rf .build`);
   }
 
+  const custom_copy_paths = settings?.config?.build?.copy_paths?.length > 0 ? await Promise.all(
+    settings?.config?.build?.copy_paths?.filter((custom_copy_path) => {
+      return fs.existsSync(custom_copy_path);
+    })?.flatMap(async (custom_copy_path = '') => {
+      const stat = await fs.lstat(custom_copy_path);
+      const paths = stat.isDirectory() ? await readdir(custom_copy_path, { recursive: true }) : [custom_copy_path];
+      return paths?.map((path) => {
+        return { path };
+      });
+    })
+  ) : [];
+
+  console.log(custom_copy_paths);
+
   const files_to_copy = [
     ...files_to_build_with_operation_and_platform?.filter((file) => {
       return file?.operation === 'copy_file';
     }),
-    ...(settings?.config?.build?.copy_paths?.map((path) => {
-      return { path };
-    }) || [])
+    ...(custom_copy_paths || [])
   ];
 
   const files_to_build = files_to_build_with_operation_and_platform?.filter((file) => {
