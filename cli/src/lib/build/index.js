@@ -44,8 +44,6 @@ const build = async (options = {}) => {
     await exec(`rm -rf .build`);
   }
 
-  console.log(settings?.config?.build?.copy_paths);
-
   const custom_copy_paths = [];
 
   for (let i = 0; i < settings?.config?.build?.copy_paths?.length; i += 1) {
@@ -53,8 +51,17 @@ const build = async (options = {}) => {
 
     if (fs.existsSync(custom_copy_path)) {
       const stat = fs.lstatSync(custom_copy_path);
-      const paths = stat.isDirectory() ? await readdir(custom_copy_path, { recursive: true }) : [custom_copy_path];
-      custom_copy_paths.push(...(paths || []));
+
+      if (stat.isDirectory()) {
+        const paths = await readdir(custom_copy_path, { recursive: true });
+        custom_copy_paths.push(
+          ...(paths || [])?.map((path) => {
+            return `${custom_copy_path}/${path}`;
+          })
+        );
+      } else {
+        custom_copy_paths.push(custom_copy_path);
+      }
     }
   }
 
