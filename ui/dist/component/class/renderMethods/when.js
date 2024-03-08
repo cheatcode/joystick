@@ -1,1 +1,0 @@
-var e=(t="",r={})=>{throw new Error(`[joystick${t?`.${t}`:""}] ${r.message||r.reason||r}`)};var a=function(r=!1,o=""){try{return this?.renderingHTMLWithDataForSSR||r?`<when>${o.trim()}</when>`:"<when> </when>"}catch(n){e("component.renderMethods.when",n)}},c=a;export{c as default};

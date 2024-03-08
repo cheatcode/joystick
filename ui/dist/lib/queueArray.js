@@ -1,1 +1,0 @@
-var r=class{constructor(s=[]){this.array=[...s],this.array.push=function(){Array.prototype.push.apply(this,arguments)}}async process(s=null){if(this.array.length>0){let t=this.array.shift();t&&t.callback&&(await t.callback(),this.process(s))}else s&&s()}},e=r;export{e as default};

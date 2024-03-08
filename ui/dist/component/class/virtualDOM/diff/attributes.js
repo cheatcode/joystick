@@ -1,1 +1,0 @@
-var s=(f={},u={})=>{let i=[];for(let[r,t]of Object.entries(u))i.push(e=>(e&&e.setAttribute&&e.setAttribute(r,t),e));for(let r in f)r in u||i.push(t=>(t&&t.removeAttribute&&t.removeAttribute(r),t));return r=>{for(let t of i)t&&typeof t=="function"&&t(r)}},c=s;export{c as default};

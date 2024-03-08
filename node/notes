@@ -1,1 +1,0 @@
-- [ ] To help with sessions, replace the get() and set() on the server with direct calls to the getter or setter (remove fetch so there's no usage of cookies/tokens/etc).

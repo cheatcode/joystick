@@ -1,1 +1,0 @@
-var e=(t="",r={})=>{throw new Error(`[joystick${t?`.${t}`:""}] ${r.message||r.reason||r}`)};var a=(t="")=>{try{return new DOMParser().parseFromString(t,"text/html").body.children.length>0}catch(r){e("stringContainsHTML",r)}};export{a as default};

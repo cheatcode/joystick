@@ -1,1 +1,0 @@
-var e=(t="",r={})=>{throw new Error(`[joystick${t?`.${t}`:""}] ${r.message||r.reason||r}`)};var o=t=>{try{return typeof t=="function"}catch(r){e("types.isFunction",r)}};var n=t=>{try{return typeof t=="string"}catch(r){e("types.isString",r)}};var a=(t={},r={})=>{try{return t&&n(t)?t:t&&o(t)?t(r):""}catch(i){e("component.css.compile",i)}};export{a as default};

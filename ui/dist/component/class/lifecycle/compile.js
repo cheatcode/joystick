@@ -1,1 +1,0 @@
-var n=(o="",r={})=>{throw new Error(`[joystick${o?`.${o}`:""}] ${r.message||r.reason||r}`)};var t={onBeforeMount:()=>null,onMount:()=>null,onBeforeUnmount:()=>null,onUpdateProps:()=>null};var d=(o={},r={})=>{try{return r?Object.entries({...t,...r||{}}).reduce((e={},[u,l])=>(e[u]=()=>l(o),e),{}):t}catch(e){n("component.lifecycle.compile",e)}};export{d as default};
