@@ -44,6 +44,8 @@ const build = async (options = {}) => {
     await exec(`rm -rf .build`);
   }
 
+  console.log(settings?.config?.build?.copy_paths);
+
   const custom_copy_paths = settings?.config?.build?.copy_paths?.length > 0 ? await Promise.all(
     settings?.config?.build?.copy_paths?.filter((custom_copy_path) => {
       return fs.existsSync(custom_copy_path);
@@ -56,7 +58,7 @@ const build = async (options = {}) => {
     })
   ) : [];
 
-  console.log(custom_copy_paths);
+  console.log({ custom_copy_paths });
 
   const files_to_copy = [
     ...files_to_build_with_operation_and_platform?.filter((file) => {
