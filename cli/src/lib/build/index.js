@@ -65,8 +65,6 @@ const build = async (options = {}) => {
     }
   }
 
-  console.log(custom_copy_paths);
-
   const files_to_copy = [
     ...files_to_build_with_operation_and_platform?.filter((file) => {
       return file?.operation === 'copy_file';
