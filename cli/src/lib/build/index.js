@@ -57,6 +57,8 @@ const build = async (options = {}) => {
     }
   }
 
+  console.log(custom_copy_paths);
+
   const files_for_build = await get_files_to_build(excluded_paths, custom_copy_paths);
   const output_path = build_type === 'tar' ? '.build/.tar' : '.build';
   const files_to_build_with_operation_and_platform = get_files_to_build_with_operation_and_platform(files_for_build);
