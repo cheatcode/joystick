@@ -6,7 +6,7 @@
   "description": "The CLI for Joystick.",
   "main": "dist/index.js",
   "bin": {
-    "joystick": "./dist/index.js"
+    "joystick-canary": "./dist/index.js"
   },
   "scripts": {
     "build": "node ./.build/index.js",

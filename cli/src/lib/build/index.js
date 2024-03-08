@@ -44,9 +44,14 @@ const build = async (options = {}) => {
     await exec(`rm -rf .build`);
   }
 
-  const files_to_copy = files_to_build_with_operation_and_platform?.filter((file) => {
-    return file?.operation === 'copy_file';
-  })
+  const files_to_copy = [
+    ...files_to_build_with_operation_and_platform?.filter((file) => {
+      return file?.operation === 'copy_file';
+    }),
+    ...(settings?.config?.build?.copy_paths?.map((path) => {
+      return { path };
+    }) || [])
+  ];
 
   const files_to_build = files_to_build_with_operation_and_platform?.filter((file) => {
     return file?.operation === 'build_file';
