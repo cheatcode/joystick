@@ -82,8 +82,12 @@ const build = async (options = {}) => {
 
   for (let i = 0; i < files_to_copy?.length; i += 1) {
     const file_to_copy = files_to_copy[i];
-    await mkdir(dirname(`${output_path}/${file_to_copy?.path}`), { recursive: true });
-    await copyFile(file_to_copy?.path, `${output_path}/${file_to_copy?.path}`);
+    const stat = fs.lstatSync(file_to_copy?.path);
+
+    if (stat.isFile()) {
+      await mkdir(dirname(`${output_path}/${file_to_copy?.path}`), { recursive: true });
+      await copyFile(file_to_copy?.path, `${output_path}/${file_to_copy?.path}`);
+    }
   }
 
   await build_files({
