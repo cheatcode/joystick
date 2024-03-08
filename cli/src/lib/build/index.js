@@ -52,7 +52,7 @@ const build = async (options = {}) => {
     })?.flatMap(async (custom_copy_path = '') => {
       const stat = fs.lstatSync(custom_copy_path);
       const paths = stat.isDirectory() ? await readdir(custom_copy_path, { recursive: true }) : [custom_copy_path];
-      return paths?.map((path) => {
+      return paths?.flatMap((path) => {
         return { path };
       });
     })
