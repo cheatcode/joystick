@@ -1,8 +1,8 @@
 {
-  "name": "@joystick.js/ui-canary",
+  "name": "@joystick.js/ui",
   "type": "module",
-  "version": "0.0.0-canary.999",
-  "canary_version": "0.0.0-canary.999",
+  "version": "1.0.0-rc.0",
+  "canary_version": "0.0.0-canary.1000",
   "description": "The UI framework for Joystick.",
   "main": "./dist/index.js",
   "scripts": {
