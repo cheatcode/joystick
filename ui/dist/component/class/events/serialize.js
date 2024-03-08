@@ -1,1 +1,0 @@
-var t=(e="",r={})=>{throw new Error(`[joystick${e?`.${e}`:""}] ${r.message||r.reason||r}`)};var c=(e={})=>{try{return Object.entries(e).map(([r,o])=>{let[s,...a]=r.split(" ");return{type:s.toLowerCase(),selector:a.join(" "),handler:o}})}catch(r){t("component.events.serialize",r)}};export{c as default};

@@ -1,1 +1,0 @@
-var t=r=>!!r,o=r=>!!(r&&typeof r=="object"&&!Array.isArray(r)),e=r=>!!Array.isArray(r),n=r=>r===!0||r===!1,s=r=>Number(r)===r&&r%1!=0,i=r=>Number(r)===r&&r%1==0,c=r=>Number(r)===r,p=r=>typeof r=="string";export{t as isAny,e as isArray,n as isBoolean,s as isFloat,i as isInteger,c as isNumber,o as isObject,p as isString};

@@ -1,1 +1,0 @@
-import e from"node-fetch";import i from"./get.js";import r from"./set.js";var c={get:(o="",t={})=>(global.window={},window.fetch=e,window.location={origin:`http://localhost:${process.env.PORT}`},i(o,t)),set:(o="",t={})=>(global.window={},window.fetch=e,window.location={origin:`http://localhost:${process.env.PORT}`},r(o,t))};export{c as default};

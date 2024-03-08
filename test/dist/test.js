@@ -1,1 +1,0 @@
-import e from"ava";class a{constructor(){}before(r=null){return e.serial.before(r)}beforeEach(r=null){return e.beforeEach(r)}after(r=null){return e.after.always(r)}afterEach(r=null){return e.afterEach.always(r)}that(r="",t=null){return e.serial(r,t)}}var u=new a;export{u as default};

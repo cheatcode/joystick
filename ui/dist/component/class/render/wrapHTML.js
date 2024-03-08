@@ -1,1 +1,0 @@
-var t=(s="",o={})=>{throw new Error(`[joystick${s?`.${s}`:""}] ${o.message||o.reason||o}`)};var n=(s={},o="")=>{try{let{wrapper:r=null,id:e=null,instanceId:i=null}=s;return`<div ${r?.id?`id="${r.id}" `:""}${r?.classList?`class="${r.classList?.join(" ")}" `:""} js-c="${e}" js-i="${i}">${o}</div>`}catch(r){t("component.render.wrapHTML",r)}};export{n as default};

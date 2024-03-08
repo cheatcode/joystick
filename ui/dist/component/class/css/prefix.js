@@ -1,1 +1,0 @@
-var s=(e="",r={})=>{throw new Error(`[joystick${e?`.${e}`:""}] ${r.message||r.reason||r}`)};var w=(e="",r="")=>{try{let o=new RegExp(/^(?!@).+({|,)/gim);return(e||"").replace(o,t=>["@",": "].some(n=>t?.includes(n))?t:`[js-c="${r}"] ${t.trim()}`)?.trim()}catch(o){s("component.css.prefix",o)}};export{w as default};

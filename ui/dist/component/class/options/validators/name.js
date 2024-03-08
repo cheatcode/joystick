@@ -1,1 +1,0 @@
-var t=(r="",o={})=>{throw new Error(`[joystick${r?`.${r}`:""}] ${o.message||o.reason||o}`)};var m=(r=null)=>{typeof r!="string"&&t("component.optionValidators.name","options.name must be a string.")};export{m as default};

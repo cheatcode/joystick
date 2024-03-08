@@ -1,1 +1,0 @@
-var e=(t="",r={})=>{throw new Error(`[joystick${t?`.${t}`:""}] ${r.message||r.reason||r}`)};var c=t=>{try{return typeof t=="function"}catch(r){e("types.isFunction",r)}};var i=function(r=[],n=null){try{return c(n)&&r&&Array.isArray(r)?r.map((o,s)=>n(o,s)).join(""):""}catch(o){e("component.renderMethods.each",o)}},h=i;export{h as default};

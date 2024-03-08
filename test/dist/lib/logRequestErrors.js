@@ -1,1 +1,0 @@
-import t from"./throwFrameworkError.js";var s=(e="",r=[])=>{try{console.error(`${e} failed with the following errors:`),r.forEach(o=>{console.log(o.message),o.stack&&console.log(o.stack)})}catch(o){t(e,o)}};export{s as default};

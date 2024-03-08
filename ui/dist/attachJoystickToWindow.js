@@ -1,1 +1,0 @@
-var r=(t="",o={})=>{throw new Error(`[joystick${t?`.${t}`:""}] ${o.message||o.reason||o}`)};var s=(t={})=>{try{let o=null;typeof window!="undefined"&&(o=window),typeof global!="undefined"&&(o=global),o&&(o.joystick={...o?.joystick||{},settings:o?.__joystick_settings__,...t})}catch(o){r("attachJoystickToWindow",o)}};export{s as default};

@@ -1,1 +1,0 @@
-var i=(t="",n=[])=>{typeof window!="undefined"&&!!window.__joystick_test__&&(window.test={...window.test||{},functionCalls:{...window?.test?.functionCalls||{},[t]:[...window?.test?.functionCalls&&window?.test?.functionCalls[t]||[],{calledAt:new Date().toISOString(),args:n}]}})};export{i as default};

@@ -1,1 +1,0 @@
-import o from"node-fetch";var p={job:(t="",e={})=>o(`http://localhost:${process.env.PORT}/api/_test/queues`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({queue:e?.queue,job:t,payload:e?.payload})})};export{p as default};

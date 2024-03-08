@@ -1,9 +1,0 @@
-import{parseHTML as m}from"linkedom";import u from"@joystick.js/ui";import d from"node-fetch";import{URL as p,URLSearchParams as _}from"url";import y from"./event.js";import w from"../load/index.js";import g from"../../lib/generateCookieHeader.js";const h=async(n="",o={})=>{const t=new p(`${window?.location?.origin}/api/_test/bootstrap`);t.search=new _({pathToComponent:n});const r={cache:"no-store"};o?.user&&(r.headers={Cookie:g({joystickLoginToken:o?.user?.joystickLoginToken,joystickLoginTokenExpiresAt:o?.user?.joystickLoginTokenExpiresAt})});const e=await d(t,r).then(async s=>s.json());window.joystick={settings:e?.settings||{}},window.__joystick_test__=!0,window.__joystick_data__=e?.data||{},window.__joystick_i18n__=e?.translations||{},window.__joystick_req__=e?.req,window.__joystick_url__=o?.url||{params:{},path:"/",query:{},route:"/"}},k=()=>{const n=m(`
-    <html>
-      <head></head>
-      <body>
-        <div id="app"></div>
-        <meta name="csrf" content="joystick_test" />
-      </body>
-    </html>
-  `),{window:o,document:t,Element:r,Event:e,HTMLElement:s}=n;return global.window=o,global.document=t,global.HTMLElement=s,global.Element=r,global.Event=e,global.console={log:console.log,warn:console.warn,error:console.error},n};var H=async(n="",o={})=>{const t=k();window.fetch=d,window.location={origin:`http://localhost:${process.env.PORT}`},await h(n,o?.user);const r=await w(n,{default:!0}),e=o?.layout?await w(o?.layout,{default:!0}):null,s={...o?.props||{}};o?.layout&&(s.page=r);const i=u.mount(e||r,s,t?.document.querySelector("#app"));return{dom:t,instance:i,test:{data:async(a={})=>i?.data?.refetch(a),renderToHTML:()=>{const a=i?.renderToHTML(),c=new RegExp("<when>|</when>","g");return a?.wrapped?.replace(c,"")?.replace(/\n|\t/g," ")?.replace(/> *</g,"><")},method:(a="",...c)=>{const l=i?.methods[a];return l?l(...c):null},event:(a="",c="",l={})=>y(a,c,t,l)}}};export{H as default};

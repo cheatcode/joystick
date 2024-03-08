@@ -1,1 +1,0 @@
-var l=()=>{setTimeout(()=>{let o=window.joystick._internal.eventListeners;for(let e=0;e<o?.length;e+=1){let s=o[e];for(let r=0;r<s?.events?.length;r+=1){let t=s.events[r];for(let n=0;n<t?.elements?.length;n+=1)t.elements[n].removeEventListener(t.type,t.eventListener)}}},0)};export{l as default};
