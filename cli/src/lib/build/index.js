@@ -46,25 +46,27 @@ const build = async (options = {}) => {
 
   console.log(settings?.config?.build?.copy_paths);
 
-  const custom_copy_paths = settings?.config?.build?.copy_paths?.length > 0 ? await Promise.all(
-    settings?.config?.build?.copy_paths?.filter((custom_copy_path) => {
-      return fs.existsSync(custom_copy_path);
-    })?.flatMap(async (custom_copy_path = '') => {
+  const custom_copy_paths = [];
+
+  for (let i = 0; i < settings?.config?.build?.copy_paths?.length; i += 1) {
+    const custom_copy_path = settings?.config?.build?.copy_paths[i];
+
+    if (fs.existsSync(custom_copy_path)) {
       const stat = fs.lstatSync(custom_copy_path);
       const paths = stat.isDirectory() ? await readdir(custom_copy_path, { recursive: true }) : [custom_copy_path];
-      return paths?.flatMap((path) => {
-        return { path };
-      });
-    })
-  ) : [];
+      custom_copy_paths.push(...(paths || []));
+    }
+  }
 
-  console.log({ custom_copy_paths });
+  console.log(custom_copy_paths);
 
   const files_to_copy = [
     ...files_to_build_with_operation_and_platform?.filter((file) => {
       return file?.operation === 'copy_file';
     }),
-    ...(custom_copy_paths || [])
+    ...(custom_copy_paths || [])?.map((custom_copy_path) => {
+      return { path: custom_copy_path };
+    }),
   ];
 
   const files_to_build = files_to_build_with_operation_and_platform?.filter((file) => {
