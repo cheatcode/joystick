@@ -1,0 +1,1 @@
+import t from"./generate_joystick_error_page.js";const p=(a,e,o)=>{if(process.BUILD_ERROR){const r=process.BUILD_ERROR.paths&&process.BUILD_ERROR.paths[0],s=t({path:r.path,stack:r.error.stack,frame:r.error.snippet});return e.send(s)}o()};var c=p;export{c as default};

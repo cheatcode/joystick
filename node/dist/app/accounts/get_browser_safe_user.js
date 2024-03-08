@@ -1,0 +1,1 @@
+import n from"../../lib/types.js";const u=(s=null)=>{if(!s||!n.is_object(s))return null;const t=["password","passwordResetTokens","sessions","oauth","verifyEmailTokens"];return Object.entries(s||{}).filter(([e])=>!t.includes(e)).reduce((e,[r,o])=>(e[r]||(e[r]=o),e),{})};var f=u;export{f as default};

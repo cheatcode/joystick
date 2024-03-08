@@ -1,0 +1,1 @@
+import a from"os";import{dirname as e}from"path";import{fileURLToPath as r}from"url";const i=r(import.meta.url),_=e(i),l=a.platform()==="win32",n={__package:_?.replace(l?"\\lib":"/lib",""),__filename:(t="")=>r(t),__dirname:(t="")=>{const o=r(t);return e(o)}};var f=n;export{f as default};

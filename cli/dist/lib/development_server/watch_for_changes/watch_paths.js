@@ -1,0 +1,1 @@
+import t from"../../build/copy_paths.js";const a=[{path:"api"},{path:"cronJobs"},{path:"cron_jobs"},{path:"email"},{path:"fixtures"},{path:"indexes"},{path:"lib"},{path:"queues"},{path:"routes"},{path:"ui"},{path:"uploaders"},{path:"websockets"},{path:"index.client.js"},{path:"index.server.js"},...t];var e=a;export{e as default};

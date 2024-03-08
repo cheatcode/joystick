@@ -1,0 +1,1 @@
+import o from"./add.js";import m from"./remove.js";import e from"./list.js";import t from"./grant.js";import f from"./revoke.js";import r from"./user_has_role.js";const i={add:o,remove:m,list:e,grant:t,revoke:f,userHasRole:r,user_has_role:r};var n=i;export{n as default};

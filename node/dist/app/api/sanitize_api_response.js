@@ -1,0 +1,1 @@
+import _ from"../../lib/escape_html.js";import i from"../../lib/types.js";const e=(s=null)=>{let r=s;return!i.is_string(r)&&!i.is_object(r)&&!i.is_array(r)||(i.is_string(r)&&(r=_(r)?.trim()),i.is_object(r)&&!i.is_array(r)&&(r=Object.entries(r||{})?.reduce((t={},[a,n])=>(t[a]=e(n),t),{})),i.is_array(r)&&(r=r.map((t=null)=>e(t)))),r};var f=e;export{f as default};

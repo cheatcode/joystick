@@ -1,0 +1,1 @@
+import s from"fs";import f from"../get_files_in_path.js";import i from"./master_ignore_list.js";const{stat:p}=s.promises,c=async(l=[],r=null)=>{const n=await f("./",[]),o=r&&r==="start"?i?.filter(e=>!e.includes("settings")):i;return n.filter(e=>!l.some(t=>e.includes(t))).filter(e=>!o.some(t=>e.includes(t))).filter(e=>!s.lstatSync(e).isDirectory())};var g=c;export{g as default};

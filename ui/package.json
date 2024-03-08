@@ -1,0 +1,22 @@
+{
+  "name": "@joystick.js/ui-canary",
+  "type": "module",
+  "version": "1.0.0-rc.0",
+  "canary_version": "0.0.0-canary.999",
+  "description": "The UI framework for Joystick.",
+  "main": "./dist/index.js",
+  "scripts": {
+    "build": "node build.js",
+    "release": "node increment_version.js && npm run build && npm publish",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "esbuild": "^0.19.8"
+  },
+  "dependencies": {
+    "linkedom": "^0.16.6"
+  }
+}

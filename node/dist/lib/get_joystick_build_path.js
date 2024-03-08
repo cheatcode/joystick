@@ -1,0 +1,1 @@
+import e from"fs";const n=()=>["development","test"].includes(process.env.NODE_ENV)||e.existsSync(".joystick/build")?".joystick/build/":"",o=()=>{const t=n();return`${process.cwd().replace(t,"")}/${t}`};var s=o;export{s as default};

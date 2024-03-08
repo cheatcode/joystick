@@ -1,0 +1,25 @@
+{
+  "name": "app",
+  "short_name": "app",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#000000",
+  "description": "A new Joystick app.",
+  "icons": [{
+    "src": "favicon.ico",
+    "sizes": "32x32",
+    "type": "image/x-icon"
+  }, {
+    "purpose": "any",
+    "src": "apple-touch-icon-152x152.png",
+    "sizes": "152x152",
+    "type": "image/png"
+  }, {
+    "purpose": "maskable",
+    "src": "splash-screen-1024x1024.png",
+    "sizes": "1024x1024",
+    "type": "image/png"
+  }],
+  "related_applications": []
+}

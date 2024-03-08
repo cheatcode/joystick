@@ -1,0 +1,36 @@
+{
+  "name": "@joystick.js/cli-canary",
+  "type": "module",
+  "version": "1.0.0-rc.0",
+  "canary_version": "0.0.0-canary.999",
+  "description": "The CLI for Joystick.",
+  "main": "dist/index.js",
+  "bin": {
+    "joystick-canary": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "node ./.build/index.js",
+    "release": "node increment_version.js && npm run build && npm publish",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@babel/code-frame": "^7.23.5",
+    "acorn": "^8.11.2",
+    "ascii-table": "^0.0.9",
+    "ava": "^6.0.1",
+    "chalk": "^5.3.0",
+    "chokidar": "^3.5.3",
+    "esbuild": "^0.19.9",
+    "esbuild-plugin-svg": "^0.1.0",
+    "form-data": "^4.0.0",
+    "inquirer": "^9.2.12",
+    "mongodb": "^6.3.0",
+    "node-fetch": "^3.3.2",
+    "pg": "^8.11.3",
+    "query-string": "^8.1.0",
+    "ws": "^8.15.1"
+  }
+}

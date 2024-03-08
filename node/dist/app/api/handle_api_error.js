@@ -1,0 +1,1 @@
+import n from"./format_api_error.js";import i from"../../lib/types.js";const e=(r="",t="",s={})=>i.is_object(t)&&!(t instanceof Error)?s.status(t?.errors&&t?.errors[0]?.status||500).send(JSON.stringify(t)):t instanceof Error?s.status(500).send(JSON.stringify({errors:[n(t,r,500)]})):s.status(500).send(JSON.stringify({errors:[n(new Error(t),r,500)]}));var o=e;export{o as default};

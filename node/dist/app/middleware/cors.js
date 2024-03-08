@@ -1,0 +1,1 @@
+import d from"cors";const c=(t={},l="")=>(o,n,s)=>{const u=[`http://localhost:${l}`,...t?.allowedUrls||[]];return d({credentials:!0,origin:function(e,r){!e||u.includes(e)?r(null,!0):r(new Error(`${e} not permitted by CORS policy.`))}})(o,n,s)};var p=c;export{p as default};

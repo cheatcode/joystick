@@ -1,0 +1,1 @@
+import o from"pg-escape";const c=async(t="",a={})=>{if(t==="postgresql"){const s=Object.keys(a||{});for(let e=0;e<s?.length;e+=1)await process.databases.postgresql.query(o("ALTER TABLE users ADD COLUMN IF NOT EXISTS %I TEXT;",s[e]))}};var l=c;export{l as default};

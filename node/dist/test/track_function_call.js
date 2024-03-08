@@ -1,0 +1,1 @@
+const c=(t="",s=[])=>{process.env.NODE_ENV==="test"&&(process.test={...process.test||{},function_calls:{...process?.test?.function_calls||{},[t]:[...process?.test?.function_calls&&process?.test?.function_calls[t]||[],{called_at:new Date().toISOString(),args:s}]}})};var e=c;export{e as default};

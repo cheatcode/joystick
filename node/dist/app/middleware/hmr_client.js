@@ -1,0 +1,1 @@
+import e from"fs";import r from"../../lib/node_path_polyfills.js";const{readFile:o}=e.promises,i=await o(`${r?.__package}/app/browser/hmr_client.js`,"utf-8"),p=(s,t)=>{t.set("Content-Type","text/javascript"),t.send(i)};var _=p;export{_ as default};

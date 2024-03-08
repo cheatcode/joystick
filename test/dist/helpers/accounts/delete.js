@@ -1,0 +1,1 @@
+import e from"node-fetch";const o=(t="")=>e(`http://localhost:${process.env.PORT}/api/_test/accounts`,{method:"DELETE",mode:"cors",headers:{"Content-Type":"application/json"},body:JSON.stringify({user_id:t}),cache:"no-store"});var s=o;export{s as default};

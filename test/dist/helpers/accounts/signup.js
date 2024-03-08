@@ -1,0 +1,1 @@
+import e from"node-fetch";const n=(o={})=>e(`http://localhost:${process.env.PORT}/api/_test/accounts/signup`,{method:"POST",mode:"cors",headers:{"Content-Type":"application/json"},body:JSON.stringify(o),cache:"no-store"}).then(t=>t.json()).catch(t=>{console.warn(t)});var c=n;export{c as default};

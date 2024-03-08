@@ -1,0 +1,1 @@
+import p from"../websockets/emit_event.js";import d from"../../lib/float_to_decimal_place.js";const i=(r=1,e={},n={},s)=>{let o=0;const l=parseInt(e.headers["content-length"],10);e.on("data",t=>{if(t.length>0){o+=t.length;const a=d(o/(l*r)*100);p(`uploaders_${e?.headers["x-joystick-upload-id"]}`,"progress",{provider:"local",progress:a})}}),s()};var g=i;export{g as default};

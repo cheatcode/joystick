@@ -1,0 +1,1 @@
+import t from"./create_file.js";import l from"./function_called.js";import o from"./get_function_calls.js";import c from"./track_function_call.js";const i={createFile:t,create_file:t,functionCalled:l,function_called:l,getFunctionCalls:o,get_function_calls:o,trackFunctionCall:c,track_function_call:c};var f=i;export{f as default};

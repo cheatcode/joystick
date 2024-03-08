@@ -1,0 +1,27 @@
+{
+  "name": "@joystick.js/test-canary",
+  "type": "module",
+  "version": "1.0.0-rc.0",
+  "canary_version": "0.0.0-canary.999",
+  "description": "The testing framework for Joystick.",
+  "main": "./dist/index.js",
+  "scripts": {
+    "build": "node ./.build/index.js",
+    "release": "node increment_version.js && npm run build && npm publish",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "ava": "^5.3.0",
+    "chalk": "^5.3.0",
+    "esbuild": "^0.19.11",
+    "linkedom": "^0.16.6",
+    "mongo-uri-tool": "^1.0.1",
+    "mongodb": "^6.3.0",
+    "node-fetch": "^3.3.2",
+    "pg": "^8.11.3",
+    "ws": "^8.16.0"
+  }
+}

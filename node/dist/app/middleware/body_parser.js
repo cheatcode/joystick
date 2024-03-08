@@ -1,0 +1,1 @@
+import d from"express";const p=(r={})=>(e,t,n)=>{const o=e.headers["content-type"];return o&&o==="application/x-www-form-urlencoded"?d.urlencoded({extended:!0,...r?.urlencoded||{}})(e,t,n):d.json(r?.json)(e,t,n)};var c=p;export{c as default};

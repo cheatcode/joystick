@@ -1,0 +1,1 @@
+import n from"../../lib/load_settings.js";import i from"./register_database.js";const d=n()?.parsed,p=async()=>{const t=d?.config?.databases;for(let s=0;s<t?.length;s+=1){const e=t[s],a=parseInt(process.env.PORT,10)+10+s,r=t?.filter(o=>e?.provider===o?.provider)?.length>1;await i(e,a,r)}return Promise.resolve(process.databases)};var f=p;export{f as default};

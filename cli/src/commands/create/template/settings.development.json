@@ -1,0 +1,27 @@
+{
+  "config": {
+    "databases": [
+      {
+        "provider": "mongodb",
+        "users": true,
+        "options": {}
+      }
+    ],
+    "i18n": {
+      "defaultLanguage": "en-US"
+    },
+    "middleware": {},
+    "email": {
+      "from": "",
+      "smtp": {
+        "host": "",
+        "port": 587,
+        "username": "",
+        "password": ""
+      }
+    }
+  },
+  "global": {},
+  "public": {},
+  "private": {}
+}

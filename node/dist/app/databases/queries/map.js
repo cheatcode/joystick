@@ -1,0 +1,1 @@
+import s from"./mongodb/accounts.js";import o from"./mongodb/queues.js";import e from"./mongodb/sessions.js";import r from"./postgresql/accounts.js";import u from"./postgresql/queues.js";import m from"./postgresql/sessions.js";const t={mongodb:{accounts:s,queues:o,sessions:e},postgresql:{accounts:r,queues:u,sessions:m}};var g=t;export{g as default};

@@ -1,0 +1,1 @@
+import o from"../../accounts/index.js";import e from"../handle_api_error.js";const d=async(r={},s={})=>{try{await o.recover_password({email_address:r?.body?.emailAddress||r?.body?.email_address}),s.status(200).send(JSON.stringify({}))}catch(a){e("accounts.recover_password",a,s)}};var i=d;export{i as default};

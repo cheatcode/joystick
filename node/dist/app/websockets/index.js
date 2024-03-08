@@ -1,0 +1,1 @@
+import c from"./emit_event.js";import m from"../../test/track_function_call.js";const r=(t="")=>({send:(e={},o="")=>{const s=o?`${t}_${o}`:t;c(s,"message",e),m(`node.websockets.${t}.send`,[e])}});var n=r;export{n as default};

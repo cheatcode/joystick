@@ -1,0 +1,1 @@
+const t=(r="")=>{let e=r.toLowerCase().trim();return e=e.normalize("NFD").replace(/[\u0300-\u036f]/g,""),e=e.replace(/[^a-z0-9\s-_]/g," ").trim(),e=e.replace(/[\s-]+/g,"-"),e=e.replace(/[\s_]+/g,"_"),e};var l=t;export{l as default};

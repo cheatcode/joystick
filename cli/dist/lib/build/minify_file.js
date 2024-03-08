@@ -1,0 +1,1 @@
+import o from"fs";import f from"esbuild";import r from"../path_exists.js";const{readFile:s,writeFile:a}=o.promises,m=async(i="")=>{if(await r(i)){const t=await s(i,"utf-8"),e=await f.transform(t,{minify:!0});await a(i,e.code)}};var d=m;export{d as default};

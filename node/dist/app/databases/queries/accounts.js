@@ -1,0 +1,1 @@
+import c from"../get_target_database_connection.js";import r from"./map.js";const u=async(t="",n={})=>{const o=c("users"),e=o&&r&&r[o?.provider]&&r[o?.provider]?.accounts,s=e&&e[t];if(o?.connection&&s){const a=await e[t](n,o?.connection);return Promise.resolve(a)}return null};var _=u;export{_ as default};

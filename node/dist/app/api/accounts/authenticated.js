@@ -1,0 +1,1 @@
+import n from"../../accounts/has_login_token_expired.js";const s=(t={},o={})=>{const e=n(o,t?.cookies?.joystick_login_token,t?.cookies?.joystick_login_token_expires_at),i=e?401:200;return o.status(i).send(JSON.stringify({status:i,authenticated:!e}))};var a=s;export{a as default};

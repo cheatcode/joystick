@@ -1,0 +1,46 @@
+{
+  "name": "@joystick.js/node-canary",
+  "type": "module",
+  "version": "1.0.0-rc.0",
+  "canary_version": "0.0.0-canary.999",
+  "description": "The Node.js framework for Joystick.",
+  "main": "./dist/index.js",
+  "scripts": {
+    "build": "node ./.build/index.js",
+    "release": "node increment_version.js && npm run build && npm publish",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.478.0",
+    "@aws-sdk/lib-storage": "^3.478.0",
+    "bcrypt": "^5.1.1",
+    "chalk": "^5.3.0",
+    "compression": "^1.7.4",
+    "cookie-parser": "^1.4.6",
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "html-to-text": "^9.0.5",
+    "juice": "^9.1.0",
+    "linkedom": "^0.16.4",
+    "mongo-uri-tool": "^1.0.1",
+    "mongodb": "^6.3.0",
+    "multer": "^1.4.5-lts.1",
+    "node-cron": "^3.0.3",
+    "node-fetch": "^3.3.2",
+    "node-html-parser": "^6.1.11",
+    "nodemailer": "^6.9.7",
+    "pg": "^8.11.3",
+    "pg-escape": "^0.2.0",
+    "process": "^0.11.10",
+    "query-string": "^8.1.0",
+    "serve-favicon": "^2.5.0",
+    "winston": "^3.12.0",
+    "ws": "^8.15.1"
+  },
+  "devDependencies": {
+    "esbuild": "^0.19.9"
+  }
+}

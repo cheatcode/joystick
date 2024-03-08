@@ -1,0 +1,1 @@
+const t=(s="",r=[])=>{console.error(`${s} failed with the following errors:`);for(let e=0;e<r?.length;e+=1){const o=r[e];console.error(o.message),o.stack&&console.error(o.stack)}};var l=t;export{l as default};

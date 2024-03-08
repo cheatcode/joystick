@@ -1,0 +1,1 @@
+import e from"../../lib/types.js";const s=(t,r)=>{switch(t){case"any":return e.is_any(r);case"array":return e.is_array(r);case"boolean":return e.is_boolean(r);case"float":return e.is_float(r);case"integer":return e.is_integer(r);case"number":return e.is_number(r);case"object":return e.is_object(r);case"string":return e.is_string(r)}};var i=s;export{i as default};

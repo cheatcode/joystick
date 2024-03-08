@@ -1,0 +1,1 @@
+import r from"../../lib/generate_id.js";import o from"../databases/queries/accounts.js";const n=(t="",e="")=>o("add_password_reset_token",{email_address:t,token:e}),s=async(t="")=>{const e=r(32);return await n(t,e),e};var d=s;export{d as default};

@@ -1,0 +1,1 @@
+import o from"fs";import p from"../../lib/node_path_polyfills.js";const{readFile:s}=o.promises,r=await s(`${p.__package}/app/browser/process_polyfill.js`,"utf-8"),l=(t,e)=>{e.set("Content-Type","text/javascript"),e.send(r?.replace("${NODE_ENV}",process.env.NODE_ENV))};var _=l;export{_ as default};
