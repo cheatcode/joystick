@@ -4,14 +4,19 @@ import master_ignore_list from "./master_ignore_list.js";
 
 const { stat } = fs.promises;
 
-const get_files_to_build = async (excluded_paths = [], context = null) => {
+const get_files_to_build = async (excluded_paths = [], custom_copy_paths = []) => {
   const files = await get_files_in_path("./", []);
 
-  const master_ignore_list_filtered_for_context = context && context === 'start' ? master_ignore_list?.filter((file_to_ignore) => {
-    return !file_to_ignore.includes('settings');
-  }) : master_ignore_list;
+  const master_ignore_list_filtered_for_context = master_ignore_list;
 
   const filtered_files = files
+    .filter((path) => {
+      const is_custom_copy_path = custom_copy_paths.some((custom_copy_path) => {
+        return path.includes(custom_copy_path);
+      });
+
+      return !is_custom_copy_path;
+    })
     .filter((path) => {
       const is_excluded = excluded_paths.some((excluded_path) => {
         return path.includes(excluded_path);

@@ -36,14 +36,6 @@ const build = async (options = {}) => {
 
   const settings = await load_settings(environment);
   const excluded_paths = settings?.config?.build?.excluded_paths || settings?.config?.build?.excludedPaths;
-  const files_for_build = await get_files_to_build(excluded_paths);
-  const output_path = build_type === 'tar' ? '.build/.tar' : '.build';
-  const files_to_build_with_operation_and_platform = get_files_to_build_with_operation_and_platform(files_for_build);
-
-  if (await path_exists('.build')) {
-    await exec(`rm -rf .build`);
-  }
-
   const custom_copy_paths = [];
 
   for (let i = 0; i < settings?.config?.build?.copy_paths?.length; i += 1) {
@@ -63,6 +55,14 @@ const build = async (options = {}) => {
         custom_copy_paths.push(custom_copy_path);
       }
     }
+  }
+
+  const files_for_build = await get_files_to_build(excluded_paths, custom_copy_paths);
+  const output_path = build_type === 'tar' ? '.build/.tar' : '.build';
+  const files_to_build_with_operation_and_platform = get_files_to_build_with_operation_and_platform(files_for_build);
+
+  if (await path_exists('.build')) {
+    await exec(`rm -rf .build`);
   }
 
   const files_to_copy = [
