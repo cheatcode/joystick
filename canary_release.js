@@ -34,8 +34,8 @@ if (git_branch_name !== 'canary') {
 if (git_branch_name === 'canary') {
   const package_folders = ['cli', 'node', 'test', 'ui'];
 
-  console.log('Check for and warn uncomitted changes');
-    await check_for_uncommitted_changes();
+  // console.log('Check for and warn uncomitted changes');
+  await check_for_uncommitted_changes();
 
   for (let i = 0; i < package_folders?.length; i += 1) {
     const package_folder = package_folders[i];
@@ -70,8 +70,8 @@ if (git_branch_name === 'canary') {
     await exec(`git add . && git commit -m "release ${updated_package_json.canary_version}"`);
   }
 
-  console.log('Run a git push to origin');
-    await exec(`git push origin canary`);
+  // console.log('Run a git push to origin');
+  await exec(`git push origin canary`);
 
   process.exit(0);
 }
