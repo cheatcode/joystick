@@ -50,7 +50,7 @@ const build = async (options = {}) => {
     settings?.config?.build?.copy_paths?.filter((custom_copy_path) => {
       return fs.existsSync(custom_copy_path);
     })?.flatMap(async (custom_copy_path = '') => {
-      const stat = await fs.lstat(custom_copy_path);
+      const stat = fs.lstatSync(custom_copy_path);
       const paths = stat.isDirectory() ? await readdir(custom_copy_path, { recursive: true }) : [custom_copy_path];
       return paths?.map((path) => {
         return { path };
