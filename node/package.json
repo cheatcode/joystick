@@ -1,5 +1,5 @@
 {
-  "name": "@joystick.js/node-canary",
+  "name": "@joystick.js/node",
   "type": "module",
   "version": "1.0.0-rc.0",
   "canary_version": "0.0.0-canary.999",
