@@ -61,7 +61,7 @@ const build = async (options = {}) => {
 
   const settings = await load_settings(environment);
   const excluded_paths = settings?.config?.build?.excluded_paths || settings?.config?.build?.excludedPaths;
-  const custom_copy_paths = get_custom_copy_paths(settings?.config?.build?.copy_paths);
+  const custom_copy_paths = await get_custom_copy_paths(settings?.config?.build?.copy_paths);
 
   const files_for_build = await get_files_to_build(excluded_paths, custom_copy_paths);
   const output_path = build_type === 'tar' ? '.build/.tar' : '.build';
