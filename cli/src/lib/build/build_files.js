@@ -145,7 +145,7 @@ const build_files = async (options) => {
     ]);
   }
   
-  if (process.env.NODE_ENV !== 'development') {
+  if (options?.environment && options?.environment !== 'development') {
     await Promise.all([...browser_files, ...node_files].map((file) => {
       return minify_file(`${options?.output_path || "./.joystick/build"}/${file.path}`);
     })); 
