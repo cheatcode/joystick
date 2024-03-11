@@ -6,6 +6,7 @@ const polyfill = await readFile(`${node_path_polyfills.__package}/app/browser/pr
 
 const process_browser_polyfill_middleware = (_req, res) => {
 	res.set('Content-Type', 'text/javascript');
+	res.set('Cache-Control', 'public, max-age=31557600');
 	res.send(polyfill?.replace('${NODE_ENV}', process.env.NODE_ENV));
 };
 
