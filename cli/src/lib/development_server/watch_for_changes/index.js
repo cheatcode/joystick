@@ -13,7 +13,7 @@ import watch_paths from './watch_paths.js';
 const { mkdir, copyFile, rm: remove } = fs.promises;
 
 const handle_build_files = async (job = {}, options = {}) => {
-	console.log(job);
+	console.log(job, options);
 	const codependencies = process.initial_build_complete ? await get_file_codependencies(job?.path) : [];
 
 	// NOTE: If we have codependencies, make sure that the file triggering the current job is rebuilt first
