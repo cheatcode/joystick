@@ -122,7 +122,6 @@ const build_files = async (options) => {
   let browser_file_results = [];
 
   if (node_files?.length > 0) {
-    console.log(node_files);
     node_file_results = [await handle_build_for_node(node_files, options)
       .then(() => {
         return { success: true };

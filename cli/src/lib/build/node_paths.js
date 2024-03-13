@@ -5,6 +5,7 @@ const node_paths = [
   get_platform_safe_path("cronJobs/"),
   get_platform_safe_path("cron_jobs/"),
   get_platform_safe_path("fixtures/"),
+  get_platform_safe_path("indexes/"),
   get_platform_safe_path("lib/node"),
   get_platform_safe_path("queues/"),
   get_platform_safe_path("routes/"),
