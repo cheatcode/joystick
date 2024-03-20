@@ -300,8 +300,6 @@ class Component {
 		// where you want to update state via lifecycle w/o creating an infinite loop.
 		const rerender_after_update = !options?.rerender || options?.rerender !== false;
 
-		console.log({ rerender_after_update, options });
-		
 		track_function_call(`ui.${this?.options?.test?.name || generate_id()}.set_state`, [
 			state,
 			callback,
