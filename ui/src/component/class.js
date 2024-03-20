@@ -291,15 +291,11 @@ class Component {
     }
   }
 
-  set_state(state = {}, callback = null, options = {}) {
-  	return this.setState(state, callback, options);
+  set_state(state = {}, callback = null) {
+  	return this.setState(state, callback);
   }
 
-	setState(state = {}, callback = null, options = {}) {
-		// NOTE: Granualar control over set_state() triggering a re-render. Helpful for situations
-		// where you want to update state via lifecycle w/o creating an infinite loop.
-		const rerender_after_update = options.hasOwnProperty('rerender') && options.rerender === false ? false : true;
-
+	setState(state = {}, callback = null) {
 		track_function_call(`ui.${this?.options?.test?.name || generate_id()}.set_state`, [
 			state,
 			callback,
@@ -310,15 +306,13 @@ class Component {
       ...state,
     });
 
-		if (rerender_after_update) {
-	    this.rerender({
-	      after_set_state_rerender: () => {
-	        if (callback && types.is_function(callback)) {
-	          callback();
-	        }
-	      },
-	    });
-		}
+    this.rerender({
+      after_set_state_rerender: () => {
+        if (callback && types.is_function(callback)) {
+          callback();
+        }
+      },
+    });
 	}
 
   set_timeout(callback = null, delay = 0) {
