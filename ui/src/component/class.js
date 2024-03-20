@@ -298,7 +298,7 @@ class Component {
 	setState(state = {}, callback = null, options = {}) {
 		// NOTE: Granualar control over set_state() triggering a re-render. Helpful for situations
 		// where you want to update state via lifecycle w/o creating an infinite loop.
-		const rerender_after_update = !options?.rerender || options?.rerender !== false;
+		const rerender_after_update = options.hasOwnProperty('rerender') && options.rerender === false ? false : true;
 
 		track_function_call(`ui.${this?.options?.test?.name || generate_id()}.set_state`, [
 			state,
