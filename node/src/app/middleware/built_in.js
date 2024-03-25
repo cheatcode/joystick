@@ -37,10 +37,11 @@ const built_in = (options = {}) => {
 	}
 
   options.express_app.use(express.static('public'));
-  
+
   if (options?.middleware_config?.public_paths?.length > 0) {
     for (let i = 0; options?.middleware_config?.public_paths?.length; i += 1) {
       const custom_public_path = options?.middleware_config?.public_paths[i];
+      console.log({ custom_public_path });
       options.express_app.use(express.static(custom_public_path));
     }
   }
