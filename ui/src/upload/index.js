@@ -46,7 +46,6 @@ export default (uploader_name = '', uploader_options = {}) => {
 
         for (let i = 0; i < files?.length; i += 1) {
           const file = files[i];
-          console.log({ file });
           formData.append('files', file, file.name);
         }
       }
