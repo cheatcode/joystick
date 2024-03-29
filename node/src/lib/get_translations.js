@@ -9,7 +9,7 @@ const settings = load_settings();
 
 const get_translations_file = async (language_file_path = '', joystick_build_path = '', render_component_path = '') => {
   const language_file = await dynamic_import(
-    `${joystick_build_path}/i18n/${language_file_path}?v=${new Date().getTime()}`
+    `${joystick_build_path}i18n/${language_file_path}?v=${new Date().getTime()}`
   );
 
   const is_valid_language_file = language_file && types.is_object(language_file);

@@ -9,7 +9,7 @@ const test_bootstrap = async (req = {}, res = {}, app_instance = {}) => {
   const joystick_build_path = `${process.cwd()}/.joystick/build/`;
   const component_to_render = req?.query?.path_to_component ?
   	await dynamic_import(
-      get_platform_safe_path(`${joystick_build_path}/${req?.query?.path_to_component}?v=${new Date().getTime()}`)
+      get_platform_safe_path(`${joystick_build_path}${req?.query?.path_to_component}?v=${new Date().getTime()}`)
     ) :
   	null;
 
