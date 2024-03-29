@@ -1,11 +1,17 @@
-const required = (rule, value = "", options = { isChecked: false }) => {
-  if (!options.isChecked) {
+const required = (rule, value = "", options) => {
+  console.log({
+    rule,
+    value,
+    options,
+  });
+  
+  if (!options.is_checkable) {
     return rule === true
       ? value && value.trim() !== ""
       : value && value.trim() === "";
   }
 
-  if (options.isChecked) {
+  if (options.is_checkable) {
     return rule === true ? value : !value;
   }
 };

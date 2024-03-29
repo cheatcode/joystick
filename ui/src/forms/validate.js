@@ -184,14 +184,14 @@ class ValidateForm {
 
   validate_field(field) {
     const field_input = this.form.querySelector(`[name="${field.name}"]`);
-    const is_checked = ["checkbox", "radio"].includes(field.type);
-    const value = !is_checked ? field?.element?.value?.trim() : null;
-    const checked = is_checked ? field?.element?.checked : null;
+    const is_checkable = ["checkbox", "radio"].includes(field.type);
+    const value = !is_checkable ? field?.element?.value?.trim() : null;
+    const checked = is_checkable ? field?.element?.checked : null;
 
     for (let i = 0; i < field.validations.length; i += 1) {
       const validation = field.validations[i];
       if (
-        !this.is_valid_value(is_checked, is_checked ? checked : value, validation)
+        !this.is_valid_value(is_checkable, is_checkable ? checked : value, validation)
       ) {
         const error_message = this.messages[field.name] && this.messages[field.name][validation.name];
         this.mark_validation_as_invalid(field, validation.name);
@@ -237,11 +237,11 @@ class ValidateForm {
     validation_to_mark.valid = true;
   }
 
-  is_valid_value(is_checked, value, validation) {
+  is_valid_value(is_checkable, value, validation) {
     const validator = validators[validation.name];
 
     if (validator) {
-      return validator(validation.rule, value, { is_checked });
+      return validator(validation.rule, value, { is_checkable });
     }
 
     return true;
