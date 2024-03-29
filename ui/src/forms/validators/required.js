@@ -1,10 +1,4 @@
 const required = (rule, value = "", options) => {
-  console.log({
-    rule,
-    value,
-    options,
-  });
-  
   if (!options.is_checkable) {
     return rule === true
       ? value && value.trim() !== ""
