@@ -7,9 +7,9 @@ import types from './types.js';
 
 const settings = load_settings();
 
-const get_translations_file = async (language_file_path = '', joystick_build_path = '', render_component_path = '') => {
+const get_translations_file = async (language_file_path = '', language_files_path = '', render_component_path = '') => {
   const language_file = await dynamic_import(
-    `${joystick_build_path}i18n/${language_file_path}?v=${new Date().getTime()}`
+    get_platform_safe_path(`${language_files_path}/${language_file_path}?v=${new Date().getTime()}`)
   );
 
   const is_valid_language_file = language_file && types.is_object(language_file);
@@ -98,7 +98,7 @@ const get_translations = async (get_translations_options = {}) => {
 
   const translations_file = matching_file ? await get_translations_file(
     matching_file,
-    get_translations_options?.joystick_build_path,
+    language_files_path,
     get_translations_options?.render_component_path
   ) : null;
 
