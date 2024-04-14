@@ -46,11 +46,6 @@ const diff = (old_virtual_node = undefined, new_virtual_node = undefined) => {
     return element_patch_functions.select(old_virtual_node, new_virtual_node);
   }
 
-  // TODO: Make sure this works.
-  if (new_virtual_node.tag_name === 'svg') {
-    return element_patch_functions.svg(old_virtual_node, new_virtual_node);
-  }
-
   if (['pre', 'code'].includes(new_virtual_node.tag_name)) {
     return get_replace_node_patch(new_virtual_node, old_virtual_node);
   }

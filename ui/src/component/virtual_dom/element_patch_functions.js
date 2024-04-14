@@ -26,18 +26,6 @@ const element_patch_functions = {
       return node;
     };
   },
-  svg: (old_virtual_node, new_virtual_node) => {
-    // NOTE: This properly handles re-rendering selects without breaking the
-    // value. Not ideal, but this makes the behavior stable/predictable.
-    return (node) => {
-      node.replaceChildren();
-
-      diff_attributes(old_virtual_node.attributes, new_virtual_node.attributes)(node),
-      diff_children([], new_virtual_node.children)(node);
-
-      return node;
-    };
-  },
 };
 
 export default element_patch_functions;
