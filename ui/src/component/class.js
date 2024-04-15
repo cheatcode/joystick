@@ -242,6 +242,9 @@ class Component {
 		const component_html = this.render_to_html(new_children, existing_children);
 		const new_html = this.replace_when_tags(component_html);
 		const new_dom = this.render_html_to_dom(new_html);
+		
+		this.replace_svgs_with_image(new_dom);
+
 		const new_virtual_dom = this.render_dom_to_virtual_dom(new_dom);
 		const dom_node_patches = diff_virtual_dom(this.virtual_dom, new_virtual_dom);
 
