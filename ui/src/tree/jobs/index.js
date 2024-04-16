@@ -75,10 +75,15 @@ const jobs = {
 	'css': ({ is_mount = false, is_email = false, ssr_tree = null }) => {
 		const css = [];
     const existing_style_tag = typeof window !== 'undefined' ? document.head.querySelector(`style[js-css]`) : null;
-    const css_from_tree = get_css_from_tree(ssr_tree || window.joystick?._internal?.tree, css, is_email);
-    const stringified_css = is_mount ? css_from_tree?.reverse().join("").trim() : css_from_tree?.join("").trim();
+    
+    get_css_from_tree(ssr_tree || window.joystick?._internal?.tree, css, is_email);
+    
+    const stringified_css = is_mount ? css?.reverse().join("").trim() : css?.join("").trim();
 
-    console.log(stringified_css);
+    console.log({
+    	stringified_css,
+    	css,
+    });
 
     if (typeof window !== 'undefined' && existing_style_tag?.innerText === css) {
       // NOTE: No changes, do not update CSS in DOM.
