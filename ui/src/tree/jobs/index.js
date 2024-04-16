@@ -75,10 +75,8 @@ const jobs = {
 	'css': ({ is_mount = false, is_email = false, ssr_tree = null }) => {
 		const css = [];
     const existing_style_tag = typeof window !== 'undefined' ? document.head.querySelector(`style[js-css]`) : null;
-    
-    get_css_from_tree(ssr_tree || window.joystick?._internal?.tree, css, is_email);
-    
-    const stringified_css = is_mount ? css?.reverse().join("").trim() : css?.join("").trim();
+    const built_css = get_css_from_tree(ssr_tree || window.joystick?._internal?.tree, css, is_email);
+    const stringified_css = is_mount ? built_css?.reverse().join("").trim() : built_css?.join("").trim();
 
     console.log({
     	stringified_css,
