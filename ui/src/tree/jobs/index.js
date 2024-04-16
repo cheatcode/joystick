@@ -73,14 +73,13 @@ const jobs = {
 		clear_websockets();
 	},
 	'css': ({ is_mount = false, is_email = false, ssr_tree = null }) => {
-		const css = [];
     const existing_style_tag = typeof window !== 'undefined' ? document.head.querySelector(`style[js-css]`) : null;
-    const built_css = get_css_from_tree(ssr_tree || window.joystick?._internal?.tree, css, is_email);
+    const built_css = get_css_from_tree(ssr_tree || window.joystick?._internal?.tree, is_email);
     const stringified_css = is_mount ? built_css?.reverse().join("").trim() : built_css?.join("").trim();
 
     console.log({
+    	built_css,
     	stringified_css,
-    	css,
     });
 
     if (typeof window !== 'undefined' && existing_style_tag?.innerText === css) {
