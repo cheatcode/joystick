@@ -26,6 +26,7 @@ const mount = (Component, props = {}, target = {}) => {
 
   run_tree_job('lifecycle.onBeforeMount', { root_instance_id: component_instance?.instance_id });
   run_tree_job('lifecycle.onBeforeRender', { root_instance_id: component_instance?.instance_id });
+  run_tree_job('css', { is_mount: true });
 
   mount_to_target(dom, target);
 
@@ -33,7 +34,6 @@ const mount = (Component, props = {}, target = {}) => {
 
   run_tree_job('lifecycle.onMount', { root_instance_id: component_instance?.instance_id });
   run_tree_job('lifecycle.onRender', { root_instance_id: component_instance?.instance_id });
-  run_tree_job('css', { is_mount: true });
 
   window.addEventListener('beforeunload', () => {
     run_tree_job('lifecycle.onBeforeUnmount', { root_instance_id: component_instance?.instance_id });
