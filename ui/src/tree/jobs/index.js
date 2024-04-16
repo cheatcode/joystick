@@ -77,12 +77,7 @@ const jobs = {
     const built_css = get_css_from_tree(ssr_tree || window.joystick?._internal?.tree, is_email);
     const stringified_css = is_mount ? built_css?.reverse().join("").trim() : built_css?.join("").trim();
 
-    console.log('here', {
-    	built_css,
-    	stringified_css,
-    });
-
-    if (typeof window !== 'undefined' && existing_style_tag?.innerText === css) {
+    if (typeof window !== 'undefined' && existing_style_tag?.innerText === stringified_css) {
       // NOTE: No changes, do not update CSS in DOM.
       return;
     }
