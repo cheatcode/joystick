@@ -26,6 +26,7 @@ const get_css_from_tree = (tree = [], css = [], is_email = false) => {
 		if (node?.css) {
 	    const component_id = node?.id;
 	    const raw_css = node.options.css;
+      console.log(node?.id, node?.options?.css);
 	    const compiled_css = compile_css(raw_css, node);
 	    const prefixed_css = !is_email ? handle_prefix_css(component_id, compiled_css) : null;
 
