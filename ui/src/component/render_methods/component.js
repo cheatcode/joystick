@@ -16,6 +16,9 @@ const component = function component(Component = {}, props = {}) {
 
 	component_instance.parent = parent;
 
+	add_node_to_tree(component_instance);
+	parent.track_child(component_instance);
+
 	const existing_component_on_parent = parent?.existing_children[component_instance?.id];
 	const new_component_on_parent = parent?.new_children[component_instance?.id];
 	const existing_instance_id_on_parent = existing_component_on_parent && existing_component_on_parent[new_component_on_parent?.length || 0];
@@ -43,9 +46,6 @@ const component = function component(Component = {}, props = {}) {
 	component_instance.DOMNode = dom;
 	component_instance.virtual_dom = virtual_dom;
 	component_instance.children = new_children;
-
-	parent.track_child(component_instance);
-	add_node_to_tree(component_instance);
 
 	return html;
 };
