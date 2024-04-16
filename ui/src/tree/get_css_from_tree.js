@@ -20,6 +20,8 @@ const handle_prefix_css = (component_id, css_string) => {
 };
 
 const get_css_from_tree = (tree = [], css = [], is_email = false) => {
+  const built_css = [...css];
+
 	for (let i = 0; i < tree?.length; i += 1) {
 		const node = tree[i];
 
@@ -30,14 +32,14 @@ const get_css_from_tree = (tree = [], css = [], is_email = false) => {
 	    const prefixed_css = !is_email ? handle_prefix_css(component_id, compiled_css) : null;
 
 	    if (is_email) {
-	    	css.push(compiled_css);
+	    	built_css.push(compiled_css);
 	    } else {
-	    	css.push(prefixed_css);
+	    	built_css.push(prefixed_css);
 	    }
 		}
 	}
 
-  return css;
+  return built_css;
 };
 
 export default get_css_from_tree;
