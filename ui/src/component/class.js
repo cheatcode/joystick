@@ -265,6 +265,13 @@ class Component {
 		};
 		
 		run_tree_job('attach_event_listeners', { root_instance_id: this?.instance_id });
+
+		if (this.parent) {
+			// NOTE: Run onMount for children because their mount can be conditional if
+			// they're wrapped in when() methods.
+			run_tree_job('lifecycle.onMount', { root_instance_id: this?.instance_id });
+		}
+
 		run_tree_job('lifecycle.onRender', { root_instance_id: this?.instance_id });
 
 		if (types.is_function(options?.after_set_state_rerender)) {
