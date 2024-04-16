@@ -73,29 +73,30 @@ const jobs = {
 		clear_websockets();
 	},
 	'css': ({ is_mount = false, is_email = false, ssr_tree = null }) => {
+		const css = [];
     const existing_style_tag = typeof window !== 'undefined' ? document.head.querySelector(`style[js-css]`) : null;
-    const css_from_tree = get_css_from_tree(ssr_tree || window.joystick?._internal?.tree, [], is_email);
-    const css = is_mount ? css_from_tree?.reverse().join("").trim() : css_from_tree?.join("").trim();
+    const css_from_tree = get_css_from_tree(ssr_tree || window.joystick?._internal?.tree, css, is_email);
+    const stringified_css = is_mount ? css_from_tree?.reverse().join("").trim() : css_from_tree?.join("").trim();
 
-    console.log(css);
-    
+    console.log(stringified_css);
+
     if (typeof window !== 'undefined' && existing_style_tag?.innerText === css) {
       // NOTE: No changes, do not update CSS in DOM.
       return;
     }
 
     if (typeof window !== 'undefined' && existing_style_tag) {
-      existing_style_tag.innerHTML = css;
+      existing_style_tag.innerHTML = stringified_css;
     }
 
     if (typeof window !== 'undefined' && !existing_style_tag) {
       const style = document.createElement("style");
       style.setAttribute("js-styles", "");
-      style.innerHTML = css;
+      style.innerHTML = stringified_css;
       document.head.appendChild(style);
     }
 
-    return css;
+    return stringified_css;
 	},
 	'detach_event_listeners': ({ root_instance_id }) => {
 		const nodes = window?.joystick?._internal?.tree;
