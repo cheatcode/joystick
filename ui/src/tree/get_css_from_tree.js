@@ -20,8 +20,6 @@ const handle_prefix_css = (component_id, css_string) => {
 };
 
 const get_css_from_tree = (tree = [], css = [], is_email = false) => {
-  console.log('get_css_from_tree!!!');
-
   const built_css = [...css];
 
 	for (let i = 0; i < tree?.length; i += 1) {
@@ -40,6 +38,8 @@ const get_css_from_tree = (tree = [], css = [], is_email = false) => {
 	    }
 		}
 	}
+
+  console.log(built_css);
 
   return built_css;
 };
