@@ -1,6 +1,11 @@
 const add_node_to_tree = (node = {}, ssr_tree = null) => {
   const tree_on_window = typeof window !== 'undefined' ? window.joystick._internal.tree : [];
-  console.log(node);
+  
+  console.log({
+    has_tree: typeof window !== 'undefined' && !!window.joystick._internal.tree,
+    node
+  });
+
   (ssr_tree || tree_on_window).push(node);
 };
 
