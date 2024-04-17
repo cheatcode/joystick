@@ -77,29 +77,31 @@ const jobs = {
     const built_css = get_css_from_tree(ssr_tree || window.joystick?._internal?.tree, is_email);
     const stringified_css = is_mount ? built_css?.reverse().join("").trim() : built_css?.join("").trim();
     
-    console.log('CSS JOB');
-    
-    // TODO: Problem is that nested runs of this end up canceling each other out because we overwrite CSS on
-    // each run. One solution is to *append* CSS, but that will require a diff, otherwise, CSS will overload
-    // after so many renders.
-    if (typeof window !== 'undefined' && existing_style_tag?.innerText === stringified_css) {
-    	console.log('CASE 1');
-      // NOTE: No changes, do not update CSS in DOM.
-      return;
-    }
+    // TODO: SSR works because we're working from a single render. Re-render fails because you get nested
+    // re-renders which causes overwrites.
+    console.log('CSS JOB', built_css);
 
-    if (typeof window !== 'undefined' && existing_style_tag) {
-    	console.log('CASE 2');
-      existing_style_tag.innerHTML = stringified_css;
-    }
+    // // TODO: Problem is that nested runs of this end up canceling each other out because we overwrite CSS on
+    // // each run. One solution is to *append* CSS, but that will require a diff, otherwise, CSS will overload
+    // // after so many renders.
+    // if (typeof window !== 'undefined' && existing_style_tag?.innerText === stringified_css) {
+    // 	console.log('CASE 1');
+    //   // NOTE: No changes, do not update CSS in DOM.
+    //   return;
+    // }
 
-    if (typeof window !== 'undefined' && !existing_style_tag) {
-    	console.log('CASE 3');
-      const style = document.createElement("style");
-      style.setAttribute("js-styles", "");
-      style.innerHTML = stringified_css;
-      document.head.appendChild(style);
-    }
+    // if (typeof window !== 'undefined' && existing_style_tag) {
+    // 	console.log('CASE 2');
+    //   existing_style_tag.innerHTML = stringified_css;
+    // }
+
+    // if (typeof window !== 'undefined' && !existing_style_tag) {
+    // 	console.log('CASE 3');
+    //   const style = document.createElement("style");
+    //   style.setAttribute("js-styles", "");
+    //   style.innerHTML = stringified_css;
+    //   document.head.appendChild(style);
+    // }
 
     return stringified_css;
 	},
