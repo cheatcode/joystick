@@ -222,6 +222,8 @@ class Component {
 			options,
 		]);
 
+		console.log('RERENDER', this.id);
+
 		// run_tree_job('clear_timers', { root_instance_id: this?.instance_id });
 		run_tree_job('lifecycle.onBeforeRender', { root_instance_id: this?.instance_id });
 
