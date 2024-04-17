@@ -79,7 +79,13 @@ const jobs = {
     	return !existing_style_tag?.innerText?.includes(built_css_for_component);
     }) : [];
 
-    const stringified_css = is_mount ? built_css?.reverse().join("").trim() : missing_css?.join("").trim();
+    let stringified_css = '';
+
+    if (!!ssr_tree) {
+    	stringified_css = built_css?.reverse().join("").trim();
+    } else {
+    	stringified_css = missing_css?.join("").trim();
+    }
 
     if (typeof window !== 'undefined' && existing_style_tag && missing_css?.length > 0) {
     	existing_style_tag.innerHTML = `${existing_style_tag.innerHTML} ${stringified_css}`;
