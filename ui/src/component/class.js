@@ -222,8 +222,6 @@ class Component {
 			options,
 		]);
 
-		console.log('RERENDER', this.id);
-
 		// run_tree_job('clear_timers', { root_instance_id: this?.instance_id });
 		run_tree_job('lifecycle.onBeforeRender', { root_instance_id: this?.instance_id });
 
@@ -283,7 +281,9 @@ class Component {
 		clean_up_tree();
 
 		// NOTE: Do after clean up so we don't reattach styles for old nodes.
-		run_tree_job('css');
+		if (!this.parent) {
+			run_tree_job('css');
+		}
 	}
 
 	sanitize_html(html = '') {
