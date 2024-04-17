@@ -81,6 +81,8 @@ const jobs = {
 
     let stringified_css = '';
 
+    // NOTE: If ssr_tree is defined, we want the raw result as we're building from a complete
+    // tree at SSR time.
     if (!!ssr_tree) {
     	stringified_css = built_css?.reverse().join("").trim();
     } else {
