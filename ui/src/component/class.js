@@ -281,9 +281,7 @@ class Component {
 		clean_up_tree();
 
 		// NOTE: Do after clean up so we don't reattach styles for old nodes.
-		if (!this.parent) {
-			run_tree_job('css');
-		}
+		run_tree_job('css');
 	}
 
 	sanitize_html(html = '') {

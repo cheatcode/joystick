@@ -76,17 +76,23 @@ const jobs = {
     const existing_style_tag = typeof window !== 'undefined' ? document.head.querySelector(`style[js-css]`) : null;
     const built_css = get_css_from_tree(ssr_tree || window.joystick?._internal?.tree, is_email);
     const stringified_css = is_mount ? built_css?.reverse().join("").trim() : built_css?.join("").trim();
-
+    
+    // TODO: Problem is that nested runs of this end up canceling each other out because we overwrite CSS on
+    // each run. One solution is to *append* CSS, but that will require a diff, otherwise, CSS will overload
+    // after so many renders.
     if (typeof window !== 'undefined' && existing_style_tag?.innerText === stringified_css) {
+    	console.log('CASE 1');
       // NOTE: No changes, do not update CSS in DOM.
       return;
     }
 
     if (typeof window !== 'undefined' && existing_style_tag) {
+    	console.log('CASE 2');
       existing_style_tag.innerHTML = stringified_css;
     }
 
     if (typeof window !== 'undefined' && !existing_style_tag) {
+    	console.log('CASE 3');
       const style = document.createElement("style");
       style.setAttribute("js-styles", "");
       style.innerHTML = stringified_css;
