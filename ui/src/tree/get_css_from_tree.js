@@ -38,8 +38,8 @@ const get_css_from_tree = (tree = [], is_email = false) => {
 	    }
 		}
 	}
-  
-  return built_css;
+
+  return [...new Set(built_css)];
 };
 
 export default get_css_from_tree;
