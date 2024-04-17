@@ -77,6 +77,8 @@ const jobs = {
     const built_css = get_css_from_tree(ssr_tree || window.joystick?._internal?.tree, is_email);
     const stringified_css = is_mount ? built_css?.reverse().join("").trim() : built_css?.join("").trim();
     
+    console.log('CSS JOB');
+    
     // TODO: Problem is that nested runs of this end up canceling each other out because we overwrite CSS on
     // each run. One solution is to *append* CSS, but that will require a diff, otherwise, CSS will overload
     // after so many renders.
