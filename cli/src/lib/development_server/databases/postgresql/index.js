@@ -66,7 +66,7 @@ const start_postgresql = async (port = 2610) => {
 
     if (!data_directory_exists && postgresql_control_exists) {
       await exec(
-        `pg_ctl init -D .joystick/data/postgresql_${port}`
+        `pg_ctl init -D .joystick/data/postgresql_${port} --no-locale`
       );
     }
 
