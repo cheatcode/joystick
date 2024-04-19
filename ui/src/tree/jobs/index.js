@@ -81,33 +81,9 @@ const jobs = {
 
     let stringified_css = !!ssr_tree ? built_css?.reverse().join("").trim() : built_css?.join("").trim();
 
-    // NOTE: If ssr_tree is defined, we want the raw result as we're building from a complete
-    // tree at SSR time.
-    // if (!!ssr_tree) {
-    // 	stringified_css = built_css?.reverse().join("").trim();
-    // } else {
-    // 	stringified_css = missing_css?.join("").trim();
-    // }
-
     if (typeof window !== 'undefined' && existing_style_tag) {
     	existing_style_tag.innerHTML = stringified_css;
     }
-
-    // if (typeof window !== 'undefined' && existing_style_tag?.innerText === stringified_css) {
-    //   // NOTE: No changes, do not update CSS in DOM.
-    //   return;
-    // }
-
-    // if (typeof window !== 'undefined' && existing_style_tag) {
-    //   existing_style_tag.innerHTML = stringified_css;
-    // }
-
-    // if (typeof window !== 'undefined' && !existing_style_tag) {
-    //   const style = document.createElement("style");
-    //   style.setAttribute("js-styles", "");
-    //   style.innerHTML = stringified_css;
-    //   document.head.appendChild(style);
-    // }
 
     return stringified_css;
 	},

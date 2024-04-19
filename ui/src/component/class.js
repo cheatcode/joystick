@@ -46,10 +46,10 @@ class Component {
 	        	},
 	        } : null,
 	        track_child: !ssr_tree ? (child_component_instance = {}) => {
-	        	const existing_component_id = new_children[child_component_instance?.id];
-
-	        	if (existing_component_id) {
-	        		existing_component_id.push(child_component_instance?.instance_id);
+	        	console.log({ new_children });
+	        	
+	        	if (new_children[child_component_instance?.id]) {
+	        		new_children[child_component_instance?.id].push(child_component_instance?.instance_id);
 	        	} else {
 	        		new_children[child_component_instance?.id] = [child_component_instance?.instance_id];
 	        	}
