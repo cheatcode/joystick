@@ -121,7 +121,7 @@ class Component {
 		const html = this.replace_when_tags(component_html);
 		const dom = this.render_html_to_dom(html);
 
-		this.replace_svgs_with_image(dom);
+		// this.replace_svgs_with_image(dom);
 
 		const virtual_dom = this.render_dom_to_virtual_dom(dom);
 
@@ -243,7 +243,7 @@ class Component {
 		const new_html = this.replace_when_tags(component_html);
 		const new_dom = this.render_html_to_dom(new_html);
 		
-		this.replace_svgs_with_image(new_dom);
+		// this.replace_svgs_with_image(new_dom);
 
 		const new_virtual_dom = this.render_dom_to_virtual_dom(new_dom);
 		const dom_node_patches = diff_virtual_dom(this.virtual_dom, new_virtual_dom);

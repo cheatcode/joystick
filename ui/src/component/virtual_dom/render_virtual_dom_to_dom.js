@@ -1,8 +1,11 @@
 import is_valid_attribute_name from "../dom/is_valid_attribute_name.js";
 import types from '../../lib/types.js';
 
-const render_dom_node = (virtual_dom_node = {}) => {
-  const element = document.createElement(virtual_dom_node.tag_name);
+const render_dom_node = (virtual_dom_node = {}, options = {}) => {
+  // TODO: Is virtual_dom_node.tag_name === 'SVG'?
+  // TODO: If child of SVG, tell ourselves in recursive call to render_virtual_dom_to_dom(<node>, { is_svg_child: true });
+  const element_is_svg = virtual_dom_node?.tag_name?.toLowerCase() === 'svg' || options?.is_svg_child;
+  const element = element_is_svg ? document.createElementNS('http://www.w3.org/2000/svg', virtual_dom_node?.tag_name) : document.createElement(virtual_dom_node.tag_name);
   const attributes = Object.entries(virtual_dom_node.attributes);
 
   for (let i = 0; i < attributes.length; i += 1) {
@@ -16,7 +19,10 @@ const render_dom_node = (virtual_dom_node = {}) => {
     const child_virtual_dom_node = virtual_dom_node?.children[i];
 
     if (child_virtual_dom_node) {
-      const child_dom_node = render_virtual_dom_to_dom(child_virtual_dom_node);
+      const child_dom_node = render_virtual_dom_to_dom(child_virtual_dom_node, {
+        is_svg_child: element_is_svg,
+      });
+
       element.appendChild(child_dom_node);
     }
   }
@@ -24,14 +30,14 @@ const render_dom_node = (virtual_dom_node = {}) => {
   return element;
 };
 
-const render_virtual_dom_to_dom = (virtual_dom_node = null) => {
+const render_virtual_dom_to_dom = (virtual_dom_node = null, options = {}) => {
   // NOTE: buildVirtualDOM (./build) can potentially return a string if the node
   // being rendered is text.
   if (types.is_string(virtual_dom_node)) {
     return document.createTextNode(virtual_dom_node);
   }
 
-  return render_dom_node(virtual_dom_node);
+  return render_dom_node(virtual_dom_node, options);
 };
 
 export default render_virtual_dom_to_dom;
