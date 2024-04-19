@@ -79,18 +79,18 @@ const jobs = {
     	return !existing_style_tag?.innerText?.includes(built_css_for_component);
     }) : [];
 
-    let stringified_css = '';
+    let stringified_css = !!ssr_tree ? built_css?.reverse().join("").trim() : built_css?.join("").trim();
 
     // NOTE: If ssr_tree is defined, we want the raw result as we're building from a complete
     // tree at SSR time.
-    if (!!ssr_tree) {
-    	stringified_css = built_css?.reverse().join("").trim();
-    } else {
-    	stringified_css = missing_css?.reverse().join("").trim();
-    }
+    // if (!!ssr_tree) {
+    // 	stringified_css = built_css?.reverse().join("").trim();
+    // } else {
+    // 	stringified_css = missing_css?.join("").trim();
+    // }
 
-    if (typeof window !== 'undefined' && existing_style_tag && missing_css?.length > 0) {
-    	existing_style_tag.innerHTML = `${existing_style_tag.innerHTML} ${stringified_css}`;
+    if (typeof window !== 'undefined' && existing_style_tag) {
+    	existing_style_tag.innerHTML = stringified_css;
     }
 
     // if (typeof window !== 'undefined' && existing_style_tag?.innerText === stringified_css) {
