@@ -24,9 +24,9 @@ const component = function component(Component = {}, props = {}) {
 	const existing_instance_id_on_parent = existing_component_on_parent && existing_component_on_parent[new_component_on_parent?.length || 0];
 	const existing_node_in_tree = get_node_from_tree(existing_instance_id_on_parent);
 
-	if (existing_node_in_tree?.state) {
-		component_instance.state = existing_node_in_tree?.state;
-	}
+	// if (existing_node_in_tree?.state) {
+	// 	component_instance.state = existing_node_in_tree?.state;
+	// }
 
 	if (types.is_function(component_instance?.lifecycle?.onUpdateProps) || types.is_function(component_instance?.lifecycle?.on_update_props)) {
 		const has_different_props = nested_object_diff(existing_node_in_tree?.props, props);
