@@ -46,8 +46,8 @@ class Component {
 	        	},
 	        } : null,
 	        track_child: !ssr_tree ? (child_component_instance = {}) => {
-	        	console.log({ new_children });
-	        	
+	        	console.log({ ...new_children });
+
 	        	if (new_children[child_component_instance?.id]) {
 	        		new_children[child_component_instance?.id].push(child_component_instance?.instance_id);
 	        	} else {
