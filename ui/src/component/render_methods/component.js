@@ -17,7 +17,6 @@ const component = function component(Component = {}, props = {}) {
 	component_instance.parent = parent;
 
 	add_node_to_tree(component_instance);
-	parent.track_child(component_instance);
 
 	const existing_component_on_parent = parent?.existing_children[component_instance?.id];
 	const new_component_on_parent = parent?.new_children[component_instance?.id];
@@ -46,6 +45,9 @@ const component = function component(Component = {}, props = {}) {
 	component_instance.DOMNode = dom;
 	component_instance.virtual_dom = virtual_dom;
 	component_instance.children = new_children;
+
+	// NOTE: Do this last so that references to existing children on parent maintain index position.
+	parent.track_child(component_instance);
 
 	return html;
 };
