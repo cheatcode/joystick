@@ -17,6 +17,7 @@ const component = function component(Component = {}, props = {}) {
 	component_instance.parent = parent;
 
 	add_node_to_tree(component_instance);
+	parent.track_child(component_instance);
 
 	const existing_component_on_parent = parent?.existing_children[component_instance?.id];
 	const new_component_on_parent = parent?.new_children[component_instance?.id];
@@ -33,8 +34,6 @@ const component = function component(Component = {}, props = {}) {
 			(component_instance.lifecycle.onUpdateProps || component_instance.lifecycle.on_update_props)(existing_node_in_tree?.props, props, component_instance);
 		}
 	}
-	
-	parent.track_child(component_instance);
 
 	const new_children = {};
 	const existing_children = {};
