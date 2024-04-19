@@ -2,8 +2,6 @@ import is_valid_attribute_name from "../dom/is_valid_attribute_name.js";
 import types from '../../lib/types.js';
 
 const render_dom_node = (virtual_dom_node = {}, options = {}) => {
-  // TODO: Is virtual_dom_node.tag_name === 'SVG'?
-  // TODO: If child of SVG, tell ourselves in recursive call to render_virtual_dom_to_dom(<node>, { is_svg_child: true });
   const element_is_svg = virtual_dom_node?.tag_name?.toLowerCase() === 'svg' || options?.is_svg_child;
   const element = element_is_svg ? document.createElementNS('http://www.w3.org/2000/svg', virtual_dom_node?.tag_name) : document.createElement(virtual_dom_node.tag_name);
   const attributes = Object.entries(virtual_dom_node.attributes);

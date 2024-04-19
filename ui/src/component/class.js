@@ -99,17 +99,6 @@ class Component {
       }, {});
 	}
 
-	replace_svgs_with_image(dom = {}) {
-		const svgs = Array.from(dom.querySelectorAll('svg'));
-		for (let i = 0; i < svgs.length; i += 1) {
-			const svg = svgs[i];
-			const svg_string = new XMLSerializer().serializeToString(svg);
-			const img = document.createElement('img');
-			img.src = `data:image/svg+xml;base64,${window.btoa(svg_string)}`;
-			svg.replaceWith(img);
-		}
-	}
-
 	render_for_mount() {
     track_function_call(`ui.${this?.options?.test?.name || generate_id()}.render_for_mount`, []);
 
@@ -120,9 +109,6 @@ class Component {
 		const component_html = this.render_to_html(new_children, existing_children);
 		const html = this.replace_when_tags(component_html);
 		const dom = this.render_html_to_dom(html);
-
-		// this.replace_svgs_with_image(dom);
-
 		const virtual_dom = this.render_dom_to_virtual_dom(dom);
 
 		this.dom = dom;
@@ -242,9 +228,6 @@ class Component {
 		const component_html = this.render_to_html(new_children, existing_children);
 		const new_html = this.replace_when_tags(component_html);
 		const new_dom = this.render_html_to_dom(new_html);
-		
-		// this.replace_svgs_with_image(new_dom);
-
 		const new_virtual_dom = this.render_dom_to_virtual_dom(new_dom);
 		const dom_node_patches = diff_virtual_dom(this.virtual_dom, new_virtual_dom);
 
