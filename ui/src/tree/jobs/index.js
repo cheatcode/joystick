@@ -86,7 +86,7 @@ const jobs = {
     if (!!ssr_tree) {
     	stringified_css = built_css?.reverse().join("").trim();
     } else {
-    	stringified_css = missing_css?.join("").trim();
+    	stringified_css = missing_css?.reverse().join("").trim();
     }
 
     if (typeof window !== 'undefined' && existing_style_tag && missing_css?.length > 0) {
