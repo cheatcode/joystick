@@ -17,6 +17,8 @@ if (typeof window !== 'undefined') {
   window.global_state = window.global_state || _cache('app', {});
 }
 
+export const global_state = window.global_state;
+
 export const accounts = _accounts;
 export const cache = _cache;
 export const external = {
