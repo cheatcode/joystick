@@ -13,6 +13,10 @@ import mount from './mount/index.js';
 
 const joystick_environment = get_joystick_environment();
 
+if (typeof window !== 'undefined') {
+  window.global_state = window.global_state || _cache('app', {});
+}
+
 export const accounts = _accounts;
 export const cache = _cache;
 export const external = {
@@ -20,7 +24,6 @@ export const external = {
   track: _track_external,
 };
 export const get = api.get;
-export const global_state = _cache('app', {});
 export const set = api.set;
 export const test = _test;
 export const upload = _upload;
@@ -41,7 +44,7 @@ const joystick = {
   },
   external,
   get,
-  global_state,
+  global_state: window.global_state,
 	id: generate_id,
   mount,
   set,
