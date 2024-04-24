@@ -17,7 +17,7 @@ if (typeof window !== 'undefined') {
   window.global_state = window.global_state || _cache('app', {});
 }
 
-export const global_state = window.global_state;
+export const global_state = typeof window !== 'undefined' ? window.global_state : {};
 
 export const accounts = _accounts;
 export const cache = _cache;
@@ -46,7 +46,7 @@ const joystick = {
   },
   external,
   get,
-  global_state: window.global_state,
+  global_state: typeof window !== 'undefined' ? window.global_state : {},
 	id: generate_id,
   mount,
   set,
