@@ -205,13 +205,13 @@ class Component {
 	}
 
 	rerender(options = {}) {
-		console.log('IS RERENDERING', this);
+		console.log(window.joystick._internal.is_rendering);
 		// NOTE: Soft requeue the next render until the instance is unblocked.
-		if (this.is_rerendering) {
+		if (window.joystick._internal.is_rendering) {
 			return this.rerender(options);
 		}
 
-		this.is_rerendering = true;
+		window.joystick._internal.is_rendering = true;
 
 		track_function_call(`ui.${this?.options?.test?.name || generate_id()}.rerender`, [
 			options,
@@ -276,7 +276,7 @@ class Component {
 		run_tree_job('css');
 
 		setTimeout(() => {
-			this.is_rerendering = false;
+			window.joystick._internal.is_rendering = false;
 		}, 50);
 	}
 
