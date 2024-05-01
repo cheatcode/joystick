@@ -205,10 +205,12 @@ class Component {
 
 	rerender(options = {}) {
 		// NOTE: Soft requeue the next render until the instance is unblocked.
-		// if (this.is_rerendering) {
-		// 	return this.rerender(options);
-		// }
+		if (this.is_rerendering) {
+			return this.rerender(options);
+		}
 
+		this.is_rerendering = true;
+		
 		window.requestAnimationFrame(() => {
 			track_function_call(`ui.${this?.options?.test?.name || generate_id()}.rerender`, [
 				options,
@@ -273,9 +275,7 @@ class Component {
 			run_tree_job('css');
 		});
 
-		// this.is_rerendering = true;
-
-		// this.is_rerendering = false;
+		this.is_rerendering = false;
 	}
 
 	sanitize_html(html = '') {
