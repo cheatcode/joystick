@@ -350,6 +350,13 @@ class Component {
 	  	const child_instance_ids = get_child_instance_ids(children);
 	  	const child_nodes = get_children_from_tree(child_instance_ids);
 
+	  	if (this?.options?.wrapper?.id) {
+		  	console.log(this?.options?.wrapper?.id, {
+		  		child_instance_ids,
+		  		child_nodes,
+		  	});
+	  	}
+
 	  	// NOTE: Because we ultimately mount the parent's DOM node to the screen, we want to ensure
 	  	// that children of the parent reference the DOM node the *parent* created, not the one the
 	  	// child created when it rendered itself (that only exists temporarily to get back the HTML
