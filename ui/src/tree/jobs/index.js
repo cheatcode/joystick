@@ -7,7 +7,6 @@ import get_node_from_tree from "../get_node_from_tree.js";
 import generate_id from "../../lib/generate_id.js";
 import track_function_call from "../../test/track_function_call.js";
 import types from "../../lib/types.js";
-import debounce from "../../lib/debounce.js";
 
 const get_nodes_for_job = (root_instance_id = '') => {
 	const node = get_node_from_tree(root_instance_id);
@@ -74,18 +73,16 @@ const jobs = {
 		clear_websockets();
 	},
 	'css': ({ is_mount = false, is_email = false, ssr_tree = null }) => {
-		debounce(() => {
-	    const existing_style_tag = typeof window !== 'undefined' ? document.head.querySelector(`style[js-css]`) : null;
-	    const built_css = get_css_from_tree(ssr_tree || window.joystick?._internal?.tree, is_email);
+    const existing_style_tag = typeof window !== 'undefined' ? document.head.querySelector(`style[js-css]`) : null;
+    const built_css = get_css_from_tree(ssr_tree || window.joystick?._internal?.tree, is_email);
 
-	    let stringified_css = !!ssr_tree ? built_css?.reverse().join("").trim() : built_css?.join("").trim();
+    let stringified_css = !!ssr_tree ? built_css?.reverse().join("").trim() : built_css?.join("").trim();
 
-	    if (typeof window !== 'undefined' && existing_style_tag) {
-	    	existing_style_tag.innerHTML = stringified_css;
-	    }
+    if (typeof window !== 'undefined' && existing_style_tag) {
+    	existing_style_tag.innerHTML = stringified_css;
+    }
 
-	    return stringified_css;
-		}, 500);
+    return stringified_css;
 	},
 	'detach_event_listeners': ({ root_instance_id }) => {
 		const nodes = window?.joystick?._internal?.tree;
