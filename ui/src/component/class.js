@@ -200,8 +200,8 @@ class Component {
 			virtual_dom_node.component_id = component_id;
 		}
 
-		if (this.options.wrapper.id) {
-			console.log(this.options.wrapper.id, this.instance_id);
+		if (this?.options?.wrapper?.id) {
+			console.log(this?.options?.wrapper?.id, this.instance_id);
 		}
 
 		if (instance_id) {
