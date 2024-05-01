@@ -265,9 +265,13 @@ class Component {
 		// NOTE: Do after clean up so we don't reattach styles for old nodes.
 		requestAnimationFrame(() => {
 		  setTimeout(() => {
-		  	console.log(`RUN CSS FOR ${this?.options?.wrapper?.id}`, [
-		  		...(window.joystick?._internal?.tree || []),
-		  	]);
+		  	console.log(`RUN CSS FOR ${this?.options?.wrapper?.id}`, {
+		  		parent: this.parent,
+		  		children: this.children,
+		  		window_nodes: [
+			  		...(window.joystick?._internal?.tree || []),
+			  	]
+		  	});
 				run_tree_job('css');
 		  });
 		});
