@@ -6,8 +6,6 @@ const clean_up = () => {
 	joystick._internal.tree = joystick?._internal?.tree?.filter((node) => {
 		return !!document.querySelector(`[js-i="${node?.instance_id}"]`);
 	});
-
-	console.log('CLEAN UP COMPLETE');
 };
 
 export default clean_up;
