@@ -200,9 +200,9 @@ class Component {
 			virtual_dom_node.component_id = component_id;
 		}
 
-		if (instance_id) {
-			virtual_dom_node.instance_id = instance_id;
-		}
+		// if (instance_id) {
+		// 	virtual_dom_node.instance_id = instance_id;
+		// }
 
 		return virtual_dom_node;
 	}

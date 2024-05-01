@@ -12,6 +12,8 @@ const component_ssr = function component_ssr(Component = {}, props = {}) {
 		url: parent?.url,
 	});
 
+	console.log('COMPONENT SSR', component_instance?.options?.wrapper?.id);
+
 	component_instance.parent = parent;
 
 	add_node_to_tree(component_instance, this.ssr_tree);
