@@ -170,11 +170,13 @@ class Component {
 	}
 
 	render_to_html(new_children = {}, existing_children = {}, ssr_tree = null, linkedom_document = {}) {
-		const render_methods = this.compile_render_methods(new_children, existing_children, ssr_tree);
+		let ssr_tree_override = ssr_tree === 'CRM' || ssr_tree === null ? null : ssr_tree;
+
+		const render_methods = this.compile_render_methods(new_children, existing_children, ssr_tree_override);
 		const html = this.options.render({ ...(this || {}), ...render_methods });
 		const clean_html = this.cleanup_html(html, linkedom_document);
 		const sanitized_html = this.sanitize_html(clean_html);
-		const wrapped_html = this.wrap_html(sanitized_html);
+		const wrapped_html = this.wrap_html(sanitized_html, ssr_tree);
 		return wrapped_html;
 	}
 
@@ -373,12 +375,12 @@ class Component {
   	}
   }
 
-	wrap_html(html = '') {
+	wrap_html(html = '', identity = '') {
 		const wrapper_tag = (this.options?.wrapper?.tagName || this.options?.wrapper?.tag_name)?.toLowerCase() || 'div';
 		const wrapper_id = this.options?.wrapper?.id || null;
 		const wrapper_class_list = (this.options?.wrapper?.classList || this.options?.wrapper?.class_list)?.join(' ') || '';
 
-		console.log('INSTANCE ID IN WRAP HTML', this?.options?.wrapper?.id, this?.instance_id);
+		console.log('INSTANCE ID IN WRAP HTML', identity, this?.options?.wrapper?.id, this?.instance_id);
 		return `<${wrapper_tag} ${wrapper_id ? `id="${wrapper_id}"` : ''} ${wrapper_class_list ? `class="${wrapper_class_list}"` : ''} js-c="${this.id}" js-i="${this.instance_id}">${html}</${wrapper_tag}>`;
 	}
 }
