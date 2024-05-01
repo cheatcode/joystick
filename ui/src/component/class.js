@@ -210,7 +210,7 @@ class Component {
 		if (window.joystick._internal.is_rendering) {
 			debounce(() => {
 				this.rerender(options);
-			}, 50);
+			}, 100);
 		}
 
 		window.joystick._internal.is_rendering = true;
