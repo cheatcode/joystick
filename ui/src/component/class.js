@@ -204,6 +204,7 @@ class Component {
 	}
 
 	rerender(options = {}) {
+		console.log('IS RERENDERING', this.is_rerendering);
 		// NOTE: Soft requeue the next render until the instance is unblocked.
 		if (this.is_rerendering) {
 			return this.rerender(options);
