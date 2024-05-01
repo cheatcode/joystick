@@ -204,67 +204,78 @@ class Component {
 	}
 
 	rerender(options = {}) {
-		track_function_call(`ui.${this?.options?.test?.name || generate_id()}.rerender`, [
-			options,
-		]);
+		// NOTE: Soft requeue the next render until the instance is unblocked.
+		// if (this.is_rerendering) {
+		// 	return this.rerender(options);
+		// }
 
-		// run_tree_job('clear_timers', { root_instance_id: this?.instance_id });
-		run_tree_job('lifecycle.onBeforeRender', { root_instance_id: this?.instance_id });
+		window.requestAnimationFrame(() => {
+			track_function_call(`ui.${this?.options?.test?.name || generate_id()}.rerender`, [
+				options,
+			]);
 
-		const new_children = {};
-		const existing_children = { ...(this.children || {}) };
+			// run_tree_job('clear_timers', { root_instance_id: this?.instance_id });
+			run_tree_job('lifecycle.onBeforeRender', { root_instance_id: this?.instance_id });
 
-		// NOTE: Once we have a copy of current children as existing_children
-		// in memory, dump them from the parent instance.
-		this.children = {};
+			const new_children = {};
+			const existing_children = { ...(this.children || {}) };
 
-		// NOTE: Unregister listeners for this root node and its children as they're
-		// going to be removed and re-rendered.
-		run_tree_job('detach_event_listeners', { root_instance_id: this?.instance_id });
+			// NOTE: Once we have a copy of current children as existing_children
+			// in memory, dump them from the parent instance.
+			this.children = {};
 
-		// NOTE: As part of render_to_html(), we expect new_children to be populated
-		// with the new child instance_ids via the track_child method we pass to the
-		// render methods via the .bind() to the parent in compile_render_methods.
-		const component_html = this.render_to_html(new_children, existing_children);
-		const new_html = this.replace_when_tags(component_html);
-		const new_dom = this.render_html_to_dom(new_html);
-		const new_virtual_dom = this.render_dom_to_virtual_dom(new_dom);
-		const dom_node_patches = diff_virtual_dom(this.virtual_dom, new_virtual_dom);
+			// NOTE: Unregister listeners for this root node and its children as they're
+			// going to be removed and re-rendered.
+			run_tree_job('detach_event_listeners', { root_instance_id: this?.instance_id });
 
-		if (types.is_function(dom_node_patches)) {
-			const patched_dom_node = dom_node_patches(this.dom);
+			// NOTE: As part of render_to_html(), we expect new_children to be populated
+			// with the new child instance_ids via the track_child method we pass to the
+			// render methods via the .bind() to the parent in compile_render_methods.
+			const component_html = this.render_to_html(new_children, existing_children);
+			const new_html = this.replace_when_tags(component_html);
+			const new_dom = this.render_html_to_dom(new_html);
+			const new_virtual_dom = this.render_dom_to_virtual_dom(new_dom);
+			const dom_node_patches = diff_virtual_dom(this.virtual_dom, new_virtual_dom);
 
-			this.dom = patched_dom_node;
-			this.virtual_dom = new_virtual_dom;
+			if (types.is_function(dom_node_patches)) {
+				const patched_dom_node = dom_node_patches(this.dom);
 
-			// NOTE: After all tree-related work is done, set the new children back on the
-			// parent instance. Doing this here ensures any tree jobs don't get tripped up
-			// by children they don't recognize.
-			this.children = new_children;
-			this.sync_children_to_parent(this.children, this.dom, this.virtual_dom);
+				this.dom = patched_dom_node;
+				this.virtual_dom = new_virtual_dom;
 
-			// NOTE: Set DOMNode after children are sync'd so this.DOMNode is kept fresh.
-			this.DOMNode = patched_dom_node;
-		};
-		
-		run_tree_job('attach_event_listeners', { root_instance_id: this?.instance_id });
+				// NOTE: After all tree-related work is done, set the new children back on the
+				// parent instance. Doing this here ensures any tree jobs don't get tripped up
+				// by children they don't recognize.
+				this.children = new_children;
+				this.sync_children_to_parent(this.children, this.dom, this.virtual_dom);
 
-		run_tree_job('lifecycle.onRender', { root_instance_id: this?.instance_id });
+				// NOTE: Set DOMNode after children are sync'd so this.DOMNode is kept fresh.
+				this.DOMNode = patched_dom_node;
+			};
+			
+			run_tree_job('attach_event_listeners', { root_instance_id: this?.instance_id });
 
-		if (types.is_function(options?.after_set_state_rerender)) {
-			options.after_set_state_rerender();
-		}
+			run_tree_job('lifecycle.onRender', { root_instance_id: this?.instance_id });
 
-		if (types.is_function(options?.after_refetch_data_rerender)) {
-			options.after_refetch_data_rerender();
-		}
+			if (types.is_function(options?.after_set_state_rerender)) {
+				options.after_set_state_rerender();
+			}
 
-		// NOTE: Clean up the linked list by removing any nodes matching an ID
-		// in existing_children as we know they no longer exist.
-		clean_up_tree();
+			if (types.is_function(options?.after_refetch_data_rerender)) {
+				options.after_refetch_data_rerender();
+			}
 
-		// NOTE: Do after clean up so we don't reattach styles for old nodes.
-		run_tree_job('css');
+			// NOTE: Clean up the linked list by removing any nodes matching an ID
+			// in existing_children as we know they no longer exist.
+			clean_up_tree();
+
+			// NOTE: Do after clean up so we don't reattach styles for old nodes.
+			run_tree_job('css');
+		});
+
+		// this.is_rerendering = true;
+
+		// this.is_rerendering = false;
 	}
 
 	sanitize_html(html = '') {
