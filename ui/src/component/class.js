@@ -170,13 +170,11 @@ class Component {
 	}
 
 	render_to_html(new_children = {}, existing_children = {}, ssr_tree = null, linkedom_document = {}) {
-		let ssr_tree_override = ssr_tree === 'CRM' || ssr_tree === null ? null : ssr_tree;
-
-		const render_methods = this.compile_render_methods(new_children, existing_children, ssr_tree_override);
+		const render_methods = this.compile_render_methods(new_children, existing_children, ssr_tree);
 		const html = this.options.render({ ...(this || {}), ...render_methods });
 		const clean_html = this.cleanup_html(html, linkedom_document);
 		const sanitized_html = this.sanitize_html(clean_html);
-		const wrapped_html = this.wrap_html(sanitized_html, ssr_tree);
+		const wrapped_html = this.wrap_html(sanitized_html);
 		return wrapped_html;
 	}
 
@@ -231,6 +229,7 @@ class Component {
 		// NOTE: As part of render_to_html(), we expect new_children to be populated
 		// with the new child instance_ids via the track_child method we pass to the
 		// render methods via the .bind() to the parent in compile_render_methods.
+		console.log(this?.options?.wrapper?.id, this?.instance_id);
 		const component_html = this.render_to_html(new_children, existing_children);
 		const new_html = this.replace_when_tags(component_html);
 		const new_dom = this.render_html_to_dom(new_html);
@@ -375,12 +374,12 @@ class Component {
   	}
   }
 
-	wrap_html(html = '', identity = '') {
+	wrap_html(html = '') {
 		const wrapper_tag = (this.options?.wrapper?.tagName || this.options?.wrapper?.tag_name)?.toLowerCase() || 'div';
 		const wrapper_id = this.options?.wrapper?.id || null;
 		const wrapper_class_list = (this.options?.wrapper?.classList || this.options?.wrapper?.class_list)?.join(' ') || '';
 
-		console.log('INSTANCE ID IN WRAP HTML', identity, this?.options?.wrapper?.id, this?.instance_id);
+		console.log('INSTANCE ID IN WRAP HTML', this?.options?.wrapper?.id, this?.instance_id);
 		return `<${wrapper_tag} ${wrapper_id ? `id="${wrapper_id}"` : ''} ${wrapper_class_list ? `class="${wrapper_class_list}"` : ''} js-c="${this.id}" js-i="${this.instance_id}">${html}</${wrapper_tag}>`;
 	}
 }
