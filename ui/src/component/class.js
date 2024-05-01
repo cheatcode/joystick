@@ -208,7 +208,9 @@ class Component {
 		console.log(window.joystick._internal.is_rendering);
 		// NOTE: Soft requeue the next render until the instance is unblocked.
 		if (window.joystick._internal.is_rendering) {
-			return this.rerender(options);
+			debounce(() => {
+				this.rerender(options);
+			}, 50);
 		}
 
 		window.joystick._internal.is_rendering = true;
