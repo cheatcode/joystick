@@ -19,7 +19,6 @@ class Component {
 		this.setInterval = this.setInterval.bind(this);
 		this.set_timeout = this.set_timeout.bind(this);
 		this.setTimeout = this.setTimeout.bind(this);
-		this.rerender = this.rerender.bind(this);
 		
 		register_component_options(this, component_options);
 	}
@@ -205,16 +204,6 @@ class Component {
 	}
 
 	rerender(options = {}) {
-		console.log(window.joystick._internal.is_rendering);
-		// NOTE: Soft requeue the next render until the instance is unblocked.
-		if (window.joystick._internal.is_rendering) {
-			return debounce(() => {
-				this.rerender(options);
-			}, 1000);
-		}
-
-		window.joystick._internal.is_rendering = true;
-
 		track_function_call(`ui.${this?.options?.test?.name || generate_id()}.rerender`, [
 			options,
 		]);
@@ -259,6 +248,12 @@ class Component {
 		};
 		
 		run_tree_job('attach_event_listeners', { root_instance_id: this?.instance_id });
+		// NOTE: Clean up the linked list by removing any nodes matching an ID
+		// in existing_children as we know they no longer exist.
+		clean_up_tree();
+
+		// NOTE: Do after clean up so we don't reattach styles for old nodes.
+		run_tree_job('css');
 
 		run_tree_job('lifecycle.onRender', { root_instance_id: this?.instance_id });
 
@@ -269,17 +264,6 @@ class Component {
 		if (types.is_function(options?.after_refetch_data_rerender)) {
 			options.after_refetch_data_rerender();
 		}
-
-		// NOTE: Clean up the linked list by removing any nodes matching an ID
-		// in existing_children as we know they no longer exist.
-		clean_up_tree();
-
-		// NOTE: Do after clean up so we don't reattach styles for old nodes.
-		run_tree_job('css');
-
-		setTimeout(() => {
-			window.joystick._internal.is_rendering = false;
-		}, 50);
 	}
 
 	sanitize_html(html = '') {
