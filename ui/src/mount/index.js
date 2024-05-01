@@ -20,6 +20,11 @@ const mount = (Component, props = {}, target = {}) => {
   run_tree_job('reset_tree_for_hmr');
 
   const component_instance = Component({ props });
+  
+  if (component_instance?.options?.wrapper?.id) {
+    console.log('MOUNT', component_instance?.options?.wrapper?.id);
+  }
+
   const dom = component_instance.render_for_mount();
   
   add_node_to_tree(component_instance);
