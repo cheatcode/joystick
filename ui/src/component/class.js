@@ -265,7 +265,7 @@ class Component {
 
 		// NOTE: Clean up the linked list by removing any nodes matching an ID
 		// in existing_children as we know they no longer exist.
-		clean_up_tree();
+		// clean_up_tree();
 
 		// NOTE: Do after clean up so we don't reattach styles for old nodes.
 		requestAnimationFrame(() => {
