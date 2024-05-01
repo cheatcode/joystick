@@ -50,10 +50,10 @@ class Component {
 	        	},
 	        } : null,
 	        track_child: !ssr_tree ? (child_component_instance = {}) => {
-	        	const existing_component_id = new_children[child_component_instance?.id];
+	        	const existing_component_id = !!new_children[child_component_instance?.id];
 
 	        	if (existing_component_id) {
-	        		existing_component_id.push(child_component_instance?.instance_id);
+	        		new_children[child_component_instance?.id].push(child_component_instance?.instance_id);
 	        	} else {
 	        		new_children[child_component_instance?.id] = [child_component_instance?.instance_id];
 	        	}
@@ -198,10 +198,6 @@ class Component {
 
 		if (component_id) {
 			virtual_dom_node.component_id = component_id;
-		}
-
-		if (this?.options?.wrapper?.id) {
-			console.log(this?.options?.wrapper?.id, this.instance_id);
 		}
 
 		if (instance_id) {
