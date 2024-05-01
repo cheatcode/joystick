@@ -21,10 +21,6 @@ class Component {
 		this.setTimeout = this.setTimeout.bind(this);
 		
 		register_component_options(this, component_options);
-
-		if (component_options?.wrapper?.id) {
-			console.log('HERE', component_options?.wrapper?.id, this?.instance_id);
-		}
 	}
 
   cleanup_html(html = '', linkedom_document = null) {
@@ -50,10 +46,10 @@ class Component {
 	        	},
 	        } : null,
 	        track_child: !ssr_tree ? (child_component_instance = {}) => {
-	        	const existing_component_id = !!new_children[child_component_instance?.id];
+	        	const existing_component_id = new_children[child_component_instance?.id];
 
 	        	if (existing_component_id) {
-	        		new_children[child_component_instance?.id].push(child_component_instance?.instance_id);
+	        		existing_component_id.push(child_component_instance?.instance_id);
 	        	} else {
 	        		new_children[child_component_instance?.id] = [child_component_instance?.instance_id];
 	        	}
@@ -229,7 +225,6 @@ class Component {
 		// NOTE: As part of render_to_html(), we expect new_children to be populated
 		// with the new child instance_ids via the track_child method we pass to the
 		// render methods via the .bind() to the parent in compile_render_methods.
-		console.log(this?.options?.wrapper?.id, this?.instance_id);
 		const component_html = this.render_to_html(new_children, existing_children);
 		const new_html = this.replace_when_tags(component_html);
 		const new_dom = this.render_html_to_dom(new_html);
@@ -253,6 +248,7 @@ class Component {
 		};
 		
 		run_tree_job('attach_event_listeners', { root_instance_id: this?.instance_id });
+
 		run_tree_job('lifecycle.onRender', { root_instance_id: this?.instance_id });
 
 		if (types.is_function(options?.after_set_state_rerender)) {
@@ -268,18 +264,7 @@ class Component {
 		// clean_up_tree();
 
 		// NOTE: Do after clean up so we don't reattach styles for old nodes.
-		requestAnimationFrame(() => {
-		  setTimeout(() => {
-		  	console.log(`RUN CSS FOR ${this?.options?.wrapper?.id}`, {
-		  		parent: this.parent,
-		  		children: this.children,
-		  		window_nodes: [
-			  		...(window.joystick?._internal?.tree || []),
-			  	]
-		  	});
-				run_tree_job('css');
-		  });
-		});
+		run_tree_job('css');
 	}
 
 	sanitize_html(html = '') {
@@ -351,13 +336,6 @@ class Component {
 	  	const child_instance_ids = get_child_instance_ids(children);
 	  	const child_nodes = get_children_from_tree(child_instance_ids);
 
-	  	if (this?.options?.wrapper?.id) {
-		  	console.log(this?.options?.wrapper?.id, {
-		  		child_instance_ids,
-		  		child_nodes,
-		  	});
-	  	}
-
 	  	// NOTE: Because we ultimately mount the parent's DOM node to the screen, we want to ensure
 	  	// that children of the parent reference the DOM node the *parent* created, not the one the
 	  	// child created when it rendered itself (that only exists temporarily to get back the HTML
@@ -379,7 +357,6 @@ class Component {
 		const wrapper_id = this.options?.wrapper?.id || null;
 		const wrapper_class_list = (this.options?.wrapper?.classList || this.options?.wrapper?.class_list)?.join(' ') || '';
 
-		console.log('INSTANCE ID IN WRAP HTML', this?.options?.wrapper?.id, this?.instance_id);
 		return `<${wrapper_tag} ${wrapper_id ? `id="${wrapper_id}"` : ''} ${wrapper_class_list ? `class="${wrapper_class_list}"` : ''} js-c="${this.id}" js-i="${this.instance_id}">${html}</${wrapper_tag}>`;
 	}
 }

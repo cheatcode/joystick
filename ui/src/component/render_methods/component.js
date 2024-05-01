@@ -37,8 +37,7 @@ const component = function component(Component = {}, props = {}) {
 
 	const new_children = {};
 	const existing_children = {};
-	console.log('INSTANCE ID IN RENDER METHOD', component_instance?.options?.wrapper?.id, component_instance?.instance_id);
-	const component_html = component_instance.render_to_html(new_children, existing_children, 'CRM');
+	const component_html = component_instance.render_to_html(new_children, existing_children);
 	const html = component_instance.replace_when_tags(component_html);
 	const dom = component_instance.render_html_to_dom(html);
 	const virtual_dom = component_instance.render_dom_to_virtual_dom(dom);
