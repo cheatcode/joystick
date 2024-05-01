@@ -367,7 +367,7 @@ class Component {
 		const wrapper_id = this.options?.wrapper?.id || null;
 		const wrapper_class_list = (this.options?.wrapper?.classList || this.options?.wrapper?.class_list)?.join(' ') || '';
 
-		console.log('INSTANCE ID IN WRAP HTML', this?.instance_id);
+		console.log('INSTANCE ID IN WRAP HTML', this?.options?.wrapper?.id, this?.instance_id);
 		return `<${wrapper_tag} ${wrapper_id ? `id="${wrapper_id}"` : ''} ${wrapper_class_list ? `class="${wrapper_class_list}"` : ''} js-c="${this.id}" js-i="${this.instance_id}">${html}</${wrapper_tag}>`;
 	}
 }
