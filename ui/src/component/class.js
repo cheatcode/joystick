@@ -19,6 +19,10 @@ class Component {
 		this.setInterval = this.setInterval.bind(this);
 		this.set_timeout = this.set_timeout.bind(this);
 		this.setTimeout = this.setTimeout.bind(this);
+
+		if (component_options?.wrapper?.id) {
+			console.log('HERE', component_options?.wrapper?.id, this?.instance_id);
+		}
 		
 		register_component_options(this, component_options);
 	}

@@ -14,10 +14,6 @@ const component = function component(Component = {}, props = {}) {
 		url: parent?.url,
 	});
 
-	if (component_instance?.options?.wrapper?.id) {
-		console.log('HERE', component_instance?.options?.wrapper?.id, component_instance?.instance_id);
-	}
-
 	component_instance.parent = parent;
 
 	add_node_to_tree(component_instance);
