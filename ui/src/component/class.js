@@ -356,8 +356,12 @@ class Component {
 		const wrapper_tag = (this.options?.wrapper?.tagName || this.options?.wrapper?.tag_name)?.toLowerCase() || 'div';
 		const wrapper_id = this.options?.wrapper?.id || null;
 		const wrapper_class_list = (this.options?.wrapper?.classList || this.options?.wrapper?.class_list)?.join(' ') || '';
+		const wrapper_attributes = this.options?.wrapper?.attributes?.reduce((attributes_string = '', attribute = {}) => {
+			attributes_string += `${attribute?.key}="${attribute?.value}" `;
+			return attributes_string;
+		}, '') || '';
 
-		return `<${wrapper_tag} ${wrapper_id ? `id="${wrapper_id}"` : ''} ${wrapper_class_list ? `class="${wrapper_class_list}"` : ''} js-c="${this.id}" js-i="${this.instance_id}">${html}</${wrapper_tag}>`;
+		return `<${wrapper_tag} ${wrapper_attributes} ${wrapper_id ? `id="${wrapper_id}"` : ''} ${wrapper_class_list ? `class="${wrapper_class_list}"` : ''} js-c="${this.id}" js-i="${this.instance_id}">${html}</${wrapper_tag}>`;
 	}
 }
 
