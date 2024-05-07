@@ -133,9 +133,9 @@ class Component {
 
 			for (let i = 0; i < ssr_tree?.length; i += 1) {
 				const node = ssr_tree[i];
-				const node_data = await this.fetch_data(api, req, {}, node);
 				const node_html = node.render_to_html(new_children, existing_children, ssr_tree, render_for_ssr_options?.linkedom_document);
 				component_html = component_html.replace(`{{${node.id}:${node.instance_id}}}`, node_html);
+				const node_data = await this.fetch_data(api, req, {}, node);
 				child_data[node?.id] = node_data;
 			}
 
