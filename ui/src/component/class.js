@@ -129,28 +129,20 @@ class Component {
 			const new_children = {};
 			const existing_children = {};
 			let component_html = this.render_to_html(new_children, existing_children, ssr_tree, render_for_ssr_options?.linkedom_document);
+			const child_data = {};
 
 			for (let i = 0; i < ssr_tree?.length; i += 1) {
 				const node = ssr_tree[i];
+				const node_data = await this.fetch_data(api, req, {}, node);
 				const node_html = node.render_to_html(new_children, existing_children, ssr_tree, render_for_ssr_options?.linkedom_document);
 				component_html = component_html.replace(`{{${node.id}:${node.instance_id}}}`, node_html);
+				child_data[node?.id] = node_data;
 			}
 
 			ssr_tree.push(this);
 
 			const html = this.replace_when_tags(component_html);
 			const css = run_tree_job('css', { ssr_tree, is_email: render_for_ssr_options?.is_email || false });
-
-			const child_data = (await Promise.all(ssr_tree?.map(async (child_node = {}) => {
-				const data = await this.fetch_data(api, req, {}, child_node);
-				return {
-					instance_id: child_node?.instance_id,
-					data,
-				};
-			})))?.reduce((child_data = {}, child_node_data = {}) => {
-				child_data[child_node_data?.instance_id] = child_node_data?.data;
-				return child_data;
-			}, {});
 
 			resolve({
 				html,
