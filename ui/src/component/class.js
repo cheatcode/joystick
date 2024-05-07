@@ -131,7 +131,7 @@ class Component {
 			let component_html = this.render_to_html(new_children, existing_children, ssr_tree, render_for_ssr_options?.linkedom_document);
 			const child_data = {};
 
-			for (let i = ssr_tree?.length; i > 0; i--) {
+			for (let i = ssr_tree?.length; i > -1; i--) {
 				const node = ssr_tree[i];
 				const node_data = await this.fetch_data(api, req, {}, node);
 				const node_html = node.render_to_html(new_children, existing_children, ssr_tree, render_for_ssr_options?.linkedom_document);
