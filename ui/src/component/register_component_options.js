@@ -24,13 +24,13 @@ const register_component_options = (component_instance = {}, component_options =
 	component_instance.lifecycle = component_options?.lifecycle || {};
 	component_instance.methods = compile_methods(component_instance, component_options?.methods || {});
 	component_instance.options = component_options;	
+	component_instance.url = typeof window !== 'undefined' ? compile_url(window.__joystick_url__) : compile_url(component_options?.url);
+	component_instance.user = typeof window !== 'undefined' ? window.__joystick_user__ : component_options?.user;
 	component_instance.props = compile_props(component_options?.defaultProps || component_options?.default_props, component_options?.props || {});
 	component_instance.state = compile_state(component_instance, component_options?.state || {});
 	component_instance.test = component_options?.test;
 	component_instance.timers = [];
 	component_instance.translations = component_options?.translations || {};
-	component_instance.url = typeof window !== 'undefined' ? compile_url(window.__joystick_url__) : compile_url(component_options?.url);
-	component_instance.user = typeof window !== 'undefined' ? window.__joystick_user__ : component_options?.user;
 	component_instance.validateForm = validate_form;
 	component_instance.validate_form = validate_form;
 	component_instance.virtual_dom = {};
