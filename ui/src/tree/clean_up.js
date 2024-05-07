@@ -9,7 +9,7 @@ const clean_up = () => {
 		joystick._internal.tree = joystick?._internal?.tree?.filter((node) => {
 			return !!document.querySelector(`[js-i="${node?.instance_id}"]`);
 		});
-	}, 500);
+	}, 50);
 };
 
 export default clean_up;
