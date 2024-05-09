@@ -141,6 +141,8 @@ class App {
 	}
 
   register_caches() {
+  	process.caches = {};
+
     if (types.is_function(this.options.caches)) {
       this.options.caches();
     }
