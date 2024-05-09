@@ -2,6 +2,7 @@ import copy_paths from "../../build/copy_paths.js";
 
 const watch_paths = [
   { path: "api" },
+  { path: "caches" },
   { path: "cronJobs" },
   { path: "cron_jobs" },
   { path: "email" },
