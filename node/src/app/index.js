@@ -140,6 +140,12 @@ class App {
     }
 	}
 
+  register_caches() {
+    if (types.is_function(this.options.caches)) {
+      this.options.caches();
+    }
+  }
+
 	register_cron_jobs() {
 		register_cron_jobs(this.options.cronJobs || this.options.cron_jobs);
 	}
@@ -211,6 +217,7 @@ class App {
 		// NOTE: Order here is intentionally not alphabetical to ensure load
 		// order plays nice with things like tests.
 		await this.connect_databases();
+		this.register_caches();
 		this.register_cron_jobs();
 		this.register_queues();
 		this.start_express();
