@@ -13,9 +13,11 @@ class DebouncedQueue {
   run() {
     // NOTE: Debounce so that last job in triggers the queue after 300ms delay.
     debounce(async () => {
-      console.log('QUEUE', this);
-      const job_to_run = this.queue.shift();
-      await job_to_run();
+      if (this.queue?.length > 0) {
+        const job_to_run = this.queue.shift();
+        await job_to_run();
+      }
+
       this.run();
     }, 100);
   }

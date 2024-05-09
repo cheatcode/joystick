@@ -1,1 +1,1 @@
-import t from"./debounce.js";class e{constructor(){this.queue=[]}add(u=()=>{}){this.queue.push(u),this.run()}run(){t(async()=>{console.log("QUEUE",this),await this.queue.shift()(),this.run()},100)}}var n=e;export{n as default};
+import e from"./debounce.js";class t{constructor(){this.queue=[]}add(u=()=>{}){this.queue.push(u),this.run()}run(){e(async()=>{this.queue?.length>0&&await this.queue.shift()(),this.run()},100)}}var n=t;export{n as default};
