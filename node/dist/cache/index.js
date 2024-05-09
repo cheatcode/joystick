@@ -1,0 +1,1 @@
+const t=(s="")=>({add:(r={})=>{process.caches[s]=[...process.caches[s]||[],r]},set:(r=[])=>{process.caches[s]=r},update:([r="",c=""],o={})=>{let e=process.caches[s]?.find(p=>p[r]=c);e&&(process.caches[s]=(process.caches[s]||[])?.filter((p={})=>p[r]?p[r]!==c:!0),e={...e||{},...o||{}},process.caches[s]=[...process.caches[s]||[],e])}});var u=t;export{u as default};

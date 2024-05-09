@@ -1,6 +1,7 @@
 import fs from 'fs';
 import _accounts from './app/accounts/index.js';
 import _action from "./action/index.js";
+import _cache from './cache/index.js';
 import _escape_html from './lib/escape_html.js';
 import _fixture from './app/fixture/index.js';
 import _sql from './app/databases/sql.js';
@@ -29,6 +30,8 @@ export const accounts = {
 };
 
 export const action = _action;
+
+export const cache = _cache;
 
 export const __dirname = node_path_polyfills.__dirname;
 
@@ -62,6 +65,7 @@ const joystick = {
 	app,
 	accounts,
   action,
+  cache,
   email,
   emitters: {},
   escape_html,
