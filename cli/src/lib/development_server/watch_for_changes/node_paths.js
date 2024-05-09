@@ -2,6 +2,7 @@ import get_platform_safe_path from "./get_platform_safe_path.js";
 
 export default [
   get_platform_safe_path("api/"),
+  get_platform_safe_path("caches/"),
   get_platform_safe_path("cronJobs/"),
   get_platform_safe_path("cron_jobs/"),
   get_platform_safe_path("fixtures/"),
