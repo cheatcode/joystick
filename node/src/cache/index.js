@@ -6,6 +6,11 @@ const cache = (cache_name = '') => {
         cache_item,
       ];
     },
+    get: ([key = '', value = '']) => {
+      return process.caches[cache_name]?.find((cache_item) => {
+        return cache_item[key] === value;
+      });
+    },
     set: (cache_array = []) => {
       process.caches[cache_name] = cache_array;
     },
