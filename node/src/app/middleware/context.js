@@ -21,6 +21,7 @@ const if_not_logged_in = (redirect_path = "", callback = null, http = {}) => {
 const context_middleware = async (req, res, next) => {
   req.context = {
     ...(req?.context || {}),
+    redirect: res.redirect,
     if_logged_in: (redirect_path = '', callback) => if_logged_in(redirect_path, callback, { req, res }),
 	  ifLoggedIn: (redirect_path = '', callback) => if_logged_in(redirect_path, callback, { req, res }),
 	  if_not_logged_in: (redirect_path = '', callback) => if_not_logged_in(redirect_path, callback, { req, res }),
