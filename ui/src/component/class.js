@@ -166,10 +166,8 @@ class Component {
 	}
 
 	render_to_html(new_children = {}, existing_children = {}, ssr_tree = null, linkedom_document = {}) {
-		console.time('component.render_to_html');
 		const render_methods = this.compile_render_methods(new_children, existing_children, ssr_tree);
 		const html = this.options.render({ ...(this || {}), ...render_methods });
-		console.timeEnd('component.render_to_html');
 		const clean_html = this.cleanup_html(html, linkedom_document);
 		const sanitized_html = this.sanitize_html(clean_html);
 		const wrapped_html = this.wrap_html(sanitized_html);
@@ -228,10 +226,12 @@ class Component {
 		// with the new child instance_ids via the track_child method we pass to the
 		// render methods via the .bind() to the parent in compile_render_methods.
 		const component_html = this.render_to_html(new_children, existing_children);
+		console.time('component.rerender.after_render_to_html');
 		const new_html = this.replace_when_tags(component_html);
 		const new_dom = this.render_html_to_dom(new_html);
 		const new_virtual_dom = this.render_dom_to_virtual_dom(new_dom);
 		const dom_node_patches = diff_virtual_dom(this.virtual_dom, new_virtual_dom);
+		console.timeEnd('component.rerender.after_render_to_html');
 
 
 		if (types.is_function(dom_node_patches)) {
