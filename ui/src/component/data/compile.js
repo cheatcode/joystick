@@ -29,6 +29,8 @@ const compile = (data_from_window = {}, request_from_window = {}, component_inst
         window.__joystick_data__[component_instance?.id] = atob(data);
       }
 
+      console.timeEnd('data.refetch');
+
       if (!window?.__joystick_test__) {
         component_instance.rerender({
           after_refetch_data_rerender: () => {
@@ -36,8 +38,6 @@ const compile = (data_from_window = {}, request_from_window = {}, component_inst
           },
         });
       }
-
-      console.timeEnd('data.refetch');
 
       return component_instance.data;
     },
