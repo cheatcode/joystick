@@ -166,13 +166,13 @@ class Component {
 	}
 
 	render_to_html(new_children = {}, existing_children = {}, ssr_tree = null, linkedom_document = {}) {
+		console.time('component.rerender.render_to_html');
 		const render_methods = this.compile_render_methods(new_children, existing_children, ssr_tree);
 		const html = this.options.render({ ...(this || {}), ...render_methods });
-		console.time('component.rerender.render_to_html.cleanup_html');
-		const clean_html = this.cleanup_html(html, linkedom_document);
-		console.timeEnd('component.rerender.render_to_html.cleanup_html');
-		const sanitized_html = this.sanitize_html(clean_html);
+		// const clean_html = this.cleanup_html(html, linkedom_document);
+		const sanitized_html = this.sanitize_html(html);
 		const wrapped_html = this.wrap_html(sanitized_html);
+		console.timeEnd('component.rerender.render_to_html');
 		return wrapped_html;
 	}
 
