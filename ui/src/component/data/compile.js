@@ -8,6 +8,7 @@ const compile = (data_from_window = {}, request_from_window = {}, component_inst
   return {
     ...data_from_window,
     refetch: async (input = {}) => {
+      console.time('data.refetch');
       track_function_call(`ui.${component_instance?.options?.test?.name || generate_id()}.data.refetch`, [
         input
       ]);
@@ -35,6 +36,8 @@ const compile = (data_from_window = {}, request_from_window = {}, component_inst
           },
         });
       }
+
+      console.timeEnd('data.refetch');
 
       return component_instance.data;
     },
