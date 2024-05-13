@@ -8,7 +8,6 @@ const compile = (data_from_window = {}, request_from_window = {}, component_inst
   return {
     ...data_from_window,
     refetch: async (input = {}) => {
-      console.time('data.refetch');
       track_function_call(`ui.${component_instance?.options?.test?.name || generate_id()}.data.refetch`, [
         input
       ]);
@@ -28,8 +27,6 @@ const compile = (data_from_window = {}, request_from_window = {}, component_inst
         // mount, the data rendered isn't stale.
         window.__joystick_data__[component_instance?.id] = atob(data);
       }
-
-      console.timeEnd('data.refetch');
 
       if (!window?.__joystick_test__) {
         component_instance.rerender({

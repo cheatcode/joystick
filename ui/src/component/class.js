@@ -204,6 +204,7 @@ class Component {
 	}
 
 	rerender(options = {}) {
+		console.time('component.rerender');
 		track_function_call(`ui.${this?.options?.test?.name || generate_id()}.rerender`, [
 			options,
 		]);
@@ -261,6 +262,8 @@ class Component {
 
 		// NOTE: Do after clean up so we don't reattach styles for old nodes.
 		run_tree_job('css');
+
+		console.timeEnd('component.rerender');
 
 		// NOTE: Clean up the linked list by removing any nodes matching an ID
 		// in existing_children as we know they no longer exist.
