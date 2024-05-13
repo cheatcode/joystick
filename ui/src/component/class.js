@@ -166,8 +166,8 @@ class Component {
 	}
 
 	render_to_html(new_children = {}, existing_children = {}, ssr_tree = null, linkedom_document = {}) {
-		console.time('component.rerender');
 		const render_methods = this.compile_render_methods(new_children, existing_children, ssr_tree);
+		console.time('component.rerender');
 		const html = this.options.render({ ...(this || {}), ...render_methods });
 		console.timeEnd('component.rerender');
 		const clean_html = this.cleanup_html(html, linkedom_document);
