@@ -166,13 +166,11 @@ class Component {
 	}
 
 	render_to_html(new_children = {}, existing_children = {}, ssr_tree = null, linkedom_document = {}) {
-		console.time('component.rerender.render_to_html');
 		const render_methods = this.compile_render_methods(new_children, existing_children, ssr_tree);
 		const html = this.options.render({ ...(this || {}), ...render_methods });
-		// const clean_html = this.cleanup_html(html, linkedom_document);
-		const sanitized_html = this.sanitize_html(html);
+		const clean_html = this.cleanup_html(html, linkedom_document);
+		const sanitized_html = this.sanitize_html(clean_html);
 		const wrapped_html = this.wrap_html(sanitized_html);
-		console.timeEnd('component.rerender.render_to_html');
 		return wrapped_html;
 	}
 
@@ -227,7 +225,9 @@ class Component {
 		// NOTE: As part of render_to_html(), we expect new_children to be populated
 		// with the new child instance_ids via the track_child method we pass to the
 		// render methods via the .bind() to the parent in compile_render_methods.
+		console.time('component.rerender');
 		const component_html = this.render_to_html(new_children, existing_children);
+		console.timeEnd('component.rerender');
 		const new_html = this.replace_when_tags(component_html);
 		const new_dom = this.render_html_to_dom(new_html);
 		const new_virtual_dom = this.render_dom_to_virtual_dom(new_dom);
