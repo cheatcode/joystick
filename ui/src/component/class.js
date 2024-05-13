@@ -232,6 +232,8 @@ class Component {
 		const new_virtual_dom = this.render_dom_to_virtual_dom(new_dom);
 		const dom_node_patches = diff_virtual_dom(this.virtual_dom, new_virtual_dom);
 
+		console.timeEnd('component.rerender');
+		
 		if (types.is_function(dom_node_patches)) {
 			const patched_dom_node = dom_node_patches(this.dom);
 
@@ -247,9 +249,7 @@ class Component {
 			// NOTE: Set DOMNode after children are sync'd so this.DOMNode is kept fresh.
 			this.DOMNode = patched_dom_node;
 		};
-		
-		console.timeEnd('component.rerender');
-		
+
 		run_tree_job('attach_event_listeners', { root_instance_id: this?.instance_id });
 
 		run_tree_job('lifecycle.onRender', { root_instance_id: this?.instance_id });
