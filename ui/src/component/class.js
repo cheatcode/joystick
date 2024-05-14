@@ -358,9 +358,7 @@ class Component {
 		if (selector) {
 			const observer = new MutationObserver((mutations) => {
 				debounce(() => {
-					console.log('target changed', this);
-					// TODO: Update this node's vdom.
-					// TODO: Locate this node in the tree attached to other parents.
+					this.rerender();
 				}, 100);
 			});
 
