@@ -8,6 +8,12 @@ const get_replace_node_patch = (new_virtual_node) => {
     const new_dom_node = new_virtual_node ? render_virtual_dom_to_dom(new_virtual_node) : null;
 
     if (node && new_dom_node) {
+      console.log('REPLACING NODE', {
+        node,
+        new_virtual_node,
+        new_dom_node,
+      });
+
       node.replaceWith(new_dom_node);
     }
 
@@ -18,6 +24,7 @@ const get_replace_node_patch = (new_virtual_node) => {
 const get_remove_node_patch = () => {
   return (node) => {
     if (node) {
+      console.log('REMOVING NODE', node);
       node.remove();
     }
     
