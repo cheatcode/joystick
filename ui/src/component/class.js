@@ -168,6 +168,7 @@ class Component {
 	render_to_html(new_children = {}, existing_children = {}, ssr_tree = null, linkedom_document = {}) {
 		const render_methods = this.compile_render_methods(new_children, existing_children, ssr_tree);
 		const html = this.options.render({ ...(this || {}), ...render_methods });
+		// TODO: Is this slowing stuff down on rerender for set_state?
 		const clean_html = this.cleanup_html(html, linkedom_document);
 		const sanitized_html = this.sanitize_html(clean_html);
 		const wrapped_html = this.wrap_html(sanitized_html);
@@ -208,7 +209,7 @@ class Component {
 			options,
 		]);
 
-		run_tree_job('clear_timers', { root_instance_id: this?.instance_id });
+		// run_tree_job('clear_timers', { root_instance_id: this?.instance_id });
 		run_tree_job('lifecycle.onBeforeRender', { root_instance_id: this?.instance_id });
 
 		const new_children = {};
@@ -261,7 +262,6 @@ class Component {
 
 		// NOTE: Do after clean up so we don't reattach styles for old nodes.
 		run_tree_job('css');
-
 
 		// NOTE: Clean up the linked list by removing any nodes matching an ID
 		// in existing_children as we know they no longer exist.
