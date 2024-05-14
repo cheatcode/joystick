@@ -19,6 +19,7 @@ class Component {
 		this.setInterval = this.setInterval.bind(this);
 		this.set_timeout = this.set_timeout.bind(this);
 		this.setTimeout = this.setTimeout.bind(this);
+		this.sync_dom_to_vdom = this.sync_dom_to_vdom.bind(this);
 		
 		register_component_options(this, component_options);
 	}
@@ -111,7 +112,6 @@ class Component {
 		const dom = this.render_html_to_dom(html);
 		const virtual_dom = this.render_dom_to_virtual_dom(dom);
 
-		// this.dom = dom;
 		this.DOMNode = dom;
 		this.virtual_dom = virtual_dom;
 		this.children = new_children;
@@ -229,12 +229,6 @@ class Component {
 		const new_html = this.replace_when_tags(component_html);
 		const new_dom = this.render_html_to_dom(new_html);
 		const new_virtual_dom = this.render_dom_to_virtual_dom(new_dom);
-
-		console.log({
-			old: this.virtual_dom,
-			new: new_virtual_dom,
-		});
-
 		const dom_node_patches = diff_virtual_dom(this.virtual_dom, new_virtual_dom);
 
 		if (types.is_function(dom_node_patches)) {
@@ -357,6 +351,13 @@ class Component {
 	  		replace_child_in_vdom(virtual_dom, child_node?.instance_id, child_node?.virtual_dom);
 	  	}
   	}
+  }
+
+  sync_dom_to_vdom() {
+  	// NOTE: Helper API for capturing non-Joystick DOM changes in the virtual DOM.
+  	// Allows developers to communicate that there was a foreign DOM manipulation and
+  	// Joystick needs to resync its vdom.
+  	this.virtual_dom = this.render_dom_to_virtual_dom(this.DOMNode);
   }
 
 	wrap_html(html = '') {
