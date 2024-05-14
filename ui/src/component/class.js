@@ -362,6 +362,7 @@ class Component {
 		});
 
 		observer.observe(this.DOMNode, {
+			subtree: true,
 		  attributes: true, 
 		  childList: true, 
 		  characterData: true
