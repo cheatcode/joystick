@@ -3,9 +3,9 @@ import diff_children from './diff_children.js';
 import element_patch_functions from './element_patch_functions.js';
 import render_virtual_dom_to_dom from './render_virtual_dom_to_dom.js';
 
-const get_replace_node_patch = (new_virtual_node, old_virtual_node) => {
+const get_replace_node_patch = (new_virtual_node) => {
   return (node) => {
-    const new_dom_node = new_virtual_node ? render_virtual_dom_to_dom(new_virtual_node) : render_virtual_dom_to_dom(old_virtual_node);
+    const new_dom_node = new_virtual_node ? render_virtual_dom_to_dom(new_virtual_node) : null;
 
     if (node && new_dom_node) {
       node.replaceWith(new_dom_node);
@@ -33,7 +33,7 @@ const diff = (old_virtual_node = undefined, new_virtual_node = undefined) => {
   const is_patching_string = typeof old_virtual_node === 'string' || typeof new_virtual_node === "string";
 
   if (is_patching_string) {
-    return get_replace_node_patch(new_virtual_node, old_virtual_node);
+    return get_replace_node_patch(new_virtual_node);
   }
 
   const node_tag_name_changed = old_virtual_node.tag_name !== new_virtual_node.tag_name;
@@ -47,7 +47,7 @@ const diff = (old_virtual_node = undefined, new_virtual_node = undefined) => {
   }
 
   if (['pre', 'code'].includes(new_virtual_node.tag_name)) {
-    return get_replace_node_patch(new_virtual_node, old_virtual_node);
+    return get_replace_node_patch(new_virtual_node);
   }
 
   return (node) => {
