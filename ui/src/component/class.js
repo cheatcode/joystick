@@ -208,7 +208,7 @@ class Component {
 			options,
 		]);
 
-		// run_tree_job('clear_timers', { root_instance_id: this?.instance_id });
+		run_tree_job('clear_timers', { root_instance_id: this?.instance_id });
 		run_tree_job('lifecycle.onBeforeRender', { root_instance_id: this?.instance_id });
 
 		const new_children = {};
@@ -265,7 +265,7 @@ class Component {
 
 		// NOTE: Clean up the linked list by removing any nodes matching an ID
 		// in existing_children as we know they no longer exist.
-		// clean_up_tree();
+		clean_up_tree();
 	}
 
 	sanitize_html(html = '') {
