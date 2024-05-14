@@ -16,7 +16,6 @@ const patch_child_nodes = (patch_node_map = []) => {
   for (let i = 0; i < patch_node_map?.length; i += 1) {
     const [patch_function, child_node] = patch_node_map[i];
     if (patch_function && typeof patch_function === "function") {
-      console.log(child_node);
       patch_function(child_node);
     }
   }
