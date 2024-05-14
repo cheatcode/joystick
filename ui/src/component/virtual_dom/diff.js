@@ -5,6 +5,7 @@ import render_virtual_dom_to_dom from './render_virtual_dom_to_dom.js';
 
 const get_replace_node_patch = (new_virtual_node) => {
   return (node) => {
+    console.log('REPLACE NODE', node);
     const new_dom_node = new_virtual_node ? render_virtual_dom_to_dom(new_virtual_node) : null;
 
     if (node && new_dom_node) {
@@ -17,6 +18,7 @@ const get_replace_node_patch = (new_virtual_node) => {
 
 const get_remove_node_patch = () => {
   return (node) => {
+    console.log('REMOVE NODE', node);
     if (node) {
       node.remove();
     }
