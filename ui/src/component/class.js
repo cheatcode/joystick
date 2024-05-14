@@ -241,7 +241,7 @@ class Component {
 			// parent instance. Doing this here ensures any tree jobs don't get tripped up
 			// by children they don't recognize.
 			this.children = new_children;
-			this.sync_children_to_parent(this.children, this.dom, this.virtual_dom);
+			// this.sync_children_to_parent(this.children, this.dom, this.virtual_dom);
 
 			// NOTE: Set DOMNode after children are sync'd so this.DOMNode is kept fresh.
 			this.DOMNode = patched_dom_node;
