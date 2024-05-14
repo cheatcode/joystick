@@ -8,12 +8,6 @@ const get_replace_node_patch = (new_virtual_node) => {
     const new_dom_node = new_virtual_node ? render_virtual_dom_to_dom(new_virtual_node) : null;
 
     if (node && new_dom_node) {
-      console.log('REPLACING NODE', {
-        node,
-        new_virtual_node,
-        new_dom_node,
-      });
-
       node.replaceWith(new_dom_node);
     }
 
@@ -24,7 +18,6 @@ const get_replace_node_patch = (new_virtual_node) => {
 const get_remove_node_patch = () => {
   return (node) => {
     if (node) {
-      console.log('REMOVING NODE', node);
       node.remove();
     }
     
@@ -59,14 +52,6 @@ const diff = (old_virtual_node = undefined, new_virtual_node = undefined) => {
 
   return (node) => {
     diff_attributes(old_virtual_node.attributes, new_virtual_node.attributes)(node);
-    
-    if (old_virtual_node?.attributes?.class?.includes('tasks') || new_virtual_node?.attributes?.class?.includes('tasks')) {
-      console.log({
-        old_virtual_node,
-        new_virtual_node,
-      });
-    }
-
     diff_children(old_virtual_node.children, new_virtual_node.children)(node);
 
     return node;

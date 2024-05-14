@@ -266,7 +266,7 @@ class Component {
 
 		// NOTE: Clean up the linked list by removing any nodes matching an ID
 		// in existing_children as we know they no longer exist.
-		clean_up_tree();
+		// clean_up_tree();
 	}
 
 	sanitize_html(html = '') {
@@ -353,23 +353,6 @@ class Component {
 	  	}
   	}
   }
-
-	sync_dom_mutations(selector = '') {
-		if (selector) {
-			const observer = new MutationObserver((mutations) => {
-				debounce(() => {
-					this.rerender();
-				}, 100);
-			});
-
-			observer.observe(this.DOMNode?.querySelector(selector), {
-				subtree: true,
-			  attributes: true, 
-			  childList: true, 
-			  characterData: true
-			});
-		}
-	}
 
 	wrap_html(html = '') {
 		const wrapper_tag = (this.options?.wrapper?.tagName || this.options?.wrapper?.tag_name)?.toLowerCase() || 'div';
