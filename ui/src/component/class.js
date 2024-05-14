@@ -19,7 +19,6 @@ class Component {
 		this.setInterval = this.setInterval.bind(this);
 		this.set_timeout = this.set_timeout.bind(this);
 		this.setTimeout = this.setTimeout.bind(this);
-		this.sync_dom_mutations = this.sync_dom_mutations.bind(this);
 		
 		register_component_options(this, component_options);
 	}
