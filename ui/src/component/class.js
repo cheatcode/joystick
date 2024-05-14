@@ -354,19 +354,23 @@ class Component {
   	}
   }
 
-	sync_dom_mutations() {
-		console.log(this);
+	sync_dom_mutations(selector = '') {
+		if (selector) {
+			const observer = new MutationObserver((mutations) => {
+				debounce(() => {
+					console.log('target changed', this);
+					// TODO: Update this node's vdom.
+					// TODO: Locate this node in the tree attached to other parents.
+				}, 100);
+			});
 
-		const observer = new MutationObserver((mutations) => {
-			console.log(mutations);
-		});
-
-		observer.observe(this.DOMNode, {
-			subtree: true,
-		  attributes: true, 
-		  childList: true, 
-		  characterData: true
-		});
+			observer.observe(this.DOMNode?.querySelector(selector), {
+				subtree: true,
+			  attributes: true, 
+			  childList: true, 
+			  characterData: true
+			});
+		}
 	}
 
 	wrap_html(html = '') {
