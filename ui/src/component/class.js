@@ -111,14 +111,14 @@ class Component {
 		const dom = this.render_html_to_dom(html);
 		const virtual_dom = this.render_dom_to_virtual_dom(dom);
 
-		this.dom = dom;
+		// this.dom = dom;
 		this.DOMNode = dom;
 		this.virtual_dom = virtual_dom;
 		this.children = new_children;
 
-		this.sync_children_to_parent(this.children, this.dom, this.virtual_dom);
+		this.sync_children_to_parent(this.children, this.DOMNode, this.virtual_dom);
 
-		return dom;
+		return this.DOMNode;
 	}
 
 	async render_for_ssr(api = {}, req = {}, ssr_tree = [], render_for_ssr_options = {}) {
@@ -229,7 +229,7 @@ class Component {
 		const new_html = this.replace_when_tags(component_html);
 		const new_dom = this.render_html_to_dom(new_html);
 		const new_virtual_dom = this.render_dom_to_virtual_dom(new_dom);
-		
+
 		console.log({
 			old: this.virtual_dom,
 			new: new_virtual_dom,
@@ -238,19 +238,19 @@ class Component {
 		const dom_node_patches = diff_virtual_dom(this.virtual_dom, new_virtual_dom);
 
 		if (types.is_function(dom_node_patches)) {
-			const patched_dom_node = dom_node_patches(this.dom);
+			const patched_dom_node = dom_node_patches(this.DOMNode);
 
-			this.dom = patched_dom_node;
+			this.DOMNode = patched_dom_node;
 			this.virtual_dom = new_virtual_dom;
 
 			// NOTE: After all tree-related work is done, set the new children back on the
 			// parent instance. Doing this here ensures any tree jobs don't get tripped up
 			// by children they don't recognize.
 			this.children = new_children;
-			this.sync_children_to_parent(this.children, this.dom, this.virtual_dom);
+			this.sync_children_to_parent(this.children, this.DOMNode, this.virtual_dom);
 
 			// NOTE: Set DOMNode after children are sync'd so this.DOMNode is kept fresh.
-			this.DOMNode = patched_dom_node;
+			// this.DOMNode = patched_dom_node;
 		};
 
 		run_tree_job('attach_event_listeners', { root_instance_id: this?.instance_id });
