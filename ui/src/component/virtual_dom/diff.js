@@ -26,11 +26,6 @@ const get_remove_node_patch = () => {
 };
 
 const diff = (old_virtual_node = undefined, new_virtual_node = undefined) => {
-  console.log({
-    old_virtual_node,
-    new_virtual_node,
-  });
-  
   if (old_virtual_node === undefined || new_virtual_node === undefined) {    
     return get_remove_node_patch();
   }

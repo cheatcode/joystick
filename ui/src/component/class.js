@@ -116,7 +116,7 @@ class Component {
 		this.virtual_dom = virtual_dom;
 		this.children = new_children;
 
-		this.sync_children_to_parent(this.children, this.dom, this.virtual_dom);
+		// this.sync_children_to_parent(this.children, this.dom, this.virtual_dom);
 
 		return dom;
 	}
