@@ -7,7 +7,7 @@ const get_replace_node_patch = (new_virtual_node) => {
   return (node) => {
     const new_dom_node = new_virtual_node ? render_virtual_dom_to_dom(new_virtual_node) : null;
 
-    if (node) {
+    if (node && new_dom_node) {
       node.replaceWith(new_dom_node);
     }
 
