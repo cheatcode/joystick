@@ -52,11 +52,14 @@ const diff = (old_virtual_node = undefined, new_virtual_node = undefined) => {
 
   return (node) => {
     diff_attributes(old_virtual_node.attributes, new_virtual_node.attributes)(node);
-    console.log({
-      old_virtual_node,
-      new_virtual_node,
-    });
     
+    if (old_virtual_node?.attributes?.class?.includes('tasks') || new_virtual_node?.attributes?.class?.includes('tasks')) {
+      console.log({
+        old_virtual_node,
+        new_virtual_node,
+      });
+    }
+
     diff_children(old_virtual_node.children, new_virtual_node.children)(node);
 
     return node;
