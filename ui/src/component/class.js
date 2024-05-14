@@ -353,6 +353,20 @@ class Component {
   	}
   }
 
+	sync_dom_mutations() {
+		console.log(this);
+
+		const observer = new MutationObserver((mutations) => {
+			console.log(mutations);
+		});
+
+		observer.observe(this.DOMNode, {
+		  attributes: true, 
+		  childList: true, 
+		  characterData: true
+		});
+	}
+
 	wrap_html(html = '') {
 		const wrapper_tag = (this.options?.wrapper?.tagName || this.options?.wrapper?.tag_name)?.toLowerCase() || 'div';
 		const wrapper_id = this.options?.wrapper?.id || null;
