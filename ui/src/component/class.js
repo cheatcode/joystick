@@ -166,14 +166,16 @@ class Component {
 	}
 
 	render_to_html(new_children = {}, existing_children = {}, ssr_tree = null, linkedom_document = {}) {
-		console.time('render_to_html');
+		const runtime = new Date().getTime();
+
+		console.time(`render_to_html_${runtime}`);
 		const render_methods = this.compile_render_methods(new_children, existing_children, ssr_tree);
 		const html = this.options.render({ ...(this || {}), ...render_methods });
 		// TODO: Is this slowing stuff down on rerender for set_state?
 		const clean_html = this.cleanup_html(html, linkedom_document);
-		console.timeEnd('render_to_html');
 		const sanitized_html = this.sanitize_html(clean_html);
 		const wrapped_html = this.wrap_html(sanitized_html);
+		console.timeEnd(`render_to_html_${runtime}`);
 		return wrapped_html;
 	}
 
