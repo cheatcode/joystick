@@ -9,8 +9,10 @@ const mount_to_target = (dom_node = {}, target = {}) => {
 };
 
 const mount = (Component, props = {}, target = {}) => {
-  decrypt_data_on_window();
-  
+  if (!window.__joystick_hmr_update__) {
+    decrypt_data_on_window();
+  }
+
   track_function_call(`ui.mount`, [
     Component,
     props,
