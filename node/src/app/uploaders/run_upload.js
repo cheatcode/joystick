@@ -101,7 +101,7 @@ const run_upload = async (run_upload_options = {}) => {
   // existing_upload_progress value being cached (leading to incorrect progress percentage).
   const on_upload_progress = (provider = '', chunk = 0) => {
     const progress = existing_upload_progress + chunk;
-    const percentage = float_to_decimal_place(((progress / run_upload_options?.total_upload_size_all_providers) * 100), 0);
+    const percentage = float_to_decimal_place(((progress / run_upload_options?.total_upload_size_all_providers) * 100), 2);
 
     emit_websocket_event(
     	`uploaders_${run_upload_options?.req?.headers['x-joystick-upload-id']}`,
