@@ -19,21 +19,21 @@ const component = function component(Component = {}, props = {}) {
 	add_node_to_tree(component_instance);
 	parent.track_child(component_instance);
 
-	// const existing_component_on_parent = parent?.existing_children[component_instance?.id];
-	// const new_component_on_parent = parent?.new_children[component_instance?.id];
-	// const existing_instance_id_on_parent = existing_component_on_parent && existing_component_on_parent[new_component_on_parent?.length || 0];
-	// const existing_node_in_tree = get_node_from_tree(existing_instance_id_on_parent);
+	const existing_component_on_parent = parent?.existing_children[component_instance?.id];
+	const new_component_on_parent = parent?.new_children[component_instance?.id];
+	const existing_instance_id_on_parent = existing_component_on_parent && existing_component_on_parent[new_component_on_parent?.length || 0];
+	const existing_node_in_tree = get_node_from_tree(existing_instance_id_on_parent);
 
-	// if (existing_node_in_tree?.state) {
-	// 	component_instance.state = existing_node_in_tree?.state;
-	// }
+	if (existing_node_in_tree?.state) {
+		component_instance.state = existing_node_in_tree?.state;
+	}
 
-	// if (types.is_function(component_instance?.lifecycle?.onUpdateProps) || types.is_function(component_instance?.lifecycle?.on_update_props)) {
-	// 	const has_different_props = nested_object_diff(existing_node_in_tree?.props, props);
-	// 	if (has_different_props) {
-	// 		(component_instance.lifecycle.onUpdateProps || component_instance.lifecycle.on_update_props)(existing_node_in_tree?.props, props, component_instance);
-	// 	}
-	// }
+	if (types.is_function(component_instance?.lifecycle?.onUpdateProps) || types.is_function(component_instance?.lifecycle?.on_update_props)) {
+		const has_different_props = nested_object_diff(existing_node_in_tree?.props, props);
+		if (has_different_props) {
+			(component_instance.lifecycle.onUpdateProps || component_instance.lifecycle.on_update_props)(existing_node_in_tree?.props, props, component_instance);
+		}
+	}
 
 	const new_children = {};
 	const existing_children = {};

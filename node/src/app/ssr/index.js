@@ -18,6 +18,8 @@ const is_development = process.env.NODE_ENV === 'development';
 const { document: linkedom_document } = parseHTML('<div></div>');
 
 const build_html_response_for_browser = (options = {}) => {
+	console.log('DATA', options.data);
+	
 	return options?.base_html
 		.replace('${css}', `<style type="text/css" js-css>${options?.css}</style>`)
 		.replace(`<div id="app"></div>`, `

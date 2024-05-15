@@ -8,6 +8,8 @@ const mount_to_target = (dom_node = {}, target = {}) => {
 };
 
 const mount = (Component, props = {}, target = {}) => {
+  // TODO: Decrypt data on the window and replace it here.
+
   track_function_call(`ui.mount`, [
     Component,
     props,
