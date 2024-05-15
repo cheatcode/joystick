@@ -26,7 +26,7 @@ const compile = (data_from_window = {}, request_from_window = {}, component_inst
         // NOTE: Keep data on window up to date so if a parent re-renders a child that's refetched it's data since
         // mount, the data rendered isn't stale.
         console.log(data);
-        window.__joystick_data__[component_instance?.id] = atob(data);
+        window.__joystick_data__[component_instance?.id] = data;
       }
 
       if (!window?.__joystick_test__) {
