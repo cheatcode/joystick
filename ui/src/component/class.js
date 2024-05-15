@@ -69,6 +69,7 @@ class Component {
 	}
 
 	async fetch_data(api = {}, req = {}, input = {}, component_instance = this) {
+		console.log('FETCHING DATA');
 	  if (component_instance?.options?.data && types.is_function(component_instance.options.data)) {
 	    const data = await component_instance.options.data(api, req, input, component_instance);
 	    component_instance.data = data;
