@@ -18,8 +18,6 @@ const is_development = process.env.NODE_ENV === 'development';
 const { document: linkedom_document } = parseHTML('<div></div>');
 
 const build_html_response_for_browser = (options = {}) => {
-	console.log('DATA', options.data);
-	
 	return options?.base_html
 		.replace('${css}', `<style type="text/css" js-css>${options?.css}</style>`)
 		.replace(`<div id="app"></div>`, `
@@ -33,7 +31,7 @@ const build_html_response_for_browser = (options = {}) => {
 				};
 
         window.__joystick_platform__ = '${os.platform()}';
-        window.__joystick_data__ = '${Buffer.from(JSON.stringify(options?.data), 'utf8').toString('base64')}';
+        window.__joystick_data__ = ${JSON.stringify(options?.data)};
        	window.__joystick_i18n__ = ${JSON.stringify(options?.translations)};
         ${is_development ? `window.__joystick_hmr_port__ = ${parseInt(process.env.PORT, 10) + 1}` : ''}
         window.__joystick_layout_url__ = ${options?.render_layout_path ? `"/_joystick/${options?.render_layout_path}"` : null};
@@ -113,7 +111,10 @@ const ssr = async (ssr_options = {}) => {
 			${email_base_css}
 			${ssr_render?.css}
 		` : ssr_render?.css,
-		data: ssr_render?.data,
+		data: Object.entries(ssr_render?.data || {})?.reduce((encoded = {}, [key, value]) => {
+		  encoded[key] = value ? Buffer.from(JSON.stringify(value), 'utf8').toString('base64') : '';
+		  return encoded;
+		}, {}),
 		email_options: ssr_options?.email_options,
 		head: ssr_options?.head,
 		html: ssr_render?.html,

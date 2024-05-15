@@ -1,6 +1,7 @@
 import add_node_to_tree from "../tree/add_node_to_tree.js";
 import run_tree_job from '../tree/jobs/run.js';
 import track_function_call from "../test/track_function_call.js";
+import decrypt_data_on_window from "../lib/decrypt_data_on_window.js";
 
 const mount_to_target = (dom_node = {}, target = {}) => {
   target.replaceChildren();
@@ -8,8 +9,8 @@ const mount_to_target = (dom_node = {}, target = {}) => {
 };
 
 const mount = (Component, props = {}, target = {}) => {
-  // TODO: Decrypt data on the window and replace it here.
-
+  decrypt_data_on_window();
+  
   track_function_call(`ui.mount`, [
     Component,
     props,
