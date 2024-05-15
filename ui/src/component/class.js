@@ -205,7 +205,6 @@ class Component {
 	}
 
 	rerender(options = {}) {
-		console.time('rerender');
 		track_function_call(`ui.${this?.options?.test?.name || generate_id()}.rerender`, [
 			options,
 		]);
@@ -227,11 +226,13 @@ class Component {
 		// NOTE: As part of render_to_html(), we expect new_children to be populated
 		// with the new child instance_ids via the track_child method we pass to the
 		// render methods via the .bind() to the parent in compile_render_methods.
+		console.time('rerender');
 		const component_html = this.render_to_html(new_children, existing_children);
 		const new_html = this.replace_when_tags(component_html);
 		const new_dom = this.render_html_to_dom(new_html);
 		const new_virtual_dom = this.render_dom_to_virtual_dom(new_dom);
 		const dom_node_patches = diff_virtual_dom(this.virtual_dom, new_virtual_dom);
+		console.timeEnd('rerender');
 
 		if (types.is_function(dom_node_patches)) {
 			const patched_dom_node = dom_node_patches(this.DOMNode);
@@ -267,7 +268,6 @@ class Component {
 		// NOTE: Clean up the linked list by removing any nodes matching an ID
 		// in existing_children as we know they no longer exist.
 		clean_up_tree();
-		console.timeEnd('rerender');
 	}
 
 	sanitize_html(html = '') {
