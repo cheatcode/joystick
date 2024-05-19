@@ -205,7 +205,6 @@ class Component {
 	}
 
 	rerender(options = {}) {
-		console.time('rerender');
 		track_function_call(`ui.${this?.options?.test?.name || generate_id()}.rerender`, [
 			options,
 		]);
@@ -267,7 +266,6 @@ class Component {
 		// NOTE: Clean up the linked list by removing any nodes matching an ID
 		// in existing_children as we know they no longer exist.
 		clean_up_tree();
-		console.timeEnd('rerender');
 	}
 
 	sanitize_html(html = '') {
