@@ -25,9 +25,17 @@ const run_getter = async (
   const data = (await getter_definition?.get(input, context));
   const response = output ? get_output(data, output) : data;
   
-  return !should_disable_sanitization && should_sanitize_output ? sanitize_api_response(
+  const sanitized_response = !should_disable_sanitization && should_sanitize_output ? sanitize_api_response(
     response
   ) : response;
+
+  console.log({
+    data,
+    response,
+    sanitized_response,
+  });
+
+  return sanitized_response;
 };
 
 const run_authorization = async (getter_name = '', getter_definition = {}, input = {}, context = {}) => {
