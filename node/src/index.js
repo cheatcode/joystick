@@ -5,6 +5,7 @@ import _cache from './cache/index.js';
 import _escape_html from './lib/escape_html.js';
 import _escape_markdown_string from './lib/escape_markdown_string.js';
 import _fixture from './app/fixture/index.js';
+import _sanitize_api_response from './app/api/sanitize_api_response.js';
 import _sql from './app/databases/sql.js';
 import _validate_input from './app/api/validate_input.js';
 import _websockets from './app/websockets/index.js';
@@ -55,6 +56,8 @@ export const push = {
   current_version: (await path_exists('/root/push/versions/current')) ? (await readFile('/root/push/versions/current', 'utf-8'))?.replace('\n', '') : null,
 };
 
+export const sanitize = _sanitize_api_response;
+
 export const settings = load_settings();
 
 export const sql = _sql;
@@ -76,6 +79,7 @@ const joystick = {
   id: generate_id,
   origin,
   push,
+  sanitize,
   settings,
   sql,
   validate_input,
