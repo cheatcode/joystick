@@ -4,9 +4,6 @@ export const HTML_ENTITY_MAP = {
   '>': '&gt;',
   '"': '&quot;',
   "'": '&#39;',
-  '/': '&#x2F;',
-  '`': '&#x60;',
-  '=': '&#x3D;'
 };
 
 export const KILOBYTE = 1000;

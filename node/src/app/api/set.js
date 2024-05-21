@@ -22,10 +22,7 @@ const run_setter = async (
     get_sanitized_context(context),
   ]);
 
-  const data = (await setter_definition?.set(
-    sanitize_api_response(input),
-    context
-  ));
+  const data = (await setter_definition?.set(input, context));
   const response = output ? get_output(data, output) : data;
   
   return !should_disable_sanitization && should_sanitize_output ? sanitize_api_response(

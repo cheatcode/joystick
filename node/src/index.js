@@ -3,6 +3,7 @@ import _accounts from './app/accounts/index.js';
 import _action from "./action/index.js";
 import _cache from './cache/index.js';
 import _escape_html from './lib/escape_html.js';
+import _escape_markdown_string from './lib/escape_markdown_string.js';
 import _fixture from './app/fixture/index.js';
 import _sql from './app/databases/sql.js';
 import _validate_input from './app/api/validate_input.js';
@@ -40,6 +41,7 @@ export const email = {
 };
 
 export const escape_html = _escape_html;
+export const escape_markdown_string = _escape_markdown_string;
 
 export const __filename = node_path_polyfills.__filename;
 
@@ -69,6 +71,7 @@ const joystick = {
   email,
   emitters: {},
   escape_html,
+  escape_markdown_string,
   fixture,
   id: generate_id,
   origin,
