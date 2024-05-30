@@ -30,7 +30,7 @@ Joystick supports MacOS, Linux, and Windows and requires Node.js v20 or later.
 To start working with Joystick, install the `@joystick.js/cli` package on to your computer:
 
 ```bash
-npm i @joystick.js/cli@latest
+npm i -g @joystick.js/cli@latest
 ```
 
 Once installed, to create an app, run:
