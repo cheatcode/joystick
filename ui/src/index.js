@@ -50,6 +50,7 @@ const joystick = {
 	id: generate_id,
   mount,
   set,
+  settings: typeof window !== 'undefined' ? window.__joystick_settings__ : {},
   test,
   upload,
 };
