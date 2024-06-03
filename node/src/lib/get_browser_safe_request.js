@@ -10,6 +10,7 @@ const get_browser_safe_request = (req = {}) => {
   browser_safe_request.context = {
     user: get_browser_safe_user(req.context.user),
   };
+  browser_safe_request.url = req?.url;
 
   return browser_safe_request;
 };

@@ -1,1 +1,1 @@
-import s from"./escape_key_value_pair.js";import t from"../app/accounts/get_browser_safe_user.js";const a=(r={})=>{const e={};return e.headers=r.headers,e.params=s(r.params),e.query=s(r.query),e.context={user:t(r.context.user)},e};var u=a;export{u as default};
+import s from"./escape_key_value_pair.js";import t from"../app/accounts/get_browser_safe_user.js";const a=(r={})=>{const e={};return e.headers=r.headers,e.params=s(r.params),e.query=s(r.query),e.context={user:t(r.context.user)},e.url=r?.url,e};var _=a;export{_ as default};
