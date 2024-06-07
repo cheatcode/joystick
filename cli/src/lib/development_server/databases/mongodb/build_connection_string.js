@@ -5,13 +5,18 @@ import types from "../../../types.js";
 const build_connection_string = (connection = {}) => {
   let connection_string = "mongodb://";
 
+  // NOTE: Swap protocols if we're using a DNS Seedlist URL (mongodb+srv://).
+  if (connection?.srv) {
+    connection_string = "mongodb+srv://";
+  }
+
   if (connection && (connection.username || connection.password)) {
     connection_string = `${connection_string}${connection.username || connection.password ? `${connection.username || ""}${!!connection.username && !!connection.password ? ':' : ''}${connection.password || ""}@` : ''}`;
   }
 
   if (connection && connection.hosts && types.is_array(connection.hosts)) {
     connection_string = `${connection_string}${connection.hosts
-      .map((host) => `${host.hostname}:${host.port}`)
+      .map((host) => connection?.srv ? host.hostname : `${host.hostname}:${host.port}`)
       .join(",")}`;
   }
 

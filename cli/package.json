@@ -27,7 +27,7 @@
     "esbuild-plugin-svg": "^0.1.0",
     "form-data": "^4.0.0",
     "inquirer": "^9.2.12",
-    "mongodb": "^6.3.0",
+    "mongodb": "^6.7.0",
     "node-fetch": "^3.3.2",
     "pg": "^8.11.3",
     "query-string": "^8.1.0",
