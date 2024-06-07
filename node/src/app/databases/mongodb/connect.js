@@ -17,6 +17,12 @@ const connect_mongodb = async (database_settings = {}, database_port = 2610) => 
     const connection_string = build_connection_string(connection);
     const parsed_uri = mongo_uri.parseUri(connection_string);
 
+    console.log({
+      connection,
+      connection_string,
+      parsed_uri,
+    });
+
     const connection_options = {
       ssl: !['development', 'test'].includes(process.env.NODE_ENV),
       ...(database_settings?.options || {})
@@ -31,6 +37,7 @@ const connect_mongodb = async (database_settings = {}, database_port = 2610) => 
 
     return Promise.resolve(db);
   } catch (exception) {
+    console.warn(exception);
     console.warn(
       chalk.yellowBright(
         `\nFailed to connect to MongoDB. Please double-check connection settings and try again.\n\nError from MongoDB:\n\n${chalk.redBright(exception?.message)}`
