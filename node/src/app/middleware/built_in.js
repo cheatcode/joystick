@@ -45,7 +45,13 @@ const built_in = (options = {}) => {
     }
   }
 
+  // NOTE: Difference here is that if the /index.css imports a file from the /css folder
+  // at the root of the app, the import URL will be prefixed w/ /_joystick. This ensures
+  // that the path still resolves whether you're loading directly from /css or importing
+  // from within /index.css.
   options.express_app.use('/css', express.static('css'));
+  options.express_app.use('/_joystick/css', express.static('css'));
+
   options.express_app.use('/_joystick/utils/process.js', process_browser_polyfill_middleware);
   options.express_app.use('/_joystick/index.client.js', express.static(`${options?.joystick_build_path}index.client.js`));
   options.express_app.use('/_joystick/index.css', express.static(`${options?.joystick_build_path}index.css`));
