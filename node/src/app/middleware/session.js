@@ -6,6 +6,7 @@ const session_middleware = async (req, res, next) => {
 
   console.log({
     headers: req?.headers,
+    url: req?.url,
     session_id,
   })
 
