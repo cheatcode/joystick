@@ -4,6 +4,11 @@ import set_cookie from '../../lib/set_cookie.js';
 const session_middleware = async (req, res, next) => {
   let session_id = req?.cookies?.joystick_session;
 
+  console.log({
+    headers: req?.headers,
+    session_id,
+  })
+
   const existing_session = session_id ? await sessions_query('get_session', {
     session_id,
   }) : null;
