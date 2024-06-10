@@ -5,7 +5,7 @@ const session_middleware = async (req, res, next) => {
   if (req?.url?.includes('/api/_push/health')) {
     // NOTE: We know this is a health check from Push which doesn't require a
     // session to be created.
-    return;
+    return next();
   }
 
   let session_id = req?.cookies?.joystick_session;
