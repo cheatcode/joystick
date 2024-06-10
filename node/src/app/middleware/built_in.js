@@ -36,6 +36,12 @@ const built_in = (options = {}) => {
 		options.express_app.use(compression());
 	}
 
+  if (req?.url?.includes('/api/_push/health')) {
+    // NOTE: We know this is a health check from Push which doesn't require any
+    // middleware to run (it returns a plain text response).
+    return;
+  }
+
   options.express_app.use(express.static('public'));
 
   if (options?.middleware_config?.public_paths?.length > 0) {
