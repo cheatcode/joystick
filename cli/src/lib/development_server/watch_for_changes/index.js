@@ -9,7 +9,6 @@ import get_file_operation from '../../build/get_file_operation.js';
 import get_path_platform from '../../build/get_path_platform.js';
 import types from '../../types.js';
 import watch_paths from './watch_paths.js';
-import unique_array from '../../unique_array.js';
 
 const { mkdir, copyFile, rm: remove } = fs.promises;
 
@@ -142,11 +141,9 @@ const process_file_watcher_jobs = async (jobs = [], after_run_functions = {}) =>
 
 			await run_job(job);
 
-			const after_run_tasks = unique_array(job?.after_run_tasks || []);
-
-			if (after_run_tasks?.length > 0) {
-				for (let i = 0; i < after_run_tasks?.length; i += 1) {
-					const after_run_task = after_run_tasks[i];
+			if (job?.after_run_tasks) {
+				for (let i = 0; i < job?.after_run_tasks?.length; i += 1) {
+					const after_run_task = job?.after_run_tasks[i];
 					after_run_tasks.add(after_run_task);
 				}
 			}

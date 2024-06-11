@@ -21,6 +21,7 @@ import watch_for_changes from './watch_for_changes/index.js';
 import constants from '../constants.js';
 import kill_process_ids from './kill_process_ids.js';
 import run_tests from './run_tests.js';
+import debounce from '../debounce.js';
 
 const { stat } = fs.promises;
 const exec = util.promisify(child_process.exec);
@@ -162,22 +163,24 @@ const check_if_database_changes = async (old_settings = {}) => {
 };
 
 const handle_restart_app_server = async (node_major_version = 0, watch = false, old_settings = null) => {
-  const has_database_changes = await check_if_database_changes(old_settings);
+  debounce(async () => {
+    const has_database_changes = await check_if_database_changes(old_settings);
 
-  if (has_database_changes) {
-    const database_process_ids = get_database_process_ids();
+    if (has_database_changes) {
+      const database_process_ids = get_database_process_ids();
 
-    cli_log(`Database configuration has changed in settings.${process.env.NODE_ENV}.json. Please restart your app to add, change, or remove databases.`, {
-      level: "danger",
-      docs: "https://cheatcode.co/docs/joystick/structure",
-    });
+      cli_log(`Database configuration has changed in settings.${process.env.NODE_ENV}.json. Please restart your app to add, change, or remove databases.`, {
+        level: "danger",
+        docs: "https://cheatcode.co/docs/joystick/structure",
+      });
 
-    kill_process_ids([process.hmr_server_process?.pid, process.app_server_process?.pid, ...database_process_ids]);
-    process.exit(0);
-  } else {
-    await kill_port_process(process.env.PORT);
-    handle_start_app_server(node_major_version, watch);
-  }
+      kill_process_ids([process.hmr_server_process?.pid, process.app_server_process?.pid, ...database_process_ids]);
+      process.exit(0);
+    } else {
+      await kill_port_process(process.env.PORT);
+      handle_start_app_server(node_major_version, watch);
+    }
+  }, 300);
 };
 
 const handle_app_server_process_stdio = (watch = false) => {
@@ -366,7 +369,7 @@ const development_server = async (development_server_options = {}) => {
 
   watch_for_changes({
     hot_module_reload: (jobs = []) => handle_signal_hmr_update(jobs),
-    restart_app_server: (jobs = []) => handle_restart_app_server(
+    restart_app_server: () => handle_restart_app_server(
       node_major_version,
       development_server_options?.watch,
       settings,
