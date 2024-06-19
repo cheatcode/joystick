@@ -24,15 +24,6 @@ const cache = (cache_name = '') => {
         return cache_item[key_to_match] === value_to_match;
       });
 
-      console.log({
-        cache_name,
-        cache_exists: !!process.caches[cache_name],
-        key_to_match,
-        value_to_match,
-        replacement_item,
-        index_to_update,
-      });
-
       if (typeof index_to_update === 'number') {
         process.caches[cache_name][index_to_update] = {
           ...(process.caches[cache_name][index_to_update] || {}),
