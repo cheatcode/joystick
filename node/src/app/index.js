@@ -122,7 +122,7 @@ class App {
 		this.express.app.post('/api/_accounts/recover-password', api_accounts_recover_password);
 		this.express.app.post('/api/_accounts/reset-password', api_accounts_reset_password);
 		this.express.app.post('/api/_accounts/signup', api_accounts_signup);
-		this.express.app.post('/api/_accounts/verify-email', api_accounts_verify_email);
+		this.express.app.get('/api/_accounts/verify-email', api_accounts_verify_email);
 	}
 
 	register_api() {
