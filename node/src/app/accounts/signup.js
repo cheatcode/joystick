@@ -143,7 +143,9 @@ const signup = async (signup_options = {}) => {
       ...session,
       user_id,
       userId: user_id,
-      user,
+      user: {
+        ...user,
+      },
     });
   }
 

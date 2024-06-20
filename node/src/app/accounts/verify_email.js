@@ -1,5 +1,6 @@
 /* eslint-disable consistent-return */
 
+import types from "../../lib/types.js";
 import accounts_query from "../databases/queries/accounts.js";
 
 const mark_email_verified_at = (user_id = "", token = "") => {
@@ -21,8 +22,11 @@ const verify_email = async (verify_email_options = {}) => {
 
   await mark_email_verified_at(user?._id || user?.user_id, verify_email_options?.token);
 
-  if (typeof process.joystick?.app_options?.accounts?.events?.onVerifyEmail === 'function') {
-    process.joystick?.app_options?.accounts?.events?.onVerifyEmail(user?.emailAddress || user?.email_address);
+  if (
+    types.is_function(process.joystick?.app_options?.accounts?.events?.onVerifyEmail) ||
+    types.is_function(process.joystick?.app_options?.accounts?.events?.on_verify_email)
+  ) {
+    (process.joystick?.app_options?.accounts?.events?.onVerifyEmail || process.joystick?.app_options?.accounts?.events?.on_verify_email)(user?.emailAddress || user?.email_address);
   }
 
   return true;
