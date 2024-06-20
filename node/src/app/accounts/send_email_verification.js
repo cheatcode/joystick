@@ -17,8 +17,8 @@ const send_verification_email = (email_address = "", token = "") => {
       email_address,
       url:
         process.env.NODE_ENV === "development"
-          ? `http://localhost:${process.env.PORT}/api/_accounts/verify_email?token=${token}`
-          : `${process.env.ROOT_URL}/api/_accounts/verify_email?token=${token}`,
+          ? `http://localhost:${process.env.PORT}/api/_accounts/verify-email?token=${token}`
+          : `${process.env.ROOT_URL}/api/_accounts/verify-email?token=${token}`,
     },
   });
 };
