@@ -34,10 +34,9 @@ const get_user = (user_id = "") => {
 };
 
 const send_email_verification = async (user_id = '') => {
+  console.log('SEND VERIFICATION', user_id);
   const user = await get_user(user_id);
 
-  console.log('SEND VERIFICATION', user);
-  
   if (!user?.emailVerified && !user?.emailVerifiedAt) {
     const token = await get_email_verification_token(user?._id || user?.user_id);
     await send_verification_email(user?.emailAddress, token);
