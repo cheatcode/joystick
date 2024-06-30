@@ -9,7 +9,7 @@ import get_file_operation from '../../build/get_file_operation.js';
 import get_path_platform from '../../build/get_path_platform.js';
 import types from '../../types.js';
 import watch_paths from './watch_paths.js';
-
+ 
 const { mkdir, copyFile, rm: remove } = fs.promises;
 
 const handle_build_files = async (job = {}, options = {}) => {
@@ -181,19 +181,7 @@ const transform_chokidar_event = (event = '') => {
 };
 
 const watch_for_changes = (after_run_functions = {}, watch_for_changes_options = {}) => {
-	const file_watcher = chokidar.watch(
-		[...watch_paths, ...(watch_for_changes_options?.custom_copy_paths || [])]
-			.map(({ path }) => path)
-			.filter((path) => {
-				return !watch_for_changes_options?.excluded_paths?.some((excluded_path) => {
-					console.log({
-						path,
-						excluded_path,
-					});
-					
-					return path.includes(excluded_path);
-				});
-			}), {
+	const file_watcher = chokidar.watch([...watch_paths, ...(watch_for_changes_options?.custom_copy_paths || [])].map(({ path }) => path), {
 		ignored: '.joystick',
 	});
 
@@ -204,24 +192,35 @@ const watch_for_changes = (after_run_functions = {}, watch_for_changes_options =
 	file_watcher.on('error', (error) => console.error(error));
 
 	file_watcher.on('all', (event, path) => {
-		file_watcher_jobs.push({
-			event: transform_chokidar_event(event),
-			path,
-			is_custom_copy_path: watch_for_changes_options?.custom_copy_paths?.length ? watch_for_changes_options?.custom_copy_paths.some((custom_copy_path) => {
-			  return path.includes(custom_copy_path?.path);
-			}) : false,
+		const is_excluded_path = watch_for_changes_options?.excluded_paths?.some((excluded_path) => {
+			console.log({
+				path,
+				excluded_path,
+			});
+
+			return path.includes(excluded_path);
 		});
 
-		// NOTE: Depending on the watch event, we expect multiple events to be emitted
-		// by chokidar. Debouncing here allows us to "collect" the jobs for the current
-		// chain of events and *then* process them all together. This is done to avoid
-		// triggering multiple HMR calls or server restarts for files related to the
-		// same job. This is near-instant, so there's no delay for the developer.
-		debounce(async () => {
-			await process_file_watcher_jobs(file_watcher_jobs, after_run_functions);
-			process.initial_build_complete = true;
-			file_watcher_jobs = [];
-		}, 100);
+		if (!is_excluded_path) {
+			file_watcher_jobs.push({
+				event: transform_chokidar_event(event),
+				path,
+				is_custom_copy_path: watch_for_changes_options?.custom_copy_paths?.length ? watch_for_changes_options?.custom_copy_paths.some((custom_copy_path) => {
+				  return path.includes(custom_copy_path?.path);
+				}) : false,
+			});
+
+			// NOTE: Depending on the watch event, we expect multiple events to be emitted
+			// by chokidar. Debouncing here allows us to "collect" the jobs for the current
+			// chain of events and *then* process them all together. This is done to avoid
+			// triggering multiple HMR calls or server restarts for files related to the
+			// same job. This is near-instant, so there's no delay for the developer.
+			debounce(async () => {
+				await process_file_watcher_jobs(file_watcher_jobs, after_run_functions);
+				process.initial_build_complete = true;
+				file_watcher_jobs = [];
+			}, 100);
+		}
 	});
 };
 
