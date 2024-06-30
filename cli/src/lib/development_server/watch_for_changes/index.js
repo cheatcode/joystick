@@ -193,11 +193,6 @@ const watch_for_changes = (after_run_functions = {}, watch_for_changes_options =
 
 	file_watcher.on('all', (event, path) => {
 		const is_excluded_path = watch_for_changes_options?.excluded_paths?.some((excluded_path) => {
-			console.log({
-				path,
-				excluded_path,
-			});
-
 			return path.includes(excluded_path);
 		});
 
