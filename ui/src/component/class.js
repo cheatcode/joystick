@@ -248,8 +248,6 @@ class Component {
 			// this.DOMNode = patched_dom_node;
 		};
 
-		run_tree_job('attach_event_listeners', { root_instance_id: this?.instance_id });
-
 		run_tree_job('lifecycle.onRender', { root_instance_id: this?.instance_id });
 
 		if (types.is_function(options?.after_set_state_rerender)) {
@@ -259,6 +257,8 @@ class Component {
 		if (types.is_function(options?.after_refetch_data_rerender)) {
 			options.after_refetch_data_rerender();
 		}
+
+		run_tree_job('attach_event_listeners', { root_instance_id: this?.instance_id });
 
 		// NOTE: Do after clean up so we don't reattach styles for old nodes.
 		run_tree_job('css');
