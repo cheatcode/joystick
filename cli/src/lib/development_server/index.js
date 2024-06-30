@@ -386,6 +386,7 @@ const development_server = async (development_server_options = {}) => {
       settings,
     ) : null,
   }, {
+    excluded_paths: settings?.config?.build?.excluded_paths,
     custom_copy_paths: settings?.config?.build?.copy_paths?.map((path) => {
       return { path };
     }) || [],

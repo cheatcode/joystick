@@ -181,7 +181,14 @@ const transform_chokidar_event = (event = '') => {
 };
 
 const watch_for_changes = (after_run_functions = {}, watch_for_changes_options = {}) => {
-	const file_watcher = chokidar.watch([...watch_paths, ...(watch_for_changes_options?.custom_copy_paths || [])].map(({ path }) => path), {
+	const file_watcher = chokidar.watch(
+		[...watch_paths, ...(watch_for_changes_options?.custom_copy_paths || [])]
+			.map(({ path }) => path)
+			.filter((path) => {
+				return !watch_for_changes_options?.excluded_paths?.some((excluded_path) => {
+					return path.includes(excluded_path);
+				});
+			}), {
 		ignored: '.joystick',
 	});
 
