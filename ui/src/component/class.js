@@ -258,7 +258,6 @@ class Component {
 			options.after_refetch_data_rerender();
 		}
 
-		run_tree_job('attach_event_listeners', { root_instance_id: this?.instance_id });
 
 		// NOTE: Do after clean up so we don't reattach styles for old nodes.
 		run_tree_job('css');
@@ -266,6 +265,8 @@ class Component {
 		// NOTE: Clean up the linked list by removing any nodes matching an ID
 		// in existing_children as we know they no longer exist.
 		clean_up_tree();
+		
+		run_tree_job('attach_event_listeners', { root_instance_id: this?.instance_id });
 	}
 
 	sanitize_html(html = '') {
