@@ -180,7 +180,7 @@ const handle_restart_app_server = async (node_major_version = 0, watch = false, 
       await kill_port_process(process.env.PORT);
       handle_start_app_server(node_major_version, watch);
     }
-  }, 50);
+  }, 300);
 };
 
 const handle_app_server_process_stdio = (watch = false) => {
