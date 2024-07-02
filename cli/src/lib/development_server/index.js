@@ -174,22 +174,18 @@ const handle_restart_app_server = async (node_major_version = 0, watch = false, 
         docs: "https://cheatcode.co/docs/joystick/structure",
       });
 
-      console.log('KILL THESE RESTART', [
-        process.hmr_server_process?.pid,
-        process.app_server_process?.pid,
-        ...database_process_ids,
-        ...(process.app_server_process.external_process_ids || []),
-      ]);
-
       kill_process_ids([
         process.hmr_server_process?.pid,
         process.app_server_process?.pid,
         ...database_process_ids,
-        ...(process.app_server_process.external_process_ids || []),
       ]);
 
       process.exit(0);
     } else {
+      kill_process_ids([
+        ...(process.app_server_process.external_process_ids || []),
+      ]);
+
       await kill_port_process(process.env.PORT);
       handle_start_app_server(node_major_version, watch);
     }
