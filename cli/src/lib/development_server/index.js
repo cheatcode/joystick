@@ -180,7 +180,7 @@ const handle_restart_app_server = async (node_major_version = 0, watch = false, 
         ...database_process_ids,
         ...(process.app_server_process.external_process_ids || []),
       ]);
-      
+
       process.exit(0);
     } else {
       await kill_port_process(process.env.PORT);
@@ -194,12 +194,10 @@ const handle_app_server_process_stdio = (watch = false) => {
   process.app_server_process.external_process_ids = [];
 
   process.app_server_process.on('message', (message_from_child) => {
-    const parsed_message = JSON.parse(message_from_child);
-
-    if (parsed_message?.external_process_id) {
+    if (message_from_child?.external_process_id) {
       process.app_server_process.external_process_ids = [
         ...(process.app_server_process.external_process_ids || []),
-        parsed_message?.external_process_id,
+        message_from_child?.external_process_id,
       ];
     }
   });
