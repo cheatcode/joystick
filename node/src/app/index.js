@@ -56,6 +56,10 @@ class App {
 		// for things like the account hooks.
     process.joystick = {
       app_options,
+      external_process_ids: [],
+      track_external_process: (external_process_id = '') => {
+      	process.joystick.external_process_ids.push(external_process_id);
+      },
     };
 	}
 
@@ -104,6 +108,10 @@ class App {
     process.on("message", (message) => {
       if (typeof message === 'string') {
         const parsed_message = JSON.parse(message);
+
+        if (['RESTART'].includes(parsed_message?.type)) {
+
+        }
 
         if (parsed_message?.type === 'BUILD_ERROR') {
           process.BUILD_ERROR = JSON.parse(message);
