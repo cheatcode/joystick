@@ -184,6 +184,11 @@ const handle_restart_app_server = async (node_major_version = 0, watch = false, 
 };
 
 const handle_app_server_process_stdio = (watch = false) => {
+  process.app_server_process.on('message', (message_from_child) => {
+    // TODO: Prepare to JSON.parse() the message assuming it has metadata.
+    console.log(message_from_child);
+  });
+
   process.app_server_process.on('error', (error) => {
     cli_log(error.toString(), {
       level: "danger",

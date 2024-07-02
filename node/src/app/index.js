@@ -58,6 +58,7 @@ class App {
       app_options,
       external_process_ids: [],
       track_external_process: (external_process_id = '') => {
+      	process.send({ external_process_id });
       	process.joystick.external_process_ids.push(external_process_id);
       },
     };
