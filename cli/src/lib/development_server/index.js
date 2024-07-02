@@ -195,6 +195,7 @@ const handle_app_server_process_stdio = (watch = false) => {
 
   process.app_server_process.on('message', (message_from_child) => {
     if (message_from_child?.external_process_id) {
+      console.log(message_from_child?.external_process_id);
       process.app_server_process.external_process_ids = [
         ...(process.app_server_process.external_process_ids || []),
         message_from_child?.external_process_id,
