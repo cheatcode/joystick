@@ -2,7 +2,7 @@ import types from "../../lib/types.js";
 
 const when = function when(test = false, html_to_render = '') {
   if (types.is_function(html_to_render)) {
-    return test ? html_to_render() : '<when> </when>'; 
+    return test ? html_to_render() : ' '; 
   }
 
   if (test) {
@@ -14,7 +14,7 @@ const when = function when(test = false, html_to_render = '') {
   // NOTE: Return default as a text node containing false (we replace this dynamically when
   // building the DOM so it never renders in the browser). Blank space here is INTENTIONAL
   // to ensure a text node is returned when the <when></when> tag is dynamically replaced.
-  return '<when> </when>';
+  return ' ';
 };
 
 export default when;
