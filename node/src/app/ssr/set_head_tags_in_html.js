@@ -94,6 +94,7 @@ const set_head_tags_in_html = (html_string = '', head = null, req = {}) => {
       const new_tag = html_parser.parse(`<style></style>`);
       const attribute_entries = Object.entries(attributes);
       const style_tag = new_tag.querySelector('style');
+      style_tag.setAttribute('type', 'text/css');
 
       for (let i = 0; i < attribute_entries?.length; i += 1) {
         const [attribute_name, attribute_value] = attribute_entries[i];
