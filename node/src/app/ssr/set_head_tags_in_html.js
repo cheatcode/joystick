@@ -88,6 +88,32 @@ const set_head_tags_in_html = (html_string = '', head = null, req = {}) => {
     }
   }
   
+  if (head.tags && head.tags.style && Array.isArray(head.tags.style) && head.tags.style.length > 0) {
+    for (let i = 0; i < head?.tags?.style?.length; i += 1) {
+      const style_tag = head.tags.style[i];
+      const new_tag = html_parser.parse(`<style></style>`);
+
+      const style_tag_entries = Object.entries(style_tag || {});
+
+      for (let i = 0; i < style_tag_entries?.length; i += 1) {
+        const { attributes = {}, content = '' } = style_tag_entries[i];
+        const attribute_entries = Object.entries(attributes);
+        const style_tag_dom_node = new_tag.querySelector('style');
+
+        for (let i = 0; i < attribute_entries?.length; i += 1) {
+          const [attribute_name, attribute_value] = attribute_entries[i];
+          style_tag_dom_node.setAttribute(attribute_name, attribute_value);
+        }
+
+        if (content) {
+          style_tag_dom_node.innerHTML = content;
+        }
+      }
+
+      head_tag.appendChild(new_tag);
+    }
+  }
+
   if (head.jsonld) {
     const new_tag = html_parser.parse(`<script></script>`);
     const tag = new_tag.querySelector('script');
