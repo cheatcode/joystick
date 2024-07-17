@@ -7,6 +7,10 @@ const find_codependencies_in_map = (path_to_find = '', map = {}) => {
   // of the child dependencies in the map. Basically I just need to ask, can I find an absolute
   // path that matches the current path being rebuilt? If I do, give me the codependent_path name
   // as that is a codependency of the file being rebuilt.
+  console.log({
+    path_to_find,
+  });
+  
   const matching_codependents = Object.entries(map)
     .filter(([_codependent_path, codependent_dependencies]) => {
       const has_matching_imports =
@@ -27,7 +31,7 @@ const find_codependencies_in_map = (path_to_find = '', map = {}) => {
     });
 
   console.log(matching_codependents);
-  
+
   return matching_codependents.map(([matching_codependent_path]) => {
       return matching_codependent_path.replace(
         get_platform_safe_path(`${process.cwd()}/`),
