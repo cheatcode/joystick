@@ -22,6 +22,7 @@ import constants from '../constants.js';
 import kill_process_ids from './kill_process_ids.js';
 import run_tests from './run_tests.js';
 import debounce from '../debounce.js';
+import download_database_binary from './databases/download_database_binary.js';
 
 const { stat } = fs.promises;
 const exec = util.promisify(child_process.exec);
@@ -246,8 +247,15 @@ const handle_start_app_server = (node_major_version = 0, watch = false) => {
   process.app_server_restarting = false;
 };
 
-const install_missing_databases = (settings = {}) => {
-  console.log(settings?.config?.databases);
+const install_missing_databases = async (settings = {}) => {
+  const required_databases = settings?.config?.databases?.map((database = {}) => {
+    return database?.provider;
+  });
+
+  for (let i = 0; i < required_databases?.length; i += 1) {
+    const provider_name = required_databases[i];
+    await download_database_binary(provider_name);
+  }
 };
 
 const set_process_variables = (development_server_options = {}, port = 2600) => {
