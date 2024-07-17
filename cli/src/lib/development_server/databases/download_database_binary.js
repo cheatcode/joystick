@@ -120,13 +120,17 @@ const download_database_binary = async (database_name_lowercase, version_path = 
  const base_directory = path.join(os.homedir(), '.joystick', 'databases', database_name_lowercase);
  const bin_directory = path.join(base_directory, 'bin');
 
+ if (await check_if_file_exists(base_directory)) {
+   return;
+ }
+
  await create_directories(base_directory, bin_directory);
 
  const download_url = await get_download_url(database_name_lowercase, version_path);
  const file_name = path.basename(new URL(download_url).pathname);
  const file_path = path.join(base_directory, file_name);
 
- if (await check_if_file_exists(base_directory)) {
+ if (await check_if_file_exists(file_path)) {
    return;
  }
 
