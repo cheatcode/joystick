@@ -9,6 +9,12 @@ import { execFile } from 'child_process';
 const streamPipeline = promisify(pipeline);
 const execFileAsync = promisify(execFile);
 
+const database_name_map = {
+  mongodb: 'MongoDB',
+  postgresql: 'PostgreSQL',
+  redis: 'Redis',
+};
+
 const make_file_executable = async (bin_directory) => {
  const platform = os.platform();
  if (platform !== 'win32') {
@@ -124,9 +130,12 @@ const download_database_binary = async (database_name_lowercase, version_path = 
    return;
  }
 
+ process.loader.print(`${database_name_map[database_name_lowercase]} not found. Downloading...`);
  await download_file(download_url, file_path);
+ process.loader.print(`Installing ${database_name_map[database_name_lowercase]}...`);
  await extract_and_build(database_name_lowercase, file_path, base_directory, bin_directory);
  await make_file_executable(bin_directory);
+ process.loader.print(`${database_name_map[database_name_lowercase]} installed!`);
 };
 
 export default download_database_binary;
