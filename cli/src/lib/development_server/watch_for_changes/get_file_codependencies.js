@@ -10,21 +10,29 @@ const find_codependencies_in_map = (path_to_find = '', map = {}) => {
   console.log({
     path_to_find,
   });
-  
+
   const matching_codependents = Object.entries(map)
     .filter(([_codependent_path, codependent_dependencies]) => {
       const has_matching_imports =
         codependent_dependencies &&
         codependent_dependencies.imports &&
         codependent_dependencies.imports.some((codependent_dependency) => {
-          return codependent_dependency.absolute_path.includes(path_to_find);
-        });
+          // NOTE: If a file is renamed to use lowercase (or vice versa), the dependent file
+          // should respect that change, even if the developer forgets to update the import
+          // path's casing.
 
-      const has_matching_requires =
+          return codependent_dependency.absolute_path.includes(path_to_find) || codependent_dependency.absolute_path?.toLowerCase()?.includes(path_to_find);
+        });
+        
+        const has_matching_requires =
         codependent_dependencies &&
         codependent_dependencies.requires &&
         codependent_dependencies.requires.some((codependent_dependency) => {
-          return codependent_dependency.absolute_path.includes(path_to_find);
+          // NOTE: If a file is renamed to use lowercase (or vice versa), the dependent file
+          // should respect that change, even if the developer forgets to update the import
+          // path's casing.
+          
+          return codependent_dependency.absolute_path.includes(path_to_find) || codependent_dependency.absolute_path?.toLowerCase()?.includes(path_to_find);
         });
 
       return has_matching_imports || has_matching_requires;
