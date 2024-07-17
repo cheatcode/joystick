@@ -1,5 +1,6 @@
 import child_process from "child_process";
 import fs from "fs";
+import os from "os";
 import cli_log from "../../../cli_log.js";
 import command_exists from '../../../command_exists.js';
 import get_platform_safe_path from '../../../get_platform_safe_path.js';
@@ -47,6 +48,8 @@ const get_mongo_command = (mongodb_windows_versions = []) => {
 
 const start_mongodb_process = (mongodb_port = 2610, mongodb_windows_versions = []) => {
   return new Promise((resolve) => {
+    // TODO: Does this hold up on Windows + Linux?
+    const joystick_mongod_path = `${os.homedir()}/.joystick/databases/mongodb/bin/bin/mongod`;
     const database_process_flags = [
       '--port',
       mongodb_port,
@@ -58,7 +61,7 @@ const start_mongodb_process = (mongodb_port = 2610, mongodb_windows_versions = [
     ];
 
     const database_process = child_process.spawn(
-      `mongod`,
+      joystick_mongod_path,
       database_process_flags.filter((command) => !!command),
     );
 
@@ -67,7 +70,8 @@ const start_mongodb_process = (mongodb_port = 2610, mongodb_windows_versions = [
 
       if (stdout.includes('Waiting for connections')) {
         const mongo_command = get_mongo_command(mongodb_windows_versions);
-        child_process.exec(`${mongo_command} --eval "rs.initiate()" --verbose --port ${mongodb_port}`, async (error, _stdout, stderr) => {
+        const joystick_mongo_path = `${os.homedir()}/.joystick/databases/mongodb/bin/bin/${mongo_command}`;
+        child_process.exec(`${joystick_mongo_path} --eval "rs.initiate()" --verbose --port ${mongodb_port}`, async (error, _stdout, stderr) => {
           const process_id = await get_process_id_from_port(mongodb_port);
           return resolve(parseInt(process_id, 10));
         });
@@ -95,13 +99,13 @@ const setup_data_directory = async (mongodb_port = 2610) => {
 };
 
 const start_mongodb = async (mongodb_port = 2610) => {
-  const mongodb_exists = await check_if_mongodb_exists();
+  // const mongodb_exists = await check_if_mongodb_exists();
   const mongodb_windows_versions = process.platform === 'win32' ? await get_mongodb_windows_versions() : null;
 
-  if (!mongodb_exists) {
-    warn_mongodb_not_installed();
-    process.exit(1);
-  }
+  // if (!mongodb_exists) {
+  //   warn_mongodb_not_installed();
+  //   process.exit(1);
+  // }
 
   await setup_data_directory(mongodb_port);
 
