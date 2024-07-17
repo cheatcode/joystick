@@ -246,6 +246,10 @@ const handle_start_app_server = (node_major_version = 0, watch = false) => {
   process.app_server_restarting = false;
 };
 
+const install_missing_databases = (settings = {}) => {
+  console.log(settings?.config?.databases);
+};
+
 const set_process_variables = (development_server_options = {}, port = 2600) => {
   process.title = development_server_options?.environment === 'test' ? "joystick_test" : 'joystick';
   process.loader = new Loader();
@@ -381,6 +385,8 @@ const development_server = async (development_server_options = {}) => {
   set_process_variables(development_server_options, port);
 
   const settings = await load_settings(process.env.NODE_ENV);
+
+  await install_missing_databases(settings);
 
   await start_databases({
     environment: process.env.NODE_ENV,
