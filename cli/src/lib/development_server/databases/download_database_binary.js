@@ -126,7 +126,7 @@ const download_database_binary = async (database_name_lowercase, version_path = 
  const file_name = path.basename(new URL(download_url).pathname);
  const file_path = path.join(base_directory, file_name);
 
- if (await check_if_file_exists(file_path)) {
+ if (await check_if_file_exists(base_directory)) {
    return;
  }
 
