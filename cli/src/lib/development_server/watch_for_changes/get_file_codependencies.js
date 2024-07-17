@@ -31,14 +31,12 @@ const find_codependencies_in_map = (path_to_find = '', map = {}) => {
           // NOTE: If a file is renamed to use lowercase (or vice versa), the dependent file
           // should respect that change, even if the developer forgets to update the import
           // path's casing.
-          
+
           return codependent_dependency.absolute_path.includes(path_to_find) || codependent_dependency.absolute_path?.toLowerCase()?.includes(path_to_find);
         });
 
       return has_matching_imports || has_matching_requires;
     });
-
-  console.log(matching_codependents);
 
   return matching_codependents.map(([matching_codependent_path]) => {
       return matching_codependent_path.replace(
