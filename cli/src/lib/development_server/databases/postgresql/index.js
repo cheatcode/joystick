@@ -63,8 +63,8 @@ const start_postgresql = async (port = 2610) => {
   // }
 
   try {
-    const joystick_pg_ctl_path = `${os.homedir()}/.joystick/databases/postgresql/bin/pg_ctl`;
-    const joystick_createdb_path = `${os.homedir()}/.joystick/databases/postgresql/bin/createdb`;
+    const joystick_pg_ctl_path = `${os.homedir()}/.joystick/databases/postgresql/bin/bin/pg_ctl`;
+    const joystick_createdb_path = `${os.homedir()}/.joystick/databases/postgresql/bin/bin/createdb`;
     const data_directory_exists = await setup_data_directory(port);
 
     if (!data_directory_exists) {
