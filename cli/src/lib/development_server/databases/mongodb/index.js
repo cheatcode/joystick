@@ -77,7 +77,7 @@ const start_mongodb_process = (mongodb_port = 2610, mongodb_windows_versions = [
         const mongo_shell_command = get_mongo_shell_command();
         const joystick_mongo_path = `${os.homedir()}/.joystick/databases/mongodb/bin/bin/${mongo_shell_command}`;
         child_process.exec(`${joystick_mongo_path} --eval "rs.initiate()" --verbose --port ${mongodb_port}`, async (error, _stdout, _stderr) => {
-          if (error && !error.includes('already initialized')) {
+          if (error && !error?.message?.includes('already initialized')) {
             console.log(error);
           }
 
