@@ -61,7 +61,7 @@ const start_mongodb_process = (mongodb_port = 2610, mongodb_windows_versions = [
       '--dbpath',
       get_platform_safe_path(`./.joystick/data/mongodb_${mongodb_port}`),
       '--quiet',
-      '--replSet',
+      // '--replSet',
       `joystick_${mongodb_port}`,
     ];
 
