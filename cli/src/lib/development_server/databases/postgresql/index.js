@@ -41,7 +41,7 @@ const start_postgresql = async (port = 2610) => {
   try {
     const joystick_pg_ctl_command = get_pg_ctl_command();
     const joystick_createdb_command = get_createdb_command();
-    const joystick_pg_ctl_path = `${os.platform() === 'linux' ? 'sudo -u postgres ' : ''}${os.homedir()}/.joystick/databases/postgresql/bin/bin/${joystick_pg_ctl_command}`;
+    const joystick_pg_ctl_path = `${os.platform() === 'linux' ? 'sudo -u joystick ' : ''}${os.homedir()}/.joystick/databases/postgresql/bin/bin/${joystick_pg_ctl_command}`;
     const joystick_createdb_path = `${os.homedir()}/.joystick/databases/postgresql/bin/bin/${joystick_createdb_command}`;
     const data_directory_exists = await setup_data_directory(port);
 
