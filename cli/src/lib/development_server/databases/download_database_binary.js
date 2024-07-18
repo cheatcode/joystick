@@ -44,6 +44,39 @@ const extract_and_build = async (database_name_lowercase, file_path, base_direct
       await fs.promises.copyFile(redis_server_path, path.join(bin_directory, 'redis-server'));
       await fs.promises.copyFile(redis_cli_path, path.join(bin_directory, 'redis-cli'));
     }
+  } else if (database_name_lowercase === 'postgresql' && platform === 'linux') {
+    await execFileAsync('tar', ['-xzf', file_path, '-C', base_directory, '--strip-components=1']);
+    await fs.promises.unlink(file_path);
+
+    try {
+      // Check for necessary build tools
+      await execFileAsync('gcc', ['--version']);
+      await execFileAsync('make', ['--version']);
+    } catch (error) {
+      console.error('Error: Required build tools (gcc, make) are not available.');
+      console.error('Please install build essentials. For example, on Ubuntu or Debian:');
+      console.error('sudo apt-get update && sudo apt-get install build-essential');
+      throw error;
+    }
+
+    try {
+      const build_directory = path.join(base_directory, 'build');
+      await fs.promises.mkdir(build_directory, { recursive: true });
+      
+      // Configure
+      await execFileAsync('./configure', ['--prefix=' + bin_directory], { cwd: base_directory });
+      
+      // Build
+      await execFileAsync('make', [], { cwd: base_directory });
+      
+      // Install
+      await execFileAsync('make', ['install'], { cwd: base_directory });
+
+      console.log('PostgreSQL has been successfully built and installed.');
+    } catch (error) {
+      console.error('Error during PostgreSQL build process:', error);
+      throw error;
+    }
   } else {
     if (platform === 'win32') {
       const temp_directory = path.join(base_directory, 'temp');
@@ -129,23 +162,23 @@ const get_download_url = async (database_name_lowercase, version_path, is_mongos
   const default_urls = {
     mongodb: {
       win32: {
-        main: 'https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-6.0.5.zip',
-        mongosh: 'https://downloads.mongodb.com/compass/mongosh-1.8.0-win32-x64.zip'
+        main: 'https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-7.0.2.zip',
+        mongosh: 'https://downloads.mongodb.com/compass/mongosh-2.0.2-win32-x64.zip'
       },
       darwin: cpu_info.includes('ARM') 
-        ? 'https://fastdl.mongodb.org/osx/mongodb-macos-arm64-6.0.5.tgz'
-        : 'https://fastdl.mongodb.org/osx/mongodb-macos-x86_64-6.0.5.tgz',
-      linux: 'https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-ubuntu2004-6.0.5.tgz',
+        ? 'https://fastdl.mongodb.org/osx/mongodb-macos-arm64-7.0.2.tgz'
+        : 'https://fastdl.mongodb.org/osx/mongodb-macos-x86_64-7.0.2.tgz',
+      linux: 'https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-ubuntu2204-7.0.2.tgz',
     },
     redis: {
       win32: 'https://github.com/tporadowski/redis/releases/download/v5.0.14.1/Redis-x64-5.0.14.1.zip',
-      darwin: 'https://download.redis.io/releases/redis-6.2.6.tar.gz',
-      linux: 'https://download.redis.io/releases/redis-6.2.6.tar.gz',
+      darwin: 'https://download.redis.io/releases/redis-7.2.3.tar.gz',
+      linux: 'https://download.redis.io/releases/redis-7.2.3.tar.gz',
     },
     postgresql: {
-      win32: 'https://get.enterprisedb.com/postgresql/postgresql-14.7-1-windows-x64-binaries.zip',
-      darwin: 'https://get.enterprisedb.com/postgresql/postgresql-14.7-1-osx-binaries.zip',
-      linux: 'https://ftp.postgresql.org/pub/source/v14.7/postgresql-14.7.tar.gz',
+      win32: 'https://get.enterprisedb.com/postgresql/postgresql-16.0-1-windows-x64-binaries.zip',
+      darwin: 'https://get.enterprisedb.com/postgresql/postgresql-16.0-1-osx-binaries.zip',
+      linux: 'https://ftp.postgresql.org/pub/source/v16.0/postgresql-16.0.tar.gz',
     },
   };
 
