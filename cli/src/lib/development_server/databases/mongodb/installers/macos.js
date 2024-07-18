@@ -8,7 +8,7 @@ import { execFile } from 'child_process';
 const streamPipeline = promisify(pipeline);
 const execFileAsync = promisify(execFile);
 
-const download_mongodb_macos = async () => {
+const download_mongodb_macos = async (version_path = null) => {
   const base_directory = path.join(os.homedir(), '.joystick', 'databases', 'mongodb');
   const bin_directory = path.join(base_directory, 'bin');
 
@@ -35,15 +35,9 @@ const download_mongodb_macos = async () => {
   const mongosh_file_name = path.basename(new URL(mongosh_url).pathname);
   const mongosh_file_path = path.join(base_directory, mongosh_file_name);
 
-  if (!(await check_if_file_exists(mongodb_file_path))) {
-    process.loader.print('MongoDB not found. Downloading...');
-    await download_file(mongodb_url, mongodb_file_path);
-  }
-
-  if (!(await check_if_file_exists(mongosh_file_path))) {
-    process.loader.print('MongoDB Shell not found. Downloading...');
-    await download_file(mongosh_url, mongosh_file_path);
-  }
+  process.loader.print('MongoDB not found. Downloading... (patience is a virtue—it\'s chonky)');
+  await download_file(mongodb_url, mongodb_file_path);
+  await download_file(mongosh_url, mongosh_file_path);
 
   process.loader.print('Installing MongoDB...');
   
@@ -55,9 +49,15 @@ const download_mongodb_macos = async () => {
   await fs.promises.mkdir(mongosh_temp_directory, { recursive: true });
   await execFileAsync('unzip', ['-q', mongosh_file_path, '-d', mongosh_temp_directory]);
   
-  // Copy mongosh to bin/bin directory
-  const mongosh_bin_path = path.join(mongosh_temp_directory, 'mongosh');
-  const final_mongosh_path = path.join(bin_directory, 'bin', 'mongosh');
+  // Find and copy mongosh executable
+  const mongosh_contents = await fs.promises.readdir(mongosh_temp_directory);
+  const mongosh_dir = mongosh_contents.find(item => item.startsWith('mongosh-'));
+  if (!mongosh_dir) {
+    throw new Error('Could not find mongosh directory in extracted contents');
+  }
+  
+  const mongosh_bin_path = path.join(mongosh_temp_directory, mongosh_dir, 'bin', 'mongosh');
+  const final_mongosh_path = path.join(bin_directory, 'mongosh');
   await fs.promises.copyFile(mongosh_bin_path, final_mongosh_path);
 
   // Clean up
@@ -101,8 +101,6 @@ const make_file_executable = async (bin_directory) => {
   for (const file of files) {
     await fs.promises.chmod(path.join(bin_directory, file), '755');
   }
-  // Make sure to set executable permission for mongosh in bin/bin
-  await fs.promises.chmod(path.join(bin_directory, 'bin', 'mongosh'), '755');
 };
 
 export default download_mongodb_macos;
