@@ -46,7 +46,12 @@ const extract_and_build = async (database_name_lowercase, file_path, base_direct
    }
  } else {
    if (platform === 'win32') {
-     await execFileAsync('powershell', ['Expand-Archive', '-Path', file_path, '-DestinationPath', bin_directory]);
+     const temp_directory = path.join(base_directory, 'temp');
+     await execFileAsync('powershell', ['Expand-Archive', '-Path', file_path, '-DestinationPath', temp_directory]);
+     const extracted_folder = (await fs.promises.readdir(temp_directory))[0];
+     const extracted_bin_path = path.join(temp_directory, extracted_folder, 'bin');
+     await fs.promises.rename(extracted_bin_path, bin_directory);
+     await fs.promises.rm(temp_directory, { recursive: true, force: true });
    } else {
      await execFileAsync('tar', ['-xzf', file_path, '-C', bin_directory, '--strip-components=1']);
    }
