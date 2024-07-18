@@ -57,14 +57,24 @@ const extract_and_build = async (database_name_lowercase, file_path, base_direct
   } else if (database_name_lowercase === 'postgresql') {
     if (platform === 'win32') {
       await execFileAsync('powershell', ['Expand-Archive', '-Path', file_path, '-DestinationPath', temp_directory]);
-      const extracted_folder = (await fs.promises.readdir(temp_directory))[0];
-      const extracted_bin_path = path.join(temp_directory, extracted_folder, 'bin');
-      await fs.promises.cp(extracted_bin_path, bin_directory, { recursive: true });
     } else {
       await execFileAsync('tar', ['-xzf', file_path, '-C', temp_directory]);
-      const extracted_folder = (await fs.promises.readdir(temp_directory))[0];
-      const extracted_bin_path = path.join(temp_directory, extracted_folder, 'bin');
-      await fs.promises.cp(extracted_bin_path, bin_directory, { recursive: true });
+    }
+    const extracted_folder = (await fs.promises.readdir(temp_directory))[0];
+    const extracted_bin_path = path.join(temp_directory, extracted_folder, 'bin');
+    
+    // Copy all files from extracted_bin_path to bin_directory
+    const files = await fs.promises.readdir(extracted_bin_path);
+    for (const file of files) {
+      await fs.promises.copyFile(path.join(extracted_bin_path, file), path.join(bin_directory, file));
+    }
+    
+    // If 'postmaster' doesn't exist, it might be named 'postgres'
+    if (!await fs.promises.access(path.join(bin_directory, 'postmaster')).then(() => true).catch(() => false)) {
+      const postgres_path = path.join(bin_directory, 'postgres');
+      if (await fs.promises.access(postgres_path).then(() => true).catch(() => false)) {
+        await fs.promises.symlink(postgres_path, path.join(bin_directory, 'postmaster'));
+      }
     }
   } else { // MongoDB and others
     if (platform === 'win32') {
