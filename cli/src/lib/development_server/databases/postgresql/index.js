@@ -84,7 +84,9 @@ const start_postgresql = async (port = 2610) => {
     if (!data_directory_exists) {
       await exec(
         `${joystick_pg_ctl_path} init -D .joystick/data/postgresql_${port} --options=--no-locale`
-      );
+      ).catch((error) => {
+        console.warn(error);
+      });
     }
 
     const postgresql_port = port;
@@ -109,6 +111,8 @@ const start_postgresql = async (port = 2610) => {
       database_process.stderr.on('data', async (data) => {
         const stderr = data?.toString();
 
+        console.log(stderr);
+
         if (!stderr?.includes('another server might be running')) {
           console.warn(stderr);
         }
@@ -117,12 +121,15 @@ const start_postgresql = async (port = 2610) => {
       database_process.stdout.on('data', async (data) => {
         const stdout = data?.toString();
 
+        console.log(stdout);
+
         if (stdout.includes('database system is ready to accept connections')) {
           const process_id = (await get_process_id_from_port(postgresql_port))?.replace('\n', '');
 
           exec(`${joystick_createdb_path} -h 127.0.0.1 -p ${postgresql_port} app`).then((data) => {
             resolve(parseInt(process_id, 10));
           }).catch(({ stderr: error }) => {
+            console.log(error);
             // NOTE: PostgreSQL does not have a clean way to create database if it doesn't exist. Use this as a hack
             // to get around the "already exists" error (if the database exists, it's not an issue).
             if (error && error.includes('database "app" already exists')) {
