@@ -52,7 +52,6 @@ const extract_and_build = async (database_name_lowercase, file_path, base_direct
       const requiredPackages = [
         'gcc',
         'make',
-        'libicu-dev',
         'libreadline-dev',
         'zlib1g-dev'
       ];
@@ -75,8 +74,8 @@ const extract_and_build = async (database_name_lowercase, file_path, base_direct
       const build_directory = path.join(base_directory, 'build');
       await fs.promises.mkdir(build_directory, { recursive: true });
       
-      // Configure
-      await execFileAsync('./configure', ['--prefix=' + bin_directory], { cwd: base_directory });
+      // Configure without ICU support
+      await execFileAsync('./configure', ['--prefix=' + bin_directory, '--without-icu'], { cwd: base_directory });
       
       // Build
       await execFileAsync('make', [], { cwd: base_directory });
