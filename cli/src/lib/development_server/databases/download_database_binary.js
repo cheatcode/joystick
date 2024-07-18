@@ -83,13 +83,10 @@ const extract_and_build = async (database_name_lowercase, file_path, base_direct
         // Clean up mongosh temporary files
         await fs.promises.unlink(mongosh_file_path);
         await fs.promises.rm(mongosh_temp_directory, { recursive: true, force: true });
-      }
-     
-      // Verify that required files are present
-      const required_files = ['mongod.exe', 'mongo.exe', 'mongosh.exe'];
-      for (const file of required_files) {
-        if (!await fs.promises.access(path.join(final_bin_path, file)).then(() => true).catch(() => false)) {
-          throw new Error(`Required file ${file} not found in the extracted MongoDB files.`);
+
+        // Verify that mongosh.exe is present
+        if (!await fs.promises.access(path.join(final_bin_path, 'mongosh.exe')).then(() => true).catch(() => false)) {
+          throw new Error('Required file mongosh.exe not found in the extracted MongoDB files.');
         }
       }
      
