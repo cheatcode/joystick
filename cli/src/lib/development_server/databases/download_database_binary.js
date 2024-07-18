@@ -2,16 +2,22 @@ import os from 'os';
 import mongodb_macos from './mongodb/installers/macos.js';
 import mongodb_windows from './mongodb/installers/windows.js';
 import mongodb_linux from './mongodb/installers/linux.js';
+import postgresql_macos from './postgresql/installers/macos.js';
+import postgresql_windows from './postgresql/installers/windows.js';
+import postgresql_linux from './postgresql/installers/linux.js';
 
 const installers = {
   darwin: {
     mongodb: mongodb_macos,
+    postgresql: postgresql_macos,
   },
   win32: {
     mongodb: mongodb_windows,
+    postgresql: postgresql_windows,
   },
   linux: {
     mongodb: mongodb_linux,
+    postgresql: postgresql_linux,
   },
 };
 
