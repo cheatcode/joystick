@@ -77,7 +77,11 @@ const start_mongodb_process = (mongodb_port = 2610, mongodb_windows_versions = [
         const mongo_shell_command = get_mongo_shell_command();
         const joystick_mongo_path = `${os.homedir()}/.joystick/databases/mongodb/bin/bin/${mongo_shell_command}`;
         child_process.exec(`${joystick_mongo_path} --eval "rs.initiate()" --verbose --port ${mongodb_port}`, async (error, _stdout, stderr) => {
-          console.log(_stdout);
+          console.log({
+            error,
+            _stdout,
+            stderr,
+          });
           const process_id = await get_process_id_from_port(mongodb_port);
           return resolve(parseInt(process_id, 10));
         });
