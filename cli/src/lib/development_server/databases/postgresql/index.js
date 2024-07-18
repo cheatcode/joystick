@@ -111,8 +111,6 @@ const start_postgresql = async (port = 2610) => {
       database_process.stderr.on('data', async (data) => {
         const stderr = data?.toString();
 
-        console.log(stderr);
-
         if (!stderr?.includes('another server might be running')) {
           console.warn(stderr);
         }
@@ -120,8 +118,6 @@ const start_postgresql = async (port = 2610) => {
 
       database_process.stdout.on('data', async (data) => {
         const stdout = data?.toString();
-
-        console.log(stdout);
 
         if (stdout.includes('database system is ready to accept connections')) {
           const process_id = (await get_process_id_from_port(postgresql_port))?.replace('\n', '');
