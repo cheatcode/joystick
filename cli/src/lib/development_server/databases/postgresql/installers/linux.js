@@ -19,6 +19,9 @@ const download_postgresql_linux = async (version_path = null) => {
 
   await create_directories(base_directory, bin_directory, bin_bin_directory);
 
+  // Create joystick user if it doesn't exist
+  await create_joystick_user();
+
   const download_url = 'https://ftp.postgresql.org/pub/source/v16.0/postgresql-16.0.tar.gz';
   const file_name = path.basename(new URL(download_url).pathname);
   const file_path = path.join(base_directory, file_name);
@@ -58,12 +61,42 @@ const download_postgresql_linux = async (version_path = null) => {
     throw error;
   }
 
+  // Set permissions for joystick user
+  await set_permissions_for_joystick_user(bin_directory);
+
   // Clean up
   await fs.promises.unlink(file_path);
   await fs.promises.rm(extracted_dir, { recursive: true, force: true });
 
   await make_file_executable(bin_bin_directory);
   process.loader.print('PostgreSQL installed!');
+};
+
+const create_joystick_user = async () => {
+  try {
+    await execFileAsync('id', ['-u', 'joystick']);
+    console.log('Joystick user already exists');
+  } catch (error) {
+    console.log('Creating joystick user...');
+    try {
+      await execFileAsync('sudo', ['useradd', '-m', 'joystick']);
+      console.log('Joystick user created successfully');
+    } catch (error) {
+      console.error('Error creating joystick user:', error);
+      throw error;
+    }
+  }
+};
+
+const set_permissions_for_joystick_user = async (bin_directory) => {
+  try {
+    await execFileAsync('sudo', ['chown', '-R', 'joystick:joystick', bin_directory]);
+    await execFileAsync('sudo', ['chmod', '-R', '755', bin_directory]);
+    console.log('Permissions set for joystick user');
+  } catch (error) {
+    console.error('Error setting permissions for joystick user:', error);
+    throw error;
+  }
 };
 
 const check_dependencies = async () => {
