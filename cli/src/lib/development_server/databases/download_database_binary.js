@@ -27,20 +27,20 @@ const make_file_executable = async (bin_directory) => {
 
 const extract_and_build = async (database_name_lowercase, file_path, base_directory, bin_directory) => {
   const platform = os.platform();
-  
+ 
   if (database_name_lowercase === 'redis') {
     if (platform === 'win32') {
       await execFileAsync('powershell', ['Expand-Archive', '-Path', file_path, '-DestinationPath', bin_directory]);
     } else {
       await execFileAsync('tar', ['-xzf', file_path, '-C', base_directory, '--strip-components=1']);
       await fs.promises.unlink(file_path);
-      
+     
       const build_directory = path.join(base_directory, 'src');
       await execFileAsync('make', ['-C', build_directory]);
-      
+     
       const redis_server_path = path.join(build_directory, 'redis-server');
       const redis_cli_path = path.join(build_directory, 'redis-cli');
-      
+     
       await fs.promises.copyFile(redis_server_path, path.join(bin_directory, 'redis-server'));
       await fs.promises.copyFile(redis_cli_path, path.join(bin_directory, 'redis-cli'));
     }
@@ -50,22 +50,30 @@ const extract_and_build = async (database_name_lowercase, file_path, base_direct
       await execFileAsync('powershell', ['Expand-Archive', '-Path', file_path, '-DestinationPath', temp_directory]);
       const extracted_folder = (await fs.promises.readdir(temp_directory))[0];
       const extracted_bin_path = path.join(temp_directory, extracted_folder, 'bin');
-      
+     
       // Remove existing bin directory if it exists
       if (await fs.promises.access(bin_directory).then(() => true).catch(() => false)) {
         await fs.promises.rm(bin_directory, { recursive: true, force: true });
       }
-      
+     
       // Create the bin/bin structure
       const final_bin_path = path.join(bin_directory, 'bin');
       await fs.promises.mkdir(final_bin_path, { recursive: true });
-      
-      // Move the contents of the extracted bin directory to the final bin/bin location
+     
+      // Copy all files from the extracted bin directory to the final bin/bin location
       const files = await fs.promises.readdir(extracted_bin_path);
       for (const file of files) {
-        await fs.promises.rename(path.join(extracted_bin_path, file), path.join(final_bin_path, file));
+        await fs.promises.copyFile(path.join(extracted_bin_path, file), path.join(final_bin_path, file));
       }
-      
+     
+      // Verify that mongod.exe and mongo.exe are present
+      const required_files = ['mongod.exe', 'mongo.exe'];
+      for (const file of required_files) {
+        if (!await fs.promises.access(path.join(final_bin_path, file)).then(() => true).catch(() => false)) {
+          throw new Error(`Required file ${file} not found in the extracted MongoDB files.`);
+        }
+      }
+     
       // Clean up temporary directory
       await fs.promises.rm(temp_directory, { recursive: true, force: true });
     } else {
@@ -73,7 +81,7 @@ const extract_and_build = async (database_name_lowercase, file_path, base_direct
     }
     await fs.promises.unlink(file_path);
   }
- };
+};
 
 const download_file = async (url, file_path) => {
   const response = await fetch(url);
