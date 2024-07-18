@@ -26,72 +26,46 @@ const make_file_executable = async (bin_directory) => {
 };
 
 const extract_and_build = async (database_name_lowercase, file_path, base_directory, bin_directory) => {
-  const platform = os.platform();
-  
-  // Remove existing bin directory if it exists
-  if (await fs.promises.access(bin_directory).then(() => true).catch(() => false)) {
-    await fs.promises.rm(bin_directory, { recursive: true, force: true });
-  }
-  
-  // Create a new empty bin directory
-  await fs.promises.mkdir(bin_directory, { recursive: true });
-
-  const temp_directory = path.join(base_directory, 'temp');
-  await fs.promises.mkdir(temp_directory, { recursive: true });
-
-  if (database_name_lowercase === 'redis') {
-    if (platform === 'win32') {
-      await execFileAsync('powershell', ['Expand-Archive', '-Path', file_path, '-DestinationPath', bin_directory]);
-    } else {
-      await execFileAsync('tar', ['-xzf', file_path, '-C', temp_directory, '--strip-components=1']);
-      
-      const build_directory = path.join(temp_directory, 'src');
-      await execFileAsync('make', ['-C', build_directory]);
-      
-      const redis_server_path = path.join(build_directory, 'redis-server');
-      const redis_cli_path = path.join(build_directory, 'redis-cli');
-      
-      await fs.promises.copyFile(redis_server_path, path.join(bin_directory, 'redis-server'));
-      await fs.promises.copyFile(redis_cli_path, path.join(bin_directory, 'redis-cli'));
-    }
-  } else if (database_name_lowercase === 'postgresql') {
-    if (platform === 'win32') {
-      await execFileAsync('powershell', ['Expand-Archive', '-Path', file_path, '-DestinationPath', temp_directory]);
-    } else {
-      await execFileAsync('tar', ['-xzf', file_path, '-C', temp_directory]);
-    }
-    const extracted_folder = (await fs.promises.readdir(temp_directory))[0];
-    const extracted_bin_path = path.join(temp_directory, extracted_folder, 'bin');
-    
-    // Copy all files from extracted_bin_path to bin_directory
-    const files = await fs.promises.readdir(extracted_bin_path);
-    for (const file of files) {
-      await fs.promises.copyFile(path.join(extracted_bin_path, file), path.join(bin_directory, file));
-    }
-    
-    // If 'postmaster' doesn't exist, it might be named 'postgres'
-    if (!await fs.promises.access(path.join(bin_directory, 'postmaster')).then(() => true).catch(() => false)) {
-      const postgres_path = path.join(bin_directory, 'postgres');
-      if (await fs.promises.access(postgres_path).then(() => true).catch(() => false)) {
-        await fs.promises.symlink(postgres_path, path.join(bin_directory, 'postmaster'));
-      }
-    }
-  } else { // MongoDB and others
-    if (platform === 'win32') {
-      await execFileAsync('powershell', ['Expand-Archive', '-Path', file_path, '-DestinationPath', temp_directory]);
-      const extracted_folder = (await fs.promises.readdir(temp_directory))[0];
-      const extracted_bin_path = path.join(temp_directory, extracted_folder, 'bin');
-      await fs.promises.cp(extracted_bin_path, bin_directory, { recursive: true });
-    } else {
-      await execFileAsync('tar', ['-xzf', file_path, '-C', bin_directory, '--strip-components=1']);
-    }
-  }
-
-  // Clean up temp directory
-  await fs.promises.rm(temp_directory, { recursive: true, force: true });
-
-  // Remove the downloaded archive
-  await fs.promises.unlink(file_path);
+ const platform = os.platform();
+ 
+ if (database_name_lowercase === 'redis') {
+   if (platform === 'win32') {
+     await execFileAsync('powershell', ['Expand-Archive', '-Path', file_path, '-DestinationPath', bin_directory]);
+   } else {
+     await execFileAsync('tar', ['-xzf', file_path, '-C', base_directory, '--strip-components=1']);
+     await fs.promises.unlink(file_path);
+     
+     const build_directory = path.join(base_directory, 'src');
+     await execFileAsync('make', ['-C', build_directory]);
+     
+     const redis_server_path = path.join(build_directory, 'redis-server');
+     const redis_cli_path = path.join(build_directory, 'redis-cli');
+     
+     await fs.promises.copyFile(redis_server_path, path.join(bin_directory, 'redis-server'));
+     await fs.promises.copyFile(redis_cli_path, path.join(bin_directory, 'redis-cli'));
+   }
+ } else {
+   if (platform === 'win32') {
+     const temp_directory = path.join(base_directory, 'temp');
+     await execFileAsync('powershell', ['Expand-Archive', '-Path', file_path, '-DestinationPath', temp_directory]);
+     const extracted_folder = (await fs.promises.readdir(temp_directory))[0];
+     const extracted_bin_path = path.join(temp_directory, extracted_folder, 'bin');
+     
+     // Remove existing bin directory if it exists
+     if (await fs.promises.access(bin_directory).then(() => true).catch(() => false)) {
+       await fs.promises.rm(bin_directory, { recursive: true, force: true });
+     }
+     
+     // Move the extracted bin directory to the final location
+     await fs.promises.rename(extracted_bin_path, bin_directory);
+     
+     // Clean up temporary directory
+     await fs.promises.rm(temp_directory, { recursive: true, force: true });
+   } else {
+     await execFileAsync('tar', ['-xzf', file_path, '-C', bin_directory, '--strip-components=1']);
+   }
+   await fs.promises.unlink(file_path);
+ }
 };
 
 const download_file = async (url, file_path) => {
