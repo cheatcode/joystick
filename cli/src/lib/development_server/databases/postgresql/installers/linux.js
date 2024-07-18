@@ -23,7 +23,7 @@ const download_postgresql_linux = async (version_path = null) => {
   const file_name = path.basename(new URL(download_url).pathname);
   const file_path = path.join(base_directory, file_name);
 
-  process.loader.print('PostgreSQL not found. Downloading... (this may take a few minutes)');
+  process.loader.print('PostgreSQL not found. Downloading...');
   await download_file(download_url, file_path);
 
   process.loader.print('Installing PostgreSQL...');
@@ -37,9 +37,26 @@ const download_postgresql_linux = async (version_path = null) => {
   await check_dependencies();
 
   // Configure and build
-  await execFileAsync('./configure', ['--prefix=' + bin_directory], { cwd: extracted_dir });
-  await execFileAsync('make', [], { cwd: extracted_dir });
-  await execFileAsync('make', ['install'], { cwd: extracted_dir });
+  try {
+    await execFileAsync('./configure', ['--prefix=' + bin_directory, '--without-icu'], { cwd: extracted_dir });
+  } catch (error) {
+    console.error('Error during PostgreSQL configuration:', error);
+    throw error;
+  }
+
+  try {
+    await execFileAsync('make', [], { cwd: extracted_dir });
+  } catch (error) {
+    console.error('Error during PostgreSQL build:', error);
+    throw error;
+  }
+
+  try {
+    await execFileAsync('make', ['install'], { cwd: extracted_dir });
+  } catch (error) {
+    console.error('Error during PostgreSQL installation:', error);
+    throw error;
+  }
 
   // Clean up
   await fs.promises.unlink(file_path);
