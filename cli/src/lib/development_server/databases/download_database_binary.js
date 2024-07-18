@@ -29,7 +29,21 @@ const extract_and_build = async (database_name_lowercase, file_path, base_direct
   const platform = os.platform();
  
   if (database_name_lowercase === 'redis') {
-    // ... (Redis handling remains unchanged)
+    if (platform === 'win32') {
+      await execFileAsync('powershell', ['Expand-Archive', '-Path', file_path, '-DestinationPath', bin_directory]);
+    } else {
+      await execFileAsync('tar', ['-xzf', file_path, '-C', base_directory, '--strip-components=1']);
+      await fs.promises.unlink(file_path);
+     
+      const build_directory = path.join(base_directory, 'src');
+      await execFileAsync('make', ['-C', build_directory]);
+     
+      const redis_server_path = path.join(build_directory, 'redis-server');
+      const redis_cli_path = path.join(build_directory, 'redis-cli');
+     
+      await fs.promises.copyFile(redis_server_path, path.join(bin_directory, 'redis-server'));
+      await fs.promises.copyFile(redis_cli_path, path.join(bin_directory, 'redis-cli'));
+    }
   } else {
     if (platform === 'win32') {
       const temp_directory = path.join(base_directory, 'temp');
@@ -42,25 +56,10 @@ const extract_and_build = async (database_name_lowercase, file_path, base_direct
         await fs.promises.rm(bin_directory, { recursive: true, force: true });
       }
      
-      // Create the bin/bin structure
-      const final_bin_path = path.join(bin_directory, 'bin');
-      await fs.promises.mkdir(final_bin_path, { recursive: true });
-     
-      // Copy the bin contents to the final bin/bin location
-      const extracted_bin_path = path.join(extracted_path, 'bin');
-      await fs.promises.cp(extracted_bin_path, final_bin_path, { recursive: true });
+      // Copy the entire contents of the extracted folder to the bin directory
+      await fs.promises.cp(extracted_path, bin_directory, { recursive: true });
 
-      // Copy other necessary directories (like 'share') to the base directory
-      const directories_to_copy = ['share', 'lib'];
-      for (const dir of directories_to_copy) {
-        const src_path = path.join(extracted_path, dir);
-        const dest_path = path.join(base_directory, dir);
-        if (await fs.promises.access(src_path).then(() => true).catch(() => false)) {
-          await fs.promises.cp(src_path, dest_path, { recursive: true });
-        }
-      }
-     
-      // Download and extract mongosh for MongoDB
+      // Special handling for MongoDB (mongosh)
       if (database_name_lowercase === 'mongodb') {
         const mongosh_url = await get_download_url('mongodb', null, true);
         const mongosh_file_path = path.join(base_directory, 'mongosh.zip');
@@ -72,14 +71,14 @@ const extract_and_build = async (database_name_lowercase, file_path, base_direct
         const mongosh_extracted_folder = (await fs.promises.readdir(mongosh_temp_directory))[0];
         const mongosh_bin_path = path.join(mongosh_temp_directory, mongosh_extracted_folder, 'bin', 'mongosh.exe');
         
-        await fs.promises.copyFile(mongosh_bin_path, path.join(final_bin_path, 'mongosh.exe'));
+        await fs.promises.copyFile(mongosh_bin_path, path.join(bin_directory, 'bin', 'mongosh.exe'));
         
         // Clean up mongosh temporary files
         await fs.promises.unlink(mongosh_file_path);
         await fs.promises.rm(mongosh_temp_directory, { recursive: true, force: true });
 
         // Verify that mongosh.exe is present
-        if (!await fs.promises.access(path.join(final_bin_path, 'mongosh.exe')).then(() => true).catch(() => false)) {
+        if (!await fs.promises.access(path.join(bin_directory, 'bin', 'mongosh.exe')).then(() => true).catch(() => false)) {
           throw new Error('Required file mongosh.exe not found in the extracted MongoDB files.');
         }
       }
