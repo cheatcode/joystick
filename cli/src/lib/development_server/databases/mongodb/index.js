@@ -36,7 +36,7 @@ const get_mongodb_windows_versions = async () => {
 
 const get_mongo_shell_command = () => {
   if (process.platform === 'win32') {
-    return 'mongsh.exe';
+    return 'mongosh.exe';
   }
 
   return 'mongo';
