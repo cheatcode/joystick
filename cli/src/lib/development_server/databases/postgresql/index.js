@@ -38,8 +38,20 @@ const check_if_postgresql_exists = () => {
   return command_exists("psql");
 };
 
-const check_if_postgresql_control_exists = () => {
-  return command_exists("pg_ctl");
+const get_createdb_command = () => {
+  if (process.platform === 'win32') {
+    return 'createdb.exe';
+  }
+
+  return 'createdb';
+};
+
+const get_pg_ctl_command = () => {
+  if (process.platform === 'win32') {
+    return 'pg_ctl.exe';
+  }
+
+  return 'pg_ctl';
 };
 
 const start_postgresql = async (port = 2610) => {
@@ -63,8 +75,10 @@ const start_postgresql = async (port = 2610) => {
   // }
 
   try {
-    const joystick_pg_ctl_path = `${os.homedir()}/.joystick/databases/postgresql/bin/bin/pg_ctl`;
-    const joystick_createdb_path = `${os.homedir()}/.joystick/databases/postgresql/bin/bin/createdb`;
+    const joystick_pg_ctl_command = get_pg_ctl_command();
+    const joystick_createdb_command = get_createdb_command();
+    const joystick_pg_ctl_path = `${os.homedir()}/.joystick/databases/postgresql/bin/bin/${joystick_pg_ctl_command}`;
+    const joystick_createdb_path = `${os.homedir()}/.joystick/databases/postgresql/bin/bin/${joystick_createdb_command}`;
     const data_directory_exists = await setup_data_directory(port);
 
     if (!data_directory_exists) {
