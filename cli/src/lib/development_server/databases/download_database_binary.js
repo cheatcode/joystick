@@ -48,18 +48,30 @@ const extract_and_build = async (database_name_lowercase, file_path, base_direct
     await execFileAsync('tar', ['-xzf', file_path, '-C', base_directory, '--strip-components=1']);
     await fs.promises.unlink(file_path);
 
-    try {
-      // Check for necessary build tools
-      await execFileAsync('gcc', ['--version']);
-      await execFileAsync('make', ['--version']);
-    } catch (error) {
-      console.error('Error: Required build tools (gcc, make) are not available.');
-      console.error('Please install build essentials. For example, on Ubuntu or Debian:');
-      console.error('sudo apt-get update && sudo apt-get install build-essential');
-      throw error;
-    }
+    const checkDependencies = async () => {
+      const requiredPackages = [
+        'gcc',
+        'make',
+        'libicu-dev',
+        'libreadline-dev',
+        'zlib1g-dev'
+      ];
+
+      for (const pkg of requiredPackages) {
+        try {
+          await execFileAsync('dpkg', ['-s', pkg]);
+        } catch (error) {
+          console.error(`Required package '${pkg}' is not installed.`);
+          console.error('Please install the necessary dependencies. For Ubuntu or Debian, run:');
+          console.error(`sudo apt-get update && sudo apt-get install ${requiredPackages.join(' ')}`);
+          throw new Error('Missing dependencies');
+        }
+      }
+    };
 
     try {
+      await checkDependencies();
+
       const build_directory = path.join(base_directory, 'build');
       await fs.promises.mkdir(build_directory, { recursive: true });
       
