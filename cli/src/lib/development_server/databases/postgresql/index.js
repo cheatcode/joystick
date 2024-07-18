@@ -85,7 +85,9 @@ const start_postgresql = async (port = 2610) => {
       await exec(
         `${joystick_pg_ctl_path} init -D .joystick/data/postgresql_${port} --options=--no-locale`
       ).catch((error) => {
-        console.warn(error);
+        if (!error.includes('already exists')) {
+          console.warn(error);
+        }
       });
     }
 
