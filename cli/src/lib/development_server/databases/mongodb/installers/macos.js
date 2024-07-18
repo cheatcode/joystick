@@ -11,12 +11,13 @@ const execFileAsync = promisify(execFile);
 const download_mongodb_macos = async (version_path = null) => {
   const base_directory = path.join(os.homedir(), '.joystick', 'databases', 'mongodb');
   const bin_directory = path.join(base_directory, 'bin');
+  const bin_bin_directory = path.join(bin_directory, 'bin');
 
   if (await check_if_file_exists(base_directory)) {
     return;
   }
 
-  await create_directories(base_directory, bin_directory);
+  await create_directories(base_directory, bin_directory, bin_bin_directory);
 
   const cpu_info = await get_cpu_info();
   const is_arm = cpu_info.includes('ARM');
@@ -57,7 +58,7 @@ const download_mongodb_macos = async (version_path = null) => {
   }
   
   const mongosh_bin_path = path.join(mongosh_temp_directory, mongosh_dir, 'bin', 'mongosh');
-  const final_mongosh_path = path.join(bin_directory, 'mongosh');
+  const final_mongosh_path = path.join(bin_bin_directory, 'mongosh');
   await fs.promises.copyFile(mongosh_bin_path, final_mongosh_path);
 
   // Clean up
@@ -66,6 +67,7 @@ const download_mongodb_macos = async (version_path = null) => {
   await fs.promises.rm(mongosh_temp_directory, { recursive: true, force: true });
 
   await make_file_executable(bin_directory);
+  await make_file_executable(bin_bin_directory);
   process.loader.print('MongoDB and MongoDB Shell installed!');
 };
 
@@ -91,15 +93,16 @@ const get_cpu_info = async () => {
   return stdout.trim();
 };
 
-const create_directories = async (base_directory, bin_directory) => {
+const create_directories = async (base_directory, bin_directory, bin_bin_directory) => {
   await fs.promises.mkdir(base_directory, { recursive: true });
   await fs.promises.mkdir(bin_directory, { recursive: true });
+  await fs.promises.mkdir(bin_bin_directory, { recursive: true });
 };
 
-const make_file_executable = async (bin_directory) => {
-  const files = await fs.promises.readdir(bin_directory);
+const make_file_executable = async (directory) => {
+  const files = await fs.promises.readdir(directory);
   for (const file of files) {
-    await fs.promises.chmod(path.join(bin_directory, file), '755');
+    await fs.promises.chmod(path.join(directory, file), '755');
   }
 };
 
