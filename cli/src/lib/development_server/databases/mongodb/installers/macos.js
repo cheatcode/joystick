@@ -36,7 +36,7 @@ const download_mongodb_macos = async (version_path = null) => {
   const mongosh_file_name = path.basename(new URL(mongosh_url).pathname);
   const mongosh_file_path = path.join(base_directory, mongosh_file_name);
 
-  process.loader.print('MongoDB not found. Downloading... (patience is a virtue—it\'s chonky)');
+  process.loader.print('MongoDB not found. Downloading... (this may take a few minutes)');
   await download_file(mongodb_url, mongodb_file_path);
   await download_file(mongosh_url, mongosh_file_path);
 

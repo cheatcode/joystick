@@ -26,7 +26,7 @@ const download_mongodb_windows = async () => {
     return;
   }
 
-  process.loader.print('MongoDB not found. Downloading... (patience is a virtue—it\'s chonky)');
+  process.loader.print('MongoDB not found. Downloading... (this may take a few minutes)');
   await download_file(download_url, file_path);
   process.loader.print('Installing MongoDB...');
   
@@ -44,7 +44,7 @@ const download_mongodb_windows = async () => {
   await fs.promises.cp(extracted_path, bin_directory, { recursive: true });
 
   // Download and install mongosh
-  const mongosh_url = 'https://downloads.mongodb.com/compass/mongosh-2.0.2-win32-x64.zip';
+  const mongosh_url = 'https://downloads.mongodb.com/compass/mongosh-2.2.12-win32-x64.zip';
   const mongosh_file_path = path.join(base_directory, 'mongosh.zip');
   await download_file(mongosh_url, mongosh_file_path);
   

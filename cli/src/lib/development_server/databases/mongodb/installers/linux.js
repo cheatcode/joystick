@@ -26,7 +26,7 @@ const download_mongodb_linux = async () => {
     return;
   }
 
-  process.loader.print('MongoDB not found. Downloading... (patience is a virtue—it\'s chonky)');
+  process.loader.print('MongoDB not found. Downloading... (this may take a few minutes)');
   await download_file(download_url, file_path);
   process.loader.print('Installing MongoDB...');
   

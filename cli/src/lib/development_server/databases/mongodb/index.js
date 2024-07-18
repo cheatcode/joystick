@@ -1,38 +1,12 @@
 import child_process from "child_process";
 import fs from "fs";
 import os from "os";
-import cli_log from "../../../cli_log.js";
-import command_exists from '../../../command_exists.js';
 import get_platform_safe_path from '../../../get_platform_safe_path.js';
 import get_process_id_from_port from "../../../get_process_id_from_port.js";
 import kill_port_process from "../../../kill_port_process.js";
 import path_exists from "../../../path_exists.js";
 
-const { rename, readdir, mkdir } = fs.promises;
-
-const warn_mongodb_not_installed = () => {
-  cli_log(
-    ` MongoDB is not installed on this computer.\n\n Download MongoDB at https://www.mongodb.com/try/download/community\n\n After you've installed MongoDB, run joystick start again, or, remove MongoDB from your config.databases array in your settings.development.json file to skip starting it up.`,
-    {
-    	level: 'danger',
-    	docs: 'https://github.com/cheatcode/joystick#databases',
-  	}
-  );
-};
-
-const check_if_mongodb_exists = async () => {
-  if (process.platform === "win32") {
-    const mongodb_versions = await get_mongodb_windows_versions();
-    return mongodb_versions && mongodb_versions.length > 0;
-  }
-
-  return command_exists("mongod");
-};
-
-const get_mongodb_windows_versions = async () => {
-  const mongodb_versions = (await readdir(`C:\\Program Files\\MongoDB\\Server\\`));
-  return mongodb_versions;
-};
+const { rename, mkdir } = fs.promises;
 
 const get_mongo_shell_command = () => {
   if (process.platform === 'win32') {
@@ -50,7 +24,7 @@ const get_mongo_server_command = () => {
   return 'mongod';
 };
 
-const start_mongodb_process = (mongodb_port = 2610, mongodb_windows_versions = []) => {
+const start_mongodb_process = (mongodb_port = 2610) => {
   return new Promise((resolve) => {
     // TODO: Does this hold up on Linux?
     const mongo_server_command = get_mongo_server_command();
@@ -108,19 +82,11 @@ const setup_data_directory = async (mongodb_port = 2610) => {
 };
 
 const start_mongodb = async (mongodb_port = 2610) => {
-  // const mongodb_exists = await check_if_mongodb_exists();
-  const mongodb_windows_versions = process.platform === 'win32' ? await get_mongodb_windows_versions() : null;
-
-  // if (!mongodb_exists) {
-  //   warn_mongodb_not_installed();
-  //   process.exit(1);
-  // }
-
   await setup_data_directory(mongodb_port);
 
   try {
     await kill_port_process(mongodb_port);
-    const mongo_process_id = await start_mongodb_process(mongodb_port, mongodb_windows_versions);
+    const mongo_process_id = await start_mongodb_process(mongodb_port);
     return mongo_process_id;
   } catch (exception) {
     console.warn(exception);
