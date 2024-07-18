@@ -179,9 +179,9 @@ const download_database_binary = async (database_name_lowercase, version_path = 
     return;
   }
 
-  process.loader.print(`${database_name_map[database_name_lowercase]} not found. Downloading... (patience is a)`);
+  process.loader.print(`${database_name_map[database_name_lowercase]} not found. Downloading... (patience is a virtue—this may take a few minutes)`);
   await download_file(download_url, file_path);
-  process.loader.print(`Installing ${database_name_map[database_name_lowercase]}...`);
+  process.loader.print(`Installing ${database_name_map[database_name_lowercase]}... (more patience—a coffee, perhaps?)`);
   await extract_and_build(database_name_lowercase, file_path, base_directory, bin_directory);
   await make_file_executable(bin_directory);
   process.loader.print(`${database_name_map[database_name_lowercase]} installed!`);
