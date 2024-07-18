@@ -71,7 +71,7 @@ const download_mongodb_linux = async (version_path = null) => {
   await fs.promises.rm(path.join(base_directory, mongodb_extracted_dir), { recursive: true, force: true });
 
   await make_file_executable(bin_bin_directory);
-  process.loader.print('MongoDB and MongoDB Shell installed!');
+  process.loader.print('MongoDB installed!');
 };
 
 const download_file = async (url, file_path) => {

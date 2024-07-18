@@ -68,7 +68,7 @@ const download_mongodb_macos = async (version_path = null) => {
 
   await make_file_executable(bin_directory);
   await make_file_executable(bin_bin_directory);
-  process.loader.print('MongoDB and MongoDB Shell installed!');
+  process.loader.print('MongoDB installed!');
 };
 
 const download_file = async (url, file_path) => {

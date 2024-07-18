@@ -2,11 +2,8 @@ import child_process from "child_process";
 import fs from "fs";
 import util from "util";
 import os from "os";
-import cli_log from "../../../cli_log.js";
-import command_exists from "../../../command_exists.js";
 import get_platform_safe_path from "../../../get_platform_safe_path.js";
 import get_process_id_from_port from "../../../get_process_id_from_port.js";
-import kill_port_process from "../../../kill_port_process.js";
 import path_exists from "../../../path_exists.js";
 
 const exec = util.promisify(child_process.exec);
@@ -22,20 +19,6 @@ const setup_data_directory = async (postgresql_port = 2610) => {
   }
 
   return data_directory_exists;
-};
-
-const warn_postgresql_is_missing = () => {
-  cli_log(
-    'PostgreSQL is not installed on this computer. You can download PostgreSQL at https://www.postgresql.org/download. After you\'ve installed PostgreSQL, run joystick start again, or, remove PostgreSQL from your databases list in your settings.development.json file to skip startup.',
-    {
-      level: 'danger',
-      docs: 'https://cheatcode.co/docs/joystick/cli#databases'
-    }
-  );
-};
-
-const check_if_postgresql_exists = () => {
-  return command_exists("psql");
 };
 
 const get_createdb_command = () => {
@@ -55,25 +38,6 @@ const get_pg_ctl_command = () => {
 };
 
 const start_postgresql = async (port = 2610) => {
-  // const postgresql_exists = await check_if_postgresql_exists();
-
-  // if (!postgresql_exists) {
-  //   warn_postgresql_is_missing();
-  //   process.exit(1);
-  // }
-
-  // const postgresql_control_exists = await check_if_postgresql_control_exists();
-
-  // if (!postgresql_control_exists) {
-  //   cli_log(
-  //     'PostgreSQL is installed on this computer, but pg_ctl (what Joystick uses to start and manage PostgreSQL) is not in your command line\'s PATH variable. Add pg_ctl to your command line\'s PATH, restart your command line, and try again.',
-  //     {
-  //       level: 'danger',
-  //       docs: 'https://cheatcode.co/docs/joystick/postgresql#path'
-  //     }
-  //   );
-  // }
-
   try {
     const joystick_pg_ctl_command = get_pg_ctl_command();
     const joystick_createdb_command = get_createdb_command();

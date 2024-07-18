@@ -23,7 +23,7 @@ const download_postgresql_macos = async (version_path = null) => {
   const file_name = path.basename(new URL(download_url).pathname);
   const file_path = path.join(base_directory, file_name);
 
-  process.loader.print('PostgreSQL not found. Downloading...');
+  process.loader.print('PostgreSQL not found. Downloading... (this may take a few minutes)');
   await download_file(download_url, file_path);
 
   process.loader.print('Installing PostgreSQL...');
