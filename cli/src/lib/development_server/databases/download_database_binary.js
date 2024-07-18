@@ -15,12 +15,12 @@ const installers = {
   },
 };
 
-const download_database_binary = (database_name = '') => {
+const download_database_binary = async (database_name = '') => {
   const platform = os.platform();
   const installer = installers[platform] && installers[platform][database_name];
 
   if (typeof installer === 'function') {
-    installer();
+    await installer();
   } else {
     console.warn(`${database_name} not supported on ${platform}`);
   }
