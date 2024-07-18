@@ -68,7 +68,7 @@ const extract_and_build = async (database_name_lowercase, file_path, base_direct
      
       // Download and extract mongosh for MongoDB
       if (database_name_lowercase === 'mongodb') {
-        const mongosh_url = (await get_download_url('mongodb', null)).mongosh;
+        const mongosh_url = await get_download_url('mongodb', null, true);
         const mongosh_file_path = path.join(base_directory, 'mongosh.zip');
         await download_file(mongosh_url, mongosh_file_path);
         
@@ -127,7 +127,7 @@ const get_cpu_info = async () => {
   return os.arch();
 };
 
-const get_download_url = async (database_name_lowercase, version_path) => {
+const get_download_url = async (database_name_lowercase, version_path, is_mongosh = false) => {
   if (version_path) {
     const config = await fs.promises.readFile(version_path, 'utf-8');
     return JSON.parse(config)[database_name_lowercase].url;
@@ -159,6 +159,10 @@ const get_download_url = async (database_name_lowercase, version_path) => {
     },
   };
 
+  if (platform === 'win32' && database_name_lowercase === 'mongodb') {
+    return is_mongosh ? default_urls.mongodb.win32.mongosh : default_urls.mongodb.win32.main;
+  }
+
   return default_urls[database_name_lowercase][platform];
 };
 
@@ -178,8 +182,7 @@ const download_database_binary = async (database_name_lowercase, version_path = 
   await create_directories(base_directory, bin_directory);
 
   const download_url = await get_download_url(database_name_lowercase, version_path);
-  const main_url = typeof download_url === 'object' ? download_url.main : download_url;
-  const file_name = path.basename(new URL(main_url).pathname);
+  const file_name = path.basename(new URL(download_url).pathname);
   const file_path = path.join(base_directory, file_name);
 
   if (await check_if_file_exists(file_path)) {
@@ -187,7 +190,7 @@ const download_database_binary = async (database_name_lowercase, version_path = 
   }
 
   process.loader.print(`${database_name_map[database_name_lowercase]} not found. Downloading...`);
-  await download_file(main_url, file_path);
+  await download_file(download_url, file_path);
   process.loader.print(`Installing ${database_name_map[database_name_lowercase]}...`);
   await extract_and_build(database_name_lowercase, file_path, base_directory, bin_directory);
   await make_file_executable(bin_directory);
