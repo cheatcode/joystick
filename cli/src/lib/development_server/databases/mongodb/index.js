@@ -52,7 +52,7 @@ const get_mongo_server_command = () => {
 
 const start_mongodb_process = (mongodb_port = 2610, mongodb_windows_versions = []) => {
   return new Promise((resolve) => {
-    // TODO: Does this hold up on Windows + Linux?
+    // TODO: Does this hold up on Linux?
     const mongo_server_command = get_mongo_server_command();
     const joystick_mongod_path = `${os.homedir()}/.joystick/databases/mongodb/bin/bin/${mongo_server_command}`;
     const database_process_flags = [
@@ -76,12 +76,11 @@ const start_mongodb_process = (mongodb_port = 2610, mongodb_windows_versions = [
       if (stdout.includes('Waiting for connections')) {
         const mongo_shell_command = get_mongo_shell_command();
         const joystick_mongo_path = `${os.homedir()}/.joystick/databases/mongodb/bin/bin/${mongo_shell_command}`;
-        child_process.exec(`${joystick_mongo_path} --eval "rs.initiate()" --verbose --port ${mongodb_port}`, async (error, _stdout, stderr) => {
-          console.log({
-            error,
-            _stdout,
-            stderr,
-          });
+        child_process.exec(`${joystick_mongo_path} --eval "rs.initiate()" --verbose --port ${mongodb_port}`, async (error, _stdout, _stderr) => {
+          if (error) {
+            console.log(error);
+          }
+
           const process_id = await get_process_id_from_port(mongodb_port);
           return resolve(parseInt(process_id, 10));
         });
