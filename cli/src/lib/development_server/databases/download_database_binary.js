@@ -66,8 +66,27 @@ const extract_and_build = async (database_name_lowercase, file_path, base_direct
         await fs.promises.copyFile(path.join(extracted_bin_path, file), path.join(final_bin_path, file));
       }
      
-      // Verify that mongod.exe and mongo.exe are present
-      const required_files = ['mongod.exe', 'mongo.exe'];
+      // Download and extract mongosh for MongoDB
+      if (database_name_lowercase === 'mongodb') {
+        const mongosh_url = (await get_download_url('mongodb', null)).mongosh;
+        const mongosh_file_path = path.join(base_directory, 'mongosh.zip');
+        await download_file(mongosh_url, mongosh_file_path);
+        
+        const mongosh_temp_directory = path.join(base_directory, 'mongosh_temp');
+        await execFileAsync('powershell', ['Expand-Archive', '-Path', mongosh_file_path, '-DestinationPath', mongosh_temp_directory]);
+        
+        const mongosh_extracted_folder = (await fs.promises.readdir(mongosh_temp_directory))[0];
+        const mongosh_bin_path = path.join(mongosh_temp_directory, mongosh_extracted_folder, 'bin', 'mongosh.exe');
+        
+        await fs.promises.copyFile(mongosh_bin_path, path.join(final_bin_path, 'mongosh.exe'));
+        
+        // Clean up mongosh temporary files
+        await fs.promises.unlink(mongosh_file_path);
+        await fs.promises.rm(mongosh_temp_directory, { recursive: true, force: true });
+      }
+     
+      // Verify that required files are present
+      const required_files = ['mongod.exe', 'mongo.exe', 'mongosh.exe'];
       for (const file of required_files) {
         if (!await fs.promises.access(path.join(final_bin_path, file)).then(() => true).catch(() => false)) {
           throw new Error(`Required file ${file} not found in the extracted MongoDB files.`);
@@ -119,7 +138,10 @@ const get_download_url = async (database_name_lowercase, version_path) => {
 
   const default_urls = {
     mongodb: {
-      win32: 'https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-6.0.5.zip',
+      win32: {
+        main: 'https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-6.0.5.zip',
+        mongosh: 'https://downloads.mongodb.com/compass/mongosh-1.8.0-win32-x64.zip'
+      },
       darwin: cpu_info.includes('ARM') 
         ? 'https://fastdl.mongodb.org/osx/mongodb-macos-arm64-6.0.5.tgz'
         : 'https://fastdl.mongodb.org/osx/mongodb-macos-x86_64-6.0.5.tgz',
