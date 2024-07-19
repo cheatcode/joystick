@@ -116,18 +116,12 @@ const start_postgresql = async (port = 2610) => {
         get_platform_safe_path(`.joystick/data/postgresql_${port}`),
         'start',
       ],
-    ) : child_process.spawn('sudo',
-      [
-        '-u',
-        'postgres',
-        joystick_pg_ctl_path,
-        'start',
-        '-o',
-        `"-p ${postgresql_port}"`,
-        '-D',
-        get_platform_safe_path(`${process.cwd()}/.joystick/data/postgresql_${port}`),
-      ],
-    );
+    ) : child_process.spawn('./start_postgresql_on_linux.sh', [
+      postgresql_port,
+      get_platform_safe_path(`.joystick/data/postgresql_${port}`)
+    ], {
+      shell: true,
+    });
 
     return new Promise((resolve) => {
       database_process.stderr.on('data', async (data) => {

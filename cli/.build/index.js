@@ -44,7 +44,8 @@ const files = filesToBuild.map((path) => {
   let target = "esm";
 
   const copyPaths = [
-    getPlatformSafePath("commands/create/template")
+    getPlatformSafePath("commands/create/template"),
+    getPlatformSafePath("lib/development_server/databases/postgresql/start_postgresql_on_linux.sh")
   ];
 
   const isCopyPath = copyPaths.some((copyPath) => {
