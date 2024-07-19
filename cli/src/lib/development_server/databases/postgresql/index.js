@@ -117,7 +117,7 @@ const start_postgresql = async (port = 2610) => {
         'start',
       ],
     ) : child_process.spawn(
-      `sudo -u postgres ./bin/pg_ctl`,
+      `sudo -u postgres bin/pg_ctl`,
       [
         '-o',
         `"-p ${postgresql_port}"`,
