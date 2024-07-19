@@ -125,7 +125,7 @@ const start_postgresql = async (port = 2610) => {
         get_platform_safe_path(`${process.cwd()}/.joystick/data/postgresql_${port}`),
         'start'
       ],
-      { cwd: '~/.joystick/databases/postgresql/bin' }
+      { cwd: '~/.joystick/databases/postgresql/bin', shell: true }
     );
 
     return new Promise((resolve) => {
@@ -143,7 +143,7 @@ const start_postgresql = async (port = 2610) => {
         const stdout = data?.toString();
         
         console.log(stdout);
-        
+
         if (stdout.includes('database system is ready to accept connections')) {
           const process_id = (await get_process_id_from_port(postgresql_port))?.replace('\n', '');
 
