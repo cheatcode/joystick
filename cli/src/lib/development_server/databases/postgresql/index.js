@@ -124,12 +124,13 @@ const start_postgresql = async (port = 2610) => {
         '-u',
         'postgres',
         'bash',
-        'pg_ctl',
-        '-o',
-        `"-p ${postgresql_port}"`,
-        '-D',
-        get_platform_safe_path(`${process.cwd()}/.joystick/data/postgresql_${port}`),
-        'start'
+        `${joystick_pg_ctl_path} -o "-p ${postgresql_port}" -D ${get_platform_safe_path(`${process.cwd()}/.joystick/data/postgresql_${port}`)} start`
+        // 'pg_ctl',
+        // '-o',
+        // `"-p ${postgresql_port}"`,
+        // '-D',
+        // get_platform_safe_path(`${process.cwd()}/.joystick/data/postgresql_${port}`),
+        // 'start'
       ],
       { cwd: `${joystick_postgresql_bin_path}/bin`, shell: '/bin/bash' }
     );
