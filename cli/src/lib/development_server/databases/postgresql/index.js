@@ -125,7 +125,7 @@ const start_postgresql = async (port = 2610) => {
         get_platform_safe_path(`${process.cwd()}/.joystick/data/postgresql_${port}`),
         'start'
       ],
-      { cwd: '~/.joystick/databases/postgresql/bin', shell: '/bin/bash' }
+      { cwd: '~/.joystick/databases/postgresql/bin' }
     );
 
     return new Promise((resolve) => {
