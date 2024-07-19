@@ -9,6 +9,14 @@ import path_exists from "../../../path_exists.js";
 const exec = util.promisify(child_process.exec);
 const { rename, mkdir } = fs.promises;
 
+const get_postgres_uid_gid = async () => {
+  if (process.platform !== 'linux') return {};
+  
+  const { stdout: uid } = await exec("id -u postgres");
+  const { stdout: gid } = await exec("id -g postgres");
+  return { uid: parseInt(uid), gid: parseInt(gid) };
+};
+
 const setup_data_directory = async (postgresql_port = 2610) => {
   const legacy_data_directory_exists = await path_exists(".joystick/data/postgresql");
   let data_directory_exists = await path_exists(`.joystick/data/postgresql_${postgresql_port}`);
@@ -81,30 +89,19 @@ const start_postgresql = async (port = 2610) => {
       }
     }
 
-    let database_process;
-    if (process.platform === 'linux') {
-      database_process = child_process.spawn('sudo', [
-        '-u',
-        'postgres',
-        joystick_pg_ctl_path,
+    const { uid, gid } = await get_postgres_uid_gid();
+
+    const database_process = child_process.spawn(
+      joystick_pg_ctl_path,
+      [
         '-o',
-        `-p ${postgresql_port}`,
+        `"-p ${postgresql_port}"`,
         '-D',
         get_platform_safe_path(`.joystick/data/postgresql_${port}`),
-        'start'
-      ]);
-    } else {
-      database_process = child_process.spawn(
-        joystick_pg_ctl_path,
-        [
-          '-o',
-          `"-p ${postgresql_port}"`,
-          '-D',
-          get_platform_safe_path(`.joystick/data/postgresql_${port}`),
-          'start',
-        ],
-      );
-    }
+        'start',
+      ],
+      process.platform === 'linux' ? { uid, gid } : {}
+    );
 
     return new Promise((resolve) => {
       database_process.stderr.on('data', async (data) => {
@@ -122,18 +119,16 @@ const start_postgresql = async (port = 2610) => {
           const process_id = (await get_process_id_from_port(postgresql_port))?.replace('\n', '');
 
           const createdb_command = process.platform === 'linux'
-            ? ['sudo', ['-u', 'postgres', joystick_createdb_path, '-h', '127.0.0.1', '-p', postgresql_port.toString(), 'app']]
-            : [joystick_createdb_path, ['-h', '127.0.0.1', '-p', postgresql_port.toString(), 'app']];
+            ? `sudo -u postgres ${joystick_createdb_path} -h 127.0.0.1 -p ${postgresql_port} app`
+            : `${joystick_createdb_path} -h 127.0.0.1 -p ${postgresql_port} app`;
 
-          child_process.execFile(...createdb_command, (error, stdout, stderr) => {
-            if (error) {
-              if (stderr && stderr.includes('database "app" already exists')) {
-                resolve(parseInt(process_id, 10));
-              } else {
-                console.log(stderr);
-              }
-            } else {
+          exec(createdb_command).then(() => {
+            resolve(parseInt(process_id, 10));
+          }).catch(({ stderr: error }) => {
+            if (error && error.includes('database "app" already exists')) {
               resolve(parseInt(process_id, 10));
+            } else {
+              console.log(error);
             }
           });
         }
