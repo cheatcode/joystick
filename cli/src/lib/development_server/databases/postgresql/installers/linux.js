@@ -22,6 +22,9 @@ const download_postgresql_linux = async (version_path = null) => {
   // Create joystick user if it doesn't exist
   await create_joystick_user();
 
+  // Check and install dependencies
+  await check_and_install_dependencies();
+
   const download_url = 'https://ftp.postgresql.org/pub/source/v16.0/postgresql-16.0.tar.gz';
   const file_name = path.basename(new URL(download_url).pathname);
   const file_path = path.join(base_directory, file_name);
@@ -35,9 +38,6 @@ const download_postgresql_linux = async (version_path = null) => {
   await execFileAsync('tar', ['-xzf', file_path, '-C', base_directory]);
   
   const extracted_dir = path.join(base_directory, 'postgresql-16.0');
-
-  // Check for dependencies
-  await check_dependencies();
 
   // Configure and build
   try {
@@ -70,6 +70,15 @@ const download_postgresql_linux = async (version_path = null) => {
 
   await make_file_executable(bin_bin_directory);
   process.loader.print('PostgreSQL installed!');
+
+  // Add sudoers entry
+  await add_sudoers_entry(bin_directory);
+
+  // Test pg_ctl
+  const data_dir = path.join(base_directory, 'data');
+  await fs.promises.mkdir(data_dir, { recursive: true });
+  await run_pg_ctl_as_joystick('init', '-D', data_dir);
+  process.loader.print('PostgreSQL database initialized!');
 };
 
 const create_joystick_user = async () => {
@@ -99,17 +108,72 @@ const set_permissions_for_joystick_user = async (bin_directory) => {
   }
 };
 
-const check_dependencies = async () => {
+const add_sudoers_entry = async (bin_directory) => {
+  const current_user = os.userInfo().username;
+  const sudoers_entry = `${current_user} ALL=(joystick) NOPASSWD: /usr/bin/env PATH=${bin_directory}:$PATH /usr/bin/pg_ctl, /usr/bin/env PATH=${bin_directory}:$PATH /usr/bin/postgres`;
+  const temp_sudoers_file = '/tmp/joystick_sudoers';
+
+  try {
+    // Check if the entry already exists
+    const { stdout: existing_sudoers } = await execFileAsync('sudo', ['cat', '/etc/sudoers']);
+    if (existing_sudoers.includes(sudoers_entry)) {
+      console.log('Sudoers entry already exists');
+      return;
+    }
+
+    // Write the new entry to a temporary file
+    await fs.promises.writeFile(temp_sudoers_file, sudoers_entry + '\n');
+
+    // Use visudo to safely add the new entry
+    await execFileAsync('sudo', ['visudo', '-f', '/etc/sudoers', '-c']);
+    await execFileAsync('sudo', ['sh', '-c', `cat ${temp_sudoers_file} >> /etc/sudoers`]);
+
+    console.log('Sudoers entry added successfully');
+  } catch (error) {
+    console.error('Error adding sudoers entry:', error);
+    throw error;
+  } finally {
+    // Clean up the temporary file
+    await fs.promises.unlink(temp_sudoers_file).catch(() => {});
+  }
+};
+
+const run_pg_ctl_as_joystick = async (...args) => {
+  try {
+    const { stdout, stderr } = await execFileAsync('sudo', ['-u', 'joystick', 'pg_ctl', ...args]);
+    console.log('pg_ctl stdout:', stdout);
+    if (stderr) console.error('pg_ctl stderr:', stderr);
+    return stdout;
+  } catch (error) {
+    console.error('Error running pg_ctl:', error);
+    throw error;
+  }
+};
+
+const check_and_install_dependencies = async () => {
   const required_packages = ['gcc', 'make', 'libreadline-dev', 'zlib1g-dev'];
+  const packages_to_install = [];
+
   for (const pkg of required_packages) {
     try {
       await execFileAsync('dpkg', ['-s', pkg]);
     } catch (error) {
-      console.error(`Required package '${pkg}' is not installed.`);
-      console.error('Please install the necessary dependencies. For Ubuntu or Debian, run:');
-      console.error(`sudo apt-get update && sudo apt-get install ${required_packages.join(' ')}`);
-      throw new Error('Missing dependencies');
+      packages_to_install.push(pkg);
     }
+  }
+
+  if (packages_to_install.length > 0) {
+    console.log(`Installing missing packages: ${packages_to_install.join(', ')}`);
+    try {
+      await execFileAsync('sudo', ['apt-get', 'update']);
+      await execFileAsync('sudo', ['apt-get', 'install', '-y', ...packages_to_install]);
+      console.log('All required packages installed successfully');
+    } catch (error) {
+      console.error('Error installing packages:', error);
+      throw error;
+    }
+  } else {
+    console.log('All required packages are already installed');
   }
 };
 
