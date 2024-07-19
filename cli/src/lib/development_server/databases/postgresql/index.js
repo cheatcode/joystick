@@ -2,14 +2,9 @@ import child_process from "child_process";
 import fs from "fs";
 import util from "util";
 import os from "os";
-import { fileURLToPath } from 'url';
-import { dirname } from 'path';
 import get_platform_safe_path from "../../../get_platform_safe_path.js";
 import get_process_id_from_port from "../../../get_process_id_from_port.js";
 import path_exists from "../../../path_exists.js";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
 
 const exec = util.promisify(child_process.exec);
 const { rename, mkdir } = fs.promises;
@@ -121,13 +116,18 @@ const start_postgresql = async (port = 2610) => {
         get_platform_safe_path(`.joystick/data/postgresql_${port}`),
         'start',
       ],
-    ) : child_process.spawn(`${__dirname}/start_postgresql_on_linux.sh`, [
-      joystick_pg_ctl_path,
-      postgresql_port,
-      get_platform_safe_path(`.joystick/data/postgresql_${port}`)
-    ], {
-      // shell: true,
-    });
+    ) : child_process.spawn(
+      `su - postgres -c "${joystick_pg_ctl_path} start -o \"-p ${postgresql_port}\" -D ${get_platform_safe_path(`${process.cwd()}/.joystick/data/postgresql_${port}`)}"`
+      // `sudo -u postgres bin/pg_ctl`,
+      // [
+      //   '-o',
+      //   `"-p ${postgresql_port}"`,
+      //   '-D',
+      //   get_platform_safe_path(`${process.cwd()}/.joystick/data/postgresql_${port}`),
+      //   'start'
+      // ],
+      // { cwd: joystick_postgresql_bin_path, shell: '/bin/bash' }
+    );
 
     return new Promise((resolve) => {
       database_process.stderr.on('data', async (data) => {
