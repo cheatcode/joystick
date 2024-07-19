@@ -124,13 +124,13 @@ const add_postgres_to_sudoers = async () => {
 
 const set_permissions_for_postgres_user = async (base_directory) => {
   try {
-    // Set ownership of the base directory to root
-    await execFileAsync('sudo', ['chown', 'root:root', base_directory]);
+    // Set ownership of the base directory to postgres
+    await execFileAsync('sudo', ['chown', 'postgres:postgres', base_directory]);
     await execFileAsync('sudo', ['chmod', '755', base_directory]);
 
-    // Set ownership of the bin directory to root
+    // Set ownership of the bin directory to postgres
     const bin_directory = path.join(base_directory, 'bin');
-    await execFileAsync('sudo', ['chown', '-R', 'root:root', bin_directory]);
+    await execFileAsync('sudo', ['chown', '-R', 'postgres:postgres', bin_directory]);
     await execFileAsync('sudo', ['chmod', '-R', '755', bin_directory]);
 
     console.log('Permissions set for postgres user');
