@@ -124,11 +124,15 @@ const add_sudoers_entry = async (bin_directory) => {
     // Write the new entry to a temporary file
     await fs.promises.writeFile(temp_sudoers_file, sudoers_entry + '\n');
 
-    // Use visudo to safely add the new entry
-    await execFileAsync('sudo', ['visudo', '-f', '/etc/sudoers', '-c']);
-    await execFileAsync('sudo', ['sh', '-c', `cat ${temp_sudoers_file} >> /etc/sudoers`]);
-
-    console.log('Sudoers entry added successfully');
+    // Use visudo to safely check and add the new entry
+    try {
+      await execFileAsync('sudo', ['visudo', '-cf', temp_sudoers_file]);
+      await execFileAsync('sudo', ['sh', '-c', `cat ${temp_sudoers_file} >> /etc/sudoers`]);
+      console.log('Sudoers entry added successfully');
+    } catch (error) {
+      console.error('Error in sudoers syntax:', error);
+      throw new Error('Failed to add sudoers entry due to syntax error');
+    }
   } catch (error) {
     console.error('Error adding sudoers entry:', error);
     throw error;
