@@ -34,6 +34,7 @@ const download_postgresql_linux = async () => {
     try {
       await symlink_async(system_bin_path, symlink_path);
     } catch (symlink_error) {
+      console.warn(symlink_error);
       // Do nothing if the symlink already exists.
     }
 
