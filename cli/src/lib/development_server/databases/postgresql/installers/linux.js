@@ -110,7 +110,7 @@ const set_permissions_for_joystick_user = async (bin_directory) => {
 
 const add_sudoers_entry = async (bin_directory) => {
   const current_user = os.userInfo().username;
-  const sudoers_entry = `${current_user} ALL=(joystick) NOPASSWD: /usr/bin/env PATH=${bin_directory}:$PATH /usr/bin/pg_ctl, /usr/bin/env PATH=${bin_directory}:$PATH /usr/bin/postgres`;
+  const sudoers_entry = `${current_user} ALL=(joystick) NOPASSWD: /usr/bin/env PATH=${bin_directory}:$PATH pg_ctl *`;
   const temp_sudoers_file = '/tmp/joystick_sudoers';
 
   try {

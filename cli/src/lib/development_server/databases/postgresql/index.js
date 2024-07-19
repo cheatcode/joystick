@@ -41,7 +41,10 @@ const start_postgresql = async (port = 2610) => {
   try {
     const joystick_pg_ctl_command = get_pg_ctl_command();
     const joystick_createdb_command = get_createdb_command();
-    const joystick_pg_ctl_path = `${os.platform() === 'linux' ? 'sudo -u joystick ' : ''}${os.homedir()}/.joystick/databases/postgresql/bin/bin/${joystick_pg_ctl_command}`;
+    // NOTE: Linux gets a bit messy for startup as we can't run pg_ctl as root on a machine. Instead
+    // we have to use the joystick user we created during install via sudo (which requires some workarounds).
+    const joystick_postgresql_bin_path = `${os.homedir()}/.joystick/databases/postgresql/bin`;
+    const joystick_pg_ctl_path = `${os.platform() === 'linux' ? `sudo -u joystick /usr/bin/env PATH=${joystick_postgresql_bin_path}:$PATH ` : ''}${joystick_postgresql_bin_path}/bin/${joystick_pg_ctl_command}`;
     const joystick_createdb_path = `${os.homedir()}/.joystick/databases/postgresql/bin/bin/${joystick_createdb_command}`;
     const data_directory_exists = await setup_data_directory(port);
 
