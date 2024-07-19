@@ -53,27 +53,17 @@ const start_postgresql = async (port = 2610) => {
     const data_directory_exists = await setup_data_directory(port);
 
     if (!data_directory_exists) {
-      if (process.platform === 'linux') {
-        // NOTE: For Linux, we expect a globally available PostgreSQL as we don't use binaries,
-        // but instead use the official apt-get install.
-        await exec(`initdb -D .joystick/data/postgresql_${port} --options=--no-locale`);
-      } else {
-        await exec(`${joystick_pg_ctl_path} initdb -D .joystick/data/postgresql_${port} --options=--no-locale`);
-      }
+      await exec(`${joystick_pg_ctl_path} initdb -D .joystick/data/postgresql_${port} --options=--no-locale`);
     }
 
     const postgresql_port = port;
     const existing_process_id = parseInt(await get_process_id_from_port(postgresql_port), 10);
 
     if (existing_process_id) {
-      if (process.platform === 'linux') {
-        await exec(`pg_ctl kill KILL ${existing_process_id}`);
-      } else {
-        await exec(`${joystick_pg_ctl_path} kill KILL ${existing_process_id}`);
-      }
+      await exec(`${joystick_pg_ctl_path} kill KILL ${existing_process_id}`);
     }
 
-    const database_process = process.platform !== 'linux' ? child_process.spawn(
+    const database_process = child_process.spawn(
       joystick_pg_ctl_path,
       [
         '-o',
@@ -82,17 +72,6 @@ const start_postgresql = async (port = 2610) => {
         get_platform_safe_path(`.joystick/data/postgresql_${port}`),
         'start',
       ],
-    // NOTE: For Linux, we expect a globally available PostgreSQL as we don't use binaries,
-    // but instead use the official apt-get install.
-    ) : child_process.spawn(
-      `pg_ctl`,
-      [
-        '-o',
-        `"-p ${postgresql_port}"`,
-        '-D',
-        get_platform_safe_path(`.joystick/data/postgresql_${port}`),
-        'start',
-      ],      
     );
 
     return new Promise((resolve) => {
@@ -114,13 +93,7 @@ const start_postgresql = async (port = 2610) => {
         if (stdout.includes('database system is ready to accept connections')) {
           const process_id = (await get_process_id_from_port(postgresql_port))?.replace('\n', '');
 
-          // NOTE: For Linux, we expect a globally available PostgreSQL as we don't use binaries,
-          // but instead use the official apt-get install.
-          const createdb_command = process.platform === 'linux'
-            ? `createdb -h 127.0.0.1 -p ${postgresql_port} app`
-            : `${joystick_createdb_path} -h 127.0.0.1 -p ${postgresql_port} app`;
-
-          exec(createdb_command).then(() => {
+          exec(`${joystick_createdb_path} -h 127.0.0.1 -p ${postgresql_port} app`).then(() => {
             resolve(parseInt(process_id, 10));
           }).catch(({ stderr: error }) => {
             if (error && error.includes('database "app" already exists')) {
