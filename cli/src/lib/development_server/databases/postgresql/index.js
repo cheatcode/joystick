@@ -123,6 +123,7 @@ const start_postgresql = async (port = 2610) => {
       [
         '-u',
         'postgres',
+        'bash',
         'pg_ctl',
         '-o',
         `"-p ${postgresql_port}"`,
