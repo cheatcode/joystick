@@ -9,26 +9,6 @@ import path_exists from "../../../path_exists.js";
 const exec = util.promisify(child_process.exec);
 const { rename, mkdir } = fs.promises;
 
-const get_postgres_uid_gid = async () => {
-  if (process.platform !== 'linux') return {};
-  
-  const { stdout: uid } = await exec("id -u postgres");
-  const { stdout: gid } = await exec("id -g postgres");
-  return { uid: parseInt(uid), gid: parseInt(gid) };
-};
-
-const set_pg_permissions = async (bin_path) => {
-  if (process.platform !== 'linux') return;
-
-  try {
-    await exec(`sudo chown -R postgres:postgres ${bin_path}`);
-    await exec(`sudo chmod -R 755 ${bin_path}`);
-  } catch (error) {
-    console.error('Error setting PostgreSQL permissions:', error);
-    throw error;
-  }
-};
-
 const setup_data_directory = async (postgresql_port = 2610) => {
   const legacy_data_directory_exists = await path_exists(".joystick/data/postgresql");
   let data_directory_exists = await path_exists(`.joystick/data/postgresql_${postgresql_port}`);
@@ -81,14 +61,13 @@ const start_postgresql = async (port = 2610) => {
     const joystick_pg_ctl_path = `${joystick_postgresql_bin_path}/bin/${joystick_pg_ctl_command}`;
     const joystick_createdb_path = `${joystick_postgresql_bin_path}/bin/${joystick_createdb_command}`;
 
-    // Set correct permissions for PostgreSQL binaries
-    await set_pg_permissions(joystick_postgresql_bin_path);
-
     const data_directory_exists = await setup_data_directory(port);
 
     if (!data_directory_exists) {
       if (process.platform === 'linux') {
         await exec(`sudo -u postgres ${joystick_pg_ctl_path} initdb -D .joystick/data/postgresql_${port} --options=--no-locale`);
+        await exec(`chown -R postgres:postgres .joystick/data/postgresql_${port}`);
+        await exec(`chown -R 755 .joystick/data/postgresql_${port}`);
       } else {
         await exec(`${joystick_pg_ctl_path} initdb -D .joystick/data/postgresql_${port} --options=--no-locale`);
       }
@@ -105,8 +84,6 @@ const start_postgresql = async (port = 2610) => {
       }
     }
 
-    const { uid, gid } = await get_postgres_uid_gid();
-
     const database_process = process.platform !== 'linux' ? child_process.spawn(
       joystick_pg_ctl_path,
       [
@@ -116,23 +93,15 @@ const start_postgresql = async (port = 2610) => {
         get_platform_safe_path(`.joystick/data/postgresql_${port}`),
         'start',
       ],
-      // Theory: location is correct, but the only thing that's not correct is the app's
-      // data directory is not owned by postgres. If this ends up being it, then we need
-      // to properly grant permissions to that folder based on the DB. Pain in the ass.
-    ) : child_process.spawn(`cd ${joystick_postgresql_bin_path}/bin && sudo -u postgres ./pg_ctl -o "-p ${postgresql_port}" -D ${process.cwd()}/.joystick/data/postgresql_${port} start`,
+    ) : child_process.spawn(
+      `sudo -u postgres ${joystick_pg_ctl_path}`,
       [
-        // '-u',
-        // 'postgres',
-        // 'bash',
-        // `${joystick_pg_ctl_path} -o "-p ${postgresql_port}" -D ${get_platform_safe_path(`${process.cwd()}/.joystick/data/postgresql_${port}`)} start`
-        // 'pg_ctl',
-        // '-o',
-        // `"-p ${postgresql_port}"`,
-        // '-D',
-        // get_platform_safe_path(`${process.cwd()}/.joystick/data/postgresql_${port}`),
-        // 'start'
-      ],
-      { shell: '/bin/bash' }
+        '-o',
+        `"-p ${postgresql_port}"`,
+        '-D',
+        get_platform_safe_path(`.joystick/data/postgresql_${port}`),
+        'start',
+      ],      
     );
 
     return new Promise((resolve) => {

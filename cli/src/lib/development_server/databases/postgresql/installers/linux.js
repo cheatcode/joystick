@@ -24,51 +24,23 @@ const download_postgresql_linux = async (version_path = null) => {
   // Add postgres user to sudoers
   await add_postgres_to_sudoers();
 
-  // Check and install dependencies
-  await check_and_install_dependencies();
-
-  const download_url = 'https://ftp.postgresql.org/pub/source/v16.0/postgresql-16.0.tar.gz';
+  const download_url = 'https://www.postgresql.org/ftp/binary/v16.0/linux-x64/postgresql-16.0-1-linux-x64-binaries.tar.gz';
   const file_name = path.basename(new URL(download_url).pathname);
   const file_path = path.join(base_directory, file_name);
 
-  process.loader.print('PostgreSQL not found. Downloading... (this may take a few minutes)');
+  process.loader.print('PostgreSQL not found. Downloading...');
   await download_file(download_url, file_path);
 
-  process.loader.print('Installing PostgreSQL... (this may take a few minutes)');
+  process.loader.print('Installing PostgreSQL...');
   
   // Extract PostgreSQL
-  await execFileAsync('tar', ['-xzf', file_path, '-C', base_directory]);
-  
-  const extracted_dir = path.join(base_directory, 'postgresql-16.0');
-
-  // Configure and build
-  try {
-    await execFileAsync('./configure', ['--prefix=' + bin_directory, '--without-icu'], { cwd: extracted_dir });
-  } catch (error) {
-    console.error('Error during PostgreSQL configuration:', error);
-    throw error;
-  }
-
-  try {
-    await execFileAsync('make', [], { cwd: extracted_dir });
-  } catch (error) {
-    console.error('Error during PostgreSQL build:', error);
-    throw error;
-  }
-
-  try {
-    await execFileAsync('make', ['install'], { cwd: extracted_dir });
-  } catch (error) {
-    console.error('Error during PostgreSQL installation:', error);
-    throw error;
-  }
+  await execFileAsync('tar', ['-xzf', file_path, '-C', base_directory, '--strip-components=1']);
 
   // Set permissions for postgres user
   await set_permissions_for_postgres_user(base_directory);
 
   // Clean up
   await fs.promises.unlink(file_path);
-  await fs.promises.rm(extracted_dir, { recursive: true, force: true });
 
   process.loader.print('PostgreSQL installed!');
 };
@@ -80,7 +52,7 @@ const create_postgres_user = async () => {
   } catch (error) {
     console.log('Creating postgres user...');
     try {
-      await execFileAsync('sudo', ['useradd', '-r', '-s', '/bin/false', 'postgres']);
+      await execFileAsync('sudo', ['useradd', '-r', '-s', '/bin/bash', 'postgres']);
       console.log('Postgres user created successfully');
     } catch (error) {
       console.error('Error creating postgres user:', error);
@@ -125,45 +97,13 @@ const add_postgres_to_sudoers = async () => {
 const set_permissions_for_postgres_user = async (base_directory) => {
   try {
     // Set ownership of the base directory to postgres
-    await execFileAsync('sudo', ['chown', 'postgres:postgres', base_directory]);
-    await execFileAsync('sudo', ['chmod', '755', base_directory]);
-
-    // Set ownership of the bin directory to postgres
-    const bin_directory = path.join(base_directory, 'bin');
-    await execFileAsync('sudo', ['chown', '-R', 'postgres:postgres', bin_directory]);
-    await execFileAsync('sudo', ['chmod', '-R', '755', bin_directory]);
+    await execFileAsync('sudo', ['chown', '-R', 'postgres:postgres', base_directory]);
+    await execFileAsync('sudo', ['chmod', '-R', '755', base_directory]);
 
     console.log('Permissions set for postgres user');
   } catch (error) {
     console.error('Error setting permissions for postgres user:', error);
     throw error;
-  }
-};
-
-const check_and_install_dependencies = async () => {
-  const required_packages = ['gcc', 'make', 'libreadline-dev', 'zlib1g-dev'];
-  const packages_to_install = [];
-
-  for (const pkg of required_packages) {
-    try {
-      await execFileAsync('dpkg', ['-s', pkg]);
-    } catch (error) {
-      packages_to_install.push(pkg);
-    }
-  }
-
-  if (packages_to_install.length > 0) {
-    console.log(`Installing missing packages: ${packages_to_install.join(', ')}`);
-    try {
-      await execFileAsync('sudo', ['apt-get', 'update']);
-      await execFileAsync('sudo', ['apt-get', 'install', '-y', ...packages_to_install]);
-      console.log('All required packages installed successfully');
-    } catch (error) {
-      console.error('Error installing packages:', error);
-      throw error;
-    }
-  } else {
-    console.log('All required packages are already installed');
   }
 };
 
