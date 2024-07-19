@@ -116,17 +116,19 @@ const start_postgresql = async (port = 2610) => {
         get_platform_safe_path(`.joystick/data/postgresql_${port}`),
         'start',
       ],
+      // Theory: location is correct, but the only thing that's not correct is the app's
+      // data directory is not owned by postgres. If this ends up being it, then we need
+      // to properly grant permissions to that folder based on the DB. Pain in the ass.
     ) : child_process.spawn(`sudo`,
       [
         '-u',
         'postgres',
-        'ls -al',
-        // 'pg_ctl',
-        // '-o',
-        // `"-p ${postgresql_port}"`,
-        // '-D',
-        // get_platform_safe_path(`${process.cwd()}/.joystick/data/postgresql_${port}`),
-        // 'start'
+        'pg_ctl',
+        '-o',
+        `"-p ${postgresql_port}"`,
+        '-D',
+        get_platform_safe_path(`${process.cwd()}/.joystick/data/postgresql_${port}`),
+        'start'
       ],
       { cwd: `${joystick_postgresql_bin_path}/bin`, shell: '/bin/bash' }
     );
