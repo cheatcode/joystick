@@ -21,6 +21,9 @@ const download_postgresql_linux = async (version_path = null) => {
   // Create postgres user if it doesn't exist
   await create_postgres_user();
 
+  // Add postgres user to sudoers
+  await add_postgres_to_sudoers();
+
   // Check and install dependencies
   await check_and_install_dependencies();
 
@@ -68,8 +71,6 @@ const download_postgresql_linux = async (version_path = null) => {
   await fs.promises.rm(extracted_dir, { recursive: true, force: true });
 
   process.loader.print('PostgreSQL installed!');
-
-  process.loader.print('PostgreSQL installation completed!');
 };
 
 const create_postgres_user = async () => {
@@ -85,6 +86,39 @@ const create_postgres_user = async () => {
       console.error('Error creating postgres user:', error);
       throw error;
     }
+  }
+};
+
+const add_postgres_to_sudoers = async () => {
+  const sudoers_entry = 'postgres ALL=(ALL) NOPASSWD: ALL';
+  const temp_sudoers_file = '/tmp/joystick_sudoers';
+
+  try {
+    // Check if the entry already exists
+    const { stdout: existing_sudoers } = await execFileAsync('sudo', ['cat', '/etc/sudoers']);
+    if (existing_sudoers.includes(sudoers_entry)) {
+      console.log('Postgres sudoers entry already exists');
+      return;
+    }
+
+    // Write the new entry to a temporary file
+    await fs.promises.writeFile(temp_sudoers_file, sudoers_entry + '\n');
+
+    // Use visudo to safely check and add the new entry
+    try {
+      await execFileAsync('sudo', ['visudo', '-cf', temp_sudoers_file]);
+      await execFileAsync('sudo', ['sh', '-c', `cat ${temp_sudoers_file} >> /etc/sudoers`]);
+      console.log('Postgres sudoers entry added successfully');
+    } catch (error) {
+      console.error('Error in sudoers syntax:', error);
+      throw new Error('Failed to add sudoers entry due to syntax error');
+    }
+  } catch (error) {
+    console.error('Error adding postgres to sudoers:', error);
+    throw error;
+  } finally {
+    // Clean up the temporary file
+    await fs.promises.unlink(temp_sudoers_file).catch(() => {});
   }
 };
 
