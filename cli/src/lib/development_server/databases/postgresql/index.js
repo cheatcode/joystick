@@ -17,6 +17,18 @@ const get_postgres_uid_gid = async () => {
   return { uid: parseInt(uid), gid: parseInt(gid) };
 };
 
+const set_pg_permissions = async (bin_path) => {
+  if (process.platform !== 'linux') return;
+
+  try {
+    await exec(`sudo chown -R postgres:postgres ${bin_path}`);
+    await exec(`sudo chmod -R 755 ${bin_path}`);
+  } catch (error) {
+    console.error('Error setting PostgreSQL permissions:', error);
+    throw error;
+  }
+};
+
 const setup_data_directory = async (postgresql_port = 2610) => {
   const legacy_data_directory_exists = await path_exists(".joystick/data/postgresql");
   let data_directory_exists = await path_exists(`.joystick/data/postgresql_${postgresql_port}`);
@@ -68,6 +80,10 @@ const start_postgresql = async (port = 2610) => {
     const joystick_postgresql_bin_path = `${os.homedir()}/.joystick/databases/postgresql/bin`;
     const joystick_pg_ctl_path = `${joystick_postgresql_bin_path}/bin/${joystick_pg_ctl_command}`;
     const joystick_createdb_path = `${joystick_postgresql_bin_path}/bin/${joystick_createdb_command}`;
+
+    // Set correct permissions for PostgreSQL binaries
+    await set_pg_permissions(joystick_postgresql_bin_path);
+
     const data_directory_exists = await setup_data_directory(port);
 
     if (!data_directory_exists) {
