@@ -23,17 +23,6 @@ const setup_data_directory = async (postgresql_port = 2610) => {
     data_directory_exists = true;
   }
 
-  // Set permissions for the data directory only on Linux
-  if (process.platform === 'linux') {
-    try {
-      await exec(`sudo chown postgres:postgres .joystick/data/postgresql_${postgresql_port}`);
-      await exec(`sudo chmod 700 .joystick/data/postgresql_${postgresql_port}`);
-    } catch (error) {
-      console.error('Error setting permissions for data directory:', error);
-      throw error;
-    }
-  }
-
   return data_directory_exists;
 };
 
@@ -65,9 +54,9 @@ const start_postgresql = async (port = 2610) => {
 
     if (!data_directory_exists) {
       if (process.platform === 'linux') {
-        await exec(`sudo -u postgres ${joystick_pg_ctl_path} initdb -D .joystick/data/postgresql_${port} --options=--no-locale`);
-        await exec(`chown -R postgres:postgres .joystick/data/postgresql_${port}`);
-        await exec(`chown -R 755 .joystick/data/postgresql_${port}`);
+        // NOTE: For Linux, we expect a globally available PostgreSQL as we don't use binaries,
+        // but instead use the official apt-get install.
+        await exec(`initdb -D .joystick/data/postgresql_${port} --options=--no-locale`);
       } else {
         await exec(`${joystick_pg_ctl_path} initdb -D .joystick/data/postgresql_${port} --options=--no-locale`);
       }
@@ -78,7 +67,7 @@ const start_postgresql = async (port = 2610) => {
 
     if (existing_process_id) {
       if (process.platform === 'linux') {
-        await exec(`sudo -u postgres ${joystick_pg_ctl_path} kill KILL ${existing_process_id}`);
+        await exec(`pg_ctl kill KILL ${existing_process_id}`);
       } else {
         await exec(`${joystick_pg_ctl_path} kill KILL ${existing_process_id}`);
       }
@@ -93,8 +82,10 @@ const start_postgresql = async (port = 2610) => {
         get_platform_safe_path(`.joystick/data/postgresql_${port}`),
         'start',
       ],
+    // NOTE: For Linux, we expect a globally available PostgreSQL as we don't use binaries,
+    // but instead use the official apt-get install.
     ) : child_process.spawn(
-      `sudo -u postgres ${joystick_pg_ctl_path}`,
+      `pg_ctl`,
       [
         '-o',
         `"-p ${postgresql_port}"`,
@@ -123,8 +114,10 @@ const start_postgresql = async (port = 2610) => {
         if (stdout.includes('database system is ready to accept connections')) {
           const process_id = (await get_process_id_from_port(postgresql_port))?.replace('\n', '');
 
+          // NOTE: For Linux, we expect a globally available PostgreSQL as we don't use binaries,
+          // but instead use the official apt-get install.
           const createdb_command = process.platform === 'linux'
-            ? `sudo -u postgres ${joystick_createdb_path} -h 127.0.0.1 -p ${postgresql_port} app`
+            ? `createdb -h 127.0.0.1 -p ${postgresql_port} app`
             : `${joystick_createdb_path} -h 127.0.0.1 -p ${postgresql_port} app`;
 
           exec(createdb_command).then(() => {
