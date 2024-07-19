@@ -11,7 +11,6 @@ const streamPipeline = promisify(pipeline);
 const download_postgresql_linux = async (version_path = null) => {
   const base_directory = path.join(os.homedir(), '.joystick', 'databases', 'postgresql');
   const bin_directory = path.join(base_directory, 'bin');
-  const data_directory = path.join(base_directory, 'data');
 
   if (await check_if_file_exists(base_directory)) {
     return;
@@ -19,8 +18,8 @@ const download_postgresql_linux = async (version_path = null) => {
 
   await create_directories(base_directory, bin_directory);
 
-  // Create joystick user if it doesn't exist
-  await create_joystick_user();
+  // Create postgres user if it doesn't exist
+  await create_postgres_user();
 
   // Check and install dependencies
   await check_and_install_dependencies();
@@ -61,45 +60,48 @@ const download_postgresql_linux = async (version_path = null) => {
     throw error;
   }
 
-  // Set permissions for joystick user
-  await set_permissions_for_joystick_user(base_directory);
+  // Set permissions for postgres user
+  await set_permissions_for_postgres_user(base_directory);
 
   // Clean up
   await fs.promises.unlink(file_path);
   await fs.promises.rm(extracted_dir, { recursive: true, force: true });
 
-  await make_file_executable(bin_directory);
   process.loader.print('PostgreSQL installed!');
-
-  // Create data directory
-  await fs.promises.mkdir(data_directory, { recursive: true });
 
   process.loader.print('PostgreSQL installation completed!');
 };
 
-const create_joystick_user = async () => {
+const create_postgres_user = async () => {
   try {
-    await execFileAsync('id', ['-u', 'joystick']);
-    console.log('Joystick user already exists');
+    await execFileAsync('id', ['-u', 'postgres']);
+    console.log('Postgres user already exists');
   } catch (error) {
-    console.log('Creating joystick user...');
+    console.log('Creating postgres user...');
     try {
-      await execFileAsync('sudo', ['useradd', '-m', 'joystick']);
-      console.log('Joystick user created successfully');
+      await execFileAsync('sudo', ['useradd', '-r', '-s', '/bin/false', 'postgres']);
+      console.log('Postgres user created successfully');
     } catch (error) {
-      console.error('Error creating joystick user:', error);
+      console.error('Error creating postgres user:', error);
       throw error;
     }
   }
 };
 
-const set_permissions_for_joystick_user = async (base_directory) => {
+const set_permissions_for_postgres_user = async (base_directory) => {
   try {
-    await execFileAsync('sudo', ['chown', '-R', 'joystick:joystick', base_directory]);
-    await execFileAsync('sudo', ['chmod', '-R', '755', base_directory]);
-    console.log('Permissions set for joystick user');
+    // Set ownership of the base directory to root
+    await execFileAsync('sudo', ['chown', 'root:root', base_directory]);
+    await execFileAsync('sudo', ['chmod', '755', base_directory]);
+
+    // Set ownership of the bin directory to root
+    const bin_directory = path.join(base_directory, 'bin');
+    await execFileAsync('sudo', ['chown', '-R', 'root:root', bin_directory]);
+    await execFileAsync('sudo', ['chmod', '-R', '755', bin_directory]);
+
+    console.log('Permissions set for postgres user');
   } catch (error) {
-    console.error('Error setting permissions for joystick user:', error);
+    console.error('Error setting permissions for postgres user:', error);
     throw error;
   }
 };
@@ -151,13 +153,6 @@ const check_if_file_exists = async (file_path) => {
 const create_directories = async (base_directory, bin_directory) => {
   await fs.promises.mkdir(base_directory, { recursive: true });
   await fs.promises.mkdir(bin_directory, { recursive: true });
-};
-
-const make_file_executable = async (directory) => {
-  const files = await fs.promises.readdir(directory);
-  for (const file of files) {
-    await fs.promises.chmod(path.join(directory, file), '755');
-  }
 };
 
 export default download_postgresql_linux;

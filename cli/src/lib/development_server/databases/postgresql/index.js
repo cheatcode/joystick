@@ -7,15 +7,31 @@ import get_process_id_from_port from "../../../get_process_id_from_port.js";
 import path_exists from "../../../path_exists.js";
 
 const exec = util.promisify(child_process.exec);
-const { rename } = fs.promises;
+const { rename, mkdir } = fs.promises;
 
 const setup_data_directory = async (postgresql_port = 2610) => {
   const legacy_data_directory_exists = await path_exists(".joystick/data/postgresql");
   let data_directory_exists = await path_exists(`.joystick/data/postgresql_${postgresql_port}`);
 
   if (legacy_data_directory_exists && !data_directory_exists) {
-    await rename ('.joystick/data/postgresql', `.joystick/data/postgresql_${postgresql_port}`);
+    await rename('.joystick/data/postgresql', `.joystick/data/postgresql_${postgresql_port}`);
     data_directory_exists = true;
+  }
+
+  if (!data_directory_exists) {
+    await mkdir(`.joystick/data/postgresql_${postgresql_port}`, { recursive: true });
+    data_directory_exists = true;
+  }
+
+  // Set permissions for the data directory only on Linux
+  if (process.platform === 'linux') {
+    try {
+      await exec(`sudo chown postgres:postgres .joystick/data/postgresql_${postgresql_port}`);
+      await exec(`sudo chmod 700 .joystick/data/postgresql_${postgresql_port}`);
+    } catch (error) {
+      console.error('Error setting permissions for data directory:', error);
+      throw error;
+    }
   }
 
   return data_directory_exists;
