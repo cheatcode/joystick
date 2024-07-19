@@ -88,9 +88,9 @@ const start_postgresql = async (port = 2610) => {
 
     if (!data_directory_exists) {
       if (process.platform === 'linux') {
-        await exec(`sudo -u postgres ${joystick_pg_ctl_path} init -D .joystick/data/postgresql_${port} --options=--no-locale`);
+        await exec(`sudo -u postgres ${joystick_pg_ctl_path} initdb -D .joystick/data/postgresql_${port} --options=--no-locale`);
       } else {
-        await exec(`${joystick_pg_ctl_path} init -D .joystick/data/postgresql_${port} --options=--no-locale`);
+        await exec(`${joystick_pg_ctl_path} initdb -D .joystick/data/postgresql_${port} --options=--no-locale`);
       }
     }
 
@@ -119,7 +119,7 @@ const start_postgresql = async (port = 2610) => {
       // Theory: location is correct, but the only thing that's not correct is the app's
       // data directory is not owned by postgres. If this ends up being it, then we need
       // to properly grant permissions to that folder based on the DB. Pain in the ass.
-    ) : child_process.spawn(`cd ${joystick_postgresql_bin_path}/bin && sudo -u postgres ./pg_ctl -o "-p ${postgresql_port}" -D ${get_platform_safe_path(`${process.cwd()}/.joystick/data/postgresql_${port}`)} start`,
+    ) : child_process.spawn(`cd ${joystick_postgresql_bin_path}/bin && sudo -u postgres ./pg_ctl -o "-p ${postgresql_port}" -D ${process.cwd()}/.joystick/data/postgresql_${port} start`,
       [
         // '-u',
         // 'postgres',
