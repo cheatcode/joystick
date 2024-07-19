@@ -41,23 +41,16 @@ const start_postgresql = async (port = 2610) => {
   try {
     const joystick_pg_ctl_command = get_pg_ctl_command();
     const joystick_createdb_command = get_createdb_command();
-    const joystick_postgresql_bin_path = `${os.homedir()}/.joystick/databases/postgresql/bin`;
-    const data_directory_exists = await setup_data_directory(port);
-
     // NOTE: Linux gets a bit messy for startup as we can't run pg_ctl as root on a machine. Instead
-    // we have to use the joystick user we created during install via sudo (which requires some workarounds).
-    
-    const pg_ctl_command = os.platform() === 'linux' ?
-      `cd ${joystick_postgresql_bin_path}/bin && sudo -u joystick ./pg_ctl` :
-      `${joystick_postgresql_bin_path}/bin/${joystick_pg_ctl_command}`;
-
-    const createdb_command = os.platform() === 'linux' ?
-      `cd ${joystick_postgresql_bin_path}/bin && sudo -u joystick ./createdb` :
-      `${joystick_postgresql_bin_path}/bin/${joystick_createdb_command}`;
+    // we have to use the postgres user we created during install via sudo (which requires some workarounds).
+    const joystick_postgresql_bin_path = `${os.homedir()}/.joystick/databases/postgresql/bin`;
+    const joystick_pg_ctl_path = `${os.platform() === 'linux' ? `sudo -u postgres` : ''}${joystick_postgresql_bin_path}/bin/${joystick_pg_ctl_command}`;
+    const joystick_createdb_path = `${os.homedir()}/.joystick/databases/postgresql/bin/bin/${joystick_createdb_command}`;
+    const data_directory_exists = await setup_data_directory(port);
 
     if (!data_directory_exists) {
       await exec(
-        `${pg_ctl_command} init -D .joystick/data/postgresql_${port} --options=--no-locale`
+        `${joystick_pg_ctl_path} init -D .joystick/data/postgresql_${port} --options=--no-locale`
       );
     }
 
@@ -65,11 +58,11 @@ const start_postgresql = async (port = 2610) => {
     const existing_process_id = parseInt(await get_process_id_from_port(postgresql_port), 10);
 
     if (existing_process_id) {
-      await exec(`${pg_ctl_command} kill KILL ${existing_process_id}`);
+      await exec(`${joystick_pg_ctl_path} kill KILL ${existing_process_id}`);
     }
 
     const database_process = child_process.spawn(
-      `${pg_ctl_command}`,
+      `${joystick_pg_ctl_path}`,
       [
         '-o',
         `"-p ${postgresql_port}"`,
@@ -94,7 +87,7 @@ const start_postgresql = async (port = 2610) => {
         if (stdout.includes('database system is ready to accept connections')) {
           const process_id = (await get_process_id_from_port(postgresql_port))?.replace('\n', '');
 
-          exec(`${createdb_command} -h 127.0.0.1 -p ${postgresql_port} app`).then((data) => {
+          exec(`${joystick_createdb_path} -h 127.0.0.1 -p ${postgresql_port} app`).then((data) => {
             resolve(parseInt(process_id, 10));
           }).catch(({ stderr: error }) => {
             // NOTE: PostgreSQL does not have a clean way to create database if it doesn't exist. Use this as a hack
