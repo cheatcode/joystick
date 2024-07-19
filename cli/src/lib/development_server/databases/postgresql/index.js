@@ -57,74 +57,88 @@ const start_postgresql = async (port = 2610) => {
   try {
     const joystick_pg_ctl_command = get_pg_ctl_command();
     const joystick_createdb_command = get_createdb_command();
-    // NOTE: Linux gets a bit messy for startup as we can't run pg_ctl as root on a machine. Instead
-    // we have to use the postgres user we created during install via sudo (which requires some workarounds).
     const joystick_postgresql_bin_path = `${os.homedir()}/.joystick/databases/postgresql/bin`;
-    const joystick_pg_ctl_path = `${os.platform() === 'linux' ? `sudo -u postgres ` : ''}${joystick_postgresql_bin_path}/bin/${joystick_pg_ctl_command}`;
-    const joystick_createdb_path = `${os.homedir()}/.joystick/databases/postgresql/bin/bin/${joystick_createdb_command}`;
+    const joystick_pg_ctl_path = `${joystick_postgresql_bin_path}/bin/${joystick_pg_ctl_command}`;
+    const joystick_createdb_path = `${joystick_postgresql_bin_path}/bin/${joystick_createdb_command}`;
     const data_directory_exists = await setup_data_directory(port);
 
     if (!data_directory_exists) {
-      await exec(
-        `${joystick_pg_ctl_path} init -D .joystick/data/postgresql_${port} --options=--no-locale`
-      ).catch((error) => {
-        console.warn(error);
-      });
+      if (process.platform === 'linux') {
+        await exec(`sudo -u postgres ${joystick_pg_ctl_path} init -D .joystick/data/postgresql_${port} --options=--no-locale`);
+      } else {
+        await exec(`${joystick_pg_ctl_path} init -D .joystick/data/postgresql_${port} --options=--no-locale`);
+      }
     }
 
     const postgresql_port = port;
     const existing_process_id = parseInt(await get_process_id_from_port(postgresql_port), 10);
 
     if (existing_process_id) {
-      await exec(`${joystick_pg_ctl_path} kill KILL ${existing_process_id}`);
+      if (process.platform === 'linux') {
+        await exec(`sudo -u postgres ${joystick_pg_ctl_path} kill KILL ${existing_process_id}`);
+      } else {
+        await exec(`${joystick_pg_ctl_path} kill KILL ${existing_process_id}`);
+      }
     }
 
-    try {
-      const database_process = child_process.spawn(
-        `${joystick_pg_ctl_path}`,
+    let database_process;
+    if (process.platform === 'linux') {
+      database_process = child_process.spawn('sudo', [
+        '-u',
+        'postgres',
+        joystick_pg_ctl_path,
+        '-o',
+        `-p ${postgresql_port}`,
+        '-D',
+        get_platform_safe_path(`.joystick/data/postgresql_${port}`),
+        'start'
+      ]);
+    } else {
+      database_process = child_process.spawn(
+        joystick_pg_ctl_path,
         [
           '-o',
           `"-p ${postgresql_port}"`,
           '-D',
           get_platform_safe_path(`.joystick/data/postgresql_${port}`),
           'start',
-        ].filter((command) => !!command),
+        ],
       );
-  
-      return new Promise((resolve) => {
-        database_process.stderr.on('data', async (data) => {
-          const stderr = data?.toString();
-  
+    }
+
+    return new Promise((resolve) => {
+      database_process.stderr.on('data', async (data) => {
+        const stderr = data?.toString();
+
+        if (!stderr?.includes('another server might be running')) {
           console.warn(stderr);
-  
-          if (!stderr?.includes('another server might be running')) {
-            console.warn(stderr);
-          }
-        });
-  
-        database_process.stdout.on('data', async (data) => {
-          const stdout = data?.toString();
-  
-          if (stdout.includes('database system is ready to accept connections')) {
-            const process_id = (await get_process_id_from_port(postgresql_port))?.replace('\n', '');
-  
-            exec(`${joystick_createdb_path} -h 127.0.0.1 -p ${postgresql_port} app`).then((data) => {
-              resolve(parseInt(process_id, 10));
-            }).catch(({ stderr: error }) => {
-              // NOTE: PostgreSQL does not have a clean way to create database if it doesn't exist. Use this as a hack
-              // to get around the "already exists" error (if the database exists, it's not an issue).
-              if (error && error.includes('database "app" already exists')) {
+        }
+      });
+
+      database_process.stdout.on('data', async (data) => {
+        const stdout = data?.toString();
+
+        if (stdout.includes('database system is ready to accept connections')) {
+          const process_id = (await get_process_id_from_port(postgresql_port))?.replace('\n', '');
+
+          const createdb_command = process.platform === 'linux'
+            ? ['sudo', ['-u', 'postgres', joystick_createdb_path, '-h', '127.0.0.1', '-p', postgresql_port.toString(), 'app']]
+            : [joystick_createdb_path, ['-h', '127.0.0.1', '-p', postgresql_port.toString(), 'app']];
+
+          child_process.execFile(...createdb_command, (error, stdout, stderr) => {
+            if (error) {
+              if (stderr && stderr.includes('database "app" already exists')) {
                 resolve(parseInt(process_id, 10));
               } else {
-                console.log(error);
+                console.log(stderr);
               }
-            });
-          }
-        });
+            } else {
+              resolve(parseInt(process_id, 10));
+            }
+          });
+        }
       });
-    } catch(exception) {
-      console.warn(exception);
-    }
+    });
   } catch (exception) {
     console.warn(exception);
     process.exit(1);
