@@ -1,5 +1,6 @@
 #!/bin/bash
-PG_PORT=$1
-PG_DATA_DIR=$2
+PG_CTL_PATH=$1
+PG_PORT=$2
+PG_DATA_DIR=$3
 
-sudo -u postgres pg_ctl start -o "-p ${$PG_PORT}" -D $PG_DATA_DIR
+sudo -u postgres $PG_CTL_PATH start -o "-p ${$PG_PORT}" -D $PG_DATA_DIR

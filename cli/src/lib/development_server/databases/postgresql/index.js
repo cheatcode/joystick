@@ -117,6 +117,7 @@ const start_postgresql = async (port = 2610) => {
         'start',
       ],
     ) : child_process.spawn('./start_postgresql_on_linux.sh', [
+      joystick_pg_ctl_path,
       postgresql_port,
       get_platform_safe_path(`.joystick/data/postgresql_${port}`)
     ], {
