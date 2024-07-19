@@ -119,12 +119,12 @@ const start_postgresql = async (port = 2610) => {
       // Theory: location is correct, but the only thing that's not correct is the app's
       // data directory is not owned by postgres. If this ends up being it, then we need
       // to properly grant permissions to that folder based on the DB. Pain in the ass.
-    ) : child_process.spawn(`sudo`,
+    ) : child_process.spawn(`cd ${joystick_postgresql_bin_path}/bin && sudo -u postgres ./pg_ctl`,
       [
-        '-u',
-        'postgres',
-        'bash',
-        `${joystick_pg_ctl_path} -o "-p ${postgresql_port}" -D ${get_platform_safe_path(`${process.cwd()}/.joystick/data/postgresql_${port}`)} start`
+        // '-u',
+        // 'postgres',
+        // 'bash',
+        // `${joystick_pg_ctl_path} -o "-p ${postgresql_port}" -D ${get_platform_safe_path(`${process.cwd()}/.joystick/data/postgresql_${port}`)} start`
         // 'pg_ctl',
         // '-o',
         // `"-p ${postgresql_port}"`,
@@ -132,7 +132,7 @@ const start_postgresql = async (port = 2610) => {
         // get_platform_safe_path(`${process.cwd()}/.joystick/data/postgresql_${port}`),
         // 'start'
       ],
-      { cwd: `${joystick_postgresql_bin_path}/bin`, shell: '/bin/bash' }
+      { shell: '/bin/bash' }
     );
 
     return new Promise((resolve) => {
