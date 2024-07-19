@@ -1,6 +1,7 @@
 import { promisify } from 'util';
 import { execFile } from 'child_process';
 import fs from 'fs';
+import os from 'os';
 import path from 'path';
 
 const exec_file_async = promisify(execFile);
