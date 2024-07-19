@@ -116,7 +116,7 @@ const start_postgresql = async (port = 2610) => {
         get_platform_safe_path(`.joystick/data/postgresql_${port}`),
         'start',
       ],
-      process.platform === 'linux' ? { shell: true } : {}
+      process.platform === 'linux' ? { shell: true, uid, gid } : {}
     );
 
     return new Promise((resolve) => {
