@@ -29,14 +29,16 @@ const download_postgresql_linux = async () => {
 
     const postgresql_version = '14';
     const system_bin_path = `/usr/lib/postgresql/${postgresql_version}/bin`;
-    const joystick_bin_path = path.join(os.homedir(), '.joystick', 'databases', 'postgresql');
+    const joystick_bin_path = path.join(os.homedir(), '.joystick', 'databases', 'postgresql', 'bin');
+    const symlink_path = path.join(joystick_bin_path, 'bin');
 
+    // Create the directory structure
     await mkdir_async(joystick_bin_path, { recursive: true });
 
     // Create symlink to the PostgreSQL bin directory
     try {
-      await symlink_async(system_bin_path, path.join(joystick_bin_path, 'bin'));
-      console.log(`Created symlink to PostgreSQL binaries in ${joystick_bin_path}`);
+      await symlink_async(system_bin_path, symlink_path);
+      console.log(`Created symlink to PostgreSQL binaries at ${symlink_path}`);
     } catch (symlink_error) {
       if (symlink_error.code === 'EEXIST') {
         console.log('Symlink already exists.');
