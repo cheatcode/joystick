@@ -91,7 +91,7 @@ const start_postgresql = async (port = 2610) => {
         get_platform_safe_path(`.joystick/data/postgresql_${port}`),
         'start',
       ],
-    ) : await exec(`sudo -u postgres ${joystick_pg_ctl_path} -o "-p ${postgresql_port} -D ${get_platform_safe_path(`.joystick/data/postgresql_${port}`)} start"`);
+    ) : await exec(`sudo -u postgres ${joystick_pg_ctl_path} -o "-p ${postgresql_port}" -D ${get_platform_safe_path(`.joystick/data/postgresql_${port}`)} start`);
 
     return new Promise((resolve) => {
       database_process.stderr.on('data', async (data) => {
