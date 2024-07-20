@@ -63,7 +63,7 @@ const start_postgresql = async (port = 2610) => {
       await exec(`${joystick_pg_ctl_path} kill KILL ${existing_process_id}`);
     }
 
-    const database_process = child_process.spawn(
+    const database_process = await exec(
       joystick_pg_ctl_path,
       [
         '-o',
