@@ -105,13 +105,12 @@ const start_postgresql = async (port = 2610) => {
     }
 
     const database_process = child_process.spawn(
-      joystick_postgres_path,
+      process.platform === 'linux' ? `sudo -u postgres ${joystick_postgres_path}` : joystick_postgres_path,
       [
         '-o',
         `"-p ${postgresql_port}"`,
         '-D',
         get_platform_safe_path(`.joystick/data/postgresql_${port}`),
-        'start',
       ],
     );
 
@@ -133,12 +132,11 @@ const start_postgresql = async (port = 2610) => {
 
         if (stdout.includes('database system is ready to accept connections')) {
           const process_id = (await get_process_id_from_port(postgresql_port))?.replace('\n', '');
+          const createdb_command = process.platform === 'linux'
+            ? `sudo -u postgres ${joystick_createdb_path} -h 127.0.0.1 -p ${postgresql_port} app`
+            : `${joystick_createdb_path} -h 127.0.0.1 -p ${postgresql_port} app`;
 
-          // const createdb_command = process.platform === 'linux'
-          //   ? `sudo -u postgres ${joystick_createdb_path} -h 127.0.0.1 -p ${postgresql_port} app`
-          //   : `${joystick_createdb_path} -h 127.0.0.1 -p ${postgresql_port} app`;
-
-          exec(`${joystick_createdb_path} -h 127.0.0.1 -p ${postgresql_port} app`).then(() => {
+          exec(createdb_command).then(() => {
             resolve(parseInt(process_id, 10));
           }).catch(({ stderr: error }) => {
             if (error && error.includes('database "app" already exists')) {
