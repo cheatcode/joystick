@@ -2,6 +2,7 @@ import child_process from "child_process";
 import fs from "fs";
 import util from "util";
 import os from "os";
+import path from 'path';
 import get_platform_safe_path from "../../../get_platform_safe_path.js";
 import get_process_id_from_port from "../../../get_process_id_from_port.js";
 import path_exists from "../../../path_exists.js";
@@ -23,15 +24,32 @@ const setup_data_directory = async (postgresql_port = 2610) => {
     data_directory_exists = true;
   }
 
-  // Set permissions for the data directory only on Linux
+  // NOTE: For Linux, we need to set granular permissions on the data directory path
+  // to avoid access denied errors from the OS.
   if (process.platform === 'linux') {
-    try {
-      await exec(`sudo chown postgres:postgres .joystick/data/postgresql_${postgresql_port}`);
-      await exec(`sudo chmod 700 .joystick/data/postgresql_${postgresql_port}`);
-    } catch (error) {
-      console.error('Error setting permissions for data directory:', error);
-      throw error;
+    const cwd = process.cwd();
+    const cwd_parts = cwd.split(path.sep);
+    const root_index = cwd_parts.indexOf('root');
+
+    if (root_index === -1) {
+      throw new Error("Not in expected directory structure.");
     }
+
+    const joystick_data_path = path.join('/', ...cwd_parts.slice(0, root_index + 4), 'data');
+    const data_contents = await fs.readdir(joystick_data_path);
+    const postgres_directory = data_contents.find((item) => item.startsWith(`postgresql_${postgresql_port}`));
+    
+    if (!postgres_directory) {
+      throw new Error("PostgreSQL data directory not found.");
+    }
+
+    const full_postgres_data_path = path.join(joystick_data_path, postgres_directory);
+
+    await execPromise(`sudo chmod 755 /root`);
+    await execPromise(`sudo chmod 755 ${path.join('/root', cwd_parts[root_index + 1])}`);
+    await execPromise(`sudo chmod 755 ${path.join('/root', cwd_parts[root_index + 1], '.joystick')}`);
+    await execPromise(`sudo chmod 700 ${full_postgres_data_path}`);
+    await execPromise(`sudo chown -R postgres:postgres ${full_postgres_data_path}`);
   }
 
   return data_directory_exists;
@@ -104,11 +122,17 @@ const start_postgresql = async (port = 2610) => {
       }
     }
 
-    const database_process = child_process.spawn(
-      process.platform === 'linux' ? `sudo -u postgres ${joystick_postgres_path}` : joystick_postgres_path,
+    const database_process = process.platform === 'linux' ? child_process.spawn(
+      `cd ${joystick_postgresql_bin_path} && sudo -u postgres ./postgres`,
       [
-        '-o',
-        `"-p ${postgresql_port}"`,
+        `-p ${postgresql_port}`,
+        '-D',
+        get_platform_safe_path(`.joystick/data/postgresql_${port}`),
+      ]
+    ) : child_process.spawn(
+      joystick_postgres_path,
+      [
+        `-p ${postgresql_port}`,
         '-D',
         get_platform_safe_path(`.joystick/data/postgresql_${port}`),
       ],
