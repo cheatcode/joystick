@@ -138,7 +138,7 @@ const start_postgresql = async (port = 2610) => {
         const stderr = data?.toString();
 
         if (!stderr?.includes('another server might be running')) {
-          console.warn(stderr);
+          console.warn({ stderr });
         }
       });
 
