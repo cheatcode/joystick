@@ -86,7 +86,7 @@ const start_postgresql = async (port = 2610) => {
 
     const data_directory_exists = await setup_data_directory(port);
 
-    if (!data_directory_exists) {
+    if (data_directory_exists) {
       if (process.platform === 'linux') {
         console.log(`sudo -u postgres ./initdb -D ${process.cwd()}/.joystick/data/postgresql_${port} --no-locale`);
         await exec(`sudo -u postgres ./initdb -D ${process.cwd()}/.joystick/data/postgresql_${port} --no-locale`, {
