@@ -29,11 +29,10 @@ const download_postgresql_linux = async () => {
     
     // Add PostgreSQL 16 repository
     await exec_file_async('sudo', ['sh', '-c', 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list']);
-    await exec_file_async('wget', ['--quiet', '-O', '-', 'https://www.postgresql.org/media/keys/ACCC4CF8.asc', '|', 'sudo', 'apt-key', 'add', '-']);
     
     // Update package list and install PostgreSQL 16
     await exec_file_async('sudo', ['apt-get', 'update']);
-    await exec_file_async('sudo', ['apt-get', 'install', '-y', 'postgresql-16', 'postgresql-client-16', 'postgresql-server-dev-16']);
+    await exec_file_async('sudo', ['apt-get', 'install', '-y', `postgresql-${postgresql_version}`, `postgresql-client-${postgresql_version}`, `postgresql-server-dev-${postgresql_version}`]);
 
     await mkdir_async(joystick_bin_path, { recursive: true });
     
