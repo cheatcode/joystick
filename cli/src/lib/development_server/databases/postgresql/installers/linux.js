@@ -7,50 +7,53 @@ import path from 'path';
 const exec_file_async = promisify(execFile);
 const mkdir_async = promisify(fs.mkdir);
 const symlink_async = promisify(fs.symlink);
+const access_async = promisify(fs.access);
 
 const download_postgresql_linux = async () => {
   try {
-    // Check if PostgreSQL is already installed
+    const postgresql_version = '16';
+    const system_bin_path = `/usr/lib/postgresql/${postgresql_version}/bin`;
+    const joystick_bin_path = path.join(os.homedir(), '.joystick', 'databases', 'postgresql', 'bin');
+    const symlink_path = path.join(joystick_bin_path, 'bin');
+    const postgres_executable = path.join(symlink_path, 'postgres');
+
+    // Check if PostgreSQL is already installed in the desired location
     try {
-      await exec_file_async('which', ['pg_ctl']);
-      console.log('PostgreSQL is already installed.');
+      await access_async(postgres_executable, fs.constants.X_OK);
       return;
     } catch (error) {
-      // PostgreSQL is not installed, proceed with installation
+      // PostgreSQL is not installed or not in the desired location, proceed with installation
     }
 
     process.loader.print('PostgreSQL not found. Installing... (this may take a few minutes)');
     
-    // Install only the client and server packages without installing postgresql meta-package
+    // Add PostgreSQL 16 repository
+    await exec_file_async('sudo', ['sh', '-c', 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list']);
+    await exec_file_async('wget', ['--quiet', '-O', '-', 'https://www.postgresql.org/media/keys/ACCC4CF8.asc', '|', 'sudo', 'apt-key', 'add', '-']);
+    
+    // Update package list and install PostgreSQL 16
     await exec_file_async('sudo', ['apt-get', 'update']);
-    await exec_file_async('sudo', ['apt-get', 'install', '-y', 'postgresql-client-14', 'postgresql-server-dev-14']);
+    await exec_file_async('sudo', ['apt-get', 'install', '-y', 'postgresql-16', 'postgresql-client-16', 'postgresql-server-dev-16']);
 
-    process.loader.print('PostgreSQL binaries installed!');
-
-    const postgresql_version = '14';
-    const system_bin_path = `/usr/lib/postgresql/${postgresql_version}/bin`;
-    const joystick_bin_path = path.join(os.homedir(), '.joystick', 'databases', 'postgresql', 'bin');
-    const symlink_path = path.join(joystick_bin_path, 'bin');
-
-    // Create the directory structure
     await mkdir_async(joystick_bin_path, { recursive: true });
-
-    // Create symlink to the PostgreSQL bin directory
+    
     try {
       await symlink_async(system_bin_path, symlink_path);
-      console.log(`Created symlink to PostgreSQL binaries at ${symlink_path}`);
     } catch (symlink_error) {
-      if (symlink_error.code === 'EEXIST') {
-        console.log('Symlink already exists.');
-      } else {
+      if (symlink_error.code !== 'EEXIST') {
         console.error('Error creating symlink:', symlink_error);
         throw symlink_error;
       }
     }
 
-    console.log('PostgreSQL binaries have been installed without creating or starting any clusters.');
-    console.log('To create a cluster, you will need to run initdb manually.');
-
+    try {
+      await access_async(postgres_executable, fs.constants.X_OK);
+    } catch (access_error) {
+      console.error('Error accessing PostgreSQL executable:', access_error);
+      throw access_error;
+    }
+    
+    process.loader.print('PostgreSQL installed!');
   } catch (error) {
     console.error('Error installing PostgreSQL:', error);
     throw error;
