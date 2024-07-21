@@ -27,34 +27,11 @@ const setup_data_directory = async (postgresql_port = 2610) => {
   // NOTE: For Linux, we need to set granular permissions on the data directory path
   // to avoid access denied errors from the OS.
   if (process.platform === 'linux') {
-    const cwd = process.cwd();
-    const cwd_parts = cwd.split(path.sep);
-    const root_index = cwd_parts.indexOf('root');
-
-    if (root_index === -1) {
-      throw new Error("Not in expected directory structure.");
-    }
-
-    const joystick_data_path = path.join('/', ...cwd_parts.slice(0, root_index + 4), 'data');
-    console.log({
-      cwd_parts,
-      joystick_data_path,
-    });
-    
-    const data_contents = await readdir(joystick_data_path);
-    const postgres_directory = data_contents.find((item) => item.startsWith(`postgresql_${postgresql_port}`));
-    
-    if (!postgres_directory) {
-      throw new Error("PostgreSQL data directory not found.");
-    }
-
-    const full_postgres_data_path = path.join(joystick_data_path, postgres_directory);
-
     await execPromise(`sudo chmod 755 /root`);
-    await execPromise(`sudo chmod 755 ${path.join('/root', cwd_parts[root_index + 1])}`);
-    await execPromise(`sudo chmod 755 ${path.join('/root', cwd_parts[root_index + 1], '.joystick')}`);
-    await execPromise(`sudo chmod 700 ${full_postgres_data_path}`);
-    await execPromise(`sudo chown -R postgres:postgres ${full_postgres_data_path}`);
+    await execPromise(`sudo chmod 755 /root/${process.project_folder}`);
+    await execPromise(`sudo chmod 755 /root/${process.project_folder}/.joystick`);
+    await execPromise(`sudo chmod 700 /root/${process.project_folder}/.joystick/data/postgresql_${postgresql_port}`);
+    await execPromise(`sudo chown -R postgres:postgres /root/${process.project_folder}/.joystick/data/postgresql_${postgresql_port}`);
   }
 
   return data_directory_exists;

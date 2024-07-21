@@ -260,6 +260,7 @@ const install_missing_databases = async (settings = {}) => {
 
 const set_process_variables = (development_server_options = {}, port = 2600) => {
   process.title = development_server_options?.environment === 'test' ? "joystick_test" : 'joystick';
+  process.project_folder = path.basename(process.cwd());
   process.loader = new Loader();
 
   if (development_server_options?.environment === 'test') {
