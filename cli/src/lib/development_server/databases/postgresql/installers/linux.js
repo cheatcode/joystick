@@ -1,13 +1,15 @@
 import { promisify } from 'util';
-import { execFile } from 'child_process';
+import { execFile, exec } from 'child_process';
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
 
 const exec_file_async = promisify(execFile);
+const exec_async = promisify(exec);
 const mkdir_async = promisify(fs.mkdir);
 const symlink_async = promisify(fs.symlink);
 const access_async = promisify(fs.access);
+const writeFile_async = promisify(fs.writeFile);
 
 const download_postgresql_linux = async () => {
   try {
@@ -33,8 +35,18 @@ const download_postgresql_linux = async () => {
     // Add PostgreSQL 16 repository
     await exec_file_async('sudo', ['sh', '-c', 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list']);
     
-    // Download and add the PostgreSQL public key
-    await exec_file_async('wget', ['--quiet', '-O', '-', 'https://www.postgresql.org/media/keys/ACCC4CF8.asc', '|', 'sudo', 'apt-key', 'add', '-']);
+    // Download the PostgreSQL public key
+    const { stdout: keyContent } = await exec_async('wget -qO- https://www.postgresql.org/media/keys/ACCC4CF8.asc');
+    
+    // Save the key to a temporary file
+    const tempKeyPath = '/tmp/postgresql-ACCC4CF8.asc';
+    await writeFile_async(tempKeyPath, keyContent);
+    
+    // Add the key
+    await exec_file_async('sudo', ['apt-key', 'add', tempKeyPath]);
+    
+    // Remove the temporary key file
+    await exec_file_async('rm', [tempKeyPath]);
 
     // Update package list and install PostgreSQL 16
     await exec_file_async('sudo', ['apt-get', 'update']);
