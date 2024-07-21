@@ -88,7 +88,6 @@ const start_postgresql = async (port = 2610) => {
 
     if (data_directory_exists) {
       if (process.platform === 'linux') {
-        console.log(`sudo -u postgres ./initdb -D ${process.cwd()}/.joystick/data/postgresql_${port} --no-locale`);
         await exec(`sudo -u postgres ./initdb -D ${process.cwd()}/.joystick/data/postgresql_${port} --no-locale`, {
           cwd: joystick_postgresql_bin_path
         });
@@ -114,7 +113,7 @@ const start_postgresql = async (port = 2610) => {
         '-D',
         get_platform_safe_path(`${process.cwd()}/.joystick/data/postgresql_${port}`),
       ],
-      { cwd: joystick_postgresql_bin_path, shell: '/bin/bash' }
+      { cwd: joystick_postgresql_bin_path, shell: '/bin/bash', stdio: 'inherit' }
     ) : child_process.spawn(
       joystick_postgres_path,
       [
