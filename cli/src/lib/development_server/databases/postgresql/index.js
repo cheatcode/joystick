@@ -27,11 +27,11 @@ const setup_data_directory = async (postgresql_port = 2610) => {
   // NOTE: For Linux, we need to set granular permissions on the data directory path
   // to avoid access denied errors from the OS.
   if (process.platform === 'linux') {
-    await execPromise(`sudo chmod 755 /root`);
-    await execPromise(`sudo chmod 755 /root/${process.project_folder}`);
-    await execPromise(`sudo chmod 755 /root/${process.project_folder}/.joystick`);
-    await execPromise(`sudo chmod 700 /root/${process.project_folder}/.joystick/data/postgresql_${postgresql_port}`);
-    await execPromise(`sudo chown -R postgres:postgres /root/${process.project_folder}/.joystick/data/postgresql_${postgresql_port}`);
+    await exec(`sudo chmod 755 /root`);
+    await exec(`sudo chmod 755 /root/${process.project_folder}`);
+    await exec(`sudo chmod 755 /root/${process.project_folder}/.joystick`);
+    await exec(`sudo chmod 700 /root/${process.project_folder}/.joystick/data/postgresql_${postgresql_port}`);
+    await exec(`sudo chown -R postgres:postgres /root/${process.project_folder}/.joystick/data/postgresql_${postgresql_port}`);
   }
 
   return data_directory_exists;
