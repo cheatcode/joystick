@@ -36,6 +36,11 @@ const setup_data_directory = async (postgresql_port = 2610) => {
     }
 
     const joystick_data_path = path.join('/', ...cwd_parts.slice(0, root_index + 4), 'data');
+    console.log({
+      cwd_parts,
+      joystick_data_path,
+    });
+    
     const data_contents = await readdir(joystick_data_path);
     const postgres_directory = data_contents.find((item) => item.startsWith(`postgresql_${postgresql_port}`));
     
