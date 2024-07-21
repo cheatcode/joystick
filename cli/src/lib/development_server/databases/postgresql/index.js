@@ -111,9 +111,16 @@ const start_postgresql = async (port = 2610) => {
       [
         '-u',
         'postgres',
-        'bash',
+        './postgres',
+        `-p ${postgresql_port}`,
+        '-D',
+        get_platform_safe_path(`${process.cwd()}/.joystick/data/postgresql_${port}`),
         '-c',
-        `PGDATA="${get_platform_safe_path(`${process.cwd()}/.joystick/data/postgresql_${port}`)}" ./postgres -p ${postgresql_port} > /dev/null 2>&1`,
+        'log_min_messages=WARNING',
+        '-c',
+        'log_min_error_statement=ERROR',
+        '-c',
+        "log_min_duration_statement=-1"
       ],
       // `sudo -u postgres bash ./postgres`,
       // [
