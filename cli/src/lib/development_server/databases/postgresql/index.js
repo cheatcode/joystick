@@ -109,7 +109,7 @@ const start_postgresql = async (port = 2610) => {
       [
         `-p ${postgresql_port}`,
         '-D',
-        get_platform_safe_path(`.joystick/data/postgresql_${port}`),
+        get_platform_safe_path(`${process.cwd()}/.joystick/data/postgresql_${port}`),
       ]
     ) : child_process.spawn(
       joystick_postgres_path,
