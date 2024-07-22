@@ -46,6 +46,7 @@ const start_mongodb_process = (mongodb_port = 2610) => {
 
     database_process.stdout.on('data', async (data) => {
       const stdout = data?.toString();
+      console.log(stdout);
 
       if (stdout.includes('Waiting for connections')) {
         const mongo_shell_command = get_mongo_shell_command();
