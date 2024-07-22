@@ -92,7 +92,7 @@ const start_postgresql = async (port = 2610) => {
           cwd: joystick_postgresql_bin_path
         });
       } else {
-        await exec(`${joystick_initdb_path} -D .joystick/data/postgresql_${port} --options=--no-locale`);
+        await exec(`${joystick_initdb_path} -D .joystick/data/postgresql_${port} --no-locale`);
       }
     }
 
