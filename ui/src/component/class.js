@@ -222,8 +222,6 @@ class Component {
 		const new_children = {};
 		this.existing_children = { ...(this.children || {}) };
 
-		console.log(existing_children);
-
 		// NOTE: Once we have a copy of current children as existing_children
 		// in memory, dump them from the parent instance.
 		this.children = {};
