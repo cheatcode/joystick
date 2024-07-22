@@ -35,12 +35,6 @@ class Component {
 			let instance_to_bind = {
 				...(this || {}),
 			};
-
-			console.log({
-				new_children,
-				existing_children,
-				ssr_tree,
-			});
 			
 			if (key === 'component') {
 				instance_to_bind = {

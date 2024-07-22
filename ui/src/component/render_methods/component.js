@@ -28,6 +28,11 @@ const component = function component(Component = {}, props = {}) {
 	const existing_instance_id_on_parent = existing_component_on_parent && existing_component_on_parent[new_component_on_parent?.length || 0];
 	const existing_node_in_tree = get_node_from_tree(existing_instance_id_on_parent);
 
+	console.log({
+		existing_instance_id_on_parent,
+		existing_node_in_tree,
+	});
+
 	if (existing_node_in_tree?.state) {
 		component_instance.state = existing_node_in_tree?.state;
 	}
