@@ -128,7 +128,7 @@ class Component {
 			// access to the data at render time.
 			const component_data = await this.fetch_data(api, req, {}, this);
 			const new_children = {};
-			const existing_children = {};
+			this.existing_children = {};
 			let component_html = this.render_to_html(new_children, ssr_tree, render_for_ssr_options?.linkedom_document);
 			const child_data = {};
 
