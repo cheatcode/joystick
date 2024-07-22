@@ -30,6 +30,7 @@ const component = function component(Component = {}, props = {}) {
 
 	console.log({
 		component_instance_id: component_instance?.id,
+		existing_component_on_parent,
 		existing_instance_id_on_parent,
 		existing_node_in_tree,
 	});
