@@ -106,8 +106,9 @@ class Component {
 		// NOTE: Pass both new_children and existing_children for consistency,
 		// even though existing_children don't exist at mount time.
 		const new_children = {};
-		const existing_children = {};
-		const component_html = this.render_to_html(new_children, existing_children);
+		this.existing_children = {};
+
+		const component_html = this.render_to_html(new_children);
 		const html = this.replace_when_tags(component_html);
 		const dom = this.render_html_to_dom(html);
 		const virtual_dom = this.render_dom_to_virtual_dom(dom);
@@ -128,13 +129,13 @@ class Component {
 			const component_data = await this.fetch_data(api, req, {}, this);
 			const new_children = {};
 			const existing_children = {};
-			let component_html = this.render_to_html(new_children, existing_children, ssr_tree, render_for_ssr_options?.linkedom_document);
+			let component_html = this.render_to_html(new_children, ssr_tree, render_for_ssr_options?.linkedom_document);
 			const child_data = {};
 
 			for (let i = 0; i < ssr_tree?.length; i += 1) {
 				const node = ssr_tree[i];
 				const node_data = await this.fetch_data(api, req, {}, node);
-				const node_html = node.render_to_html(new_children, existing_children, ssr_tree, render_for_ssr_options?.linkedom_document);
+				const node_html = node.render_to_html(new_children, ssr_tree, render_for_ssr_options?.linkedom_document);
 				component_html = component_html.replace(`{{${node.id}:${node.instance_id}}}`, node_html);
 				child_data[node?.id] = node_data;
 			}
@@ -165,8 +166,8 @@ class Component {
     return html;
 	}
 
-	render_to_html(new_children = {}, existing_children = {}, ssr_tree = null, linkedom_document = {}) {
-		const render_methods = this.compile_render_methods(new_children, existing_children, ssr_tree);
+	render_to_html(new_children = {}, ssr_tree = null, linkedom_document = {}) {
+		const render_methods = this.compile_render_methods(new_children, this.existing_children, ssr_tree);
 		const html = this.options.render({ ...(this || {}), ...render_methods });
 		const clean_html = this.cleanup_html(html, linkedom_document);
 		const sanitized_html = this.sanitize_html(clean_html);
@@ -213,7 +214,9 @@ class Component {
 		run_tree_job('lifecycle.onBeforeRender', { root_instance_id: this?.instance_id });
 
 		const new_children = {};
-		const existing_children = { ...(this.children || {}) };
+		this.existing_children = { ...(this.children || {}) };
+
+		console.log(existing_children);
 
 		// NOTE: Once we have a copy of current children as existing_children
 		// in memory, dump them from the parent instance.
@@ -226,7 +229,7 @@ class Component {
 		// NOTE: As part of render_to_html(), we expect new_children to be populated
 		// with the new child instance_ids via the track_child method we pass to the
 		// render methods via the .bind() to the parent in compile_render_methods.
-		const component_html = this.render_to_html(new_children, existing_children);
+		const component_html = this.render_to_html(new_children);
 		const new_html = this.replace_when_tags(component_html);
 		const new_dom = this.render_html_to_dom(new_html);
 		const new_virtual_dom = this.render_dom_to_virtual_dom(new_dom);
@@ -263,8 +266,8 @@ class Component {
 		// NOTE: Do after clean up so we don't reattach styles for old nodes.
 		run_tree_job('css');
 
-		// NOTE: Clean up the linked list by removing any nodes matching an ID
-		// in existing_children as we know they no longer exist.
+		// NOTE: Clean up the linked list by removing any nodes with an instance ID
+		// that no longer exists in the DOM.
 		clean_up_tree();
 	}
 

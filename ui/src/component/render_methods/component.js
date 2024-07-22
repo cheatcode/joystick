@@ -19,6 +19,10 @@ const component = function component(Component = {}, props = {}) {
 	add_node_to_tree(component_instance);
 	parent.track_child(component_instance);
 
+	if (parent?.existing_children) {
+		console.log('EXISTING', parent?.existing_children);
+	}
+
 	const existing_component_on_parent = parent?.existing_children[component_instance?.id];
 	const new_component_on_parent = parent?.new_children[component_instance?.id];
 	const existing_instance_id_on_parent = existing_component_on_parent && existing_component_on_parent[new_component_on_parent?.length || 0];
