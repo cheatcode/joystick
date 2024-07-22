@@ -5,7 +5,15 @@ const add_node_to_tree = (node = {}, ssr_tree = null) => {
   const tree = (ssr_tree || tree_on_window);
 
   if (typeof window !== 'undefined') {
-    node.decimal_id = get_node_decimal_id(tree?.length, node?.parent);
+    const nodes_without_parents_count = tree?.reduce((total = 0, node = {}) => {
+      if (!node?.parent) {
+        total += 1;
+      }
+
+      return total;
+    }, 0);
+
+    node.decimal_id = get_node_decimal_id(nodes_without_parents_count, node?.parent);
   }
 
   tree.push(node);
