@@ -12,6 +12,8 @@ const get_node_decimal_id = (tree_length = 0, parent = null) => {
     }
   }
 
+  console.log(tree_length);
+
   // No parent, return top-level ID
   return `${tree_length + 1}`;
 };
