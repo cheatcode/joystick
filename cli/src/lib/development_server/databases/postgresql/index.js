@@ -117,12 +117,6 @@ const start_postgresql = async (port = 2610) => {
         get_platform_safe_path(`${process.cwd()}/.joystick/data/postgresql_${port}`),
         '-c log_destination=stderr -c logging_collector=off -c log_min_messages=WARNING',
       ],
-      // `sudo -u postgres bash ./postgres`,
-      // [
-      //   `-p ${postgresql_port}`,
-      //   '-D',
-      //   get_platform_safe_path(`${process.cwd()}/.joystick/data/postgresql_${port}`),
-      // ],
       { cwd: joystick_postgresql_bin_path, shell: '/bin/bash' }
     ) : child_process.spawn(
       joystick_postgres_path,
@@ -137,15 +131,7 @@ const start_postgresql = async (port = 2610) => {
       database_process.stderr.on('data', async (data) => {
         const stderr = data?.toString();
 
-        if (!stderr?.includes('another server might be running')) {
-          console.warn({ stderr });
-        }
-      });
-
-      database_process.stdout.on('data', async (data) => {
-        const stdout = data?.toString();
-        
-        if (stdout.includes('database system is ready to accept connections')) {
+        if (stderr.includes('database system is ready to accept connections')) {
           const process_id = (await get_process_id_from_port(postgresql_port))?.replace('\n', '');
           const createdb_command = process.platform === 'linux'
             ? `sudo -u postgres ${joystick_createdb_path} -h 127.0.0.1 -p ${postgresql_port} app`
@@ -161,6 +147,11 @@ const start_postgresql = async (port = 2610) => {
             }
           });
         }
+      });
+
+      database_process.stdout.on('data', async (data) => {
+        const stdout = data?.toString();
+        // TODO: What do here?
       });
     });
   } catch (exception) {
