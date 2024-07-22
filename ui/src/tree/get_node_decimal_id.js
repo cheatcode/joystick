@@ -1,15 +1,18 @@
 const get_node_decimal_id = (tree_length = 0, parent = null) => {
-  if (parent && parent?.decimal_id) {
-    const parent_decimal_id_parts = parent?.decimal_id?.split('.');
-    const last_part = parent_decimal_id_parts[parent_decimal_id_parts.length - 1];
-    const new_decimal =
-      parent_decimal_id_parts?.length > 1 ?
-        [...parent_decimal_id_parts, parseInt(last_part) + 1]?.join('.') :
-        [...parent_decimal_id_parts, 1]?.join('.');
+  if (parent && parent.decimal_id) {
+    const parent_decimal_id_parts = parent.decimal_id.split('.');
     
-    return new_decimal;
+    if (parent_decimal_id_parts.length === 1) {
+      // Adding first child to a top-level node
+      return `${parent.decimal_id}.1`;
+    } else {
+      // Incrementing the last part for siblings
+      const last_part = parseInt(parent_decimal_id_parts.pop(), 10);
+      return [...parent_decimal_id_parts, last_part + 1].join('.');
+    }
   }
 
+  // No parent, return top-level ID
   return `${tree_length + 1}`;
 };
 
