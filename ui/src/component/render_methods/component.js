@@ -16,26 +16,19 @@ const component = function component(Component = {}, props = {}) {
 
 	component_instance.parent = parent;
 
+	add_node_to_tree(component_instance);
 	parent.track_child(component_instance);
-
-	if (parent?.existing_children) {
-		console.log('EXISTING', parent?.existing_children);
-	}
 
 	const existing_component_on_parent = parent?.existing_children[component_instance?.id];
 	const new_component_on_parent = parent?.new_children[component_instance?.id];
 	const existing_instance_id_on_parent = existing_component_on_parent && existing_component_on_parent[(new_component_on_parent?.length - 1) || 0];
 	const existing_node_in_tree = get_node_from_tree(existing_instance_id_on_parent);
 
-	console.log({
-		component_instance_id: component_instance?.id,
-		new_component_on_parent,
-		existing_component_on_parent,
-		existing_instance_id_on_parent,
-		existing_node_in_tree,
-	});
-
 	if (existing_node_in_tree?.state) {
+		console.log('EXISTING STATE', {
+			existing_node_in_tree,
+			state: existing_node_in_tree?.state
+		});
 		component_instance.state = existing_node_in_tree?.state;
 	}
 
@@ -59,8 +52,6 @@ const component = function component(Component = {}, props = {}) {
 	component_instance.virtual_dom = virtual_dom;
 	component_instance.children = new_children;
 
-	add_node_to_tree(component_instance);
-	
 	return html;
 };
 
