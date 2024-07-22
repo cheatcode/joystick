@@ -60,6 +60,11 @@ const start_mongodb_process = (mongodb_port = 2610) => {
         });
       }
     });
+
+    database_process.stderr.on('data', async (data) => {
+      const stderr = data.toString();
+      console.log(stderr);
+    });
   });
 };
 
