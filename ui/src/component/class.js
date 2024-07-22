@@ -15,7 +15,6 @@ import types from "../lib/types.js";
 
 class Component {
 	constructor(component_options = {}) {
-		this.decimal_id = get_decimal_id(component_options.parent);
 		this.set_interval = this.set_interval.bind(this);
 		this.setInterval = this.setInterval.bind(this);
 		this.set_timeout = this.set_timeout.bind(this);
