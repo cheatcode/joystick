@@ -2,36 +2,20 @@ import child_process from "child_process";
 import fs from "fs";
 import util from "util";
 import os from "os";
-import path from 'path';
 import get_platform_safe_path from "../../../get_platform_safe_path.js";
 import get_process_id_from_port from "../../../get_process_id_from_port.js";
 import path_exists from "../../../path_exists.js";
 
 const exec = util.promisify(child_process.exec);
-const { rename, mkdir, readdir } = fs.promises;
+const { rename } = fs.promises;
 
 const setup_data_directory = async (postgresql_port = 2610) => {
   const legacy_data_directory_exists = await path_exists(".joystick/data/postgresql");
   let data_directory_exists = await path_exists(`.joystick/data/postgresql_${postgresql_port}`);
 
   if (legacy_data_directory_exists && !data_directory_exists) {
-    await rename('.joystick/data/postgresql', `.joystick/data/postgresql_${postgresql_port}`);
+    await rename ('.joystick/data/postgresql', `.joystick/data/postgresql_${postgresql_port}`);
     data_directory_exists = true;
-  }
-
-  if (!data_directory_exists) {
-    await mkdir(`.joystick/data/postgresql_${postgresql_port}`, { recursive: true });
-    data_directory_exists = true;
-  }
-
-  // NOTE: For Linux, we need to set granular permissions on the data directory path
-  // to avoid access denied errors from the OS.
-  if (process.platform === 'linux') {
-    await exec(`sudo chmod 755 /root`);
-    await exec(`sudo chmod 755 /root/${process.project_folder}`);
-    await exec(`sudo chmod 755 /root/${process.project_folder}/.joystick`);
-    await exec(`sudo chmod 700 /root/${process.project_folder}/.joystick/data/postgresql_${postgresql_port}`);
-    await exec(`sudo chown -R postgres:postgres /root/${process.project_folder}/.joystick/data/postgresql_${postgresql_port}`);
   }
 
   return data_directory_exists;
@@ -91,6 +75,14 @@ const start_postgresql = async (port = 2610) => {
         await exec(`sudo -u postgres ./initdb -D ${process.cwd()}/.joystick/data/postgresql_${port} --no-locale`, {
           cwd: joystick_postgresql_bin_path
         });
+
+        // NOTE: For Linux, we need to set granular permissions on the data directory path
+        // to avoid access denied errors from the OS.
+        await exec(`sudo chmod 755 /root`);
+        await exec(`sudo chmod 755 /root/${process.project_folder}`);
+        await exec(`sudo chmod 755 /root/${process.project_folder}/.joystick`);
+        await exec(`sudo chmod 700 /root/${process.project_folder}/.joystick/data/postgresql_${postgresql_port}`);
+        await exec(`sudo chown -R postgres:postgres /root/${process.project_folder}/.joystick/data/postgresql_${postgresql_port}`);
       } else {
         await exec(`${joystick_initdb_path} -D .joystick/data/postgresql_${port} --no-locale`);
       }
@@ -150,8 +142,10 @@ const start_postgresql = async (port = 2610) => {
       });
 
       database_process.stdout.on('data', async (data) => {
+        // NOTE: PostgreSQL (16) appears to route all output to stderr(?!). Have this for posterity
+        // sake and to avoid trapping useful information.
         const stdout = data?.toString();
-        // TODO: What do here?
+        console.log(stdout);
       });
     });
   } catch (exception) {
