@@ -34,7 +34,7 @@ const start_mongodb_process = (mongodb_port = 2610) => {
       mongodb_port,
       '--dbpath',
       get_platform_safe_path(`./.joystick/data/mongodb_${mongodb_port}`),
-      // '--quiet',
+      '--quiet',
       '--replSet',
       `joystick_${mongodb_port}`,
     ];
@@ -46,7 +46,6 @@ const start_mongodb_process = (mongodb_port = 2610) => {
 
     database_process.stdout.on('data', async (data) => {
       const stdout = data?.toString();
-      console.log(stdout);
 
       if (stdout.includes('Waiting for connections')) {
         const mongo_shell_command = get_mongo_shell_command();
