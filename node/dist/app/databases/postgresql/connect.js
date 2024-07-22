@@ -1,4 +1,4 @@
-import n from"chalk";import i from"fs";import g from"os";import d from"pg";import l from"../sql.js";const{Pool:m}=d,p=async(c={},h=2610)=>{const s=c?.connection||{hosts:[{hostname:"127.0.0.1",port:h}],database:"app",username:(g.userInfo()||{}).username||"",password:""};try{const a=s.hosts&&s.hosts[0],u={user:s?.username||"",database:s?.database,password:s?.password||"",host:a?.hostname,port:a?.port,...c?.options||{}};c?.options?.ssl?.ca&&(u.ssl={ca:i.readFileSync(c?.options?.ssl?.ca)});const r=new m(u);return{pool:r,query:(...t)=>r.query(...t).then(e=>e?.rows||[]).catch(e=>{throw console.log(n.redBright(`
+import n from"chalk";import h from"fs";import g from"os";import m from"pg";import l from"../sql.js";const{Pool:d}=m,p=async(c={},i=2610)=>{const s=c?.connection||{hosts:[{hostname:"127.0.0.1",port:i}],database:"app",username:process.platform==="linux"?"postgres":(g.userInfo()||{}).username||"",password:""};try{const a=s.hosts&&s.hosts[0],u={user:s?.username||"",database:s?.database,password:s?.password||"",host:a?.hostname,port:a?.port,...c?.options||{}};c?.options?.ssl?.ca&&(u.ssl={ca:h.readFileSync(c?.options?.ssl?.ca)});const r=new d(u);return{pool:r,query:(...t)=>r.query(...t).then(e=>e?.rows||[]).catch(e=>{throw console.log(n.redBright(`
 Failed SQL Statement:
 `)),console.log(t[0]),console.log(`
 `),console.log(n.redBright(`
@@ -27,4 +27,4 @@ Failed to connect to PostgreSQL. Please double-check connection settings and try
 
 Error from PostgreSQL:
 
-${n.redBright(a?.message)}`))}};var f=p;export{f as default};
+${n.redBright(a?.message)}`))}};var F=p;export{F as default};

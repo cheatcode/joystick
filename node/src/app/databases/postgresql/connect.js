@@ -12,8 +12,9 @@ const connect_postgresql = async (database_settings = {}, database_port = 2610) 
       { hostname: "127.0.0.1", port: database_port },
     ],
     database: "app",
-    // NOTE: PostgreSQL creates a default superuser based on the OS username.
-    username: (os.userInfo() || {}).username || "",
+    // NOTE: PostgreSQL creates a default superuser based on the OS username. If using Linux,
+    // we have to use the postgres user due to permissions.
+    username: process.platform === 'linux' ? 'postgres' : ((os.userInfo() || {}).username || ""),
     password: "",
   };
 
