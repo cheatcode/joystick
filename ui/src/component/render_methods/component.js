@@ -25,7 +25,7 @@ const component = function component(Component = {}, props = {}) {
 
 	const existing_component_on_parent = parent?.existing_children[component_instance?.id];
 	const new_component_on_parent = parent?.new_children[component_instance?.id];
-	const existing_instance_id_on_parent = existing_component_on_parent && existing_component_on_parent[new_component_on_parent?.length || 0];
+	const existing_instance_id_on_parent = existing_component_on_parent && existing_component_on_parent[(new_component_on_parent?.length - 1) || 0];
 	const existing_node_in_tree = get_node_from_tree(existing_instance_id_on_parent);
 
 	console.log({
