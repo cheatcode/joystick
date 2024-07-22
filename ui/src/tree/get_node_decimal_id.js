@@ -10,7 +10,7 @@ const get_node_decimal_id = (tree_length = 0, parent = null) => {
     return new_decimal;
   }
 
-  return tree_length + 1;
+  return `${tree_length + 1}`;
 };
 
 export default get_node_decimal_id;
