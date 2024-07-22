@@ -25,9 +25,11 @@ const component = function component(Component = {}, props = {}) {
 
 	if (existing_node_in_tree?.state) {
 		if (existing_node_in_tree?.state?.hasOwnProperty('active')) {
-			console.log('EXISTING', existing_node_in_tree?.state);
+			console.log('EXISTING', {
+				existing_node_in_tree,
+			});
 		}
-		
+
 		component_instance.state = existing_node_in_tree?.state;
 	}
 
