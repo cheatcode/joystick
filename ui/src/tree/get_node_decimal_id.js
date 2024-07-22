@@ -1,6 +1,10 @@
 const get_node_decimal_id = (tree_length = 0, parent = null) => {
+  console.log({
+    tree_length,
+    parent,
+  });
+  
   if (parent) {
-    console.log(parent);
     const parent_decimal_id_parts = parent?.decimal_id?.split('.');
     const last_part = parent_decimal_id_parts[parent_decimal_id_parts.length - 1];
     const new_decimal =
