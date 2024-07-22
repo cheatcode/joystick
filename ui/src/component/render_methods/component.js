@@ -26,12 +26,6 @@ const component = function component(Component = {}, props = {}) {
 	const existing_node_in_tree = get_node_from_tree(existing_instance_id_on_parent);
 
 	if (existing_node_in_tree?.state) {
-		if (existing_node_in_tree?.state?.hasOwnProperty('active')) {
-			console.log('EXISTING', {
-				existing_node_in_tree,
-			});
-		}
-
 		component_instance.state = existing_node_in_tree?.state;
 	}
 
