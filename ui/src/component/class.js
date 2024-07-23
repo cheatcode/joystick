@@ -256,6 +256,7 @@ class Component {
 		run_tree_job('attach_event_listeners', { root_instance_id: this?.instance_id });
 
 		run_tree_job('lifecycle.onRender', { root_instance_id: this?.instance_id });
+		run_tree_job('lifecycle.timers', { root_instance_id: this?.instance_id });
 
 		if (types.is_function(options?.after_set_state_rerender)) {
 			options.after_set_state_rerender();

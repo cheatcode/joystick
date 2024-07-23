@@ -40,6 +40,7 @@ const mount = (Component, props = {}, target = {}) => {
 
   run_tree_job('lifecycle.onMount', { root_instance_id: component_instance?.instance_id });
   run_tree_job('lifecycle.onRender', { root_instance_id: component_instance?.instance_id });
+  run_tree_job('lifecycle.timers', { root_instance_id: component_instance?.instance_id });
 
   window.addEventListener('beforeunload', () => {
     run_tree_job('lifecycle.onBeforeUnmount', { root_instance_id: component_instance?.instance_id });

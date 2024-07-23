@@ -113,6 +113,17 @@ const jobs = {
 			}
 		}
 	},
+	'lifecycle.timers': ({ root_instance_id }) => {
+		const nodes = get_nodes_for_job(root_instance_id);
+
+		for (let i = 0; i < nodes?.length; i += 1) {
+			const node = nodes[i];
+			if (types.is_function(node?.lifecycle?.timers)) {
+				node.lifecycle.timers(node);
+				track_function_call(`ui.${node?.options?.test?.name || generate_id()}.lifecycle.timers`, [node]);
+			}
+		}
+	},
 	'lifecycle.onMount': ({ root_instance_id }) => {
 		const nodes = get_nodes_for_job(root_instance_id);
 
