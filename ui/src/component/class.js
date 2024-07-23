@@ -258,10 +258,7 @@ class Component {
 			// parent instance. Doing this here ensures any tree jobs don't get tripped up
 			// by children they don't recognize.
 			this.children = new_children;
-			this.sync_children_to_parent(this.children, this.DOMNode, this.virtual_dom);
-
-			// NOTE: Set DOMNode after children are sync'd so this.DOMNode is kept fresh.
-			// this.DOMNode = patched_dom_node;
+			// this.sync_children_to_parent(this.children, this.DOMNode, this.virtual_dom);
 		};
 
 		run_tree_job('attach_event_listeners', { root_instance_id: this?.instance_id });
@@ -349,24 +346,24 @@ class Component {
   }
 
   sync_children_to_parent(children = {}, dom = {}, virtual_dom = {}) {
-  	// if (dom) {
-	  // 	const child_instance_ids = get_child_instance_ids(children);
-	  // 	const child_nodes = get_children_from_tree(child_instance_ids);
+  	if (dom) {
+	  	const child_instance_ids = get_child_instance_ids(children);
+	  	const child_nodes = get_children_from_tree(child_instance_ids);
 
-	  // 	// NOTE: Because we ultimately mount the parent's DOM node to the screen, we want to ensure
-	  // 	// that children of the parent reference the DOM node the *parent* created, not the one the
-	  // 	// child created when it rendered itself (that only exists temporarily to get back the HTML
-	  // 	// for the child at render time).
-	  // 	for (let i = 0; i < child_nodes?.length; i += 1) {
-	  // 		const child_node = child_nodes[i];
-	  // 		const child_node_in_parent_dom = dom.querySelector(`[js-i="${child_node?.instance_id}"]`);
+	  	// NOTE: Because we ultimately mount the parent's DOM node to the screen, we want to ensure
+	  	// that children of the parent reference the DOM node the *parent* created, not the one the
+	  	// child created when it rendered itself (that only exists temporarily to get back the HTML
+	  	// for the child at render time).
+	  	for (let i = 0; i < child_nodes?.length; i += 1) {
+	  		const child_node = child_nodes[i];
+	  		const child_node_in_parent_dom = dom.querySelector(`[js-i="${child_node?.instance_id}"]`);
 
-	  // 		child_node.dom = child_node_in_parent_dom;
-	  // 		child_node.DOMNode = child_node_in_parent_dom;
+	  		child_node.dom = child_node_in_parent_dom;
+	  		child_node.DOMNode = child_node_in_parent_dom;
 
-	  // 		replace_child_in_vdom(virtual_dom, child_node?.instance_id, child_node?.virtual_dom);
-	  // 	}
-  	// }
+	  		replace_child_in_vdom(virtual_dom, child_node?.instance_id, child_node?.virtual_dom);
+	  	}
+  	}
   }
 
   sync_dom_to_vdom() {
