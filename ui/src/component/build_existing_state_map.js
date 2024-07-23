@@ -3,7 +3,7 @@ const build_existing_state_map = (root_instance_id = {}, base_state_map = {}) =>
 
   if (typeof window !== 'undefined') {
     const root_node = window?.joystick?._internal?.tree?.find((node) => node?.instance_id === root_instance_id);
-    
+
     if (state_map[root_node?.id]) {
       state_map[root_node?.id] = [
         ...(state_map[root_node?.id] || []),
