@@ -24,15 +24,9 @@ const component = function component(Component = {}, props = {}) {
 	const existing_component_in_state_map = parent?.existing_state_map[component_instance?.id];
 	const existing_state_for_component = existing_component_in_state_map && existing_component_in_state_map[(new_component_on_parent?.length - 1) || 0];
 
-	console.log({
-		component_id: component_instance?.id,
-		instance_id: component_instance?.instance_id,
-		existing_state_for_component,
-	});
-	
-	// if (existing_node_in_tree?.state) {
-	// 	component_instance.state = existing_node_in_tree?.state;
-	// }
+	if (existing_state_for_component) {
+		component_instance.state = existing_state_for_component;
+	}
 
 	if (types.is_function(component_instance?.lifecycle?.onUpdateProps) || types.is_function(component_instance?.lifecycle?.on_update_props)) {
 		const has_different_props = nested_object_diff(existing_node_in_tree?.props, props);
