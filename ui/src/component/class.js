@@ -105,8 +105,11 @@ class Component {
 		defer_execution(() => {
 			this.rerender(rerender_options);
 		}, {
-			can_execute: () => !this.parent.rendering,
-			delay: 10, // NOTE: 10 milliseconds.
+			can_execute: () => {
+				console.log('PARENT RENDERING?', this.parent.rendering);
+				return !this.parent.rendering;
+			},
+			delay: 100, // NOTE: 10 milliseconds.
 			max_attempts: Infinity,
 		});
 
