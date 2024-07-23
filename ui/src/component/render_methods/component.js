@@ -24,6 +24,8 @@ const component = function component(Component = {}, props = {}) {
 	const existing_component_in_state_map = parent?.existing_state_map[component_instance?.id];
 	const existing_state_for_component = existing_component_in_state_map && existing_component_in_state_map[(new_component_on_parent?.length - 1) || 0];
 
+	console.log(existing_state_for_component);
+
 	if (existing_state_for_component) {
 		component_instance.state = existing_state_for_component;
 	}

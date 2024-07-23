@@ -228,10 +228,6 @@ class Component {
 
 		const new_children = {};
 		const existing_state_map = build_existing_state_map(this.instance_id);
-
-		console.log({
-			existing_state_map,
-		});
 	
 		// this.existing_children = { ...(this.children || {}) };
 
