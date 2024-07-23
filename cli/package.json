@@ -1,8 +1,8 @@
 {
-  "name": "@joystick.js/cli-canary-canary",
+  "name": "@joystick.js/cli-canary",
   "type": "module",
-  "version": "0.0.0-canary.1540",
-  "canary_version": "0.0.0-canary.1540",
+  "version": "0.0.0-canary.1535",
+  "canary_version": "0.0.0-canary.1541",
   "description": "The CLI for Joystick.",
   "main": "dist/index.js",
   "bin": {
