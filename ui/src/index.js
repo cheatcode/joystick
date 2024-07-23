@@ -34,7 +34,6 @@ const joystick = {
 	_external: {},
 	_internal: {
   	tree: [],
-    state_map: {},
 	},
 	accounts,
 	cache,

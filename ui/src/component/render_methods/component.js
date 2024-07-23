@@ -21,13 +21,18 @@ const component = function component(Component = {}, props = {}) {
 
 	const new_component_on_parent = parent?.new_children[component_instance?.id];
 
-	const existing_component_on_parent = parent?.existing_children[component_instance?.id];
-	const existing_instance_id_on_parent = existing_component_on_parent && existing_component_on_parent[(new_component_on_parent?.length - 1) || 0];
-	const existing_node_in_tree = get_node_from_tree(existing_instance_id_on_parent);
+	const existing_component_in_state_map = parent?.existing_state_map[component_instance?.id];
+	const existing_state_for_component = existing_component_in_state_map && existing_component_in_state_map[(new_component_on_parent?.length - 1) || 0];
 
-	if (existing_node_in_tree?.state) {
-		component_instance.state = existing_node_in_tree?.state;
-	}
+	console.log({
+		component_id: component_instance?.id,
+		instance_id: component_instance?.instance_id,
+		existing_state_for_component,
+	});
+	
+	// if (existing_node_in_tree?.state) {
+	// 	component_instance.state = existing_node_in_tree?.state;
+	// }
 
 	if (types.is_function(component_instance?.lifecycle?.onUpdateProps) || types.is_function(component_instance?.lifecycle?.on_update_props)) {
 		const has_different_props = nested_object_diff(existing_node_in_tree?.props, props);

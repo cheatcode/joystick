@@ -12,21 +12,14 @@ import replace_child_in_vdom from "../tree/replace_child_in_vdom.js";
 import run_tree_job from "../tree/jobs/run.js";
 import track_function_call from "../test/track_function_call.js";
 import types from "../lib/types.js";
-import get_node_decimal_id from './get_node_decimal_id.js';
 
 class Component {
 	constructor(component_options = {}) {
-		// this.decimal_id = get_node_decimal_id(component_options?.parent);
-
 		this.set_interval = this.set_interval.bind(this);
 		this.setInterval = this.setInterval.bind(this);
 		this.set_timeout = this.set_timeout.bind(this);
 		this.setTimeout = this.setTimeout.bind(this);
 		this.sync_dom_to_vdom = this.sync_dom_to_vdom.bind(this);
-
-		// if (typeof window !== 'undefined') {
-		// 	window.joystick._internal.state_map[this.decimal_id] = this;
-		// }
 		
 		register_component_options(this, component_options);
 	}
@@ -37,17 +30,17 @@ class Component {
     return div.innerHTML;
   }
 
-	compile_render_methods(new_children = {}, existing_children = {}, ssr_tree = null) {
+	compile_render_methods(new_children = {}, existing_state_map = {}, ssr_tree = null) {
 		return Object.entries(render_methods).reduce((methods, [key, value]) => {
 			let instance_to_bind = {
 				...(this || {}),
 			};
-			
+
 			if (key === 'component') {
 				instance_to_bind = {
 					...(this || {}),
 	        new_children,
-	        existing_children,
+	        existing_state_map,
 	        ssr_tree: ssr_tree ? {
 	        	push: (node) => {
 	        		ssr_tree.push(node);
@@ -113,7 +106,7 @@ class Component {
 		// NOTE: Pass both new_children and existing_children for consistency,
 		// even though existing_children don't exist at mount time.
 		const new_children = {};
-		this.existing_children = {};
+		// this.existing_children = {};
 
 		const component_html = this.render_to_html(new_children);
 		const html = this.replace_when_tags(component_html);
@@ -135,14 +128,17 @@ class Component {
 			// access to the data at render time.
 			const component_data = await this.fetch_data(api, req, {}, this);
 			const new_children = {};
-			this.existing_children = {};
-			let component_html = this.render_to_html(new_children, ssr_tree, render_for_ssr_options?.linkedom_document);
+			const existing_state_map = {};
+
+			// this.existing_children = {};
+
+			let component_html = this.render_to_html(new_children, existing_state_map, ssr_tree, render_for_ssr_options?.linkedom_document);
 			const child_data = {};
 
 			for (let i = 0; i < ssr_tree?.length; i += 1) {
 				const node = ssr_tree[i];
 				const node_data = await this.fetch_data(api, req, {}, node);
-				const node_html = node.render_to_html(new_children, ssr_tree, render_for_ssr_options?.linkedom_document);
+				const node_html = node.render_to_html(new_children, existing_state_map, ssr_tree, render_for_ssr_options?.linkedom_document);
 				component_html = component_html.replace(`{{${node.id}:${node.instance_id}}}`, node_html);
 				child_data[node?.id] = node_data;
 			}
@@ -173,8 +169,8 @@ class Component {
     return html;
 	}
 
-	render_to_html(new_children = {}, ssr_tree = null, linkedom_document = {}) {
-		const render_methods = this.compile_render_methods(new_children, this.existing_children, ssr_tree);
+	render_to_html(new_children = {}, existing_state_map = {}, ssr_tree = null, linkedom_document = {}) {
+		const render_methods = this.compile_render_methods(new_children, existing_state_map, ssr_tree);
 		const html = this.options.render({ ...(this || {}), ...render_methods });
 		const clean_html = this.cleanup_html(html, linkedom_document);
 		const sanitized_html = this.sanitize_html(clean_html);
@@ -220,8 +216,19 @@ class Component {
 		// run_tree_job('clear_timers', { root_instance_id: this?.instance_id });
 		run_tree_job('lifecycle.onBeforeRender', { root_instance_id: this?.instance_id });
 
+		/*
+			TODO:
+
+			- Swap existing_children idea with existing_state_map.
+			- existing_state_map will be a compilation of all state of children from this parent downward.
+			- Pass existing_state_map down to render_to_html() -> compile_render_methods().
+			- Each successive level should have access to that via its parent.
+		*/
+
 		const new_children = {};
-		this.existing_children = { ...(this.children || {}) };
+		const existing_state_map = build_existing_state_map(this.instance_id);
+	
+		// this.existing_children = { ...(this.children || {}) };
 
 		// NOTE: Once we have a copy of current children as existing_children
 		// in memory, dump them from the parent instance.
@@ -234,7 +241,7 @@ class Component {
 		// NOTE: As part of render_to_html(), we expect new_children to be populated
 		// with the new child instance_ids via the track_child method we pass to the
 		// render methods via the .bind() to the parent in compile_render_methods.
-		const component_html = this.render_to_html(new_children);
+		const component_html = this.render_to_html(new_children, existing_state_map);
 		const new_html = this.replace_when_tags(component_html);
 		const new_dom = this.render_html_to_dom(new_html);
 		const new_virtual_dom = this.render_dom_to_virtual_dom(new_dom);
