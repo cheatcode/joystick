@@ -23,12 +23,20 @@ const get_node_decimal_id = (parent = null) => {
   }
 
   const parent_decimal_id_parts = parent?.decimal_id?.split('.');
+
+  
   const last_part = parent_decimal_id_parts[parent_decimal_id_parts.length - 1];
   const new_decimal =
     parent_decimal_id_parts?.length > 1 ?
-      [...parent_decimal_id_parts, parseInt(last_part) + 1]?.join('.') :
-      [...parent_decimal_id_parts, 1]?.join('.');
+    [...parent_decimal_id_parts, parseInt(last_part) + 1]?.join('.') :
+    [...parent_decimal_id_parts, 1]?.join('.');
   
+  console.log({
+    parent_decimal_id_parts,
+    last_part,
+    new_decimal,
+  });
+
   return new_decimal;
 };
 
