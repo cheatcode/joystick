@@ -214,22 +214,14 @@ class Component {
 			options,
 		]);
 
+		// NOTE: We run clear_timers to prevent stuff getting stuck in memory (like a component instance
+		// that's referenced inside of the timer). If we don't do this, we can get stale instances that
+		// wreak havoc on the component tree and break renders in weird ways.
 		run_tree_job('clear_timers', { root_instance_id: this?.instance_id });
 		run_tree_job('lifecycle.onBeforeRender', { root_instance_id: this?.instance_id });
 
-		/*
-			TODO:
-
-			- Swap existing_children idea with existing_state_map.
-			- existing_state_map will be a compilation of all state of children from this parent downward.
-			- Pass existing_state_map down to render_to_html() -> compile_render_methods().
-			- Each successive level should have access to that via its parent.
-		*/
-
 		const new_children = {};
 		const existing_state_map = build_existing_state_map(this.instance_id);
-	
-		// this.existing_children = { ...(this.children || {}) };
 
 		// NOTE: Once we have a copy of current children as existing_children
 		// in memory, dump them from the parent instance.
