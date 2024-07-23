@@ -106,7 +106,7 @@ class Component {
 			this.rerender(rerender_options);
 		}, {
 			can_execute: () => {
-				console.log('PARENT RENDERING?', this.parent.rendering);
+				console.log('PARENT RENDERING?', this.parent?.rendering);
 				return !this.parent.rendering;
 			},
 			delay: 100, // NOTE: 10 milliseconds.
@@ -286,7 +286,7 @@ class Component {
 			options.after_refetch_data_rerender();
 		}
 
-		this.rendering = false;
+		// this.rendering = false;
 
 		// NOTE: Do after clean up so we don't reattach styles for old nodes.
 		run_tree_job('css');
