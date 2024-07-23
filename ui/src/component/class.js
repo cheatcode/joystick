@@ -12,9 +12,12 @@ import replace_child_in_vdom from "../tree/replace_child_in_vdom.js";
 import run_tree_job from "../tree/jobs/run.js";
 import track_function_call from "../test/track_function_call.js";
 import types from "../lib/types.js";
+import get_node_decimal_id from './get_node_decimal_id.js';
 
 class Component {
 	constructor(component_options = {}) {
+		this.decimal_id = get_node_decimal_id(component_options?.parent);
+
 		this.set_interval = this.set_interval.bind(this);
 		this.setInterval = this.setInterval.bind(this);
 		this.set_timeout = this.set_timeout.bind(this);
