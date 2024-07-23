@@ -13,31 +13,56 @@ const get_node_decimal_id = (parent = null) => {
     use the algo below to decide the new child ID.
   */
  
-  if (!parent) {
-    const state_map = window?.joystick?._internal?.state_map;
-    const top_level_keys = Object.keys(state_map)?.filter((key = '') => {
-      return key?.length === 1;
-    })?.length;
+  // if (!parent) {
+  //   const state_map = window?.joystick?._internal?.state_map;
+  //   const top_level_keys = Object.keys(state_map)?.filter((key = '') => {
+  //     return key?.length === 1;
+  //   })?.length;
 
-    return `${top_level_keys + 1}`;
-  }
+  //   return `${top_level_keys + 1}`;
+  // }
 
-  const parent_decimal_id_parts = parent?.decimal_id?.split('.');
+  // const map = {
+  //   1: {
+  //     '1.1': {
+  //       '1.1.1': {
+  //         '1.1.1.1': {
+  //           '1.1.1.1.1': {
+  //             '1.1.1.1.1.1': {
+  //               '1.1.1.1.1.1.1': {},
+  //             }
+  //           }
+  //         }
+  //       },
+  //       '1.1.2': {},
+  //     },
+  //     '1.2': {},
+  //     '1.3': {},
+  //   }
+  // };
 
+  // // 1 - layout
+  // // 1.1 - Page
+  // // 1.1.1 - Level One
+  // // 1.1.1.1 - Level Two
+  // // 1.1.1.1.1 - Level Three
+  // // 1.1.1.1.1.1 - Level Four
+  // // 1.1.1.1.1.1.1 - Level Five
+
+  // const parent_decimal_id_parts = parent?.decimal_id?.split('.');
+  // const last_part = parent_decimal_id_parts[parent_decimal_id_parts.length - 1];
+  // const new_decimal =
+  //   parent_decimal_id_parts?.length > 1 ?
+  //   [...parent_decimal_id_parts, parseInt(last_part) + 1]?.join('.') :
+  //   [...parent_decimal_id_parts, 1]?.join('.');
   
-  const last_part = parent_decimal_id_parts[parent_decimal_id_parts.length - 1];
-  const new_decimal =
-    parent_decimal_id_parts?.length > 1 ?
-    [...parent_decimal_id_parts, parseInt(last_part) + 1]?.join('.') :
-    [...parent_decimal_id_parts, 1]?.join('.');
-  
-  console.log({
-    parent_decimal_id_parts,
-    last_part,
-    new_decimal,
-  });
+  // console.log({
+  //   parent_decimal_id_parts,
+  //   last_part,
+  //   // new_decimal,
+  // });
 
-  return new_decimal;
+  // return new_decimal;
 };
 
 export default get_node_decimal_id;

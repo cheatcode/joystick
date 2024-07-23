@@ -16,7 +16,7 @@ import get_node_decimal_id from './get_node_decimal_id.js';
 
 class Component {
 	constructor(component_options = {}) {
-		this.decimal_id = get_node_decimal_id(component_options?.parent);
+		// this.decimal_id = get_node_decimal_id(component_options?.parent);
 
 		this.set_interval = this.set_interval.bind(this);
 		this.setInterval = this.setInterval.bind(this);
@@ -24,9 +24,9 @@ class Component {
 		this.setTimeout = this.setTimeout.bind(this);
 		this.sync_dom_to_vdom = this.sync_dom_to_vdom.bind(this);
 
-		if (typeof window !== 'undefined') {
-			window.joystick._internal.state_map[this.decimal_id] = this;
-		}
+		// if (typeof window !== 'undefined') {
+		// 	window.joystick._internal.state_map[this.decimal_id] = this;
+		// }
 		
 		register_component_options(this, component_options);
 	}
