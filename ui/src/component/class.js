@@ -108,7 +108,6 @@ class Component {
 		}, {
 			can_execute: () => {
 				const parent_in_tree = this?.parent ? get_node_from_tree(this.parent?.instance_id) : null;
-				console.log('PARENT IN TREE', parent_in_tree);
 				return !parent_in_tree?.rendering;
 			},
 			delay: 100, // NOTE: 10 milliseconds.
@@ -288,7 +287,7 @@ class Component {
 			options.after_refetch_data_rerender();
 		}
 
-		// this.rendering = false;
+		this.rendering = false;
 
 		// NOTE: Do after clean up so we don't reattach styles for old nodes.
 		run_tree_job('css');
