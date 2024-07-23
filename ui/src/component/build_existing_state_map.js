@@ -26,4 +26,4 @@ const build_existing_state_map = (root_instance_id = {}, base_state_map = {}) =>
   return {};
 };
 
-export default build_existing_map;
+export default build_existing_state_map;
