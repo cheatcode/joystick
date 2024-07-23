@@ -106,8 +106,8 @@ class Component {
 			this.rerender(rerender_options);
 		}, {
 			can_execute: () => {
-				console.log('PARENT RENDERING?', this.parent?.rendering);
-				return !this.parent.rendering;
+				console.log('PARENT RENDERING?', this.parent);
+				return !this.parent?.rendering;
 			},
 			delay: 100, // NOTE: 10 milliseconds.
 			max_attempts: Infinity,
