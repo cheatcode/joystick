@@ -214,7 +214,7 @@ class Component {
 			options,
 		]);
 
-		// run_tree_job('clear_timers', { root_instance_id: this?.instance_id });
+		run_tree_job('clear_timers', { root_instance_id: this?.instance_id });
 		run_tree_job('lifecycle.onBeforeRender', { root_instance_id: this?.instance_id });
 
 		/*
@@ -258,7 +258,7 @@ class Component {
 			// parent instance. Doing this here ensures any tree jobs don't get tripped up
 			// by children they don't recognize.
 			this.children = new_children;
-			// this.sync_children_to_parent(this.children, this.DOMNode, this.virtual_dom);
+			this.sync_children_to_parent(this.children, this.DOMNode, this.virtual_dom);
 		};
 
 		run_tree_job('attach_event_listeners', { root_instance_id: this?.instance_id });

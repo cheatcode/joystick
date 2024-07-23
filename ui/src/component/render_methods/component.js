@@ -38,7 +38,6 @@ const component = function component(Component = {}, props = {}) {
 	}
 
 	const new_children = {};
-	component_instance.existing_children = {};
 
 	const component_html = component_instance.render_to_html(new_children, parent.existing_state_map);
 	const html = component_instance.replace_when_tags(component_html);
