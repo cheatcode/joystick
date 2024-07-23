@@ -2,12 +2,11 @@ import build_existing_state_map from './build_existing_state_map.js';
 import clean_up_tree from "../tree/clean_up.js";
 import compile_state from "./state/compile.js";
 import constants from "../lib/constants.js";
-import defer_execution from "./defer_execution.js";
+import debounce from "../lib/debounce.js";
 import diff_virtual_dom from "./virtual_dom/diff.js";
 import generate_id from "../lib/generate_id.js";
 import get_child_instance_ids from "../tree/get_child_instance_ids.js";
 import get_children_from_tree from "../tree/get_children_from_tree.js";
-import get_node_from_tree from "../tree/get_node_from_tree.js";
 import register_component_options from "./register_component_options.js";
 import render_methods from './render_methods/index.js';
 import replace_child_in_vdom from "../tree/replace_child_in_vdom.js";
@@ -100,22 +99,6 @@ class Component {
         parsed_attributes[attribute.name] = attribute.value;
         return parsed_attributes;
       }, {});
-	}
-
-	queue_rerender(rerender_options = {}) {
-		defer_execution(() => {
-			this.rerender(rerender_options);
-		}, {
-			can_execute: () => {
-				const parent_in_tree = this?.parent ? get_node_from_tree(this.parent?.instance_id) : null;
-				return !parent_in_tree?.rendering;
-			},
-			delay: 100, // NOTE: 10 milliseconds.
-			max_attempts: Infinity,
-		});
-
-		// TODO: This would take in the re-render request and then do a deferred execution.
-		// If parent.rerender is true, defer the execution, else, run it.
 	}
 
 	render_for_mount() {
@@ -227,20 +210,24 @@ class Component {
 	}
 
 	rerender(options = {}) {
-		this.rendering = true;
-
 		track_function_call(`ui.${this?.options?.test?.name || generate_id()}.rerender`, [
 			options,
 		]);
 
-		// TODO:
 		// run_tree_job('clear_timers', { root_instance_id: this?.instance_id });
 		run_tree_job('lifecycle.onBeforeRender', { root_instance_id: this?.instance_id });
 
+		/*
+			TODO:
+
+			- Swap existing_children idea with existing_state_map.
+			- existing_state_map will be a compilation of all state of children from this parent downward.
+			- Pass existing_state_map down to render_to_html() -> compile_render_methods().
+			- Each successive level should have access to that via its parent.
+		*/
+
 		const new_children = {};
 		const existing_state_map = build_existing_state_map(this.instance_id);
-
-		console.log({ id: this?.options?.wrapper?.id, instance_id: this?.instance_id, existing_state_map });
 	
 		// this.existing_children = { ...(this.children || {}) };
 
@@ -288,8 +275,6 @@ class Component {
 		if (types.is_function(options?.after_refetch_data_rerender)) {
 			options.after_refetch_data_rerender();
 		}
-
-		this.rendering = false;
 
 		// NOTE: Do after clean up so we don't reattach styles for old nodes.
 		run_tree_job('css');
@@ -339,7 +324,7 @@ class Component {
       ...state,
     });
 
-    this.queue_rerender({
+    this.rerender({
       after_set_state_rerender: () => {
         if (callback && types.is_function(callback)) {
           callback();
