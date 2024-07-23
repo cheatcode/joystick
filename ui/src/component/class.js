@@ -7,6 +7,7 @@ import diff_virtual_dom from "./virtual_dom/diff.js";
 import generate_id from "../lib/generate_id.js";
 import get_child_instance_ids from "../tree/get_child_instance_ids.js";
 import get_children_from_tree from "../tree/get_children_from_tree.js";
+import get_node_from_tree from "../tree/get_node_from_tree.js";
 import register_component_options from "./register_component_options.js";
 import render_methods from './render_methods/index.js';
 import replace_child_in_vdom from "../tree/replace_child_in_vdom.js";
@@ -106,8 +107,9 @@ class Component {
 			this.rerender(rerender_options);
 		}, {
 			can_execute: () => {
-				console.log('PARENT RENDERING?', this.parent);
-				return !this.parent?.rendering;
+				const parent_in_tree = this?.parent ? get_node_from_tree(this.parent?.instance_id) : null;
+				console.log('PARENT IN TREE', parent_in_tree);
+				return !parent_in_tree?.rendering;
 			},
 			delay: 100, // NOTE: 10 milliseconds.
 			max_attempts: Infinity,
