@@ -38,7 +38,7 @@ const component = function component(Component = {}, props = {}) {
 	const new_children = {};
 	component_instance.existing_children = {};
 
-	const component_html = component_instance.render_to_html(new_children);
+	const component_html = component_instance.render_to_html(new_children, parent.existing_state_map);
 	const html = component_instance.replace_when_tags(component_html);
 	const dom = component_instance.render_html_to_dom(html);
 	const virtual_dom = component_instance.render_dom_to_virtual_dom(dom);
