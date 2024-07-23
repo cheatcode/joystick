@@ -239,6 +239,8 @@ class Component {
 
 		const new_children = {};
 		const existing_state_map = build_existing_state_map(this.instance_id);
+
+		console.log({ id: this?.wrapper?.id, instance_id: this?.instance_id, existing_state_map });
 	
 		// this.existing_children = { ...(this.children || {}) };
 
