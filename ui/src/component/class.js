@@ -23,6 +23,10 @@ class Component {
 		this.set_timeout = this.set_timeout.bind(this);
 		this.setTimeout = this.setTimeout.bind(this);
 		this.sync_dom_to_vdom = this.sync_dom_to_vdom.bind(this);
+
+		if (typeof window !== 'undefined' && !component_options?.parent) {
+			window.joystick._internal.state_map[this.decimal_id] = this;
+		}
 		
 		register_component_options(this, component_options);
 	}
