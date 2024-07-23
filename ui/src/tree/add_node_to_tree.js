@@ -13,6 +13,10 @@ const add_node_to_tree = (node = {}, ssr_tree = null) => {
       return total;
     }, 0);
 
+    console.log({
+      nodes_without_parents_count,
+    })
+
     node.decimal_id = get_node_decimal_id(nodes_without_parents_count, node?.parent);
   }
 
