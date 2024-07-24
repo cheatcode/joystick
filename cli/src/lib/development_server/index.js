@@ -84,6 +84,7 @@ const handle_signal_events = (process_ids = [], node_major_version = 0, __dirnam
 };
 
 const handle_signal_hmr_update = async (jobs = []) => {
+  console.log(jobs);
   const has_settings_change = jobs?.find((job) => (job?.path?.match(constants.SETTINGS_FILE_NAME_REGEX))?.length > 0);
   const has_i18n_change = jobs?.find((job) => job?.path?.includes('i18n'));
   const has_index_html_change = jobs?.find((job) => job?.path?.includes('index.html'));
