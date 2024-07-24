@@ -139,6 +139,8 @@ const process_file_watcher_jobs = async (jobs = [], after_run_functions = {}) =>
 			const job_to_run = jobs[i];
 			const job = get_job_to_be_done(job_to_run);
 
+			console.log('JOB', job);
+
 			await run_job(job);
 
 			if (job?.after_run_tasks) {
