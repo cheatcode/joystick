@@ -211,6 +211,7 @@ const watch_for_changes = (after_run_functions = {}, watch_for_changes_options =
 			// triggering multiple HMR calls or server restarts for files related to the
 			// same job. This is near-instant, so there's no delay for the developer.
 			debounce(async () => {
+				console.log(file_watcher_jobs);
 				await process_file_watcher_jobs(file_watcher_jobs, after_run_functions);
 				process.initial_build_complete = true;
 				file_watcher_jobs = [];
