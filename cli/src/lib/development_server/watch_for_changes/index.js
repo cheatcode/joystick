@@ -149,6 +149,8 @@ const process_file_watcher_jobs = async (jobs = [], after_run_functions = {}) =>
 			}
 		}
 
+		console.log('AFTER RUN TASKS', job);
+
 		const tasks_to_run = Array.from(after_run_tasks);
 
 		for (let i = 0; i < tasks_to_run?.length; i += 1) {
