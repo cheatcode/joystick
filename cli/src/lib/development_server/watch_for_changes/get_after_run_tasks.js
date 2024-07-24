@@ -9,6 +9,7 @@ const get_after_run_tasks = (path = '') => {
   ) && !path.includes(
     get_platform_safe_path('lib/node')
   );
+  const is_css_path = path.includes('css/');
   const is_i18n_path = path.includes('i18n');
   const is_settings_path = (path.match(constants.SETTINGS_FILE_NAME_REGEX))?.length > 0;
   const is_ui_path = path.includes(
@@ -17,6 +18,10 @@ const get_after_run_tasks = (path = '') => {
   const is_ui_update = (process.hmr_server_process && process.hmr_server_process.has_connections) &&
     (is_ui_path || is_i18n_path || is_settings_path) ||
     false;
+  
+  if (is_css_path) {
+    return ['hot_module_reload'];
+  }
 
   if (is_ui_update) {
     // NOTE: As part of hot_module_reload, the server will be restarted after a client has
