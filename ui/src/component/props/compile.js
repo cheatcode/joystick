@@ -9,7 +9,7 @@ const compile = (default_props_from_options = {}, props_from_options = {}) => {
 
   return props.reduce((compiled_props, prop_name) => {
     const prop = props_from_options[prop_name];
-    const prop_default = default_props_from_options[prop_name] || null;
+    const prop_default = default_props_from_options[prop_name];
     const prop_has_value = !types.is_undefined(prop) && !types.is_null(prop);
 
     compiled_props[prop_name] = prop_has_value ? prop : prop_default;
