@@ -155,6 +155,8 @@ const hmr_client = (() =>
       const joystick_index_css = document.head.querySelector('link[href="/_joystick/index.css"]');
       const joystick_index_client_js = document.body.querySelector('script[src="/_joystick/index.client.js"]');
 
+      console.log('MESSAGE', message);
+      
       if (message?.index_html_changed) {
         location.reload();
       }
