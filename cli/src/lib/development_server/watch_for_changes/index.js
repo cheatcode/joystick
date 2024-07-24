@@ -139,8 +139,6 @@ const process_file_watcher_jobs = async (jobs = [], after_run_functions = {}) =>
 			const job_to_run = jobs[i];
 			const job = get_job_to_be_done(job_to_run);
 
-			console.log('JOB', job);
-
 			await run_job(job);
 
 			if (job?.after_run_tasks) {
@@ -155,8 +153,6 @@ const process_file_watcher_jobs = async (jobs = [], after_run_functions = {}) =>
 
 		for (let i = 0; i < tasks_to_run?.length; i += 1) {
 			const after_run_task = tasks_to_run[i];
-
-			console.log('ART', after_run_task);
 
 			if (types.is_function(after_run_functions[after_run_task])) {
 				await after_run_functions[after_run_task](jobs);
@@ -215,7 +211,6 @@ const watch_for_changes = (after_run_functions = {}, watch_for_changes_options =
 			// triggering multiple HMR calls or server restarts for files related to the
 			// same job. This is near-instant, so there's no delay for the developer.
 			debounce(async () => {
-				console.log(file_watcher_jobs);
 				await process_file_watcher_jobs(file_watcher_jobs, after_run_functions);
 				process.initial_build_complete = true;
 				file_watcher_jobs = [];

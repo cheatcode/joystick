@@ -26,7 +26,6 @@ export default (() => {
           }
 
           if (parsed_message?.type === 'FILE_CHANGE') {
-            console.log('SEND FILE CHANGE HMR');
             connection.connection.send(
               JSON.stringify({
                 type: "FILE_CHANGE",
