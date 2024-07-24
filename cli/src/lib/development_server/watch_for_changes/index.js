@@ -156,6 +156,8 @@ const process_file_watcher_jobs = async (jobs = [], after_run_functions = {}) =>
 		for (let i = 0; i < tasks_to_run?.length; i += 1) {
 			const after_run_task = tasks_to_run[i];
 
+			console.log('ART', after_run_task);
+
 			if (types.is_function(after_run_functions[after_run_task])) {
 				await after_run_functions[after_run_task](jobs);
 			}
