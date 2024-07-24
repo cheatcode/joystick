@@ -90,6 +90,15 @@ const handle_signal_hmr_update = async (jobs = []) => {
   const has_index_css_change = jobs?.find((job) => job?.path?.includes('index.css') || job?.path?.incudes('css/'));
   const has_index_client_change = jobs?.find((job) => job?.path?.includes('index.client.js'));
 
+  console.log('THIS', {
+    type: 'FILE_CHANGE',
+    settings: has_settings_change ? await load_settings(process.env.NODE_ENV) : null,
+    i18n_change: !!has_i18n_change,
+    index_html_change: !!has_index_html_change,
+    index_css_change: !!has_index_css_change,
+    index_client_change: !!has_index_client_change,
+  });
+  
   process.hmr_server_process.send(JSON.stringify({
     type: 'FILE_CHANGE',
     settings: has_settings_change ? await load_settings(process.env.NODE_ENV) : null,
