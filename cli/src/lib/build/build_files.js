@@ -84,7 +84,7 @@ const handle_build_for_browser = (browser_paths = [], options = {}) => {
     platform: "browser",
     format: "esm",
     bundle: true,
-    sourcemap: true,
+    // sourcemap: true,
     entryPoints: browser_paths?.map((file) => file.path),
     entryNames: '[dir]/[name]',
     outbase: './',
