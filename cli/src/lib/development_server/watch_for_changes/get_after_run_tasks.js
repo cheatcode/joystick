@@ -18,6 +18,11 @@ const get_after_run_tasks = (path = '') => {
   const is_ui_update = (process.hmr_server_process && process.hmr_server_process.has_connections) &&
     (is_ui_path || is_i18n_path || is_settings_path) ||
     false;
+
+  console.log({
+    path,
+    is_css_path,
+  })
   
   if (is_css_path) {
     return ['hot_module_reload'];
