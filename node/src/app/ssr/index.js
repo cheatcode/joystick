@@ -49,8 +49,8 @@ const build_html_response_for_browser = (options = {}) => {
 			</script>
 			<script type="module" src="/_joystick/utils/process.js"></script>
       <script type="module" src="/_joystick/index.client.js"></script>
-      ${options?.render_component_path ? `<script type="module" src="/_joystick/${options?.render_component_path}"></script>` : ''}
-      ${options?.render_layout_path ? `<script type="module" src="/_joystick/${options?.render_layout_path}"></script>` : ''}
+      ${options?.render_component_path ? `<script data-js-component type="module" src="/_joystick/${options?.render_component_path}"></script>` : ''}
+      ${options?.render_layout_path ? `<script data-js-layout type="module" src="/_joystick/${options?.render_layout_path}"></script>` : ''}
       ${is_development ? `<script type="module" src="/_joystick/hmr/client.js"></script>` : ''}
 		`);
 };

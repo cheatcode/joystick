@@ -50,15 +50,6 @@ const register_getters = (express_app = {}, getter_definitions = [], api_context
         });
       },
 		);
-		
-		// express_app.get('/api/_getters/:getter_name', (req = {}, res = {}) => {
-		// 	// NOTE: This works because it comes after the explicit registrations above.
-		// 	return res.status(404).send(
-		// 		JSON.stringify({
-		// 			errors: [format_api_error(new Error(`Getter ${req?.params?.getter_name} not found`))],
-		// 		})
-		// 	);
-		// });
 	}
 };
 
