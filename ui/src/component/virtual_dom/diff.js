@@ -1,6 +1,7 @@
 import render_virtual_dom_to_dom from './render_virtual_dom_to_dom.js';
 
 const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
+const XLINK_NAMESPACE = 'http://www.w3.org/1999/xlink';
 
 const is_svg_tag = (tag_name) => {
   const svg_tags = ['svg', 'path', 'rect', 'circle', 'line', 'polyline', 'polygon', 'text', 'g', 'use'];
@@ -42,12 +43,21 @@ const update_attributes = (element, old_attrs, new_attrs, is_svg = false) => {
   // Set new or changed attributes
   for (const attr in new_attrs) {
     if (old_attrs[attr] !== new_attrs[attr]) {
-      if (is_svg) {
-        element.setAttributeNS(null, attr, new_attrs[attr]);
-      } else {
-        element.setAttribute(attr, new_attrs[attr]);
-      }
+      set_attribute(element, attr, new_attrs[attr], is_svg);
     }
+  }
+};
+
+const set_attribute = (element, attr, value, is_svg) => {
+  if (is_svg) {
+    if (attr.startsWith('xlink:')) {
+      element.setAttributeNS(XLINK_NAMESPACE, attr, value);
+    } else {
+      // For SVG elements, we use setAttribute for most attributes
+      element.setAttribute(attr, value);
+    }
+  } else {
+    element.setAttribute(attr, value);
   }
 };
 
