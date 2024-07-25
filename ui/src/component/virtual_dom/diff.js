@@ -55,23 +55,23 @@ const diff_children = (old_virtual_dom_children = [], new_virtual_dom_children =
   }
 
   for (let i = old_virtual_dom_children.length; i < new_virtual_dom_children.length; i += 1) {
-    patches.push((parent) => {
-      parent.appendChild(create_dom_node(new_virtual_dom_children[i]));
+    patches.push((node) => {
+      node.appendChild(create_dom_node(new_virtual_dom_children[i]));
     });
   }
 
   for (let i = new_virtual_dom_children.length; i < old_virtual_dom_children.length; i += 1) {
-    patches.push((parent) => {
-      parent.removeChild(parent.childNodes[i]);
+    patches.push((node) => {
+      node.removeChild(node.childNodes[i]);
     });
   }
 
   const filtered_patches = patches.filter(Boolean);
   if (filtered_patches.length === 0) return null;
 
-  return parent => {
+  return node => {
     for (let i = 0; i < filtered_patches.length; i += 1) {
-      filtered_patches[i](parent, parent.childNodes[i]);
+      filtered_patches[i](node.childNodes[i] || node);
     }
   };
 };
@@ -80,21 +80,28 @@ const get_dom_patches = (old_virtual_dom_node = null, new_virtual_dom_node = nul
   if (!old_virtual_dom_node && !new_virtual_dom_node) return null;
 
   if (!old_virtual_dom_node || !new_virtual_dom_node) {
-    return (parent, child) => {
-      if (child) parent.removeChild(child);
-      if (new_virtual_dom_node) parent.appendChild(create_dom_node(new_virtual_dom_node));
+    return (node) => {
+      if (node.parentNode) {
+        if (!new_virtual_dom_node) {
+          node.parentNode.removeChild(node);
+        } else {
+          node.parentNode.replaceChild(create_dom_node(new_virtual_dom_node), node);
+        }
+      }
     };
   }
 
   if (typeof old_virtual_dom_node === 'string' && typeof new_virtual_dom_node === 'string' && old_virtual_dom_node !== new_virtual_dom_node) {
-    return (parent, child) => {
-      child.nodeValue = new_virtual_dom_node;
+    return (node) => {
+      node.nodeValue = new_virtual_dom_node;
     };
   }
 
   if (typeof old_virtual_dom_node !== typeof new_virtual_dom_node || old_virtual_dom_node.type !== new_virtual_dom_node.type) {
-    return (parent, child) => {
-      parent.replaceChild(create_dom_node(new_virtual_dom_node), child);
+    return (node) => {
+      if (node.parentNode) {
+        node.parentNode.replaceChild(create_dom_node(new_virtual_dom_node), node);
+      }
     };
   }
 
@@ -108,9 +115,9 @@ const get_dom_patches = (old_virtual_dom_node = null, new_virtual_dom_node = nul
 
   if (patch_functions.length === 0) return null;
 
-  return (parent, child) => {
+  return (node) => {
     for (let i = 0; i < patch_functions.length; i += 1) {
-      patch_functions[i](child);
+      patch_functions[i](node);
     }
   };
 };
