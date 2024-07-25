@@ -108,54 +108,47 @@ const get_dom_patches = (old_virtual_node = undefined, new_virtual_node = undefi
     const old_children = old_virtual_node.children || [];
     const new_children = new_virtual_node.children || [];
 
-    const old_keys = new Map();
-    const new_keys = new Map();
-    old_children.forEach((child, index) => {
-      const key = child.attributes && child.attributes.key !== undefined ? child.attributes.key : index;
-      old_keys.set(key, index);
-    });
-    new_children.forEach((child, index) => {
-      const key = child.attributes && child.attributes.key !== undefined ? child.attributes.key : index;
-      new_keys.set(key, index);
-    });
+    const get_key = (child) => child.attributes && child.attributes.key !== undefined ? child.attributes.key : null;
+
+    const old_keys = new Map(old_children.map((child, index) => [get_key(child) || index, child]));
+    const new_keys = new Map(new_children.map((child, index) => [get_key(child) || index, child]));
 
     const patches = [];
 
     // Remove old children that are not in the new set
     old_children.forEach((old_child, index) => {
-      const old_key = old_child.attributes && old_child.attributes.key !== undefined ? old_child.attributes.key : index;
-      if (!new_keys.has(old_key)) {
-        patches.push((parent) => {
-          const child_to_remove = parent.childNodes[index];
+      const key = get_key(old_child) || index;
+      if (!new_keys.has(key)) {
+        patches.push(() => {
+          const child_to_remove = node.childNodes[index];
           if (child_to_remove) {
-            parent.removeChild(child_to_remove);
+            node.removeChild(child_to_remove);
           }
         });
       }
     });
 
-    // Update existing children and add new ones
+    let old_index = 0;
     new_children.forEach((new_child, new_index) => {
-      const new_key = new_child.attributes && new_child.attributes.key !== undefined ? new_child.attributes.key : new_index;
-      const old_index = old_keys.get(new_key);
+      const new_key = get_key(new_child) || new_index;
+      const old_child = old_keys.get(new_key);
 
-      if (old_index === undefined) {
+      if (!old_child) {
         // Add new child
-        patches.push((parent) => {
+        patches.push(() => {
           const new_node = create_element(new_child, is_svg);
-          if (new_index < parent.childNodes.length) {
-            parent.insertBefore(new_node, parent.childNodes[new_index]);
+          if (new_index < node.childNodes.length) {
+            node.insertBefore(new_node, node.childNodes[new_index]);
           } else {
-            parent.appendChild(new_node);
+            node.appendChild(new_node);
           }
         });
       } else {
         // Update existing child
-        const old_child = old_children[old_index];
         const child_patch = get_dom_patches(old_child, new_child, is_svg);
         if (child_patch) {
-          patches.push((parent) => {
-            const child_node = parent.childNodes[new_index];
+          patches.push(() => {
+            const child_node = node.childNodes[old_index];
             if (child_node) {
               child_patch(child_node);
             }
@@ -164,19 +157,25 @@ const get_dom_patches = (old_virtual_node = undefined, new_virtual_node = undefi
 
         // Move the child if necessary
         if (old_index !== new_index) {
-          patches.push((parent) => {
-            const child_node = parent.childNodes[old_index];
-            const reference_node = parent.childNodes[new_index];
-            if (child_node && reference_node) {
-              parent.insertBefore(child_node, reference_node);
+          patches.push(() => {
+            const child_node = node.childNodes[old_index];
+            const reference_node = node.childNodes[new_index];
+            if (child_node && reference_node && child_node !== reference_node) {
+              node.insertBefore(child_node, reference_node);
             }
           });
         }
+        old_index++;
       }
     });
 
     // Apply all patches
-    patches.forEach(patch => patch(node));
+    patches.forEach(patch => patch());
+
+    // Remove any remaining old children
+    while (node.childNodes.length > new_children.length) {
+      node.removeChild(node.lastChild);
+    }
 
     return node;
   };
