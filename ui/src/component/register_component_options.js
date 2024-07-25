@@ -25,6 +25,7 @@ const register_component_options = (component_instance = {}, component_options =
 		load: (dynamic_page_options = {}) => dynamic_page.load(component_instance, dynamic_page_options),
 	};
 
+	component_instance.dynamic_page_props = {};
 	component_instance.events = component_options?.events;
 	component_instance.instance_id = generate_id(8);
 	component_instance.lifecycle = component_options?.lifecycle || {};
