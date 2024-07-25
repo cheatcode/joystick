@@ -4,8 +4,8 @@ const get_replace_node_patch = (new_virtual_node) => {
   return (node) => {
     const new_dom_node = new_virtual_node ? render_virtual_dom_to_dom(new_virtual_node) : null;
 
-    if (node && new_dom_node) {
-      node.replaceWith(new_dom_node);
+    if (node && node.parentNode && new_dom_node) {
+      node.parentNode.replaceChild(new_dom_node, node);
     }
 
     return new_dom_node;
@@ -24,6 +24,8 @@ const get_remove_node_patch = () => {
 
 const diff_attributes = (old_attributes, new_attributes) => {
   return (node) => {
+    if (!node || node.nodeType !== Node.ELEMENT_NODE) return;
+
     // Remove old attributes
     for (const attr in old_attributes) {
       if (!(attr in new_attributes)) {
@@ -42,6 +44,8 @@ const diff_attributes = (old_attributes, new_attributes) => {
 
 const diff_children = (old_children, new_children) => {
   return (node) => {
+    if (!node) return;
+
     const patches = [];
     const max_length = Math.max(old_children.length, new_children.length);
 
@@ -54,7 +58,15 @@ const diff_children = (old_children, new_children) => {
       const patch = patches[i];
 
       if (patch) {
-        patch(child_node);
+        const result = patch(child_node);
+        if (result !== undefined && result !== child_node) {
+          // If the patch returned a new node, replace the old one
+          if (child_node && child_node.parentNode) {
+            child_node.parentNode.replaceChild(result, child_node);
+          } else if (!child_node) {
+            node.appendChild(result);
+          }
+        }
       }
     }
 
@@ -70,7 +82,11 @@ const get_dom_patches = (old_virtual_node = undefined, new_virtual_node = undefi
     return null;
   }
 
-  if (old_virtual_node === undefined || new_virtual_node === undefined) {    
+  if (old_virtual_node === undefined) {
+    return (node) => render_virtual_dom_to_dom(new_virtual_node);
+  }
+
+  if (new_virtual_node === undefined) {
     return get_remove_node_patch();
   }
 
@@ -79,9 +95,17 @@ const get_dom_patches = (old_virtual_node = undefined, new_virtual_node = undefi
   if (is_text_node) {
     if (old_virtual_node !== new_virtual_node) {
       return (node) => {
-        const new_text_node = document.createTextNode(new_virtual_node);
-        node.replaceWith(new_text_node);
-        return new_text_node;
+        const new_content = typeof new_virtual_node === 'string' ? new_virtual_node : '';
+        if (node && node.nodeType === Node.TEXT_NODE) {
+          node.textContent = new_content;
+          return node;
+        } else {
+          const new_text_node = document.createTextNode(new_content);
+          if (node && node.parentNode) {
+            node.parentNode.replaceChild(new_text_node, node);
+          }
+          return new_text_node;
+        }
       };
     }
     return null;
@@ -94,7 +118,7 @@ const get_dom_patches = (old_virtual_node = undefined, new_virtual_node = undefi
   }
 
   return (node) => {
-    if (!node) return;
+    if (!node) return node;
 
     diff_attributes(old_virtual_node.attributes || {}, new_virtual_node.attributes || {})(node);
 
