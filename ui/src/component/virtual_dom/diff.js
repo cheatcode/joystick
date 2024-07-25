@@ -22,10 +22,6 @@ const create_element = (virtual_node, is_svg = false) => {
 
   update_attributes(element, {}, virtual_node.attributes || {}, is_svg);
   
-  if (virtual_node.key !== undefined) {
-    element.setAttribute('data-key', virtual_node.key);
-  }
-  
   (virtual_node.children || []).forEach(child => {
     element.appendChild(create_element(child, is_svg));
   });
@@ -37,7 +33,6 @@ const update_attributes = (element, old_attrs, new_attrs, is_svg = false) => {
   const all_attrs = new Set([...Object.keys(old_attrs), ...Object.keys(new_attrs)]);
   
   for (const attr of all_attrs) {
-    if (attr === 'key') continue; // Skip the key attribute
     if (!(attr in new_attrs)) {
       element.removeAttribute(attr);
     } else if (old_attrs[attr] !== new_attrs[attr]) {
@@ -116,10 +111,12 @@ const get_dom_patches = (old_virtual_node = undefined, new_virtual_node = undefi
     const old_keys = new Map();
     const new_keys = new Map();
     old_children.forEach((child, index) => {
-      old_keys.set(child.key !== undefined ? child.key : index, index);
+      const key = child.attributes && child.attributes.key !== undefined ? child.attributes.key : index;
+      old_keys.set(key, index);
     });
     new_children.forEach((child, index) => {
-      new_keys.set(child.key !== undefined ? child.key : index, index);
+      const key = child.attributes && child.attributes.key !== undefined ? child.attributes.key : index;
+      new_keys.set(key, index);
     });
 
     let old_index = 0;
@@ -129,8 +126,8 @@ const get_dom_patches = (old_virtual_node = undefined, new_virtual_node = undefi
     while (new_index < new_children.length) {
       const old_child = old_children[old_index];
       const new_child = new_children[new_index];
-      const old_key = old_child ? (old_child.key !== undefined ? old_child.key : old_index) : null;
-      const new_key = new_child.key !== undefined ? new_child.key : new_index;
+      const old_key = old_child && old_child.attributes ? old_child.attributes.key : old_index;
+      const new_key = new_child.attributes && new_child.attributes.key !== undefined ? new_child.attributes.key : new_index;
 
       if (old_child && !new_keys.has(old_key)) {
         // Remove old child
