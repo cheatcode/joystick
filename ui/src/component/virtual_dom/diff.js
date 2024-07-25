@@ -1,5 +1,3 @@
-import render_virtual_dom_to_dom from './render_virtual_dom_to_dom.js';
-
 const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
 const XLINK_NAMESPACE = 'http://www.w3.org/1999/xlink';
 
@@ -23,8 +21,10 @@ const create_element = (virtual_node, is_svg = false) => {
   }
 
   update_attributes(element, {}, virtual_node.attributes || {}, is_svg);
-  if (virtual_node.component_id) element.setAttribute('js-c', virtual_node.component_id);
-  if (virtual_node.instance_id) element.setAttribute('js-i', virtual_node.instance_id);
+  
+  if (virtual_node.key !== undefined) {
+    element.setAttribute('data-key', virtual_node.key);
+  }
   
   (virtual_node.children || []).forEach(child => {
     element.appendChild(create_element(child, is_svg));
@@ -37,6 +37,7 @@ const update_attributes = (element, old_attrs, new_attrs, is_svg = false) => {
   const all_attrs = new Set([...Object.keys(old_attrs), ...Object.keys(new_attrs)]);
   
   for (const attr of all_attrs) {
+    if (attr === 'key') continue; // Skip the key attribute
     if (!(attr in new_attrs)) {
       element.removeAttribute(attr);
     } else if (old_attrs[attr] !== new_attrs[attr]) {
@@ -51,10 +52,6 @@ const set_attribute = (element, attr, value, is_svg) => {
   } else {
     element.setAttribute(attr, value);
   }
-};
-
-const is_form_element = (node) => {
-  return node && node.nodeName && ['INPUT', 'SELECT', 'TEXTAREA'].includes(node.nodeName.toUpperCase());
 };
 
 const get_dom_patches = (old_virtual_node = undefined, new_virtual_node = undefined, is_svg = false) => {
@@ -112,55 +109,65 @@ const get_dom_patches = (old_virtual_node = undefined, new_virtual_node = undefi
     // Update attributes
     update_attributes(node, old_virtual_node.attributes || {}, new_virtual_node.attributes || {}, is_svg);
 
-    // Update special attributes
-    if (old_virtual_node.component_id !== new_virtual_node.component_id) {
-      if (new_virtual_node.component_id) {
-        node.setAttribute('js-c', new_virtual_node.component_id);
-      } else {
-        node.removeAttribute('js-c');
-      }
-    }
-    if (old_virtual_node.instance_id !== new_virtual_node.instance_id) {
-      if (new_virtual_node.instance_id) {
-        node.setAttribute('js-i', new_virtual_node.instance_id);
-      } else {
-        node.removeAttribute('js-i');
-      }
-    }
-
     // Update children
     const old_children = old_virtual_node.children || [];
     const new_children = new_virtual_node.children || [];
-    const max_length = Math.max(old_children.length, new_children.length);
 
-    for (let i = 0; i < max_length; i++) {
-      const child_patch = get_dom_patches(old_children[i], new_children[i], is_svg);
-      if (child_patch) {
-        const child_node = node.childNodes[i];
-        const result = child_patch(child_node);
-        if (result !== undefined) {
-          if (child_node) {
-            if (result !== child_node) {
-              // Check if we're replacing a form element
-              if (is_form_element(child_node)) {
-                // Create a new element instead of replacing to avoid value transfer
-                const new_element = create_element(new_children[i], is_svg);
-                node.replaceChild(new_element, child_node);
-              } else {
-                node.replaceChild(result, child_node);
-              }
-            }
-          } else {
-            node.appendChild(result);
-          }
+    const old_keys = new Map();
+    const new_keys = new Map();
+    old_children.forEach((child, index) => {
+      old_keys.set(child.key !== undefined ? child.key : index, index);
+    });
+    new_children.forEach((child, index) => {
+      new_keys.set(child.key !== undefined ? child.key : index, index);
+    });
+
+    let old_index = 0;
+    let new_index = 0;
+    const patches = [];
+
+    while (new_index < new_children.length) {
+      const old_child = old_children[old_index];
+      const new_child = new_children[new_index];
+      const old_key = old_child ? (old_child.key !== undefined ? old_child.key : old_index) : null;
+      const new_key = new_child.key !== undefined ? new_child.key : new_index;
+
+      if (old_child && !new_keys.has(old_key)) {
+        // Remove old child
+        patches.push((parent) => {
+          parent.removeChild(parent.childNodes[old_index]);
+        });
+        old_index++;
+      } else if (!old_child || !old_keys.has(new_key)) {
+        // Insert new child
+        const new_node = create_element(new_child, is_svg);
+        patches.push((parent) => {
+          parent.insertBefore(new_node, parent.childNodes[new_index] || null);
+        });
+        new_index++;
+      } else {
+        // Update existing child
+        const child_patch = get_dom_patches(old_child, new_child, is_svg);
+        if (child_patch) {
+          patches.push((parent) => {
+            child_patch(parent.childNodes[new_index]);
+          });
         }
+        old_index++;
+        new_index++;
       }
     }
 
-    // Remove any extra old children
-    while (node.childNodes.length > new_children.length) {
-      node.removeChild(node.lastChild);
+    // Remove any remaining old children
+    while (old_index < old_children.length) {
+      patches.push((parent) => {
+        parent.removeChild(parent.childNodes[old_index]);
+      });
+      old_index++;
     }
+
+    // Apply all patches
+    patches.forEach(patch => patch(node));
 
     return node;
   };
