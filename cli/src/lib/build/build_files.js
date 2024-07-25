@@ -69,7 +69,7 @@ const handle_build_for_node = (node_paths = [], options = {}) => {
     define: {
       "process.env.NODE_ENV": `'${options?.environment || 'development'}'`,
     },
-    // logLevel: "silent",
+    logLevel: "silent",
     plugins: [
       build_plugins.warn_node_environment,
       build_plugins.generate_file_dependency_map
@@ -92,7 +92,7 @@ const handle_build_for_browser = (browser_paths = [], options = {}) => {
     define: {
       "process.env.NODE_ENV": `'${options?.environment || 'development'}'`,
     },
-    // logLevel: 'silent',
+    logLevel: 'silent',
     loader: {
       '.svg': 'text',
     },
