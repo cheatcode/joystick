@@ -177,6 +177,15 @@ class Component {
 	render_to_html(new_children = {}, existing_state_map = {}, existing_props_map = {}, ssr_tree = null, linkedom_document = {}) {
 		const render_methods = this.compile_render_methods(new_children, existing_state_map, existing_props_map, ssr_tree);
 		const html = this.options.render({ ...(this || {}), ...render_methods });
+		
+		console.log({
+			new_chldren,
+			existing_state_map,
+			existing_props_map,
+			ssr_tree,
+			linkedom_document,
+		});
+
 		const clean_html = this.cleanup_html(html, linkedom_document);
 		const sanitized_html = this.sanitize_html(clean_html);
 		const wrapped_html = this.wrap_html(sanitized_html);
