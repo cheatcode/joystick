@@ -9,14 +9,14 @@ const compile = (component_instance = {}, methods = {}) => {
           ...component_instance,
           set_state: component_instance.setState.bind(component_instance),
           setState: component_instance.setState.bind(component_instance),
-          ...(component_instance.compile_render_methods({}, {}, typeof window === 'undefined' ? [] : null) || {}),
+          ...(component_instance.compile_render_methods({}, {}, {}, typeof window === 'undefined' ? [] : null) || {}),
         }]);
 
         return method_function(...args, {
           ...component_instance,
           set_state: component_instance.setState.bind(component_instance),
           setState: component_instance.setState.bind(component_instance),
-          ...(component_instance.compile_render_methods({}, {}, typeof window === 'undefined' ? [] : null) || {}),
+          ...(component_instance.compile_render_methods({}, {}, {}, typeof window === 'undefined' ? [] : null) || {}),
         });
       };
       return methods;

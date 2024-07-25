@@ -26,6 +26,12 @@ class Component {
 		register_component_options(this, component_options);
 	}
 
+  cleanup_html(html = '', linkedom_document = null) {
+		const div = (typeof document === 'undefined' ? linkedom_document : document).createElement('div');
+    div.innerHTML = html;
+    return div.innerHTML;
+  }
+
 	compile_render_methods(new_children = {}, existing_state_map = {}, existing_props_map = {}, ssr_tree = null) {
 		return Object.entries(render_methods).reduce((methods, [key, value]) => {
 			let instance_to_bind = {
@@ -171,7 +177,8 @@ class Component {
 	render_to_html(new_children = {}, existing_state_map = {}, existing_props_map = {}, ssr_tree = null, linkedom_document = {}) {
 		const render_methods = this.compile_render_methods(new_children, existing_state_map, existing_props_map, ssr_tree);
 		const html = this.options.render({ ...(this || {}), ...render_methods });
-		const sanitized_html = this.sanitize_html(html);
+		const clean_html = this.cleanup_html(html, linkedom_document);
+		const sanitized_html = this.sanitize_html(clean_html);
 		const wrapped_html = this.wrap_html(sanitized_html);
 
 		return wrapped_html;
