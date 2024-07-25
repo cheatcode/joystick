@@ -119,49 +119,61 @@ const get_dom_patches = (old_virtual_node = undefined, new_virtual_node = undefi
       new_keys.set(key, index);
     });
 
-    let old_index = 0;
-    let new_index = 0;
     const patches = [];
 
-    while (new_index < new_children.length) {
-      const old_child = old_children[old_index];
-      const new_child = new_children[new_index];
-      const old_key = old_child && old_child.attributes ? old_child.attributes.key : old_index;
-      const new_key = new_child.attributes && new_child.attributes.key !== undefined ? new_child.attributes.key : new_index;
+    // Remove old children that are not in the new set
+    old_children.forEach((old_child, index) => {
+      const old_key = old_child.attributes && old_child.attributes.key !== undefined ? old_child.attributes.key : index;
+      if (!new_keys.has(old_key)) {
+        patches.push((parent) => {
+          const child_to_remove = parent.childNodes[index];
+          if (child_to_remove) {
+            parent.removeChild(child_to_remove);
+          }
+        });
+      }
+    });
 
-      if (old_child && !new_keys.has(old_key)) {
-        // Remove old child
+    // Update existing children and add new ones
+    new_children.forEach((new_child, new_index) => {
+      const new_key = new_child.attributes && new_child.attributes.key !== undefined ? new_child.attributes.key : new_index;
+      const old_index = old_keys.get(new_key);
+
+      if (old_index === undefined) {
+        // Add new child
         patches.push((parent) => {
-          parent.removeChild(parent.childNodes[old_index]);
+          const new_node = create_element(new_child, is_svg);
+          if (new_index < parent.childNodes.length) {
+            parent.insertBefore(new_node, parent.childNodes[new_index]);
+          } else {
+            parent.appendChild(new_node);
+          }
         });
-        old_index++;
-      } else if (!old_child || !old_keys.has(new_key)) {
-        // Insert new child
-        const new_node = create_element(new_child, is_svg);
-        patches.push((parent) => {
-          parent.insertBefore(new_node, parent.childNodes[new_index] || null);
-        });
-        new_index++;
       } else {
         // Update existing child
+        const old_child = old_children[old_index];
         const child_patch = get_dom_patches(old_child, new_child, is_svg);
         if (child_patch) {
           patches.push((parent) => {
-            child_patch(parent.childNodes[new_index]);
+            const child_node = parent.childNodes[new_index];
+            if (child_node) {
+              child_patch(child_node);
+            }
           });
         }
-        old_index++;
-        new_index++;
-      }
-    }
 
-    // Remove any remaining old children
-    while (old_index < old_children.length) {
-      patches.push((parent) => {
-        parent.removeChild(parent.childNodes[old_index]);
-      });
-      old_index++;
-    }
+        // Move the child if necessary
+        if (old_index !== new_index) {
+          patches.push((parent) => {
+            const child_node = parent.childNodes[old_index];
+            const reference_node = parent.childNodes[new_index];
+            if (child_node && reference_node) {
+              parent.insertBefore(child_node, reference_node);
+            }
+          });
+        }
+      }
+    });
 
     // Apply all patches
     patches.forEach(patch => patch(node));
