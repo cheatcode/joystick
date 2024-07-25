@@ -21,8 +21,6 @@ const create_element = (virtual_node, is_svg = false) => {
   }
 
   update_attributes(element, {}, virtual_node.attributes || {}, is_svg);
-  if (virtual_node.component_id) element.setAttribute('js-c', virtual_node.component_id);
-  if (virtual_node.instance_id) element.setAttribute('js-i', virtual_node.instance_id);
   
   (virtual_node.children || []).forEach(child => {
     element.appendChild(create_element(child, is_svg));
@@ -106,31 +104,49 @@ const get_dom_patches = (old_virtual_node = undefined, new_virtual_node = undefi
     // Update attributes
     update_attributes(node, old_virtual_node.attributes || {}, new_virtual_node.attributes || {}, is_svg);
 
-    // Update special attributes
-    if (old_virtual_node.component_id !== new_virtual_node.component_id) {
-      if (new_virtual_node.component_id) {
-        node.setAttribute('js-c', new_virtual_node.component_id);
-      } else {
-        node.removeAttribute('js-c');
-      }
-    }
-    if (old_virtual_node.instance_id !== new_virtual_node.instance_id) {
-      if (new_virtual_node.instance_id) {
-        node.setAttribute('js-i', new_virtual_node.instance_id);
-      } else {
-        node.removeAttribute('js-i');
-      }
-    }
-
     // Update children
     const old_children = old_virtual_node.children || [];
     const new_children = new_virtual_node.children || [];
     const max_length = Math.max(old_children.length, new_children.length);
 
+    const old_keys = new Map();
+    const new_keys = new Map();
+
+    old_children.forEach((child, index) => {
+      if (child.attributes && child.attributes.key) {
+        old_keys.set(child.attributes.key, index);
+      }
+    });
+
+    new_children.forEach((child, index) => {
+      if (child.attributes && child.attributes.key) {
+        new_keys.set(child.attributes.key, index);
+      }
+    });
+
     for (let i = 0; i < max_length; i++) {
-      const child_patch = get_dom_patches(old_children[i], new_children[i], is_svg);
+      const old_child = old_children[i];
+      const new_child = new_children[i];
+      
+      let child_node = node.childNodes[i];
+      let child_patch;
+
+      if (old_child && new_child && old_child.attributes && new_child.attributes &&
+          old_child.attributes.key && new_child.attributes.key) {
+        // Both nodes have keys
+        if (old_child.attributes.key !== new_child.attributes.key) {
+          // Keys are different, create a new element
+          child_patch = () => create_element(new_child, is_svg);
+        } else {
+          // Keys are the same, update normally
+          child_patch = get_dom_patches(old_child, new_child, is_svg);
+        }
+      } else {
+        // No keys or only one has a key, update normally
+        child_patch = get_dom_patches(old_child, new_child, is_svg);
+      }
+
       if (child_patch) {
-        const child_node = node.childNodes[i];
         const result = child_patch(child_node);
         if (result !== undefined) {
           if (child_node) {
