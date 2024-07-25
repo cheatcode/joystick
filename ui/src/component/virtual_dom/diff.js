@@ -1,3 +1,5 @@
+import render_virtual_dom_to_dom from './render_virtual_dom_to_dom.js';
+
 const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
 const XLINK_NAMESPACE = 'http://www.w3.org/1999/xlink';
 
@@ -49,6 +51,10 @@ const set_attribute = (element, attr, value, is_svg) => {
   } else {
     element.setAttribute(attr, value);
   }
+};
+
+const is_form_element = (node) => {
+  return node && node.nodeName && ['INPUT', 'SELECT', 'TEXTAREA'].includes(node.nodeName.toUpperCase());
 };
 
 const get_dom_patches = (old_virtual_node = undefined, new_virtual_node = undefined, is_svg = false) => {
@@ -135,7 +141,14 @@ const get_dom_patches = (old_virtual_node = undefined, new_virtual_node = undefi
         if (result !== undefined) {
           if (child_node) {
             if (result !== child_node) {
-              node.replaceChild(result, child_node);
+              // Check if we're replacing a form element
+              if (is_form_element(child_node)) {
+                // Create a new element instead of replacing to avoid value transfer
+                const new_element = create_element(new_children[i], is_svg);
+                node.replaceChild(new_element, child_node);
+              } else {
+                node.replaceChild(result, child_node);
+              }
             }
           } else {
             node.appendChild(result);
