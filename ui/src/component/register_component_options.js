@@ -3,6 +3,7 @@ import compile_methods from './methods/compile.js';
 import compile_props from './props/compile.js';
 import compile_state from './state/compile.js';
 import compile_url from './url/compile.js';
+import dynamic_page from './dynamic_page/index.js';
 import generate_id from '../lib/generate_id.js';
 import load_data_from_window from './data/load_data_from_window.js';
 import validate_form from '../forms/validate.js';
