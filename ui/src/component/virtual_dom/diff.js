@@ -31,7 +31,11 @@ const diff_attributes = (old_attributes = {}, new_attributes = {}) => {
   for (let i = 0; i < new_attrs.length; i += 1) {
     const [attr, value] = new_attrs[i];
     if (old_attributes[attr] !== value) {
-      patches.push(node => node.setAttribute(attr, value));
+      patches.push(node => {
+        if (node && node.setAttribute) {
+          node.setAttribute(attr, value);
+        }
+      });
     }
   }
 
@@ -39,15 +43,21 @@ const diff_attributes = (old_attributes = {}, new_attributes = {}) => {
   for (let i = 0; i < old_attrs.length; i += 1) {
     const attr = old_attrs[i];
     if (!(attr in new_attributes)) {
-      patches.push(node => node.removeAttribute(attr));
+      patches.push(node => {
+        if (node && node.removeAttribute) {
+          node.removeAttribute(attr);
+        }
+      });
     }
   }
 
   if (patches.length === 0) return null;
 
   return node => {
-    for (let i = 0; i < patches.length; i += 1) {
-      patches[i](node);
+    if (node) {
+      for (let i = 0; i < patches.length; i += 1) {
+        patches[i](node);
+      }
     }
   };
 };
@@ -61,13 +71,17 @@ const diff_children = (old_virtual_dom_children = [], new_virtual_dom_children =
 
   for (let i = old_virtual_dom_children.length; i < new_virtual_dom_children.length; i += 1) {
     patches.push((node) => {
-      node.appendChild(create_dom_node(new_virtual_dom_children[i]));
+      if (node && node.appendChild) {
+        node.appendChild(create_dom_node(new_virtual_dom_children[i]));
+      }
     });
   }
 
   for (let i = new_virtual_dom_children.length; i < old_virtual_dom_children.length; i += 1) {
     patches.push((node) => {
-      node.removeChild(node.childNodes[i]);
+      if (node && node.childNodes && node.childNodes[i] && node.removeChild) {
+        node.removeChild(node.childNodes[i]);
+      }
     });
   }
 
@@ -75,8 +89,10 @@ const diff_children = (old_virtual_dom_children = [], new_virtual_dom_children =
   if (filtered_patches.length === 0) return null;
 
   return node => {
-    for (let i = 0; i < filtered_patches.length; i += 1) {
-      filtered_patches[i](node.childNodes[i] || node);
+    if (node && node.childNodes) {
+      for (let i = 0; i < filtered_patches.length; i += 1) {
+        filtered_patches[i](node.childNodes[i] || node);
+      }
     }
   };
 };
@@ -86,7 +102,7 @@ const get_dom_patches = (old_virtual_dom_node = null, new_virtual_dom_node = nul
 
   if (!old_virtual_dom_node || !new_virtual_dom_node) {
     return (node) => {
-      if (node.parentNode) {
+      if (node && node.parentNode) {
         if (!new_virtual_dom_node) {
           node.parentNode.removeChild(node);
         } else {
@@ -99,15 +115,22 @@ const get_dom_patches = (old_virtual_dom_node = null, new_virtual_dom_node = nul
   if (typeof old_virtual_dom_node === 'string' && typeof new_virtual_dom_node === 'string') {
     if (old_virtual_dom_node !== new_virtual_dom_node) {
       return (node) => {
-        node.nodeValue = new_virtual_dom_node;
+        if (node) {
+          if (node.nodeType === Node.TEXT_NODE) {
+            node.nodeValue = new_virtual_dom_node;
+          } else if (node.textContent !== undefined) {
+            node.textContent = new_virtual_dom_node;
+          }
+        }
       };
     }
     return null;
   }
 
-  if (typeof old_virtual_dom_node !== typeof new_virtual_dom_node || old_virtual_dom_node.tag_name !== new_virtual_dom_node.tag_name) {
+  if (typeof old_virtual_dom_node !== typeof new_virtual_dom_node || 
+      (old_virtual_dom_node.tag_name && new_virtual_dom_node.tag_name && old_virtual_dom_node.tag_name !== new_virtual_dom_node.tag_name)) {
     return (node) => {
-      if (node.parentNode) {
+      if (node && node.parentNode) {
         node.parentNode.replaceChild(create_dom_node(new_virtual_dom_node), node);
       }
     };
@@ -115,37 +138,47 @@ const get_dom_patches = (old_virtual_dom_node = null, new_virtual_dom_node = nul
 
   const patch_functions = [];
 
-  const attribute_patch = diff_attributes(old_virtual_dom_node.attributes, new_virtual_dom_node.attributes);
-  if (attribute_patch) patch_functions.push(attribute_patch);
+  if (new_virtual_dom_node.attributes) {
+    const attribute_patch = diff_attributes(old_virtual_dom_node.attributes, new_virtual_dom_node.attributes);
+    if (attribute_patch) patch_functions.push(attribute_patch);
+  }
 
   if (old_virtual_dom_node.component_id !== new_virtual_dom_node.component_id) {
     patch_functions.push(node => {
-      if (new_virtual_dom_node.component_id) {
-        node.setAttribute('js-c', new_virtual_dom_node.component_id);
-      } else {
-        node.removeAttribute('js-c');
+      if (node && node.setAttribute && node.removeAttribute) {
+        if (new_virtual_dom_node.component_id) {
+          node.setAttribute('js-c', new_virtual_dom_node.component_id);
+        } else {
+          node.removeAttribute('js-c');
+        }
       }
     });
   }
 
   if (old_virtual_dom_node.instance_id !== new_virtual_dom_node.instance_id) {
     patch_functions.push(node => {
-      if (new_virtual_dom_node.instance_id) {
-        node.setAttribute('js-i', new_virtual_dom_node.instance_id);
-      } else {
-        node.removeAttribute('js-i');
+      if (node && node.setAttribute && node.removeAttribute) {
+        if (new_virtual_dom_node.instance_id) {
+          node.setAttribute('js-i', new_virtual_dom_node.instance_id);
+        } else {
+          node.removeAttribute('js-i');
+        }
       }
     });
   }
 
-  const children_patch = diff_children(old_virtual_dom_node.children, new_virtual_dom_node.children);
-  if (children_patch) patch_functions.push(children_patch);
+  if (new_virtual_dom_node.children) {
+    const children_patch = diff_children(old_virtual_dom_node.children, new_virtual_dom_node.children);
+    if (children_patch) patch_functions.push(children_patch);
+  }
 
   if (patch_functions.length === 0) return null;
 
   return (node) => {
-    for (let i = 0; i < patch_functions.length; i += 1) {
-      patch_functions[i](node);
+    if (node) {
+      for (let i = 0; i < patch_functions.length; i += 1) {
+        patch_functions[i](node);
+      }
     }
   };
 };
