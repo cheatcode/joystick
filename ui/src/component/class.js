@@ -240,6 +240,8 @@ class Component {
 		const new_virtual_dom = this.render_dom_to_virtual_dom(new_dom);
 		const dom_node_patches = diff_virtual_dom(this.virtual_dom, new_virtual_dom);
 
+		console.log({ dom_node_patches });
+
 		if (types.is_function(dom_node_patches)) {
 			const patched_dom_node = dom_node_patches(this.DOMNode);
 

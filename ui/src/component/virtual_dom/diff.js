@@ -117,6 +117,7 @@ const get_dom_patches = (old_virtual_dom_node = null, new_virtual_dom_node = nul
 
   return (node) => {
     for (let i = 0; i < patch_functions.length; i += 1) {
+      console.log(node);
       patch_functions[i](node);
     }
   };
