@@ -34,40 +34,31 @@ const create_element = (virtual_node, is_svg = false) => {
 };
 
 const update_attributes = (element, old_attrs, new_attrs, is_svg = false) => {
-  // Remove old attributes
-  for (const attr in old_attrs) {
+  const all_attrs = new Set([...Object.keys(old_attrs), ...Object.keys(new_attrs)]);
+  
+  for (const attr of all_attrs) {
     if (!(attr in new_attrs)) {
       element.removeAttribute(attr);
-    }
-  }
-  // Set new or changed attributes
-  for (const attr in new_attrs) {
-    if (old_attrs[attr] !== new_attrs[attr]) {
+    } else if (old_attrs[attr] !== new_attrs[attr]) {
       set_attribute(element, attr, new_attrs[attr], is_svg);
     }
   }
 };
 
 const set_attribute = (element, attr, value, is_svg) => {
-  if (is_svg) {
-    if (attr.startsWith('xlink:')) {
-      element.setAttributeNS(XLINK_NAMESPACE, attr, value);
-    } else {
-      // For SVG elements, we use setAttribute for most attributes
-      element.setAttribute(attr, value);
-    }
+  if (is_svg && attr.startsWith('xlink:')) {
+    element.setAttributeNS(XLINK_NAMESPACE, attr, value);
   } else {
     element.setAttribute(attr, value);
   }
 };
 
 const get_dom_patches = (old_virtual_node = undefined, new_virtual_node = undefined, is_svg = false) => {
-  if (old_virtual_node === undefined && new_virtual_node === undefined) {
-    return null;
-  }
+  // Both nodes are undefined or null
+  if (!old_virtual_node && !new_virtual_node) return null;
 
   // Node removed
-  if (new_virtual_node === undefined) {
+  if (!new_virtual_node) {
     return (node) => {
       if (node && node.parentNode) {
         node.parentNode.removeChild(node);
@@ -77,7 +68,7 @@ const get_dom_patches = (old_virtual_node = undefined, new_virtual_node = undefi
   }
 
   // New node added
-  if (old_virtual_node === undefined) {
+  if (!old_virtual_node) {
     return () => create_element(new_virtual_node, is_svg);
   }
 
@@ -87,18 +78,22 @@ const get_dom_patches = (old_virtual_node = undefined, new_virtual_node = undefi
       return (node) => {
         if (node && node.nodeType === Node.TEXT_NODE) {
           node.textContent = new_virtual_node;
+          return node;
         } else {
           return document.createTextNode(new_virtual_node);
         }
-        return node;
       };
     }
     return null;
   }
 
-  // Nodes are of different types
-  if (typeof old_virtual_node !== typeof new_virtual_node ||
-      (typeof old_virtual_node === 'object' && old_virtual_node.tag_name !== new_virtual_node.tag_name)) {
+  // One node is a string, the other is an object
+  if (typeof old_virtual_node !== typeof new_virtual_node) {
+    return () => create_element(new_virtual_node, is_svg);
+  }
+
+  // Both nodes are objects (elements)
+  if (old_virtual_node.tag_name !== new_virtual_node.tag_name) {
     return () => create_element(new_virtual_node, is_svg);
   }
 
@@ -141,7 +136,9 @@ const get_dom_patches = (old_virtual_node = undefined, new_virtual_node = undefi
         const result = child_patch(child_node);
         if (result !== undefined) {
           if (child_node) {
-            node.replaceChild(result, child_node);
+            if (result !== child_node) {
+              node.replaceChild(result, child_node);
+            }
           } else {
             node.appendChild(result);
           }
