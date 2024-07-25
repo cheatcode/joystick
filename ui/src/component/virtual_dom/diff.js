@@ -1,145 +1,146 @@
 import render_virtual_dom_to_dom from './render_virtual_dom_to_dom.js';
 
-const get_replace_node_patch = (new_virtual_node) => {
-  return (node) => {
-    const new_dom_node = new_virtual_node ? render_virtual_dom_to_dom(new_virtual_node) : null;
-
-    if (node && node.parentNode && new_dom_node) {
-      node.parentNode.replaceChild(new_dom_node, node);
-    }
-
-    return new_dom_node;
-  };
+const create_element = (virtual_node) => {
+  if (typeof virtual_node === 'string') {
+    return document.createTextNode(virtual_node);
+  }
+  const element = document.createElement(virtual_node.tag_name);
+  for (const [attr, value] of Object.entries(virtual_node.attributes || {})) {
+    element.setAttribute(attr, value);
+  }
+  if (virtual_node.component_id) {
+    element.setAttribute('js-c', virtual_node.component_id);
+  }
+  if (virtual_node.instance_id) {
+    element.setAttribute('js-i', virtual_node.instance_id);
+  }
+  return element;
 };
 
-const get_remove_node_patch = () => {
-  return (node) => {
-    if (node && node.parentNode) {
-      node.parentNode.removeChild(node);
+const diff_attributes = (node, old_attributes, new_attributes) => {
+  const patches = [];
+
+  // Remove old attributes
+  for (const attr in old_attributes) {
+    if (!(attr in new_attributes)) {
+      patches.push(() => node.removeAttribute(attr));
     }
-    
-    return undefined;
-  };
-};
+  }
 
-const diff_attributes = (old_attributes, new_attributes) => {
-  return (node) => {
-    if (!node || node.nodeType !== Node.ELEMENT_NODE) return;
-
-    // Remove old attributes
-    for (const attr in old_attributes) {
-      if (!(attr in new_attributes)) {
-        node.removeAttribute(attr);
-      }
+  // Set new or changed attributes
+  for (const attr in new_attributes) {
+    if (old_attributes[attr] !== new_attributes[attr]) {
+      patches.push(() => node.setAttribute(attr, new_attributes[attr]));
     }
+  }
 
-    // Set new or changed attributes
-    for (const attr in new_attributes) {
-      if (old_attributes[attr] !== new_attributes[attr]) {
-        node.setAttribute(attr, new_attributes[attr]);
-      }
-    }
-  };
-};
-
-const diff_children = (old_children, new_children) => {
-  return (node) => {
-    if (!node) return;
-
-    const patches = [];
-    const max_length = Math.max(old_children.length, new_children.length);
-
-    for (let i = 0; i < max_length; i += 1) {
-      patches.push(get_dom_patches(old_children[i], new_children[i]));
-    }
-
-    for (let i = 0; i < patches.length; i += 1) {
-      const child_node = node.childNodes[i];
-      const patch = patches[i];
-
-      if (patch) {
-        const result = patch(child_node);
-        if (result !== undefined && result !== child_node) {
-          // If the patch returned a new node, replace the old one
-          if (child_node && child_node.parentNode) {
-            child_node.parentNode.replaceChild(result, child_node);
-          } else if (!child_node) {
-            node.appendChild(result);
-          }
-        }
-      }
-    }
-
-    // Remove any extra old children
-    while (node.childNodes.length > new_children.length) {
-      node.removeChild(node.lastChild);
-    }
-  };
+  return patches;
 };
 
 const get_dom_patches = (old_virtual_node = undefined, new_virtual_node = undefined) => {
-  if (old_virtual_node === undefined && new_virtual_node === undefined) {
-    return null;
-  }
-
-  if (old_virtual_node === undefined) {
-    return (node) => render_virtual_dom_to_dom(new_virtual_node);
-  }
-
+  // Node removed
   if (new_virtual_node === undefined) {
-    return get_remove_node_patch();
+    return (node) => {
+      if (node && node.parentNode) {
+        node.parentNode.removeChild(node);
+      }
+      return undefined;
+    };
   }
 
-  const is_text_node = typeof old_virtual_node === 'string' || typeof new_virtual_node === "string";
+  // New node added
+  if (old_virtual_node === undefined) {
+    return () => create_element(new_virtual_node);
+  }
 
-  if (is_text_node) {
+  // Both nodes are text nodes
+  if (typeof old_virtual_node === 'string' && typeof new_virtual_node === 'string') {
     if (old_virtual_node !== new_virtual_node) {
       return (node) => {
-        const new_content = typeof new_virtual_node === 'string' ? new_virtual_node : '';
         if (node && node.nodeType === Node.TEXT_NODE) {
-          node.textContent = new_content;
+          node.textContent = new_virtual_node;
           return node;
         } else {
-          const new_text_node = document.createTextNode(new_content);
-          if (node && node.parentNode) {
-            node.parentNode.replaceChild(new_text_node, node);
-          }
-          return new_text_node;
+          return document.createTextNode(new_virtual_node);
         }
       };
     }
     return null;
   }
 
-  const node_type_changed = old_virtual_node.tag_name !== new_virtual_node.tag_name;
-
-  if (node_type_changed) {
-    return get_replace_node_patch(new_virtual_node);
+  // One node is a text node and the other isn't
+  if (typeof old_virtual_node !== typeof new_virtual_node) {
+    return () => create_element(new_virtual_node);
   }
 
+  // Both nodes are element nodes
+  if (old_virtual_node.tag_name !== new_virtual_node.tag_name) {
+    return () => create_element(new_virtual_node);
+  }
+
+  // At this point, we're dealing with two elements of the same type
   return (node) => {
-    if (!node) return node;
+    if (!node || node.nodeType !== Node.ELEMENT_NODE) {
+      return create_element(new_virtual_node);
+    }
 
-    diff_attributes(old_virtual_node.attributes || {}, new_virtual_node.attributes || {})(node);
+    const patches = [];
 
-    // Handle component_id and instance_id
+    // Diff regular attributes
+    patches.push(...diff_attributes(node, old_virtual_node.attributes || {}, new_virtual_node.attributes || {}));
+
+    // Handle component_id
     if (old_virtual_node.component_id !== new_virtual_node.component_id) {
       if (new_virtual_node.component_id) {
-        node.setAttribute('js-c', new_virtual_node.component_id);
+        patches.push(() => node.setAttribute('js-c', new_virtual_node.component_id));
       } else {
-        node.removeAttribute('js-c');
+        patches.push(() => node.removeAttribute('js-c'));
       }
     }
 
+    // Handle instance_id
     if (old_virtual_node.instance_id !== new_virtual_node.instance_id) {
       if (new_virtual_node.instance_id) {
-        node.setAttribute('js-i', new_virtual_node.instance_id);
+        patches.push(() => node.setAttribute('js-i', new_virtual_node.instance_id));
       } else {
-        node.removeAttribute('js-i');
+        patches.push(() => node.removeAttribute('js-i'));
       }
     }
 
-    diff_children(old_virtual_node.children || [], new_virtual_node.children || [])(node);
+    // Diff children
+    const old_children = old_virtual_node.children || [];
+    const new_children = new_virtual_node.children || [];
+    const child_patches = [];
+
+    for (let i = 0; i < Math.max(old_children.length, new_children.length); i++) {
+      child_patches.push(get_dom_patches(old_children[i], new_children[i]));
+    }
+
+    patches.push(() => {
+      for (let i = 0; i < child_patches.length; i++) {
+        const child_patch = child_patches[i];
+        if (child_patch) {
+          const child_node = node.childNodes[i];
+          const result = child_patch(child_node);
+          if (result !== undefined) {
+            if (child_node) {
+              node.replaceChild(result, child_node);
+            } else {
+              node.appendChild(result);
+            }
+          }
+        }
+      }
+      // Remove any extra children
+      while (node.childNodes.length > new_children.length) {
+        node.removeChild(node.lastChild);
+      }
+    });
+
+    // Apply all patches
+    for (const patch of patches) {
+      patch();
+    }
 
     return node;
   };
