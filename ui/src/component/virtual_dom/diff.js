@@ -5,39 +5,35 @@ const create_element = (virtual_node) => {
     return document.createTextNode(virtual_node);
   }
   const element = document.createElement(virtual_node.tag_name);
-  for (const [attr, value] of Object.entries(virtual_node.attributes || {})) {
-    element.setAttribute(attr, value);
-  }
-  if (virtual_node.component_id) {
-    element.setAttribute('js-c', virtual_node.component_id);
-  }
-  if (virtual_node.instance_id) {
-    element.setAttribute('js-i', virtual_node.instance_id);
-  }
+  update_attributes(element, {}, virtual_node.attributes || {});
+  if (virtual_node.component_id) element.setAttribute('js-c', virtual_node.component_id);
+  if (virtual_node.instance_id) element.setAttribute('js-i', virtual_node.instance_id);
+  (virtual_node.children || []).forEach(child => {
+    element.appendChild(create_element(child));
+  });
   return element;
 };
 
-const diff_attributes = (node, old_attributes, new_attributes) => {
-  const patches = [];
-
+const update_attributes = (element, old_attrs, new_attrs) => {
   // Remove old attributes
-  for (const attr in old_attributes) {
-    if (!(attr in new_attributes)) {
-      patches.push(() => node.removeAttribute(attr));
+  for (const attr in old_attrs) {
+    if (!(attr in new_attrs)) {
+      element.removeAttribute(attr);
     }
   }
-
   // Set new or changed attributes
-  for (const attr in new_attributes) {
-    if (old_attributes[attr] !== new_attributes[attr]) {
-      patches.push(() => node.setAttribute(attr, new_attributes[attr]));
+  for (const attr in new_attrs) {
+    if (old_attrs[attr] !== new_attrs[attr]) {
+      element.setAttribute(attr, new_attrs[attr]);
     }
   }
-
-  return patches;
 };
 
 const get_dom_patches = (old_virtual_node = undefined, new_virtual_node = undefined) => {
+  if (old_virtual_node === undefined && new_virtual_node === undefined) {
+    return null;
+  }
+
   // Node removed
   if (new_virtual_node === undefined) {
     return (node) => {
@@ -53,28 +49,24 @@ const get_dom_patches = (old_virtual_node = undefined, new_virtual_node = undefi
     return () => create_element(new_virtual_node);
   }
 
-  // Both nodes are text nodes
+  // Both nodes are strings (text nodes)
   if (typeof old_virtual_node === 'string' && typeof new_virtual_node === 'string') {
     if (old_virtual_node !== new_virtual_node) {
       return (node) => {
         if (node && node.nodeType === Node.TEXT_NODE) {
           node.textContent = new_virtual_node;
-          return node;
         } else {
           return document.createTextNode(new_virtual_node);
         }
+        return node;
       };
     }
     return null;
   }
 
-  // One node is a text node and the other isn't
-  if (typeof old_virtual_node !== typeof new_virtual_node) {
-    return () => create_element(new_virtual_node);
-  }
-
-  // Both nodes are element nodes
-  if (old_virtual_node.tag_name !== new_virtual_node.tag_name) {
+  // Nodes are of different types
+  if (typeof old_virtual_node !== typeof new_virtual_node ||
+      (typeof old_virtual_node === 'object' && old_virtual_node.tag_name !== new_virtual_node.tag_name)) {
     return () => create_element(new_virtual_node);
   }
 
@@ -84,62 +76,48 @@ const get_dom_patches = (old_virtual_node = undefined, new_virtual_node = undefi
       return create_element(new_virtual_node);
     }
 
-    const patches = [];
+    // Update attributes
+    update_attributes(node, old_virtual_node.attributes || {}, new_virtual_node.attributes || {});
 
-    // Diff regular attributes
-    patches.push(...diff_attributes(node, old_virtual_node.attributes || {}, new_virtual_node.attributes || {}));
-
-    // Handle component_id
+    // Update special attributes
     if (old_virtual_node.component_id !== new_virtual_node.component_id) {
       if (new_virtual_node.component_id) {
-        patches.push(() => node.setAttribute('js-c', new_virtual_node.component_id));
+        node.setAttribute('js-c', new_virtual_node.component_id);
       } else {
-        patches.push(() => node.removeAttribute('js-c'));
+        node.removeAttribute('js-c');
       }
     }
-
-    // Handle instance_id
     if (old_virtual_node.instance_id !== new_virtual_node.instance_id) {
       if (new_virtual_node.instance_id) {
-        patches.push(() => node.setAttribute('js-i', new_virtual_node.instance_id));
+        node.setAttribute('js-i', new_virtual_node.instance_id);
       } else {
-        patches.push(() => node.removeAttribute('js-i'));
+        node.removeAttribute('js-i');
       }
     }
 
-    // Diff children
+    // Update children
     const old_children = old_virtual_node.children || [];
     const new_children = new_virtual_node.children || [];
-    const child_patches = [];
+    const max_length = Math.max(old_children.length, new_children.length);
 
-    for (let i = 0; i < Math.max(old_children.length, new_children.length); i++) {
-      child_patches.push(get_dom_patches(old_children[i], new_children[i]));
-    }
-
-    patches.push(() => {
-      for (let i = 0; i < child_patches.length; i++) {
-        const child_patch = child_patches[i];
-        if (child_patch) {
-          const child_node = node.childNodes[i];
-          const result = child_patch(child_node);
-          if (result !== undefined) {
-            if (child_node) {
-              node.replaceChild(result, child_node);
-            } else {
-              node.appendChild(result);
-            }
+    for (let i = 0; i < max_length; i++) {
+      const child_patch = get_dom_patches(old_children[i], new_children[i]);
+      if (child_patch) {
+        const child_node = node.childNodes[i];
+        const result = child_patch(child_node);
+        if (result !== undefined) {
+          if (child_node) {
+            node.replaceChild(result, child_node);
+          } else {
+            node.appendChild(result);
           }
         }
       }
-      // Remove any extra children
-      while (node.childNodes.length > new_children.length) {
-        node.removeChild(node.lastChild);
-      }
-    });
+    }
 
-    // Apply all patches
-    for (const patch of patches) {
-      patch();
+    // Remove any extra old children
+    while (node.childNodes.length > new_children.length) {
+      node.removeChild(node.lastChild);
     }
 
     return node;
