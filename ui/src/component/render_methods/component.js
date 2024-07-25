@@ -28,16 +28,19 @@ const component = function component(Component = {}, props = {}) {
 		component_instance.state = existing_state_for_component;
 	}
 
-	if (types.is_function(component_instance?.lifecycle?.onUpdateProps) || types.is_function(component_instance?.lifecycle?.on_update_props)) {
-		const has_different_props = nested_object_diff(existing_node_in_tree?.props, props);
+	const existing_component_in_props_map = parent?.existing_props_map[component_instance?.id];
+	const existing_props_for_component = existing_component_in_props_map && existing_component_in_props_map[(new_component_on_parent?.length - 1) || 0];
+
+	if (existing_props_for_component && types.is_function(component_instance?.lifecycle?.onUpdateProps) || types.is_function(component_instance?.lifecycle?.on_update_props)) {
+		const has_different_props = nested_object_diff(existing_props_for_component, props);
 		if (has_different_props) {
-			(component_instance.lifecycle.onUpdateProps || component_instance.lifecycle.on_update_props)(existing_node_in_tree?.props, props, component_instance);
+			(component_instance.lifecycle.onUpdateProps || component_instance.lifecycle.on_update_props)(existing_props_for_component, props, component_instance);
 		}
 	}
 
 	const new_children = {};
 
-	const component_html = component_instance.render_to_html(new_children, parent.existing_state_map);
+	const component_html = component_instance.render_to_html(new_children, parent.existing_state_map, parent.existing_props_map);
 	const html = component_instance.replace_when_tags(component_html);
 	const dom = component_instance.render_html_to_dom(html);
 	const virtual_dom = component_instance.render_dom_to_virtual_dom(dom);
