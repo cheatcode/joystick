@@ -1,3 +1,5 @@
+import serialize_to_query_string from '../../lib/serialize_to_query_string.js';
+
 const load_dynamic_page = async (component_instance = {}, dynamic_page_options = {}) => {
   const path_name = (dynamic_page_options?.path || '/')?.replace(location.origin, '');
 
@@ -21,7 +23,11 @@ const load_dynamic_page = async (component_instance = {}, dynamic_page_options =
     history.pushState(
       dynamic_page_options?.query_params,
       "",
-      dynamic_page_options?.path,
+      `${dynamic_page_options?.path}${
+        dynamic_page_options?.query_params ?
+          `?${serialize_to_query_string(dynamic_page_options?.query_params)}` :
+          ''
+        }`,
     );
   }
 
