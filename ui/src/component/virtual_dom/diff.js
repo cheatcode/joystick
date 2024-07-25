@@ -21,6 +21,8 @@ const create_element = (virtual_node, is_svg = false) => {
   }
 
   update_attributes(element, {}, virtual_node.attributes || {}, is_svg);
+  if (virtual_node.component_id) element.setAttribute('js-c', virtual_node.component_id);
+  if (virtual_node.instance_id) element.setAttribute('js-i', virtual_node.instance_id);
   
   (virtual_node.children || []).forEach(child => {
     element.appendChild(create_element(child, is_svg));
@@ -104,47 +106,48 @@ const get_dom_patches = (old_virtual_node = undefined, new_virtual_node = undefi
     // Update attributes
     update_attributes(node, old_virtual_node.attributes || {}, new_virtual_node.attributes || {}, is_svg);
 
+    // Update special attributes
+    if (old_virtual_node.component_id !== new_virtual_node.component_id) {
+      if (new_virtual_node.component_id) {
+        node.setAttribute('js-c', new_virtual_node.component_id);
+      } else {
+        node.removeAttribute('js-c');
+      }
+    }
+    if (old_virtual_node.instance_id !== new_virtual_node.instance_id) {
+      if (new_virtual_node.instance_id) {
+        node.setAttribute('js-i', new_virtual_node.instance_id);
+      } else {
+        node.removeAttribute('js-i');
+      }
+    }
+
     // Update children
     const old_children = old_virtual_node.children || [];
     const new_children = new_virtual_node.children || [];
+    const max_length = Math.max(old_children.length, new_children.length);
 
-    // Create a map of children by key
-    const old_keyed_children = new Map();
-    old_children.forEach((child, index) => {
-      const key = child.attributes && child.attributes.key !== undefined ? child.attributes.key : index;
-      old_keyed_children.set(key, {child, index});
-    });
-
-    let index = 0;
-    new_children.forEach((new_child) => {
-      const key = new_child.attributes && new_child.attributes.key !== undefined ? new_child.attributes.key : index;
-      const old_entry = old_keyed_children.get(key);
-      
-      if (old_entry) {
-        // Update existing child
-        const child_patch = get_dom_patches(old_entry.child, new_child, is_svg);
-        if (child_patch) {
-          const child_node = node.childNodes[old_entry.index];
-          const result = child_patch(child_node);
-          if (result !== undefined && result !== child_node) {
-            node.replaceChild(result, child_node);
+    for (let i = 0; i < max_length; i++) {
+      const child_patch = get_dom_patches(old_children[i], new_children[i], is_svg);
+      if (child_patch) {
+        const child_node = node.childNodes[i];
+        const result = child_patch(child_node);
+        if (result !== undefined) {
+          if (child_node) {
+            if (result !== child_node) {
+              node.replaceChild(result, child_node);
+            }
+          } else {
+            node.appendChild(result);
           }
         }
-        old_keyed_children.delete(key);
-      } else {
-        // Add new child
-        node.appendChild(create_element(new_child, is_svg));
       }
-      index++;
-    });
+    }
 
-    // Remove any remaining old children
-    old_keyed_children.forEach(({child}, key) => {
-      const child_node = node.childNodes[child.index];
-      if (child_node) {
-        node.removeChild(child_node);
-      }
-    });
+    // Remove any extra old children
+    while (node.childNodes.length > new_children.length) {
+      node.removeChild(node.lastChild);
+    }
 
     return node;
   };
