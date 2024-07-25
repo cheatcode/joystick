@@ -1,185 +1,123 @@
-const create_element = (tag_name) => document.createElement(tag_name);
-const create_text_node = (text) => document.createTextNode(text);
+import render_virtual_dom_to_dom from './render_virtual_dom_to_dom.js';
 
-const create_dom_node = (virtual_dom_node) => {
-  if (typeof virtual_dom_node === 'string') {
-    return create_text_node(virtual_dom_node);
-  }
-  const element = create_element(virtual_dom_node.tag_name);
-  const attrs = Object.entries(virtual_dom_node.attributes || {});
-  for (let i = 0; i < attrs.length; i += 1) {
-    const [attr, value] = attrs[i];
-    element.setAttribute(attr, value);
-  }
-  if (virtual_dom_node.component_id) {
-    element.setAttribute('js-c', virtual_dom_node.component_id);
-  }
-  if (virtual_dom_node.instance_id) {
-    element.setAttribute('js-i', virtual_dom_node.instance_id);
-  }
-  const children = virtual_dom_node.children || [];
-  for (let i = 0; i < children.length; i += 1) {
-    element.appendChild(create_dom_node(children[i]));
-  }
-  return element;
+const get_replace_node_patch = (new_virtual_node) => {
+  return (node) => {
+    const new_dom_node = new_virtual_node ? render_virtual_dom_to_dom(new_virtual_node) : null;
+
+    if (node && new_dom_node) {
+      node.replaceWith(new_dom_node);
+    }
+
+    return new_dom_node;
+  };
 };
 
-const diff_attributes = (old_attributes = {}, new_attributes = {}) => {
-  const patches = [];
-
-  const new_attrs = Object.entries(new_attributes);
-  for (let i = 0; i < new_attrs.length; i += 1) {
-    const [attr, value] = new_attrs[i];
-    if (old_attributes[attr] !== value) {
-      patches.push(node => {
-        if (node && node.setAttribute) {
-          node.setAttribute(attr, value);
-        }
-      });
+const get_remove_node_patch = () => {
+  return (node) => {
+    if (node && node.parentNode) {
+      node.parentNode.removeChild(node);
     }
-  }
+    
+    return undefined;
+  };
+};
 
-  const old_attrs = Object.keys(old_attributes);
-  for (let i = 0; i < old_attrs.length; i += 1) {
-    const attr = old_attrs[i];
-    if (!(attr in new_attributes)) {
-      patches.push(node => {
-        if (node && node.removeAttribute) {
-          node.removeAttribute(attr);
-        }
-      });
+const diff_attributes = (old_attributes, new_attributes) => {
+  return (node) => {
+    // Remove old attributes
+    for (const attr in old_attributes) {
+      if (!(attr in new_attributes)) {
+        node.removeAttribute(attr);
+      }
     }
-  }
 
-  if (patches.length === 0) return null;
-
-  return node => {
-    if (node) {
-      for (let i = 0; i < patches.length; i += 1) {
-        patches[i](node);
+    // Set new or changed attributes
+    for (const attr in new_attributes) {
+      if (old_attributes[attr] !== new_attributes[attr]) {
+        node.setAttribute(attr, new_attributes[attr]);
       }
     }
   };
 };
 
-const diff_children = (old_virtual_dom_children = [], new_virtual_dom_children = []) => {
-  const patches = [];
+const diff_children = (old_children, new_children) => {
+  return (node) => {
+    const patches = [];
+    const max_length = Math.max(old_children.length, new_children.length);
 
-  for (let i = 0; i < old_virtual_dom_children.length; i += 1) {
-    patches.push(get_dom_patches(old_virtual_dom_children[i], new_virtual_dom_children[i]));
-  }
+    for (let i = 0; i < max_length; i += 1) {
+      patches.push(get_dom_patches(old_children[i], new_children[i]));
+    }
 
-  for (let i = old_virtual_dom_children.length; i < new_virtual_dom_children.length; i += 1) {
-    patches.push((node) => {
-      if (node && node.appendChild) {
-        node.appendChild(create_dom_node(new_virtual_dom_children[i]));
+    for (let i = 0; i < patches.length; i += 1) {
+      const child_node = node.childNodes[i];
+      const patch = patches[i];
+
+      if (patch) {
+        patch(child_node);
       }
-    });
-  }
+    }
 
-  for (let i = new_virtual_dom_children.length; i < old_virtual_dom_children.length; i += 1) {
-    patches.push((node) => {
-      if (node && node.childNodes && node.childNodes[i] && node.removeChild) {
-        node.removeChild(node.childNodes[i]);
-      }
-    });
-  }
-
-  const filtered_patches = patches.filter(Boolean);
-  if (filtered_patches.length === 0) return null;
-
-  return node => {
-    if (node && node.childNodes) {
-      for (let i = 0; i < filtered_patches.length; i += 1) {
-        filtered_patches[i](node.childNodes[i] || node);
-      }
+    // Remove any extra old children
+    while (node.childNodes.length > new_children.length) {
+      node.removeChild(node.lastChild);
     }
   };
 };
 
-const get_dom_patches = (old_virtual_dom_node = null, new_virtual_dom_node = null) => {
-  if (!old_virtual_dom_node && !new_virtual_dom_node) return null;
-
-  if (!old_virtual_dom_node || !new_virtual_dom_node) {
-    return (node) => {
-      if (node && node.parentNode) {
-        if (!new_virtual_dom_node) {
-          node.parentNode.removeChild(node);
-        } else {
-          node.parentNode.replaceChild(create_dom_node(new_virtual_dom_node), node);
-        }
-      }
-    };
+const get_dom_patches = (old_virtual_node = undefined, new_virtual_node = undefined) => {
+  if (old_virtual_node === undefined && new_virtual_node === undefined) {
+    return null;
   }
 
-  if (typeof old_virtual_dom_node === 'string' && typeof new_virtual_dom_node === 'string') {
-    if (old_virtual_dom_node !== new_virtual_dom_node) {
+  if (old_virtual_node === undefined || new_virtual_node === undefined) {    
+    return get_remove_node_patch();
+  }
+
+  const is_text_node = typeof old_virtual_node === 'string' || typeof new_virtual_node === "string";
+
+  if (is_text_node) {
+    if (old_virtual_node !== new_virtual_node) {
       return (node) => {
-        if (node) {
-          if (node.nodeType === Node.TEXT_NODE) {
-            node.nodeValue = new_virtual_dom_node;
-          } else if (node.textContent !== undefined) {
-            node.textContent = new_virtual_dom_node;
-          }
-        }
+        const new_text_node = document.createTextNode(new_virtual_node);
+        node.replaceWith(new_text_node);
+        return new_text_node;
       };
     }
     return null;
   }
 
-  if (typeof old_virtual_dom_node !== typeof new_virtual_dom_node || 
-      (old_virtual_dom_node.tag_name && new_virtual_dom_node.tag_name && old_virtual_dom_node.tag_name !== new_virtual_dom_node.tag_name)) {
-    return (node) => {
-      if (node && node.parentNode) {
-        node.parentNode.replaceChild(create_dom_node(new_virtual_dom_node), node);
-      }
-    };
+  const node_type_changed = old_virtual_node.tag_name !== new_virtual_node.tag_name;
+
+  if (node_type_changed) {
+    return get_replace_node_patch(new_virtual_node);
   }
-
-  const patch_functions = [];
-
-  if (new_virtual_dom_node.attributes) {
-    const attribute_patch = diff_attributes(old_virtual_dom_node.attributes, new_virtual_dom_node.attributes);
-    if (attribute_patch) patch_functions.push(attribute_patch);
-  }
-
-  if (old_virtual_dom_node.component_id !== new_virtual_dom_node.component_id) {
-    patch_functions.push(node => {
-      if (node && node.setAttribute && node.removeAttribute) {
-        if (new_virtual_dom_node.component_id) {
-          node.setAttribute('js-c', new_virtual_dom_node.component_id);
-        } else {
-          node.removeAttribute('js-c');
-        }
-      }
-    });
-  }
-
-  if (old_virtual_dom_node.instance_id !== new_virtual_dom_node.instance_id) {
-    patch_functions.push(node => {
-      if (node && node.setAttribute && node.removeAttribute) {
-        if (new_virtual_dom_node.instance_id) {
-          node.setAttribute('js-i', new_virtual_dom_node.instance_id);
-        } else {
-          node.removeAttribute('js-i');
-        }
-      }
-    });
-  }
-
-  if (new_virtual_dom_node.children) {
-    const children_patch = diff_children(old_virtual_dom_node.children, new_virtual_dom_node.children);
-    if (children_patch) patch_functions.push(children_patch);
-  }
-
-  if (patch_functions.length === 0) return null;
 
   return (node) => {
-    if (node) {
-      for (let i = 0; i < patch_functions.length; i += 1) {
-        patch_functions[i](node);
+    if (!node) return;
+
+    diff_attributes(old_virtual_node.attributes || {}, new_virtual_node.attributes || {})(node);
+
+    // Handle component_id and instance_id
+    if (old_virtual_node.component_id !== new_virtual_node.component_id) {
+      if (new_virtual_node.component_id) {
+        node.setAttribute('js-c', new_virtual_node.component_id);
+      } else {
+        node.removeAttribute('js-c');
       }
     }
+
+    if (old_virtual_node.instance_id !== new_virtual_node.instance_id) {
+      if (new_virtual_node.instance_id) {
+        node.setAttribute('js-i', new_virtual_node.instance_id);
+      } else {
+        node.removeAttribute('js-i');
+      }
+    }
+
+    diff_children(old_virtual_node.children || [], new_virtual_node.children || [])(node);
+
+    return node;
   };
 };
 
