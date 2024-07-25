@@ -1,6 +1,6 @@
 const load_dynamic_page = async (component_instance = {}, dynamic_page_options = {}) => {
   const path_name = (dynamic_page_options?.path || '/')?.replace(location.origin, '');
-  
+
   console.log({
     component_instance,
     path_name,
@@ -12,7 +12,7 @@ const load_dynamic_page = async (component_instance = {}, dynamic_page_options =
     return;
   }
 
-  const page_component_file = await import(`/_joystick/${dynamic_page_options?.page}?v=${new Date().getTime()}`);
+  const page_component_file = (await import(`/_joystick/${dynamic_page_options?.page}?v=${new Date().getTime()}`))?.default;
 
   component_instance.props.page = page_component_file;
   component_instance.dynamic_page_props = dynamic_page_options?.props || {};
