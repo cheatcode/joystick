@@ -1,5 +1,10 @@
-const load_dynamic_page = (dynamic_page_options = {}) => {
-  console.log(dynamic_page_options);
+const load_dynamic_page = (component_instance = {}, dynamic_page_options = {}) => {
+  const path_name = (dynamic_page_options?.path || '/')?.replace(location.origin, '');
+  console.log({
+    component_instance,
+    path_name,
+    ...dynamic_page_options,
+  });
 };
 
 const dynamic_page = {

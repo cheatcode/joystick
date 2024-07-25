@@ -20,7 +20,11 @@ const register_component_options = (component_instance = {}, component_options =
 	component_instance.default_props = compile_default_props(component_instance, component_options?.default_props || {});
 	component_instance.dom = {};
 	component_instance.DOMNode = null;
-	component_instance.dynamic_page = dynamic_page;
+	
+	component_instance.dynamic_page = {
+		load: (dynamic_page_options = {}) => dynamic_page.load(component_instance, dynamic_page_options),
+	};
+
 	component_instance.events = component_options?.events;
 	component_instance.instance_id = generate_id(8);
 	component_instance.lifecycle = component_options?.lifecycle || {};
