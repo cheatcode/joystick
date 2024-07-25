@@ -44,6 +44,7 @@ class Component {
 	        new_children,
 					existing_children: this.existing_children,
 	        existing_state_map,
+					existing_props_map,
 	        ssr_tree: ssr_tree ? {
 	        	push: (node) => {
 	        		ssr_tree.push(node);
