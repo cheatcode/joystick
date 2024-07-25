@@ -177,9 +177,9 @@ class Component {
 	render_to_html(new_children = {}, existing_state_map = {}, existing_props_map = {}, ssr_tree = null, linkedom_document = {}) {
 		const render_methods = this.compile_render_methods(new_children, existing_state_map, existing_props_map, ssr_tree);
 		const html = this.options.render({ ...(this || {}), ...render_methods });
-		
+
 		console.log({
-			new_chldren,
+			new_children,
 			existing_state_map,
 			existing_props_map,
 			ssr_tree,
