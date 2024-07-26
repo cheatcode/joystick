@@ -127,40 +127,57 @@ class Component {
 	}
 
 	async render_for_ssr(api = {}, req = {}, ssr_tree = [], render_for_ssr_options = {}) {
+		// TODO: render_for_ssr_options?.is_dynamic_page_load will only handle the data
+		// fetching and return here. No need for full-blown SSR.
+
 		return new Promise(async (resolve) => {
 			// NOTE: Fetch data for this component before rendering to HTML so the render() method has
 			// access to the data at render time.
 			const component_data = await this.fetch_data(api, req, {}, this);
+			const child_data = {};
+
 			const new_children = {};
 			const existing_state_map = {};
 			const existing_props_map = {};
 
 			// this.existing_children = {};
 
-			let component_html = this.render_to_html(new_children, existing_state_map, existing_props_map, ssr_tree, render_for_ssr_options?.linkedom_document);
-			const child_data = {};
+			let component_html = !render_for_ssr_options?.is_dynamic_page_render ? this.render_to_html(new_children, existing_state_map, existing_props_map, ssr_tree, render_for_ssr_options?.linkedom_document) : null;
 
 			for (let i = 0; i < ssr_tree?.length; i += 1) {
 				const node = ssr_tree[i];
 				const node_data = await this.fetch_data(api, req, {}, node);
-				const node_html = node.render_to_html(new_children, existing_state_map, existing_props_map, ssr_tree, render_for_ssr_options?.linkedom_document);
-				component_html = component_html.replace(`{{${node.id}:${node.instance_id}}}`, node_html);
+
+				if (!render_for_ssr_options?.is_dynamic_page_render) {
+					const node_html = node.render_to_html(new_children, existing_state_map, existing_props_map, ssr_tree, render_for_ssr_options?.linkedom_document);
+					component_html = component_html.replace(`{{${node.id}:${node.instance_id}}}`, node_html);
+				}
+
 				child_data[node?.id] = node_data;
 			}
 
-			ssr_tree.push(this);
+			if (render_for_ssr_options?.is_dynamic_page_render) {
+				resolve({
+					data: {
+						[this.id]: component_data,
+						...(child_data || {}),
+					},
+				});
+			} else {
+				ssr_tree.push(this);
 
-			const html = this.replace_when_tags(component_html);
-			const css = run_tree_job('css', { ssr_tree, is_email: render_for_ssr_options?.is_email || false });
-
-			resolve({
-				html,
-				css,
-				data: {
-					[this.id]: component_data,
-					...(child_data || {}),
-				},
-			});
+				const html = this.replace_when_tags(component_html);
+				const css = run_tree_job('css', { ssr_tree, is_email: render_for_ssr_options?.is_email || false });
+	
+				resolve({
+					html,
+					css,
+					data: {
+						[this.id]: component_data,
+						...(child_data || {}),
+					},
+				});
+			}
 		});
 	}
 

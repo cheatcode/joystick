@@ -1,0 +1,1 @@
+const l=(p,r)=>{const e=p.split("/"),a=r.split("?")[0].split("/"),s={params:{},query:{}};for(let t=0;t<e.length;t++)if(e[t].startsWith(":")){const n=e[t].slice(1);s.params[n]=a[t]}const o=r.split("?")[1];if(o){const t=o.split("&");for(const n of t){const[i,c]=n.split("=");s.query[decodeURIComponent(i)]=decodeURIComponent(c||"")}}return s};var u=l;export{u as default};

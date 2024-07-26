@@ -15,11 +15,14 @@ import api_test_queues from "./api/test/queues.js";
 import create_mongodb_indexes from "./databases/mongodb/create_indexes.js";
 import create_postgresql_indexes from "./databases/postgresql/create_indexes.js";
 import create_postgresql_tables from "./databases/postgresql/create_tables.js";
+import dynamic_import from '../lib/dynamic_import.js';
 import generate_machine_id from "./generate_machine_id.js";
 import generate_process_id from "./generate_process_id.js";
+import get_joystick_build_path from '../lib/get_joystick_build_path.js';
 import get_target_database_connection from "./databases/get_target_database_connection.js";
 import handle_process_errors from "./handle_process_errors.js";
 import load_settings from "./settings/load.js";
+import path_exists from '../lib/path_exists.js';
 import Queue from "./queues/index.js";
 import register_app_options from "./register_app_options.js";
 import register_cron_jobs from "./cron_jobs/register.js";
@@ -32,6 +35,7 @@ import register_uploaders from "./uploaders/register.js";
 import register_websockets from "./websockets/register.js";
 import start_express from "./start_express.js";
 import start_node_as_cluster from "./start_node_as_cluster.js";
+import strip_preceeding_slash from '../lib/strip_preceeding_slash.js';
 import types from "../lib/types.js";
 import push_logs from "./push_logs.js";
 
@@ -161,6 +165,46 @@ class App {
 		register_cron_jobs(this.options.cronJobs || this.options.cron_jobs);
 	}
 
+	register_dynamic_pages() {
+		this.express.app.get(`/_joystick/dynamic_pages/:path`, async (req = {}, res = {}) => {
+			const joystick_build_path = get_joystick_build_path();
+			const sanitized_component_path = strip_preceeding_slash(req?.params?.path);
+			const file_path = `${joystick_build_path}/${sanitized_component_path}`;
+
+			if (!req?.params?.path || !(await path_exists(file_path))) {
+				return handle_api_error('joystick.dynamic_pages.load', new Error(`Component not found at ${file_path}.`), res);
+			}
+
+			const Component = await dynamic_import(file_path);
+
+			if (Component) {
+				const parsed_route = parse_route_pattern(req?.body?.route_pattern || '', req?.body?.path);
+
+				const data = await ssr({
+					is_dynamic_page_render: true,
+					component_to_render: Component,
+					api_schema: this?.options?.api,
+					component_options: {
+						props: req?.body?.props,
+					},
+					req: get_browser_safe_request({
+						params: parsed_route?.params || {},
+						query: req?.body?.query_params || {},
+						url: req?.body?.path,
+						headers: req?.headers,
+						context: req?.context,
+					}),
+				});
+
+				return res.status(200).send({
+					data,
+				});
+			}
+
+			return res.status(200).send({});
+		});
+	}
+
   register_fixtures() {
     if (types.is_function(this.options.fixtures)) {
       this.options.fixtures();
@@ -228,6 +272,7 @@ class App {
 		// NOTE: Order here is intentionally not alphabetical to ensure load
 		// order plays nice with things like tests.
 		await this.connect_databases();
+		this.register_dynamic_pages();
 		this.register_caches();
 		this.register_cron_jobs();
 		this.register_queues();

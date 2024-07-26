@@ -6,6 +6,7 @@ import get_translations from '../../../lib/get_translations.js';
 import get_url from './get_url.js';
 import path_exists from '../../../lib/path_exists.js';
 import ssr from '../../ssr/index.js';
+import strip_preceeding_slash from '../../../lib/strip_preceeding_slash.js';
 import get_browser_safe_request from '../../../lib/get_browser_safe_request.js';
 
 const { readFile } = fs.promises;
@@ -22,8 +23,8 @@ const render_middleware = (req, res, next, app_instance = {}) => {
   res.render = async (render_component_path = '', render_options = {}) => {
     // NOTE: Safety mechanism. Don't punish a developer if the path they pass to res.render()
     // has a forward slash prepended, just strip it for them.
-    const sanitized_render_component_path = render_component_path?.substring(0, 1) === '/' ? render_component_path?.replace('/', '') : render_component_path;
-    const sanitized_render_layout_path = render_options?.layout?.substring(0, 1) === '/' ? render_options?.layout?.replace('/', '') : render_options?.layout;
+    const sanitized_render_component_path = strip_preceeding_slash(render_component_path);
+    const sanitized_render_layout_path = strip_preceeding_slash(render_options?.layout);
     const component_path = `${joystick_build_path}${sanitized_render_component_path}`;
     const layout_path = render_options?.layout ? `${joystick_build_path}${sanitized_render_layout_path}` : null;
 

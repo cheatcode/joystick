@@ -97,8 +97,14 @@ const ssr = async (ssr_options = {}) => {
 	const ssr_tree = [];
 	const ssr_render = await component_instance.render_for_ssr(api, ssr_options?.req, ssr_tree, {
 		linkedom_document,
-		is_email: ssr_options?.is_email
+		is_email: ssr_options?.is_email,
+		is_dynamic_page_render: ssr_options?.is_dynamic_page_render,
 	});
+
+	if (ssr_options?.is_dynamic_page_render) {
+		return ssr_render?.data;
+	}
+
 	const email_base_css = ssr_options?.is_email ? await get_base_css_for_email(ssr_options?.email_options?.base_html_name) : null;
 	const email_base_html = ssr_options?.is_email ? await get_base_html_for_email(ssr_options?.email_options?.base_html_name) : null;
 
