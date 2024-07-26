@@ -166,12 +166,12 @@ class App {
 	}
 
 	register_dynamic_pages() {
-		this.express.app.post(`/_joystick/dynamic_pages/:path`, async (req = {}, res = {}) => {
+		this.express.app.post(`/_joystick/dynamic_page/data`, async (req = {}, res = {}) => {
 			const joystick_build_path = get_joystick_build_path();
-			const sanitized_component_path = strip_preceeding_slash(req?.params?.path);
+			const sanitized_component_path = strip_preceeding_slash(req?.body?.path);
 			const file_path = `${joystick_build_path}/${sanitized_component_path}`;
 
-			if (!req?.params?.path || !(await path_exists(file_path))) {
+			if (!req?.body?.path || !(await path_exists(file_path))) {
 				return handle_api_error('joystick.dynamic_pages.load', new Error(`Component not found at ${file_path}.`), res);
 			}
 

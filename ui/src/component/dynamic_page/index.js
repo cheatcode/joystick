@@ -2,8 +2,8 @@ import serialize_to_query_string from '../../lib/serialize_to_query_string.js';
 import generate_cookie_header from '../../lib/generate_cookie_header.js';
 import log_request_errors from '../../lib/log_request_errors.js';
 
-const fetch_dynamic_data = (path = '', body = {}) => {
-  return fetch(`/_joystick/dynamic_pages/${path}`, {
+const fetch_dynamic_data = (body = {}) => {
+  return fetch(`/_joystick/dynamic_page/data`, {
     method: 'POST',
     mode: "cors",
     headers: {
@@ -36,7 +36,7 @@ const load_dynamic_page = async (component_instance = {}, dynamic_page_options =
   component_instance.props.page = page_component_file;
   component_instance.dynamic_page_props = dynamic_page_options?.props || {};
 
-  const data_for_window = await fetch_dynamic_data(dynamic_page_options?.page, {
+  const data_for_window = await fetch_dynamic_data({
     path: dynamic_page_options?.page,
     route_pattern: dynamic_page_options?.route_pattern,
     query_params: dynamic_page_options?.query_params,
