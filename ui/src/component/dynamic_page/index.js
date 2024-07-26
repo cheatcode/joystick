@@ -37,7 +37,8 @@ const load_dynamic_page = async (component_instance = {}, dynamic_page_options =
   component_instance.dynamic_page_props = dynamic_page_options?.props || {};
 
   const data_for_window = await fetch_dynamic_data({
-    path: dynamic_page_options?.page,
+    path: dynamic_page_options?.path,
+    page: dynamic_page_options?.page,
     route_pattern: dynamic_page_options?.route_pattern,
     query_params: dynamic_page_options?.query_params,
     props: dynamic_page_options?.props,
