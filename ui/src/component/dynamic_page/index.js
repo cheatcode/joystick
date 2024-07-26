@@ -4,7 +4,7 @@ import log_request_errors from '../../lib/log_request_errors.js';
 
 const fetch_dynamic_data = (path = '', body = {}) => {
   return fetch(`/_joystick/dynamic_pages/${path}`, {
-    method: 'GET',
+    method: 'POST',
     mode: "cors",
     headers: {
       'Content-Type': 'application/json',

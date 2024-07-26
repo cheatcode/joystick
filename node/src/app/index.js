@@ -166,7 +166,7 @@ class App {
 	}
 
 	register_dynamic_pages() {
-		this.express.app.get(`/_joystick/dynamic_pages/:path`, async (req = {}, res = {}) => {
+		this.express.app.post(`/_joystick/dynamic_pages/:path`, async (req = {}, res = {}) => {
 			const joystick_build_path = get_joystick_build_path();
 			const sanitized_component_path = strip_preceeding_slash(req?.params?.path);
 			const file_path = `${joystick_build_path}/${sanitized_component_path}`;
