@@ -272,7 +272,6 @@ class App {
 		// NOTE: Order here is intentionally not alphabetical to ensure load
 		// order plays nice with things like tests.
 		await this.connect_databases();
-		this.register_dynamic_pages();
 		this.register_caches();
 		this.register_cron_jobs();
 		this.register_queues();
@@ -282,6 +281,7 @@ class App {
 		this.register_push();
 		this.register_api();
 		this.register_routes();
+		this.register_dynamic_pages();
 		this.register_websockets();
 		this.register_uploaders();
 		this.register_fixtures();
