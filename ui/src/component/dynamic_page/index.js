@@ -43,9 +43,12 @@ const load_dynamic_page = async (component_instance = {}, dynamic_page_options =
     props: dynamic_page_options?.props,
   });
 
-  console.log({
-    data_for_window,
-  });
+  if (data_for_window?.data) {
+    window.__joystick_data__ = {
+      ...(window.__joystick_data__ || {}),
+      ...(data_for_window?.data || {}),
+    };
+  }
 
   if (dynamic_page_options?.path) {
     history.pushState(
