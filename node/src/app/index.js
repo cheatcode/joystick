@@ -183,6 +183,14 @@ class App {
 			if (Component) {
 				const parsed_route = parse_route_pattern(req?.body?.route_pattern || '', req?.body?.path);
 
+				const req = get_browser_safe_request({
+					params: parsed_route?.params || {},
+					query: req?.body?.query_params || {},
+					url: req?.body?.path,
+					headers: req?.headers,
+					context: req?.context,
+				});
+
 				const data = await ssr({
 					is_dynamic_page_render: true,
 					component_to_render: Component,
@@ -190,17 +198,18 @@ class App {
 					component_options: {
 						props: req?.body?.props,
 					},
-					req: get_browser_safe_request({
-						params: parsed_route?.params || {},
-						query: req?.body?.query_params || {},
-						url: req?.body?.path,
-						headers: req?.headers,
-						context: req?.context,
-					}),
+					req,
 				});
 
 				return res.status(200).send({
 					data,
+					req,
+					url: {
+						params: parsed_route?.params || {},
+						query: req?.body?.query_params || {},
+						path: req?.body?.path,
+						route: req?.body?.route_pattern || req?.body?.path,
+					},
 				});
 			}
 

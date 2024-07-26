@@ -48,6 +48,16 @@ const load_dynamic_page = async (component_instance = {}, dynamic_page_options =
       ...(window.__joystick_data__ || {}),
       ...(data_for_window?.data || {}),
     };
+
+    window.__joystick_request__ = {
+      ...(window.__joystick_request__ || {}),
+      ...(data_for_window?.req || {}),
+    };
+
+    window.__joystick_url__ = {
+      ...(window.__joystick_url__ || {}),
+      ...(data_for_window?.url || {}),
+    };
   }
 
   if (dynamic_page_options?.path) {
