@@ -22,6 +22,7 @@ import get_joystick_build_path from '../lib/get_joystick_build_path.js';
 import get_target_database_connection from "./databases/get_target_database_connection.js";
 import handle_process_errors from "./handle_process_errors.js";
 import load_settings from "./settings/load.js";
+import parse_route_pattern from '../lib/parse_route_pattern.js';
 import path_exists from '../lib/path_exists.js';
 import Queue from "./queues/index.js";
 import register_app_options from "./register_app_options.js";
