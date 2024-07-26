@@ -183,7 +183,7 @@ class App {
 			if (Component) {
 				const parsed_route = parse_route_pattern(req?.body?.route_pattern || '', req?.body?.path);
 
-				const req = get_browser_safe_request({
+				const browser_safe_request = get_browser_safe_request({
 					params: parsed_route?.params || {},
 					query: req?.body?.query_params || {},
 					url: req?.body?.path,
@@ -198,12 +198,12 @@ class App {
 					component_options: {
 						props: req?.body?.props,
 					},
-					req,
+					req: browser_safe_request,
 				});
 
 				return res.status(200).send({
 					data,
-					req,
+					req: browser_safe_request,
 					url: {
 						params: parsed_route?.params || {},
 						query: req?.body?.query_params || {},
