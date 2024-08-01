@@ -1,5 +1,4 @@
 import { parseHTML } from 'linkedom';
-import joystick from 'joystick-ui-test';
 import fetch from 'node-fetch';
 import { URL, URLSearchParams } from 'url';
 import event from './event.js';
@@ -89,7 +88,7 @@ const render = async (path_to_component = '', render_options = {}) => {
     props.page = component_to_render;  
   }
   
-  const component = joystick.mount(layout_to_render || component_to_render, props, dom?.document.querySelector('#app'));
+  const component = global.joystick.mount(layout_to_render || component_to_render, props, dom?.document.querySelector('#app'));
 
   const render_to_html = () => {
     const html = component?.render_to_html();
