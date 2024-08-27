@@ -1,24 +1,11 @@
-# Use Debian Slim as the base image
-FROM debian:bullseye-slim
+# Use Node.js 20 Slim as the base image
+FROM node:20-slim
 
 # Avoid prompts from apt
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Set up environment variables
-ENV NODE_VERSION=20.x
-
-# Install Node.js 20 and common dependencies
-RUN apt-get update && apt-get install -y \
-    curl \
-    ca-certificates \
-    gnupg \
-    && curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
-    && apt-get install -y nodejs \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
-
-# Verify Node.js version
-RUN node --version
+# Set the working directory in the container
+WORKDIR /app
 
 # Allow custom apt dependencies to be passed as build argument
 ARG CUSTOM_APT_DEPS=""
@@ -37,9 +24,6 @@ ARG GLOBAL_NPM_PACKAGES=""
 RUN if [ ! -z "$GLOBAL_NPM_PACKAGES" ]; then \
         npm install -g $GLOBAL_NPM_PACKAGES; \
     fi
-
-# Set the working directory in the container
-WORKDIR /app
 
 # Copy package.json and package-lock.json (if available)
 COPY ./.build/package*.json ./
