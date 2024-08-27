@@ -9,8 +9,9 @@ const minify_file = async (path = "") => {
     const file = await readFile(path, "utf-8");
     console.log(path);
     const minified = await esbuild.transform(file, {
-      minify: true,
-      target: 'es2020',
+      minifyWhitespace: true,
+      minifyIdentifiers: true,
+      minifySyntax: true,
     }).catch((error) => {
       console.warn(error);
     });
