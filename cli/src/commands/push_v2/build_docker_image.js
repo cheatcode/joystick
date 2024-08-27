@@ -26,7 +26,7 @@ const build_docker_image = (
 ) => {
   return new Promise((resolve, reject) => {
     if (!check_docker_installation()) {
-      process.loader.print("Push requires Docker to deploy your app. Please visit https://docs.docker.com/get-started/get-docker/ to download Docker for your OS.");
+      process.loader.print("\nPush requires Docker to deploy your app. Please visit https://docs.docker.com/get-started/get-docker/ to download Docker for your OS.\n");
       process.exit();
       return;
     }
