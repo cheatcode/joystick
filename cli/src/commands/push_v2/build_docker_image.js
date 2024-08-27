@@ -37,17 +37,17 @@ const get_docker_binary = async () => {
   let url;
   let archive_name;
 
-  if (platform === 'linux') {
-    url = `https://download.docker.com/linux/static/stable/${arch}/docker-24.0.7.tgz`;
-    archive_name = 'docker.tgz';
-  } else if (platform === 'darwin') {
-    url = `https://download.docker.com/mac/static/stable/${arch}/docker-24.0.7.tgz`;
-    archive_name = 'docker.tgz';
-  } else if (platform === 'win32') {
-    url = 'https://download.docker.com/win/static/stable/x86_64/docker-24.0.7.zip';
-    archive_name = 'docker.zip';
+  if (platform === 'linux' && arch === 'x64') {
+    url = 'https://get.docker.com/builds/Linux/x86_64/docker-latest.tgz';
+    archive_name = 'docker-latest.tgz';
+  } else if (platform === 'darwin' && arch === 'x64') {
+    url = 'https://get.docker.com/builds/Darwin/x86_64/docker-latest.tgz';
+    archive_name = 'docker-latest.tgz';
+  } else if (platform === 'win32' && arch === 'x64') {
+    url = 'https://get.docker.com/builds/Windows/x86_64/docker-latest.zip';
+    archive_name = 'docker-latest.zip';
   } else {
-    throw new Error('Unsupported operating system');
+    throw new Error(`Unsupported platform or architecture: ${platform} ${arch}`);
   }
 
   fs.mkdirSync(joystick_docker_path, { recursive: true });
