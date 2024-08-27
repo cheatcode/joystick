@@ -2,100 +2,16 @@ import { exec, execSync } from 'child_process';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
-import os from 'os';
-import tar from 'tar';
-import AdmZip from 'adm-zip';
-import { promisify } from 'util';
-import { pipeline } from 'stream';
-import fetch from 'node-fetch';
-
-const streamPipeline = promisify(pipeline);
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const joystick_docker_path = path.join(os.homedir(), '.joystick', 'docker');
-
-const get_docker_binary_path = () => {
-  return path.join(joystick_docker_path, os.platform() === 'win32' ? 'docker.exe' : 'docker');
-};
-
 const check_docker_installation = () => {
-  const docker_path = get_docker_binary_path();
   try {
-    execSync(`"${docker_path}" --version`, { stdio: 'ignore' });
+    execSync('docker --version', { stdio: 'ignore' });
     return true;
   } catch (error) {
-    console.warn('Warning: Docker is not installed or the binary is not accessible.');
     return false;
-  }
-};
-
-const get_docker_binary = async () => {
-  const platform = os.platform();
-  const arch = os.arch();
-  let url;
-  let archive_name;
-
-  const docker_version = '27.1.2';
-
-  if (platform === 'linux' && arch === 'x64') {
-    url = `https://download.docker.com/linux/static/stable/x86_64/docker-${docker_version}.tgz`;
-    archive_name = `docker-${docker_version}.tgz`;
-  } else if (platform === 'win32' && arch === 'x64') {
-    url = `https://download.docker.com/win/static/stable/x86_64/docker-${docker_version}.zip`;
-    archive_name = `docker-${docker_version}.zip`;
-  } else if (platform === 'darwin') {
-    if (arch === 'arm64') {
-      url = `https://download.docker.com/mac/static/stable/aarch64/docker-${docker_version}.tgz`;
-    } else if (arch === 'x64') {
-      url = `https://download.docker.com/mac/static/stable/x86_64/docker-${docker_version}.tgz`;
-    } else {
-      throw new Error(`Unsupported architecture for macOS: ${arch}`);
-    }
-    archive_name = `docker-${docker_version}.tgz`;
-  } else {
-    throw new Error(`Unsupported platform or architecture: ${platform} ${arch}`);
-  }
-
-  fs.mkdirSync(joystick_docker_path, { recursive: true });
-  const archive_path = path.join(joystick_docker_path, archive_name);
-
-  try {
-    process.loader.print(`Downloading Docker binary from ${url}`);
-    const response = await fetch(url);
-    if (!response.ok) throw new Error(`Unexpected response ${response.statusText}`);
-    await streamPipeline(response.body, fs.createWriteStream(archive_path));
-    process.loader.print('Download completed');
-
-    if (platform === 'win32') {
-      process.loader.print('Extracting ZIP file');
-      const zip = new AdmZip(archive_path);
-      zip.extractAllTo(joystick_docker_path, true);
-    } else {
-      process.loader.print('Extracting TAR file');
-      await tar.x({
-        file: archive_path,
-        cwd: joystick_docker_path,
-        strip: 1
-      });
-    }
-
-    fs.unlinkSync(archive_path);
-
-    // Make the docker binary executable on Unix-like systems
-    if (platform !== 'win32') {
-      fs.chmodSync(get_docker_binary_path(), '755');
-    }
-
-    process.loader.print(`Docker binaries downloaded and extracted to ${joystick_docker_path}`);
-  } catch (error) {
-    process.loader.print(`Error: ${error.message}`);
-    if (fs.existsSync(archive_path)) {
-      process.loader.print('Cleaning up partial download');
-      fs.unlinkSync(archive_path);
-    }
-    throw new Error(`Failed to download or extract Docker binary: ${error.message}`);
   }
 };
 
@@ -108,21 +24,15 @@ const build_docker_image = (
     npm_deps = []
   } = {}
 ) => {
-  return new Promise(async (resolve, reject) => {
+  return new Promise((resolve, reject) => {
     if (!check_docker_installation()) {
-      process.loader.print('Push requires Docker to be installed on your machine. Downloading...');
-      try {
-        await get_docker_binary();
-        process.loader.print('Docker installed!');
-      } catch (error) {
-        reject(new Error(`Failed to download Docker binary: ${error.message}`));
-        return;
-      }
+      process.loader.print("Push requires Docker to deploy your app. Visit https://docs.docker.com/get-started/get-docker/ to download docker for your OS.");
+      reject(new Error("Docker is not installed or not in the PATH"));
+      return;
     }
 
     process.loader.print('Building Docker image for deployment...');
     
-    const docker_path = get_docker_binary_path();
     const dockerfile_path = path.join(__dirname, 'Dockerfile');
     
     if (!fs.existsSync(dockerfile_path)) {
@@ -137,7 +47,7 @@ const build_docker_image = (
       `GLOBAL_NPM_PACKAGES=${npm_deps.join(' ')}`
     ].map(arg => `--build-arg ${arg}`).join(' ');
 
-    const command = `"${docker_path}" build ${build_args} -t ${image_name} -f "${dockerfile_path}" "${context_path || __dirname}"`;
+    const command = `docker build ${build_args} -t ${image_name} -f "${dockerfile_path}" "${context_path || __dirname}"`;
 
     exec(command, (error, stdout, stderr) => {
       if (error) {

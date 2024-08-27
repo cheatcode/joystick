@@ -19,7 +19,6 @@
   "dependencies": {
     "@babel/code-frame": "^7.23.5",
     "acorn": "^8.11.2",
-    "adm-zip": "^0.5.15",
     "ascii-table": "^0.0.9",
     "ava": "^6.0.1",
     "chalk": "^5.3.0",
