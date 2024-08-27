@@ -10,7 +10,10 @@ const minify_file = async (path = "") => {
     const minified = await esbuild.transform(file, { minify: true }).catch((error) => {
       console.warn(error);
     });
-    await writeFile(path, minified.code);
+
+    if (minified?.code) {
+      await writeFile(path, minified.code);
+    }
   }
 };
 

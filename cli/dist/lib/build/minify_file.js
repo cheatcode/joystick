@@ -1,1 +1,1 @@
-import r from"fs";import a from"esbuild";import f from"../path_exists.js";const{readFile:s,writeFile:m}=r.promises,n=async(i="")=>{if(await f(i)){const t=await s(i,"utf-8"),o=await a.transform(t,{minify:!0}).catch(e=>{console.warn(e)});await m(i,o.code)}};var d=n;export{d as default};
+import f from"fs";import r from"esbuild";import a from"../path_exists.js";const{readFile:s,writeFile:m}=f.promises,n=async(i="")=>{if(await a(i)){const o=await s(i,"utf-8"),t=await r.transform(o,{minify:!0}).catch(e=>{console.warn(e)});t?.code&&await m(i,t.code)}};var w=n;export{w as default};
