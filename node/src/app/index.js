@@ -25,6 +25,8 @@ import handle_process_errors from "./handle_process_errors.js";
 import load_settings from "./settings/load.js";
 import parse_route_pattern from '../lib/parse_route_pattern.js';
 import path_exists from '../lib/path_exists.js';
+import push from "./push/index.js";
+import push_logger from "./push/logger.js";
 import Queue from "./queues/index.js";
 import register_app_options from "./register_app_options.js";
 import register_cron_jobs from "./cron_jobs/register.js";
@@ -40,13 +42,8 @@ import start_express from "./start_express.js";
 import start_node_as_cluster from "./start_node_as_cluster.js";
 import strip_preceeding_slash from '../lib/strip_preceeding_slash.js';
 import types from "../lib/types.js";
-import push_logs from "./push_logs.js";
 
 const app_settings = load_settings();
-
-if (process.env.NODE_ENV !== "development" && process.env.IS_PUSH_DEPLOYED) {
-  push_logs();
-}
 
 class App {
 	constructor(app_options = {}) {
@@ -229,8 +226,11 @@ class App {
     }
   }
 
-  register_push() {
-    this.express.app.get("/api/_push/health", api_push_health);
+  async register_push() {
+		if (process.env.NODE_ENV !== "development" && process.env.IS_PUSH_DEPLOYED) {
+			await push_logger();
+			await push();
+		}
   }
 
   register_queues() {

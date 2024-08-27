@@ -74,6 +74,8 @@ const handle_build_for_node = (node_paths = [], options = {}) => {
       build_plugins.warn_node_environment,
       build_plugins.generate_file_dependency_map
     ],
+  }).catch((error) => {
+    console.warn('NODE', error);
   });
 };
 
@@ -102,6 +104,8 @@ const handle_build_for_browser = (browser_paths = [], options = {}) => {
       build_plugins.bootstrap_component,
       svg(),
     ]
+  }).catch((error) => {
+    console.warn('BROWSER', error);
   });
 };
 
