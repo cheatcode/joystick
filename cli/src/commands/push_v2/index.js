@@ -93,7 +93,7 @@ const push = async (args = {}, options = {}) => {
 
 	// NOTE: A bit hacky but removes need for weird if {} statement nesting.
 	const { confirm_deployment } = deployment?.status === 'undeployed' ? await inquirer.prompt(
-		confirm_deployment_prompt(push_config_validation_response?.instances)
+		confirm_deployment_prompt([] || push_config_validation_response?.instances)
 	) : { confirm_deployment: true };
 
 	if (confirm_deployment) {
@@ -113,7 +113,7 @@ const push = async (args = {}, options = {}) => {
 		});
 
 		console.log('Now do the docker build.');
-		
+
 		// process.loader.print('Uploading version...');
 
 		// await upload_build_to_cdn(
