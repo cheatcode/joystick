@@ -14,8 +14,6 @@ const warn_node_environment = (build = {}) => {
         )
       );
     }
-  }).catch((error) => {
-    console.log('WNE', error);
   });
 };
 
