@@ -117,7 +117,7 @@ const push = async (args = {}, options = {}) => {
 		});
 
 		await build_docker_image(
-			deployment?.domain,
+			`${deployment?.domain}:latest`,
 			process.cwd(), // NOTE: Dockerfile targets the .build directory.
 		);
 

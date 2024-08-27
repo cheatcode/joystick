@@ -1,11 +1,15 @@
 import { exec, execSync } from 'child_process';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import https from 'https';
 import fs from 'fs';
 import os from 'os';
 import tar from 'tar';
 import AdmZip from 'adm-zip';
+import { promisify } from 'util';
+import { pipeline } from 'stream';
+import fetch from 'node-fetch';
+
+const streamPipeline = promisify(pipeline);
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -25,20 +29,6 @@ const check_docker_installation = () => {
     console.warn('Warning: Docker is not installed or the binary is not accessible.');
     return false;
   }
-};
-
-const download_file = (url, dest) => {
-  return new Promise((resolve, reject) => {
-    const file = fs.createWriteStream(dest);
-    https.get(url, (response) => {
-      response.pipe(file);
-      file.on('finish', () => {
-        file.close(resolve);
-      });
-    }).on('error', (error) => {
-      fs.unlink(dest, () => reject(error));
-    });
-  });
 };
 
 const get_docker_binary = async () => {
@@ -62,27 +52,43 @@ const get_docker_binary = async () => {
 
   fs.mkdirSync(joystick_docker_path, { recursive: true });
   const archive_path = path.join(joystick_docker_path, archive_name);
-  await download_file(url, archive_path);
 
-  if (platform === 'win32') {
-    const zip = new AdmZip(archive_path);
-    zip.extractAllTo(joystick_docker_path, true);
-  } else {
-    await tar.x({
-      file: archive_path,
-      cwd: joystick_docker_path,
-      strip: 1
-    });
+  try {
+    process.loader.print(`Downloading Docker binary from ${url}`);
+    const response = await fetch(url);
+    if (!response.ok) throw new Error(`Unexpected response ${response.statusText}`);
+    await streamPipeline(response.body, fs.createWriteStream(archive_path));
+    process.loader.print('Download completed');
+
+    if (platform === 'win32') {
+      process.loader.print('Extracting ZIP file');
+      const zip = new AdmZip(archive_path);
+      zip.extractAllTo(joystick_docker_path, true);
+    } else {
+      process.loader.print('Extracting TAR file');
+      await tar.x({
+        file: archive_path,
+        cwd: joystick_docker_path,
+        strip: 1
+      });
+    }
+
+    fs.unlinkSync(archive_path);
+
+    // Make the docker binary executable on Unix-like systems
+    if (platform !== 'win32') {
+      fs.chmodSync(get_docker_binary_path(), '755');
+    }
+
+    process.loader.print(`Docker binaries downloaded and extracted to ${joystick_docker_path}`);
+  } catch (error) {
+    process.loader.print(`Error: ${error.message}`);
+    if (fs.existsSync(archive_path)) {
+      process.loader.print('Cleaning up partial download');
+      fs.unlinkSync(archive_path);
+    }
+    throw new Error(`Failed to download or extract Docker binary: ${error.message}`);
   }
-
-  fs.unlinkSync(archive_path);
-
-  // Make the docker binary executable on Unix-like systems
-  if (platform !== 'win32') {
-    fs.chmodSync(get_docker_binary_path(), '755');
-  }
-
-  process.loader.print(`Docker binaries downloaded and extracted to ${joystick_docker_path}`);
 };
 
 const build_docker_image = (
