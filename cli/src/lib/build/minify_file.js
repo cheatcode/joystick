@@ -8,7 +8,10 @@ const minify_file = async (path = "") => {
   if (await path_exists(path)) {
     const file = await readFile(path, "utf-8");
     console.log(path);
-    const minified = await esbuild.transform(file, { minify: true }).catch((error) => {
+    const minified = await esbuild.transform(file, {
+      minify: true,
+      target: 'es6',
+    }).catch((error) => {
       console.warn(error);
     });
 
