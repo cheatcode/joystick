@@ -20,7 +20,6 @@ const build_docker_image = (
   context_path = '',
   {
     apt_deps = [],
-    snap_deps = [],
     npm_deps = []
   } = {}
 ) => {
@@ -29,8 +28,7 @@ const build_docker_image = (
       console.log('\n');
       process.loader.print("Push requires Docker to deploy your app. Please visit https://docs.docker.com/get-started/get-docker/ to download Docker for your OS.");
       console.log('\n');
-      process.exit();
-      return;
+      return process.exit();
     }
 
     process.loader.print('Building Docker image for deployment...');
@@ -45,7 +43,6 @@ const build_docker_image = (
     // Prepare build arguments for dependencies
     const build_args = [
       `CUSTOM_APT_DEPS=${apt_deps.join(' ')}`,
-      `CUSTOM_SNAP_DEPS=${snap_deps.join(' ')}`,
       `GLOBAL_NPM_PACKAGES=${npm_deps.join(' ')}`
     ].map(arg => `--build-arg ${arg}`).join(' ');
 
