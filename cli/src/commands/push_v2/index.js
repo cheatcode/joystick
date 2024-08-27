@@ -92,9 +92,10 @@ const push = async (args = {}, options = {}) => {
 	});
 
 	// NOTE: A bit hacky but removes need for weird if {} statement nesting.
-	const { confirm_deployment } = { confirm_deployment: true } || deployment?.status === 'undeployed' ? await inquirer.prompt(
-		confirm_deployment_prompt([] || push_config_validation_response?.instances)
-	) : { confirm_deployment: true };
+	const confirm_deployment = true;
+	// const { confirm_deployment } = { confirm_deployment: true } || deployment?.status === 'undeployed' ? await inquirer.prompt(
+	// 	confirm_deployment_prompt([] || push_config_validation_response?.instances)
+	// ) : { confirm_deployment: true };
 
 	if (confirm_deployment) {
 		// NOTE: Do this to create a gap between the confirmation text above (only applies if
