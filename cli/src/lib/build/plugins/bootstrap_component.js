@@ -124,74 +124,66 @@ const check_if_should_set_component_id = (entry_point = '') => {
 
 const bootstrap_component = (build = {}) => {
   build.onLoad({ filter: /\.js$/ }, async (build_args = {}) => {
-    try {
-      const is_layout_component = check_if_is_component_type('ui/layouts', build_args);
-      const is_page_component = check_if_is_component_type('ui/pages', build_args);      
-      const is_email_component = check_if_is_component_type('email/', build_args);
-      const is_component = is_layout_component || is_page_component || is_email_component;
+    const is_layout_component = check_if_is_component_type('ui/layouts', build_args);
+    const is_page_component = check_if_is_component_type('ui/pages', build_args);      
+    const is_email_component = check_if_is_component_type('email/', build_args);
+    const is_component = is_layout_component || is_page_component || is_email_component;
 
-      if (is_component) {
-        let file_contents = await readFile(get_platform_safe_path(build_args.path), "utf-8");
-        
-        const has_joystick_ui = check_if_has_joystick_ui(file_contents);
-        const default_export = get_default_export(file_contents);
-        const is_valid_component_file = check_if_valid_component_file(has_joystick_ui, default_export);
-        const examples_before_replacement = get_examples_before_replacement(file_contents);
-        const component_name = get_component_name(default_export);
+    if (is_component) {
+      let file_contents = await readFile(get_platform_safe_path(build_args.path), "utf-8");
+      
+      const has_joystick_ui = check_if_has_joystick_ui(file_contents);
+      const default_export = get_default_export(file_contents);
+      const is_valid_component_file = check_if_valid_component_file(has_joystick_ui, default_export);
+      const examples_before_replacement = get_examples_before_replacement(file_contents);
+      const component_name = get_component_name(default_export);
 
-        file_contents = set_placeholders_for_examples(file_contents);
-        file_contents = replace_commented_code(file_contents);
-        file_contents = component_name && is_layout_component ?
-          add_layout_mounting_code(file_contents, default_export, component_name) :
-          file_contents;
-        file_contents = component_name && is_page_component ?
-          add_page_mounting_code(file_contents, default_export, component_name) :
-          file_contents;
+      file_contents = set_placeholders_for_examples(file_contents);
+      file_contents = replace_commented_code(file_contents);
+      file_contents = component_name && is_layout_component ?
+        add_layout_mounting_code(file_contents, default_export, component_name) :
+        file_contents;
+      file_contents = component_name && is_page_component ?
+        add_page_mounting_code(file_contents, default_export, component_name) :
+        file_contents;
 
-        restore_examples_without_mounting_code(file_contents, examples_before_replacement);
+      restore_examples_without_mounting_code(file_contents, examples_before_replacement);
 
-        return {
-          contents: file_contents,
-          loader: "js",
-        };
-      }
-    } catch (exception) {
-      console.warn(exception);
+      return {
+        contents: file_contents,
+        loader: "js",
+      };
     }
   });
 
   build.onEnd(() => {
     return new Promise(async (resolve) => {
-      try {
-        for (let i = 0; i < build?.initialOptions?.entryPoints?.length; i += 1) {
-          const entry_point = build?.initialOptions?.entryPoints[i];
-          const should_set_component_id = check_if_should_set_component_id(entry_point);
-          const build_exists = await path_exists(`${build?.initialOptions?.outdir}/${entry_point}`);
-  
-          if (should_set_component_id && build_exists) {
-            let file_contents = await readFile(`${build?.initialOptions?.outdir}/${entry_point}`, "utf-8");
-            const has_joystick_ui = check_if_has_joystick_ui(file_contents);
-            const examples_before_replacement = get_examples_before_replacement(file_contents);
-            
-            file_contents = set_placeholders_for_examples(file_contents);
-  
-            if (has_joystick_ui) {
-              file_contents = await set_component_id(file_contents);
-  
-              for (let i = 0; i < examples_before_replacement?.length; i += 1) {
-                const example_to_restore = examples_before_replacement[i];
-                file_contents = file_contents.replace(`%example:${i}%`, example_to_restore);
-              }
-              
-              await writeFile(`${build?.initialOptions?.outdir}/${entry_point}`, file_contents);
+      for (let i = 0; i < build?.initialOptions?.entryPoints?.length; i += 1) {
+        const entry_point = build?.initialOptions?.entryPoints[i];
+        const should_set_component_id = check_if_should_set_component_id(entry_point);
+        const build_exists = await path_exists(`${build?.initialOptions?.outdir}/${entry_point}`);
+
+        if (should_set_component_id && build_exists) {
+          let file_contents = await readFile(`${build?.initialOptions?.outdir}/${entry_point}`, "utf-8");
+          const has_joystick_ui = check_if_has_joystick_ui(file_contents);
+					const examples_before_replacement = get_examples_before_replacement(file_contents);
+          
+          file_contents = set_placeholders_for_examples(file_contents);
+
+          if (has_joystick_ui) {
+            file_contents = await set_component_id(file_contents);
+
+            for (let i = 0; i < examples_before_replacement?.length; i += 1) {
+              const example_to_restore = examples_before_replacement[i];
+              file_contents = file_contents.replace(`%example:${i}%`, example_to_restore);
             }
+            
+            await writeFile(`${build?.initialOptions?.outdir}/${entry_point}`, file_contents);
           }
         }
-  
-        resolve();
-      } catch (exception) {
-        console.warn(exception);
       }
+
+      resolve();
     });
   });
 };
