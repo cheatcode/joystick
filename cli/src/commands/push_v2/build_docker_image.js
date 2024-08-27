@@ -52,19 +52,17 @@ const build_docker_image = (
       `CACHEBUST=${Date.now()}` // Add timestamp to invalidate cache
     ].map(arg => `--build-arg ${arg}`).join(' ');
 
-    const command = `docker build ${build_args} -t ${image_name} -f "${dockerfile_path}" "${context_path}"`;
+    // Add --quiet flag to suppress verbose output
+    const command = `docker build --quiet ${build_args} -t ${image_name} -f "${dockerfile_path}" "${context_path}"`;
 
-    exec(command, { stdio: ['pipe', 'pipe', 'pipe'] }, (error, stdout, stderr) => {
+    exec(command, { stdio: ['ignore', 'pipe', 'pipe'] }, (error, stdout, stderr) => {
       if (error) {
         console.error(`Error building Docker image: ${error.message}`);
         reject(error);
         return;
       }
       
-      // Only log stdout if it's not empty
-      if (stdout.trim()) {
-        process.loader.print(stdout);
-      }
+      // The --quiet flag will output only the image ID, which we can ignore
       
       // Check if stderr contains actual error messages
       if (stderr.trim() && !stderr.includes("Use 'docker scan' to run Snyk tests against images to find vulnerabilities and learn how to fix them")) {
