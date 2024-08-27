@@ -10,8 +10,8 @@ const minify_file = async (path = "") => {
     console.log(path);
     const minified = await esbuild.transform(file, {
       minifyWhitespace: true,
-      minifyIdentifiers: true,
-      minifySyntax: true,
+      // minifyIdentifiers: true,
+      // minifySyntax: true,
     }).catch((error) => {
       console.warn(error);
     });
