@@ -26,8 +26,8 @@ const build_docker_image = (
 ) => {
   return new Promise((resolve, reject) => {
     if (!check_docker_installation()) {
-      process.loader.print("Push requires Docker to deploy your app. Visit https://docs.docker.com/get-started/get-docker/ to download docker for your OS.");
-      reject(new Error("Docker is not installed or not in the PATH"));
+      process.loader.print("Push requires Docker to deploy your app. Please visit https://docs.docker.com/get-started/get-docker/ to download Docker for your OS.");
+      process.exit();
       return;
     }
 
