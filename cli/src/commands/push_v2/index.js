@@ -92,7 +92,7 @@ const push = async (args = {}, options = {}) => {
 	});
 
 	// NOTE: A bit hacky but removes need for weird if {} statement nesting.
-	const { confirm_deployment } = deployment?.status === 'undeployed' ? await inquirer.prompt(
+	const { confirm_deployment } = { confirm_deployment: true } || deployment?.status === 'undeployed' ? await inquirer.prompt(
 		confirm_deployment_prompt([] || push_config_validation_response?.instances)
 	) : { confirm_deployment: true };
 
