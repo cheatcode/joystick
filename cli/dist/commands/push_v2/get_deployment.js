@@ -1,0 +1,1 @@
+import a from"node-fetch";const n=(e={})=>a(`${e?.push_domain}/api/deployments/${e?.domain}`,{method:"GET",headers:{"x-push-session-token":e?.session_token,Accept:"application/json"}})?.then(async t=>(await t.json())?.data).catch(t=>{console.warn(t)});var c=n;export{c as default};
