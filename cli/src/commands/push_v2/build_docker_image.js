@@ -37,15 +37,23 @@ const get_docker_binary = async () => {
   let url;
   let archive_name;
 
+  const docker_version = '27.1.2';
+
   if (platform === 'linux' && arch === 'x64') {
-    url = 'https://get.docker.com/builds/Linux/x86_64/docker-latest.tgz';
-    archive_name = 'docker-latest.tgz';
-  } else if (platform === 'darwin' && arch === 'x64') {
-    url = 'https://get.docker.com/builds/Darwin/x86_64/docker-latest.tgz';
-    archive_name = 'docker-latest.tgz';
+    url = `https://download.docker.com/linux/static/stable/x86_64/docker-${docker_version}.tgz`;
+    archive_name = `docker-${docker_version}.tgz`;
   } else if (platform === 'win32' && arch === 'x64') {
-    url = 'https://get.docker.com/builds/Windows/x86_64/docker-latest.zip';
-    archive_name = 'docker-latest.zip';
+    url = `https://download.docker.com/win/static/stable/x86_64/docker-${docker_version}.zip`;
+    archive_name = `docker-${docker_version}.zip`;
+  } else if (platform === 'darwin') {
+    if (arch === 'arm64') {
+      url = `https://download.docker.com/mac/static/stable/aarch64/docker-${docker_version}.tgz`;
+    } else if (arch === 'x64') {
+      url = `https://download.docker.com/mac/static/stable/x86_64/docker-${docker_version}.tgz`;
+    } else {
+      throw new Error(`Unsupported architecture for macOS: ${arch}`);
+    }
+    archive_name = `docker-${docker_version}.tgz`;
   } else {
     throw new Error(`Unsupported platform or architecture: ${platform} ${arch}`);
   }
