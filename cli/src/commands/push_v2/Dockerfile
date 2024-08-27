@@ -1,5 +1,5 @@
-# Use Ubuntu 24.04 as the base image
-FROM ubuntu:24.04
+# Use Debian Slim as the base image
+FROM debian:bullseye-slim
 
 # Avoid prompts from apt
 ENV DEBIAN_FRONTEND=noninteractive
@@ -10,10 +10,8 @@ ENV NODE_VERSION=20.x
 # Install Node.js 20 and common dependencies
 RUN apt-get update && apt-get install -y \
     curl \
-    zip \
-    unzip \
-    git \
-    build-essential \
+    ca-certificates \
+    gnupg \
     && curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
     && apt-get install -y nodejs \
     && apt-get clean \
@@ -43,11 +41,17 @@ RUN if [ ! -z "$GLOBAL_NPM_PACKAGES" ]; then \
 # Set the working directory in the container
 WORKDIR /app
 
+# Copy package.json and package-lock.json (if available)
+COPY ./.build/package*.json ./
+
+# Install NPM dependencies
+RUN npm ci --only=production
+
 # Add build argument to invalidate cache
 ARG CACHEBUST=1
 
-# Copy the pre-built application
-COPY ./.build /app
+# Copy the rest of the pre-built application
+COPY ./.build .
 
 # Expose the port the app runs on
 EXPOSE 2600
