@@ -14,6 +14,7 @@ import Loader from '../../lib/loader.js';
 import upload_build_to_cdn from './upload_build_to_cdn.js';
 import validate_deployment from './validate_deployment.js';
 import validate_push_config from './validate_push_config.js';
+import build_docker_image from './build_docker_image.js';
 
 const log_validation_error_response = (validation_type = '', root_error = '', validation_response = {}) => {
 	let errors_list = ``;
@@ -83,6 +84,7 @@ const push = async (args = {}, options = {}) => {
   const push_domain = get_push_domain(options?.push_server);
 
 	const deployment = {
+		domain: 'example.com',
 		status: 'undeployed',
 		deployment_secret: 'abc123',
 	} || await get_deployment({
@@ -107,13 +109,17 @@ const push = async (args = {}, options = {}) => {
 		const build_timestamp = new Date().toISOString();
 		
 		await build({
+			type: 'directory', // NOTE: Use this so we can copy it into the Docker image.
 			environment,
 			encrypt_build: true,
 			encryption_key: deployment?.deployment_secret,
 			silence_confirmation: true,
 		});
 
-		console.log('Now do the docker build.');
+		await build_docker_image(
+			deployment?.domain,
+			process.cwd(), // NOTE: Dockerfile targets the .build directory.
+		);
 
 		// process.loader.print('Uploading version...');
 
