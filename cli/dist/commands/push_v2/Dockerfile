@@ -43,6 +43,9 @@ RUN if [ ! -z "$GLOBAL_NPM_PACKAGES" ]; then \
 # Set the working directory in the container
 WORKDIR /app
 
+# Add build argument to invalidate cache
+ARG CACHEBUST=1
+
 # Copy the pre-built application
 COPY ./.build /app
 

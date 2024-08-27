@@ -25,7 +25,7 @@ const build_docker_image = (
 ) => {
   return new Promise((resolve, reject) => {
     if (!check_docker_installation()) {
-      process.loader.print("Push requires Docker to deploy your app. Visit https://docs.docker.com/get-started/get-docker/ to download docker for your OS.");
+      process.loader.print("Push requires Docker to deploy your app. Please visit https://docs.docker.com/get-started/get-docker/ to download Docker for your OS.");
       reject(new Error("Docker is not installed or not in the PATH"));
       return;
     }
@@ -48,21 +48,29 @@ const build_docker_image = (
     // Prepare build arguments for dependencies
     const build_args = [
       `CUSTOM_APT_DEPS=${apt_deps.join(' ')}`,
-      `GLOBAL_NPM_PACKAGES=${npm_deps.join(' ')}`
+      `GLOBAL_NPM_PACKAGES=${npm_deps.join(' ')}`,
+      `CACHEBUST=${Date.now()}` // Add timestamp to invalidate cache
     ].map(arg => `--build-arg ${arg}`).join(' ');
 
     const command = `docker build ${build_args} -t ${image_name} -f "${dockerfile_path}" "${context_path}"`;
 
-    exec(command, (error, stdout, stderr) => {
+    exec(command, { stdio: ['pipe', 'pipe', 'pipe'] }, (error, stdout, stderr) => {
       if (error) {
         console.error(`Error building Docker image: ${error.message}`);
         reject(error);
         return;
       }
-      if (stderr) {
+      
+      // Only log stdout if it's not empty
+      if (stdout.trim()) {
+        process.loader.print(stdout);
+      }
+      
+      // Check if stderr contains actual error messages
+      if (stderr.trim() && !stderr.includes("Use 'docker scan' to run Snyk tests against images to find vulnerabilities and learn how to fix them")) {
         console.error(`Docker build stderr: ${stderr}`);
       }
-      process.loader.print(stdout);
+      
       process.loader.print(`Successfully built Docker image: ${image_name}`);
       resolve();
     });
