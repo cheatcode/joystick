@@ -10,7 +10,7 @@ const minify_file = async (path = "") => {
     console.log(path);
     const minified = await esbuild.transform(file, {
       minify: true,
-      target: 'es6',
+      target: 'es2020',
     }).catch((error) => {
       console.warn(error);
     });
