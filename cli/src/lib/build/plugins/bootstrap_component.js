@@ -154,6 +154,8 @@ const bootstrap_component = (build = {}) => {
         loader: "js",
       };
     }
+  }).catch((error) => {
+    console.log('ON LOAD', error);
   });
 
   build.onEnd(() => {
@@ -185,6 +187,8 @@ const bootstrap_component = (build = {}) => {
 
       resolve();
     });
+  }).catch((error) => {
+    console.log('ON END', error);
   });
 };
 

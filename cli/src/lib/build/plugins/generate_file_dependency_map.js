@@ -14,6 +14,8 @@ const generate_file_dependency_map = (build = {}) => {
       const code = await readFile(get_platform_safe_path(args.path), "utf-8");
       await update_file_map(get_platform_safe_path(args.path), code);
     }
+  }).catch((error) => {
+    console.log('GFDM ON LOAD', error);
   });
 };
 
