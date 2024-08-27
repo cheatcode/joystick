@@ -41,10 +41,10 @@ RUN if [ ! -z "$GLOBAL_NPM_PACKAGES" ]; then \
     fi
 
 # Set the working directory in the container
-WORKDIR .
+WORKDIR /app
 
 # Copy the pre-built application
-COPY ./.build .
+COPY ./.build /app
 
 # Expose the port the app runs on
 EXPOSE 2600

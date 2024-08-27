@@ -25,10 +25,9 @@ const build_docker_image = (
 ) => {
   return new Promise((resolve, reject) => {
     if (!check_docker_installation()) {
-      console.log('\n');
-      process.loader.print("Push requires Docker to deploy your app. Please visit https://docs.docker.com/get-started/get-docker/ to download Docker for your OS.");
-      console.log('\n');
-      return process.exit();
+      process.loader.print("Push requires Docker to deploy your app. Visit https://docs.docker.com/get-started/get-docker/ to download docker for your OS.");
+      reject(new Error("Docker is not installed or not in the PATH"));
+      return;
     }
 
     process.loader.print('Building Docker image for deployment...');
@@ -40,13 +39,19 @@ const build_docker_image = (
       return;
     }
 
+    // Ensure context_path is set and contains the .build directory
+    if (!context_path || !fs.existsSync(path.join(context_path, '.build'))) {
+      reject(new Error('Invalid context path or .build directory not found'));
+      return;
+    }
+
     // Prepare build arguments for dependencies
     const build_args = [
       `CUSTOM_APT_DEPS=${apt_deps.join(' ')}`,
       `GLOBAL_NPM_PACKAGES=${npm_deps.join(' ')}`
     ].map(arg => `--build-arg ${arg}`).join(' ');
 
-    const command = `docker build ${build_args} -t ${image_name} -f "${dockerfile_path}" "${context_path || __dirname}"`;
+    const command = `docker build ${build_args} -t ${image_name} -f "${dockerfile_path}" "${context_path}"`;
 
     exec(command, (error, stdout, stderr) => {
       if (error) {
