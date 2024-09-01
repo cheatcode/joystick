@@ -4,7 +4,7 @@ const get_deployment = (options = {}) => {
 	return fetch(`${options?.push_domain}/api/deployments/${options?.domain}`, {
 		method: 'GET',
 		headers: {
-			'x-push-deployment-token': options?.deployment,
+			'x-push-deployment-token': options?.deployment_token,
 			Accept: 'application/json',
 		},
 	})?.then(async (response) => {
