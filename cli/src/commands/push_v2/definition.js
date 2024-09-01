@@ -21,21 +21,6 @@ const definition = {
       },
       description: 'The domain of the app Push should deploy to.',      
     },
-    environment: {
-     flags: {
-       '-e': {
-         set: !!raw_args.includes('-e'),
-         value: !!raw_args.includes('-e') && raw_args[raw_args.indexOf('-e') + 1],
-         parent: 'push',
-       },
-       '--environment': {
-         set: !!raw_args.includes('--environment'),
-         value: !!raw_args.includes('--environment') && raw_args[raw_args.indexOf('--environment') + 1],
-         parent: 'push',
-       },
-     },
-     description: 'The value you want to use for NODE_ENV in the deployed app (e.g., staging or production). Default is production.',
-    },
     push_server: {
      flags: {
        '-s': {

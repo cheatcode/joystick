@@ -17,6 +17,7 @@ const upload_build_to_push = async (options = {}) => {
   form_data.append("build_timestamp", options?.build_timestamp);
   form_data.append("domain", options?.deployment?.domain);
   form_data.append("deployment_id", options?.deployment?._id);
+  form_data.append("settings", JSON.stringify(options?.settings));
 
   return fetch(`${options?.push_domain}/api/deploy`, {
    method: "POST",

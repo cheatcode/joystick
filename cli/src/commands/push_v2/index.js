@@ -42,8 +42,6 @@ const push = async (args = {}, options = {}) => {
 	process.loader.print('Starting deployment...');
 
 	const deployment_token = await get_token_for_deployment(options?.deployment_token);
-	const environment = options?.environment || 'production';
-  const settings = await get_settings_file({ environment });
   const push_domain = get_push_domain(options?.push_server);
 
 	const deployment = await get_deployment({
@@ -64,7 +62,9 @@ const push = async (args = {}, options = {}) => {
     return process.exit(0);		
 	}
 
+	const environment = deployment?.environment || 'production';
 	const build_timestamp = new Date().toISOString();
+	const settings = await get_settings_file({ environment });
 		
 	await build({
 		environment,
