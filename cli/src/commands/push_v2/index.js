@@ -12,7 +12,7 @@ const get_token_for_deployment = async (input_deployment_token = '') => {
 
 	if (!deployment_token) {
     cli_log(
-      data?.error?.message,
+      'Must pass a deployment token via the -t or --token flag, or, have an existing deployment token on your machine.',
       {
         level: "danger",
         docs: "https://cheatcode.co/docs/push/authentication"
