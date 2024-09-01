@@ -1,0 +1,1 @@
+import i from"os";import r from"fs";import o from"../../lib/path_exists.js";const{readFile:n,mkdir:a,writeFile:p}=r.promises,m=async(s="")=>{if(s)return await o(`${t}/.push`)||await a(`${t}/.push`),await p(`${t}/.push/deployment_token`,s),s;const t=i.homedir(),e=`${t}/.push/deployment_token`;return await o(e)?n(e,"utf-8"):null};var c=m;export{c as default};

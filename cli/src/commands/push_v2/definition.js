@@ -51,6 +51,21 @@ const definition = {
      },
      description: 'The Push provision server to target (development or production).',
     },
+    deployment_token: {
+      flags: {
+        '-t': {
+          set: !!raw_args.includes('-t'),
+          value: !!raw_args.includes('-t') && raw_args[raw_args.indexOf('-t') + 1],
+          parent: 'push',
+        },
+        '--token': {
+          set: !!raw_args.includes('--token'),
+          value: !!raw_args.includes('--token') && raw_args[raw_args.indexOf('--token') + 1],
+          parent: 'push',
+        },
+      },
+      description: 'The deployment token for your Push user account.',
+     },    
   },
   command: push,
 };

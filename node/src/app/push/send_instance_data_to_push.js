@@ -1,7 +1,14 @@
 import fetch from 'node-fetch';
 
 const send_instance_data_to_push = async (type = '', data = '') => {
-  return fetch(`https://push.cheatcode.co/api/instances/${type}`, {
+  const url = `https://push.cheatcode.co/api/instances/${type}`;
+
+  const check_response = await fetch(url, { method: 'HEAD' });
+  if (!check_response.ok) {
+    return; // NOTE: Do nothing because Push isn't available.
+  }
+
+  const response = await fetch(url, {
     method: 'POST',
     headers: {
       'x-push-instance-token': process.env.PUSH_INSTANCE_TOKEN,
@@ -9,6 +16,12 @@ const send_instance_data_to_push = async (type = '', data = '') => {
     },
     body: JSON.stringify({ type, data }),
   });
+
+  if (!response.ok) {
+    return; // NOTE: Fail silently because Push had an error.
+  }
+
+  return response;
 };
 
 export default send_instance_data_to_push;

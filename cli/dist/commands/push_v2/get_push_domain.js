@@ -1,1 +1,1 @@
-const t=(o="production")=>({development:"http://localhost:2603",staging:"https://staging.provision.cheatcode.co",production:"https://provision.cheatcode.co"})[o];var e=t;export{e as default};
+const o=(t="production")=>({development:"http://localhost:2603",production:"https://push.cheatcode.co"})[t];var e=o;export{e as default};
