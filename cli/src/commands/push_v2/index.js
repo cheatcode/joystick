@@ -52,8 +52,6 @@ const push = async (args = {}, options = {}) => {
 		push_domain,
 	});
 
-	console.log(deployment);
-
 	if (!deployment) {
     cli_log(
       `Sorry, we couldn\'t find a deployment with the domain ${options?.domain} on your account. If you haven\'t created it yet, head over to the Push dashboard: https://push.cheatcode.co/deployments/create`,
@@ -77,13 +75,13 @@ const push = async (args = {}, options = {}) => {
 
 	process.loader.print('Deploying to Push...');
 
-	// await upload_build_to_push({
-	// 	build_timestamp,
-	// 	deployment,
-	// 	deployment_token,
-	// 	push_domain,
-	// 	settings,
-	// });
+	await upload_build_to_push({
+		build_timestamp,
+		deployment,
+		deployment_token,
+		push_domain,
+		settings,
+	});
 
 	process.loader.print(deployment?.intial_deployment_completed ? `Deploying. Monitor your deployment at ${push_domain}/deployments/${deployment?._id}.` : `Deploying. Finish your deployment's setup at ${push_domain}/deployments/${deployment?._id}/setup.`);
 };
