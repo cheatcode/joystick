@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../../src/commands/push/validate_push_config.js"],
+  "sourcesContent": ["import fetch from 'node-fetch';\n\nconst validate_push_config = (options = {}) => {\n\treturn fetch(`${options?.push_provision_domain}/api/validate/config`, {\n\t\tmethod: 'POST',\n\t\theaders: {\n\t\t\t'Content-Type': 'application/json',\n\t\t},\n\t\tbody: JSON.stringify(options?.push_config),\n\t})?.then(async (response) => {\n\t\tconst data = await response.json();\n\t\treturn data?.data;\n\t}).catch((error) => {\n\t\tconsole.warn(error);\n\t});\n};\n\nexport default validate_push_config;\n"],
+  "mappings": "AAAA,OAAOA,MAAW,aAElB,MAAMC,EAAuB,CAACC,EAAU,CAAC,IACjCF,EAAM,GAAGE,GAAS,qBAAqB,uBAAwB,CACrE,OAAQ,OACR,QAAS,CACR,eAAgB,kBACjB,EACA,KAAM,KAAK,UAAUA,GAAS,WAAW,CAC1C,CAAC,GAAG,KAAK,MAAOC,IACF,MAAMA,EAAS,KAAK,IACpB,IACb,EAAE,MAAOC,GAAU,CACnB,QAAQ,KAAKA,CAAK,CACnB,CAAC,EAGF,IAAOC,EAAQJ",
+  "names": ["fetch", "validate_push_config", "options", "response", "error", "validate_push_config_default"]
+}

@@ -1,1 +1,2 @@
 import p from"fs";import o from"../../get_platform_safe_path.js";import m from"./update_file_map.js";const{readFile:n}=p.promises,s=(a={})=>{a.onLoad({filter:/\.js$/},async e=>{if(!["node_modules",".joystick","?","commonjsHelpers.js"].some(t=>o(e.path).includes(t))){const t=await n(o(e.path),"utf-8");await m(o(e.path),t)}})};var c=s;export{c as default};
+//# sourceMappingURL=generate_file_dependency_map.js.map

@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../src/lib/required_files.js"],
+  "sourcesContent": ["const required_files = [\n  { path: \"index.server.js\", type: \"file\" },\n  { path: \"index.html\", type: \"file\" },\n  { path: \"index.client.js\", type: \"file\" },\n  { path: \"api\", type: \"directory\" },\n  { path: \"email\", type: \"directory\" },\n  { path: \"i18n\", type: \"directory\" },\n  { path: \"lib\", type: \"directory\" },\n  { path: \"private\", type: \"directory\" },\n  { path: \"public\", type: \"directory\" },\n  { path: \"ui\", type: \"directory\" },\n  { path: \"ui/components\", type: \"directory\" },\n  { path: \"ui/layouts\", type: \"directory\" },\n  { path: \"ui/pages\", type: \"directory\" },\n];\n\nexport default required_files;\n"],
+  "mappings": "AAAA,MAAMA,EAAiB,CACrB,CAAE,KAAM,kBAAmB,KAAM,MAAO,EACxC,CAAE,KAAM,aAAc,KAAM,MAAO,EACnC,CAAE,KAAM,kBAAmB,KAAM,MAAO,EACxC,CAAE,KAAM,MAAO,KAAM,WAAY,EACjC,CAAE,KAAM,QAAS,KAAM,WAAY,EACnC,CAAE,KAAM,OAAQ,KAAM,WAAY,EAClC,CAAE,KAAM,MAAO,KAAM,WAAY,EACjC,CAAE,KAAM,UAAW,KAAM,WAAY,EACrC,CAAE,KAAM,SAAU,KAAM,WAAY,EACpC,CAAE,KAAM,KAAM,KAAM,WAAY,EAChC,CAAE,KAAM,gBAAiB,KAAM,WAAY,EAC3C,CAAE,KAAM,aAAc,KAAM,WAAY,EACxC,CAAE,KAAM,WAAY,KAAM,WAAY,CACxC,EAEA,IAAOC,EAAQD",
+  "names": ["required_files", "required_files_default"]
+}

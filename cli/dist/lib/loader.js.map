@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../src/lib/loader.js"],
+  "sourcesContent": ["import chalk from \"chalk\";\n\nclass Loader {\n  constructor(options = {}) {\n    this.message = options.default_message;\n  }\n\n  print(message = \"\", error = false) {\n    if (message) {\n      this.message = message;\n    }\n\n    process.stdout.write(`${chalk[error ? 'redBright' : 'yellowBright']('>')} ${this.message}\\n`);\n  }\n\n  error(message = \"\") {\n    this.print(message, true);\n  }\n}\n\nexport default Loader;\n"],
+  "mappings": "AAAA,OAAOA,MAAW,QAElB,MAAMC,CAAO,CACX,YAAYC,EAAU,CAAC,EAAG,CACxB,KAAK,QAAUA,EAAQ,eACzB,CAEA,MAAMC,EAAU,GAAIC,EAAQ,GAAO,CAC7BD,IACF,KAAK,QAAUA,GAGjB,QAAQ,OAAO,MAAM,GAAGH,EAAMI,EAAQ,YAAc,cAAc,EAAE,GAAG,CAAC,IAAI,KAAK,OAAO;AAAA,CAAI,CAC9F,CAEA,MAAMD,EAAU,GAAI,CAClB,KAAK,MAAMA,EAAS,EAAI,CAC1B,CACF,CAEA,IAAOE,EAAQJ",
+  "names": ["chalk", "Loader", "options", "message", "error", "loader_default"]
+}

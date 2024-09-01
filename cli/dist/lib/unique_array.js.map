@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../src/lib/unique_array.js"],
+  "sourcesContent": ["const unique_array = (input_array = []) => {\n  const unique_primitives_set = new Set();\n  const unique_references_map = new WeakMap();\n  const unique_result_array = [];\n\n  for (let i = 0; i < input_array.length; i++) {\n    const item = input_array[i];\n    if (typeof item === 'object' && item !== null) {\n      if (!unique_references_map.has(item)) {\n        unique_references_map.set(item, true);\n        unique_result_array.push(item);\n      }\n    } else {\n      if (!unique_primitives_set.has(item)) {\n        unique_primitives_set.add(item);\n        unique_result_array.push(item);\n      }\n    }\n  }\n\n  return unique_result_array;\n};\n\nexport default unique_array;\n"],
+  "mappings": "AAAA,MAAMA,EAAe,CAACC,EAAc,CAAC,IAAM,CACzC,MAAMC,EAAwB,IAAI,IAC5BC,EAAwB,IAAI,QAC5BC,EAAsB,CAAC,EAE7B,QAASC,EAAI,EAAGA,EAAIJ,EAAY,OAAQI,IAAK,CAC3C,MAAMC,EAAOL,EAAYI,CAAC,EACtB,OAAOC,GAAS,UAAYA,IAAS,KAClCH,EAAsB,IAAIG,CAAI,IACjCH,EAAsB,IAAIG,EAAM,EAAI,EACpCF,EAAoB,KAAKE,CAAI,GAG1BJ,EAAsB,IAAII,CAAI,IACjCJ,EAAsB,IAAII,CAAI,EAC9BF,EAAoB,KAAKE,CAAI,EAGnC,CAEA,OAAOF,CACT,EAEA,IAAOG,EAAQP",
+  "names": ["unique_array", "input_array", "unique_primitives_set", "unique_references_map", "unique_result_array", "i", "item", "unique_array_default"]
+}

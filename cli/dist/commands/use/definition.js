@@ -1,1 +1,2 @@
 import s from"./index.js";const[r,n,...e]=process.argv,o={description:"Decides which release of Joystick to use (production or canary).",args:{release:{set:!!e.includes("use")&&!!e[e.indexOf("use")+1],parent:"use",value:!!e.includes("use")&&e[e.indexOf("use")+1],description:"The release of Joystick to use (production or canary)."}},options:{},command:s};var t=o;export{t as default};
+//# sourceMappingURL=definition.js.map

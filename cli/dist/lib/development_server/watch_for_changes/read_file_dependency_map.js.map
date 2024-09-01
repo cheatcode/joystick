@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../../../src/lib/development_server/watch_for_changes/read_file_dependency_map.js"],
+  "sourcesContent": ["import fs from 'fs';\nimport path_exists from '../../path_exists.js';\n\nconst { readFile } = fs.promises;\n\nconst read_file_dependency_map = async () => {\n  const file_map_path = `.joystick/build/file_map.json`;\n\n  if (await path_exists(file_map_path)) {\n    const file_map_as_json = await readFile(file_map_path, \"utf-8\");\n    const file_map = file_map_as_json ? JSON.parse(file_map_as_json) : {};\n    return file_map;\n  }\n\n  return {};\n};\n\nexport default read_file_dependency_map;\n"],
+  "mappings": "AAAA,OAAOA,MAAQ,KACf,OAAOC,MAAiB,uBAExB,KAAM,CAAE,SAAAC,CAAS,EAAIF,EAAG,SAElBG,EAA2B,SAAY,CAC3C,MAAMC,EAAgB,gCAEtB,GAAI,MAAMH,EAAYG,CAAa,EAAG,CACpC,MAAMC,EAAmB,MAAMH,EAASE,EAAe,OAAO,EAE9D,OADiBC,EAAmB,KAAK,MAAMA,CAAgB,EAAI,CAAC,CAEtE,CAEA,MAAO,CAAC,CACV,EAEA,IAAOC,EAAQH",
+  "names": ["fs", "path_exists", "readFile", "read_file_dependency_map", "file_map_path", "file_map_as_json", "read_file_dependency_map_default"]
+}

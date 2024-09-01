@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../../src/commands/push/get_provision_domain.js"],
+  "sourcesContent": ["const get_provision_domain = (provision_server = 'production') => {\n\treturn {\n\t\tdevelopment: 'http://localhost:2603',\n\t\tstaging: 'https://staging.provision.cheatcode.co',\n\t\tproduction: 'https://provision.cheatcode.co',\n\t}[provision_server];\n};\n\nexport default get_provision_domain;\n"],
+  "mappings": "AAAA,MAAMA,EAAuB,CAACC,EAAmB,gBACzC,CACN,YAAa,wBACb,QAAS,yCACT,WAAY,gCACb,GAAEA,CAAgB,EAGnB,IAAOC,EAAQF",
+  "names": ["get_provision_domain", "provision_server", "get_provision_domain_default"]
+}

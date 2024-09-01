@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../src/lib/command_exists.js"],
+  "sourcesContent": ["import child_process from 'child_process';\nimport util from 'util';\n\nconst exec = util.promisify(child_process.exec);\n\nconst command_exists = (command = '') => {\n\tconst where_command = process.platform === 'win32' ? 'where' : 'whereis';\n\treturn exec(`${where_command} ${command}`).then(() => {\n\t\treturn true;\n\t}).catch((error) => {\n\t\tconsole.warn(error);\n\t\treturn false;\n\t});\n};\n\nexport default command_exists;\n"],
+  "mappings": "AAAA,OAAOA,MAAmB,gBAC1B,OAAOC,MAAU,OAEjB,MAAMC,EAAOD,EAAK,UAAUD,EAAc,IAAI,EAExCG,EAAiB,CAACC,EAAU,KAAO,CACxC,MAAMC,EAAgB,QAAQ,WAAa,QAAU,QAAU,UAC/D,OAAOH,EAAK,GAAGG,CAAa,IAAID,CAAO,EAAE,EAAE,KAAK,IACxC,EACP,EAAE,MAAOE,IACT,QAAQ,KAAKA,CAAK,EACX,GACP,CACF,EAEA,IAAOC,EAAQJ",
+  "names": ["child_process", "util", "exec", "command_exists", "command", "where_command", "error", "command_exists_default"]
+}

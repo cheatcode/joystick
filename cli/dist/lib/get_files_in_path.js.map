@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../src/lib/get_files_in_path.js"],
+  "sourcesContent": ["import fs from 'fs';\nimport { join } from 'path';\n\nconst { readdir, stat } = fs.promises;\n\nconst get_files_in_path = async (path = './', existing_files = []) => {\n\tconst files_in_path = (await readdir(path))?.map((file_in_path) => {\n\t\treturn join(path, file_in_path);\n\t});\n\n\texisting_files.push(...files_in_path);\n\n\tfor (let i = 0; i < files_in_path?.length; i += 1) {\n\t\tconst file = files_in_path[i];\n\t\tconst is_directory = (await stat(file)).isDirectory();\n\n\t\tif (is_directory) {\n\t\t\tawait get_files_in_path(file, existing_files);\n\t\t}\n\t}\n\n\treturn existing_files;\n};\n\nexport default get_files_in_path;\n"],
+  "mappings": "AAAA,OAAOA,MAAQ,KACf,OAAS,QAAAC,MAAY,OAErB,KAAM,CAAE,QAAAC,EAAS,KAAAC,CAAK,EAAIH,EAAG,SAEvBI,EAAoB,MAAOC,EAAO,KAAMC,EAAiB,CAAC,IAAM,CACrE,MAAMC,GAAiB,MAAML,EAAQG,CAAI,IAAI,IAAKG,GAC1CP,EAAKI,EAAMG,CAAY,CAC9B,EAEDF,EAAe,KAAK,GAAGC,CAAa,EAEpC,QAASE,EAAI,EAAGA,EAAIF,GAAe,OAAQE,GAAK,EAAG,CAClD,MAAMC,EAAOH,EAAcE,CAAC,GACN,MAAMN,EAAKO,CAAI,GAAG,YAAY,GAGnD,MAAMN,EAAkBM,EAAMJ,CAAc,CAE9C,CAEA,OAAOA,CACR,EAEA,IAAOK,EAAQP",
+  "names": ["fs", "join", "readdir", "stat", "get_files_in_path", "path", "existing_files", "files_in_path", "file_in_path", "i", "file", "get_files_in_path_default"]
+}

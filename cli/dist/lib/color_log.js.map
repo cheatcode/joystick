@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../src/lib/color_log.js"],
+  "sourcesContent": ["import chalk from \"chalk\";\n\nconst color_log = (message = '', color = 'blueBright') => {\n  return console.log(chalk[color](message));\n};\n\nexport default color_log;\n"],
+  "mappings": "AAAA,OAAOA,MAAW,QAElB,MAAMC,EAAY,CAACC,EAAU,GAAIC,EAAQ,eAChC,QAAQ,IAAIH,EAAMG,CAAK,EAAED,CAAO,CAAC,EAG1C,IAAOE,EAAQH",
+  "names": ["chalk", "color_log", "message", "color", "color_log_default"]
+}

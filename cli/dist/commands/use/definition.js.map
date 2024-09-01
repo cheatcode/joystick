@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../../src/commands/use/definition.js"],
+  "sourcesContent": ["import use from './index.js';\n\nconst [_node, _bin, ...raw_args] = process.argv;\n\nconst definition = {\n  description: 'Decides which release of Joystick to use (production or canary).',\n  args: {\n    release: {\n      set: !!raw_args.includes('use') && !!raw_args[raw_args.indexOf('use') + 1],\n      parent: 'use',\n      value: !!raw_args.includes('use') && raw_args[raw_args.indexOf('use') + 1],\n      description: 'The release of Joystick to use (production or canary).',\n    },\n  },\n  options: {},\n  command: use\n};\n\nexport default definition;\n"],
+  "mappings": "AAAA,OAAOA,MAAS,aAEhB,KAAM,CAACC,EAAOC,EAAM,GAAGC,CAAQ,EAAI,QAAQ,KAErCC,EAAa,CACjB,YAAa,mEACb,KAAM,CACJ,QAAS,CACP,IAAK,CAAC,CAACD,EAAS,SAAS,KAAK,GAAK,CAAC,CAACA,EAASA,EAAS,QAAQ,KAAK,EAAI,CAAC,EACzE,OAAQ,MACR,MAAO,CAAC,CAACA,EAAS,SAAS,KAAK,GAAKA,EAASA,EAAS,QAAQ,KAAK,EAAI,CAAC,EACzE,YAAa,wDACf,CACF,EACA,QAAS,CAAC,EACV,QAASH,CACX,EAEA,IAAOK,EAAQD",
+  "names": ["use", "_node", "_bin", "raw_args", "definition", "definition_default"]
+}

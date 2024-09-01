@@ -1,2 +1,3 @@
 import{MongoClient as t}from"mongodb";import i from"fs";import r from"./build_connection_string.js";import s from"../../../color_log.js";const{readFile:a}=i.promises,l=async(e={},n={})=>{const c=r(e);try{const o={connectTimeoutMS:3e3,socketTimeoutMS:3e3,useNewUrlParser:!0,useUnifiedTopology:!0,ssl:!1,...n||{}};return n?.ca&&(o.ca=await a(n?.ca)),(await t.connect(c,o)).close(),!0}catch(o){console.warn(o),s(`
 \u2716 Failed to connect to MongoDB. Please double-check connection settings and try again.`,"yellow"),process.exit(1)}};var d=l;export{d as default};
+//# sourceMappingURL=check_connection.js.map

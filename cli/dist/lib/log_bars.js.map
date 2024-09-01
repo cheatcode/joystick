@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../src/lib/log_bars.js"],
+  "sourcesContent": ["import chalk from 'chalk';\n\nconst log_bars = () => {\n  return `${chalk.yellowBright('=')}${chalk.gray('=')}${chalk.yellowBright('=')}${chalk.gray('=')}${chalk.yellowBright('=')}${chalk.gray('=')}`;\n};\n\nexport default log_bars;\n"],
+  "mappings": "AAAA,OAAOA,MAAW,QAElB,MAAMC,EAAW,IACR,GAAGD,EAAM,aAAa,GAAG,CAAC,GAAGA,EAAM,KAAK,GAAG,CAAC,GAAGA,EAAM,aAAa,GAAG,CAAC,GAAGA,EAAM,KAAK,GAAG,CAAC,GAAGA,EAAM,aAAa,GAAG,CAAC,GAAGA,EAAM,KAAK,GAAG,CAAC,GAG7I,IAAOE,EAAQD",
+  "names": ["chalk", "log_bars", "log_bars_default"]
+}

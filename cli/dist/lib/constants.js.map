@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../src/lib/constants.js"],
+  "sourcesContent": ["const constants = {\n\tEXAMPLE_CODE_REGEX: new RegExp(/\\<example\\>[^%]+\\<\\/example\\>/g),\n\tEXPORT_DEFAULT_REGEX: new RegExp(/export default [a-zA-Z0-9]+/g),\n\tJOYSTICK_COMMENT_REGEX: new RegExp(/\\<\\!\\-\\-(.|\\n|\\r)*?-->/g),\n\tJOYSTICK_COMPONENT_REGEX: new RegExp(/\\.component\\(\\{/g),\n\tJOYSTICK_UI_REGEX: new RegExp(/joystick-ui-test|joystick.js\\/ui-canary|joystick.js\\/ui/g),\n\tOBJECT_REGEX: new RegExp(/{([^;]*)}/g),\n\tSETTINGS_FILE_NAME_REGEX: new RegExp(/settings\\.+[a-z]+\\.json/g),\n};\n\nexport default constants;"],
+  "mappings": "AAAA,MAAMA,EAAY,CACjB,mBAAoB,IAAI,OAAO,gCAAgC,EAC/D,qBAAsB,IAAI,OAAO,8BAA8B,EAC/D,uBAAwB,IAAI,OAAO,yBAAyB,EAC5D,yBAA0B,IAAI,OAAO,kBAAkB,EACvD,kBAAmB,IAAI,OAAO,0DAA0D,EACxF,aAAc,IAAI,OAAO,YAAY,EACrC,yBAA0B,IAAI,OAAO,0BAA0B,CAChE,EAEA,IAAOC,EAAQD",
+  "names": ["constants", "constants_default"]
+}

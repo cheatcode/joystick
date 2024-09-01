@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../../src/commands/push/validate_deployment.js"],
+  "sourcesContent": ["import fetch from 'node-fetch';\n\nconst validate_deployment = (options = {}) => {\n\treturn fetch(`${options?.push_provision_domain}/api/deployments/${options?.push_config?.domain}/validate`, {\n\t\tmethod: 'POST',\n\t\theaders: {\n\t\t\t'Content-Type': 'application/json',\n\t\t\t'x-push-session-token': options?.session_token,\n\t\t},\n\t\tbody: JSON.stringify(options?.push_config),\n\t})?.then(async (response) => {\n\t\tconst data = await response.json();\n\t\treturn data?.data;\n\t}).catch((error) => {\n\t\tconsole.warn(error);\n\t});\n};\n\nexport default validate_deployment;\n"],
+  "mappings": "AAAA,OAAOA,MAAW,aAElB,MAAMC,EAAsB,CAACC,EAAU,CAAC,IAChCF,EAAM,GAAGE,GAAS,qBAAqB,oBAAoBA,GAAS,aAAa,MAAM,YAAa,CAC1G,OAAQ,OACR,QAAS,CACR,eAAgB,mBAChB,uBAAwBA,GAAS,aAClC,EACA,KAAM,KAAK,UAAUA,GAAS,WAAW,CAC1C,CAAC,GAAG,KAAK,MAAOC,IACF,MAAMA,EAAS,KAAK,IACpB,IACb,EAAE,MAAOC,GAAU,CACnB,QAAQ,KAAKA,CAAK,CACnB,CAAC,EAGF,IAAOC,EAAQJ",
+  "names": ["fetch", "validate_deployment", "options", "response", "error", "validate_deployment_default"]
+}

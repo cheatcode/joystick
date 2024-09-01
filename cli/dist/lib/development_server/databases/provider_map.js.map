@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../../../src/lib/development_server/databases/provider_map.js"],
+  "sourcesContent": ["import connect_mongodb from './mongodb/connect.js';\nimport connect_postgresql from './postgresql/connect.js';\n\nconst provider_map = {\n  mongodb: {\n    name: 'MongoDB',\n    connect: connect_mongodb,\n  },\n  postgresql: {\n    name: 'PostgreSQL',\n    connect: connect_postgresql,\n  },\n};\n\nexport default provider_map;\n"],
+  "mappings": "AAAA,OAAOA,MAAqB,uBAC5B,OAAOC,MAAwB,0BAE/B,MAAMC,EAAe,CACnB,QAAS,CACP,KAAM,UACN,QAASF,CACX,EACA,WAAY,CACV,KAAM,aACN,QAASC,CACX,CACF,EAEA,IAAOE,EAAQD",
+  "names": ["connect_mongodb", "connect_postgresql", "provider_map", "provider_map_default"]
+}

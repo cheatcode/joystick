@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../src/lib/generate_id.js"],
+  "sourcesContent": ["const characters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ01234567890'.split('');\n\nconst generate_id = (length = 16) => {\n\tlet id = '';\n  let i = 0;\n\n  while (i < length) {\n    id += characters[Math.floor(Math.random() * (characters.length - 1))];\n    i += 1;\n  }\n\n  return id;\n};\n\nexport default generate_id;\n"],
+  "mappings": "AAAA,MAAMA,EAAa,kEAAkE,MAAM,EAAE,EAEvFC,EAAc,CAACC,EAAS,KAAO,CACpC,IAAIC,EAAK,GACJC,EAAI,EAER,KAAOA,EAAIF,GACTC,GAAMH,EAAW,KAAK,MAAM,KAAK,OAAO,GAAKA,EAAW,OAAS,EAAE,CAAC,EACpEI,GAAK,EAGP,OAAOD,CACT,EAEA,IAAOE,EAAQJ",
+  "names": ["characters", "generate_id", "length", "id", "i", "generate_id_default"]
+}

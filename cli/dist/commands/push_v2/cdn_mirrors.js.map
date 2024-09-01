@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../../src/commands/push_v2/cdn_mirrors.js"],
+  "sourcesContent": ["const cdn_mirrors = [\n  'https://push-versions-1.cheatcode.co',\n  'https://push-versions-2.cheatcode.co',\n  'https://push-versions-3.cheatcode.co',\n];\n\nexport default cdn_mirrors;\n"],
+  "mappings": "AAAA,MAAMA,EAAc,CAClB,uCACA,uCACA,sCACF,EAEA,IAAOC,EAAQD",
+  "names": ["cdn_mirrors", "cdn_mirrors_default"]
+}

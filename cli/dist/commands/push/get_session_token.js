@@ -1,1 +1,2 @@
 import i from"os";import n from"fs";import r from"inquirer";import e from"../../lib/path_exists.js";import p from"./prompts/session_token.js";const{readFile:m,mkdir:a,writeFile:_}=n.promises,f=async()=>{const s=i.homedir(),t=`${s}/.push/session_token`;if(await e(t))return m(t,"utf-8");const{session_token:o}=await r.prompt(p());if(o)return await e(`${s}/.push`)||await a(`${s}/.push`),await _(`${s}/.push/session_token`,o),o};var x=f;export{x as default};
+//# sourceMappingURL=get_session_token.js.map

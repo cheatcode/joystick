@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../../src/lib/development_server/cleanup.js"],
+  "sourcesContent": ["// NOTE: This module is intended to be run as a child_process as part of\n// a SIGINT or SIGTERM event.\n\nimport kill_process_ids from \"./kill_process_ids.js\";\n\nprocess.title = \"joystick_cleanup\";\n\nprocess.on('message', async (message) => {\n  const parsed_message = JSON.parse(message);\n  const process_ids = parsed_message?.process_ids;\n\n  kill_process_ids(process_ids);\n\n  process.exit();\n});"],
+  "mappings": "AAGA,OAAOA,MAAsB,wBAE7B,QAAQ,MAAQ,mBAEhB,QAAQ,GAAG,UAAW,MAAOC,GAAY,CAEvC,MAAMC,EADiB,KAAK,MAAMD,CAAO,GACL,YAEpCD,EAAiBE,CAAW,EAE5B,QAAQ,KAAK,CACf,CAAC",
+  "names": ["kill_process_ids", "message", "process_ids"]
+}

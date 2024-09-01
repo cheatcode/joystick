@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../../src/lib/build/node_paths.js"],
+  "sourcesContent": ["import get_platform_safe_path from \"./get_platform_safe_path.js\";\n\nconst node_paths = [\n  get_platform_safe_path(\"api/\"),\n  get_platform_safe_path(\"caches/\"),\n  get_platform_safe_path(\"cronJobs/\"),\n  get_platform_safe_path(\"cron_jobs/\"),\n  get_platform_safe_path(\"fixtures/\"),\n  get_platform_safe_path(\"indexes/\"),\n  get_platform_safe_path(\"lib/node\"),\n  get_platform_safe_path(\"queues/\"),\n  get_platform_safe_path(\"routes/\"),\n  get_platform_safe_path(\"tests/\"),\n  get_platform_safe_path(\"uploaders/\"),\n  get_platform_safe_path(\"websockets/\"),\n  \"index.server.js\",\n];\n\nexport default node_paths;\n"],
+  "mappings": "AAAA,OAAOA,MAA4B,8BAEnC,MAAMC,EAAa,CACjBD,EAAuB,MAAM,EAC7BA,EAAuB,SAAS,EAChCA,EAAuB,WAAW,EAClCA,EAAuB,YAAY,EACnCA,EAAuB,WAAW,EAClCA,EAAuB,UAAU,EACjCA,EAAuB,UAAU,EACjCA,EAAuB,SAAS,EAChCA,EAAuB,SAAS,EAChCA,EAAuB,QAAQ,EAC/BA,EAAuB,YAAY,EACnCA,EAAuB,aAAa,EACpC,iBACF,EAEA,IAAOE,EAAQD",
+  "names": ["get_platform_safe_path", "node_paths", "node_paths_default"]
+}

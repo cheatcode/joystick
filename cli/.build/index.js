@@ -14,6 +14,7 @@ const buildFile = (fileToBuild) => {
       outfile: `./dist/${file}`,
       platform: "node",
       format: "esm",
+      sourcemap: true,
       minify: true,
       plugins: [],
     })

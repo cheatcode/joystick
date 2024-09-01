@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../src/lib/is_valid_json_string.js"],
+  "sourcesContent": ["const is_valid_json_string = (string = '') => {\n\ttry {\n\t\tJSON.parse(string);\n\t\treturn true;\n\t} catch {\n\t\treturn false;\n\t}\n};\n\nexport default is_valid_json_string;\n"],
+  "mappings": "AAAA,MAAMA,EAAuB,CAACC,EAAS,KAAO,CAC7C,GAAI,CACH,YAAK,MAAMA,CAAM,EACV,EACR,MAAQ,CACP,MAAO,EACR,CACD,EAEA,IAAOC,EAAQF",
+  "names": ["is_valid_json_string", "string", "is_valid_json_string_default"]
+}

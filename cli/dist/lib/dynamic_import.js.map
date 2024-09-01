@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../src/lib/dynamic_import.js"],
+  "sourcesContent": ["const dynamic_import = async (path = '') => { \n  const file = await import(process.platform === 'win32' ? `file://${path}` : path);\n  return file?.default;\n};\n\nexport default dynamic_import;\n"],
+  "mappings": "AAAA,MAAMA,EAAiB,MAAOC,EAAO,MACtB,MAAa,QAAQ,WAAa,QAA5B,OAAsC,UAAUA,CAAI,IAApD,OAAyDA,MAC/D,QAGf,IAAOC,EAAQF",
+  "names": ["dynamic_import", "path", "dynamic_import_default"]
+}

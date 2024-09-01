@@ -1,2 +1,3 @@
 import a from"fs";import c from"pg";import n from"../../../color_log.js";const{Client:l}=c,{readFile:i}=a.promises,p=(s={})=>new Promise((t,e)=>{s.query("SELECT NOW()",o=>{o?e():t(),s.end()})}),d=async(s={},t={})=>{try{const e=s?.hosts&&s?.hosts[0],o={user:s?.username,host:e?.hostname,database:s?.database,password:s?.password,port:e?.port};t?.ssl?.ca&&(o.ssl={ca:await i(t?.ssl?.ca)});const r=new l(o);return r.connect(),await p(r),!0}catch(e){console.warn(e),n(`
 \u2716 Failed to connect to PostgreSQL. Please double-check connection settings and try again.`,"yellow"),process.exit(1)}};var h=d;export{h as default};
+//# sourceMappingURL=check_connection.js.map

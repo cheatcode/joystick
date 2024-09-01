@@ -1,1 +1,2 @@
 import n from"node-fetch";const o=(t={})=>n(`${t?.push_provision_domain}/api/validate/config`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(t?.push_config)})?.then(async a=>(await a.json())?.data).catch(a=>{console.warn(a)});var c=o;export{c as default};
+//# sourceMappingURL=validate_push_config.js.map

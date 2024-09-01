@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../../src/commands/logout/definition.js"],
+  "sourcesContent": ["import logout from './index.js';\n\nconst definition = {\n  description: 'Log out of your CheatCode Push account.',\n  args: {},\n  options: {},\n  command: logout,\n};\n\nexport default definition;\n"],
+  "mappings": "AAAA,OAAOA,MAAY,aAEnB,MAAMC,EAAa,CACjB,YAAa,0CACb,KAAM,CAAC,EACP,QAAS,CAAC,EACV,QAASD,CACX,EAEA,IAAOE,EAAQD",
+  "names": ["logout", "definition", "definition_default"]
+}

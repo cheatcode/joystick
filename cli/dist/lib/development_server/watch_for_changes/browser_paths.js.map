@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../../../src/lib/development_server/watch_for_changes/browser_paths.js"],
+  "sourcesContent": ["import get_platform_safe_path from \"./get_platform_safe_path.js\";\n\nconst browser_paths = [\n  get_platform_safe_path(\"email/\"),\n  get_platform_safe_path(\"lib/\"),\n  get_platform_safe_path(\"lib/browser\"),\n  get_platform_safe_path(\"ui/\"),\n  \"index.client.js\",\n];\n\nexport default browser_paths;\n"],
+  "mappings": "AAAA,OAAOA,MAA4B,8BAEnC,MAAMC,EAAgB,CACpBD,EAAuB,QAAQ,EAC/BA,EAAuB,MAAM,EAC7BA,EAAuB,aAAa,EACpCA,EAAuB,KAAK,EAC5B,iBACF,EAEA,IAAOE,EAAQD",
+  "names": ["get_platform_safe_path", "browser_paths", "browser_paths_default"]
+}

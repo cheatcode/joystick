@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../../../../src/lib/development_server/databases/mongodb/available_query_parameters.js"],
+  "sourcesContent": ["const available_query_parameters = [\n  \"replicaSet\",\n  \"tls\",\n  \"ssl\",\n  \"tlsCertificateKeyFile\",\n  \"tlsCertificateKeyFilePassword\",\n  \"tlsCAFile\",\n  \"tlsAllowInvalidCertificates\",\n  \"tlsAllowInvalidHostnames\",\n  \"tlsInsecure\",\n  \"connectTimeoutMS\",\n  \"socketTimeoutMS\",\n  \"compressors\",\n  \"zlibCompressionLevel\",\n  \"maxPoolSize\",\n  \"minPoolSize\",\n  \"maxIdleTimeMS\",\n  \"waitQueueMultiple\",\n  \"waitQueueTimeoutMS\",\n  \"w\",\n  \"wtimeoutMS\",\n  \"journal\",\n  \"readConcernLevel\",\n  \"readPreference\",\n  \"maxStalenessSeconds\",\n  \"readPreferenceTags\",\n  \"authSource\",\n  \"authMechanism\",\n  \"authMechanismProperties\",\n  \"gssapiServiceName\",\n  \"localThresholdMS\",\n  \"serverSelectionTimeoutMS\",\n  \"serverSelectionTryOnce\",\n  \"heartbeatFrequencyMS\",\n  \"appName\",\n  \"retryReads\",\n  \"retryWrites\",\n  \"uuidRepresentation\"\n];\n\nexport default available_query_parameters;\n"],
+  "mappings": "AAAA,MAAMA,EAA6B,CACjC,aACA,MACA,MACA,wBACA,gCACA,YACA,8BACA,2BACA,cACA,mBACA,kBACA,cACA,uBACA,cACA,cACA,gBACA,oBACA,qBACA,IACA,aACA,UACA,mBACA,iBACA,sBACA,qBACA,aACA,gBACA,0BACA,oBACA,mBACA,2BACA,yBACA,uBACA,UACA,aACA,cACA,oBACF,EAEA,IAAOC,EAAQD",
+  "names": ["available_query_parameters", "available_query_parameters_default"]
+}

@@ -8,3 +8,4 @@ Stack Trace:
 `))),process.loader.error("Build error. Fix the error above to continue building your app."),console.log(`
 `),console.log(`${t()}
 `)},a=async(o={},e="")=>e&&e==="BUILD_ERROR"?{file:o?.file,snippet:o?.snippet?await c(o.file,{line:o?.line,column:o?.column}):"",stack:o?.stack,line:o?.line,character:o?.column,message:o?.message}:null,f=async o=>{const e=await a(o,"BUILD_ERROR");return e&&i(e),e};var d=f;export{d as default};
+//# sourceMappingURL=on_warn.js.map

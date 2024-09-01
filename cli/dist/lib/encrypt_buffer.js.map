@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../src/lib/encrypt_buffer.js"],
+  "sourcesContent": ["import crypto from 'crypto';\n\nconst encrypt_buffer = (buffer, key) => {\n\tconst initialization_vector = crypto.randomBytes(16);\n\tconst hashed_encryption_key = crypto.createHash('sha256').update(key).digest('hex').substring(0, 32);\n\tconst cipher = crypto.createCipheriv('aes256', hashed_encryption_key, initialization_vector);\n\treturn Buffer.concat([initialization_vector, cipher.update(buffer), cipher.final()]);\n};\n\nexport default encrypt_buffer;\n"],
+  "mappings": "AAAA,OAAOA,MAAY,SAEnB,MAAMC,EAAiB,CAACC,EAAQC,IAAQ,CACvC,MAAMC,EAAwBJ,EAAO,YAAY,EAAE,EAC7CK,EAAwBL,EAAO,WAAW,QAAQ,EAAE,OAAOG,CAAG,EAAE,OAAO,KAAK,EAAE,UAAU,EAAG,EAAE,EAC7FG,EAASN,EAAO,eAAe,SAAUK,EAAuBD,CAAqB,EAC3F,OAAO,OAAO,OAAO,CAACA,EAAuBE,EAAO,OAAOJ,CAAM,EAAGI,EAAO,MAAM,CAAC,CAAC,CACpF,EAEA,IAAOC,EAAQN",
+  "names": ["crypto", "encrypt_buffer", "buffer", "key", "initialization_vector", "hashed_encryption_key", "cipher", "encrypt_buffer_default"]
+}

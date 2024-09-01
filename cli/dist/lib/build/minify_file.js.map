@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../../src/lib/build/minify_file.js"],
+  "sourcesContent": ["import fs from \"fs\";\nimport esbuild from \"esbuild\";\nimport path_exists from \"../path_exists.js\";\n\nconst { readFile, writeFile } = fs.promises;\n\nconst minify_file = async (path = \"\") => {\n  if (await path_exists(path)) {\n    const file = await readFile(path, \"utf-8\");\n    const minified = await esbuild.transform(file, {\n      minify: true,\n    }).catch((error) => {\n      console.warn(error);\n    });\n\n    if (minified?.code) {\n      await writeFile(path, minified.code);\n    }\n  }\n};\n\nexport default minify_file;\n"],
+  "mappings": "AAAA,OAAOA,MAAQ,KACf,OAAOC,MAAa,UACpB,OAAOC,MAAiB,oBAExB,KAAM,CAAE,SAAAC,EAAU,UAAAC,CAAU,EAAIJ,EAAG,SAE7BK,EAAc,MAAOC,EAAO,KAAO,CACvC,GAAI,MAAMJ,EAAYI,CAAI,EAAG,CAC3B,MAAMC,EAAO,MAAMJ,EAASG,EAAM,OAAO,EACnCE,EAAW,MAAMP,EAAQ,UAAUM,EAAM,CAC7C,OAAQ,EACV,CAAC,EAAE,MAAOE,GAAU,CAClB,QAAQ,KAAKA,CAAK,CACpB,CAAC,EAEGD,GAAU,MACZ,MAAMJ,EAAUE,EAAME,EAAS,IAAI,CAEvC,CACF,EAEA,IAAOE,EAAQL",
+  "names": ["fs", "esbuild", "path_exists", "readFile", "writeFile", "minify_file", "path", "file", "minified", "error", "minify_file_default"]
+}

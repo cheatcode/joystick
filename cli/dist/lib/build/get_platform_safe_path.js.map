@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../../src/lib/build/get_platform_safe_path.js"],
+  "sourcesContent": ["const get_platform_safe_path = (path = '') => {\n  // NOTE: This is why serial killers exist.\n  return process.platform === 'win32' ? path.replace('/', '\\\\') : path;\n};\n\nexport default get_platform_safe_path;\n"],
+  "mappings": "AAAA,MAAMA,EAAyB,CAACC,EAAO,KAE9B,QAAQ,WAAa,QAAUA,EAAK,QAAQ,IAAK,IAAI,EAAIA,EAGlE,IAAOC,EAAQF",
+  "names": ["get_platform_safe_path", "path", "get_platform_safe_path_default"]
+}

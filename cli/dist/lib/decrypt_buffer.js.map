@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../src/lib/decrypt_buffer.js"],
+  "sourcesContent": ["import crypto from 'crypto';\n\nconst decrypt_buffer = (buffer, key) => {\n\t// NOTE: First 16 bytes of buffer are the initialization_vector.\n\tconst initialization_vector = buffer.slice(0, 16);\n\tconst rest_of_buffer = buffer.slice(16);\n\tconst hashed_encryption_key = crypto.createHash('sha256').update(key).digest('hex').substring(0, 32);\n\tconst decipher = crypto.createDecipheriv('aes256', hashed_encryption_key, initialization_vector);\n\treturn Buffer.concat([decipher.update(rest_of_buffer), decipher.final()]);\n};\n\nexport default decrypt_buffer;\n"],
+  "mappings": "AAAA,OAAOA,MAAY,SAEnB,MAAMC,EAAiB,CAACC,EAAQC,IAAQ,CAEvC,MAAMC,EAAwBF,EAAO,MAAM,EAAG,EAAE,EAC1CG,EAAiBH,EAAO,MAAM,EAAE,EAChCI,EAAwBN,EAAO,WAAW,QAAQ,EAAE,OAAOG,CAAG,EAAE,OAAO,KAAK,EAAE,UAAU,EAAG,EAAE,EAC7FI,EAAWP,EAAO,iBAAiB,SAAUM,EAAuBF,CAAqB,EAC/F,OAAO,OAAO,OAAO,CAACG,EAAS,OAAOF,CAAc,EAAGE,EAAS,MAAM,CAAC,CAAC,CACzE,EAEA,IAAOC,EAAQP",
+  "names": ["crypto", "decrypt_buffer", "buffer", "key", "initialization_vector", "rest_of_buffer", "hashed_encryption_key", "decipher", "decrypt_buffer_default"]
+}

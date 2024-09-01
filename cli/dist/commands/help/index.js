@@ -17,3 +17,4 @@ import r from"chalk";import{createRequire as n}from"module";import t from"../ind
 ${e.options&&Object.keys(e.options).length>0?`
 ${m(e.options)}
 `:""}`).join("")}`)};var k=$;export{k as default};
+//# sourceMappingURL=index.js.map

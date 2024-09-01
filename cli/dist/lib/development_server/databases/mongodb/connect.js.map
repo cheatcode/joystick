@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../../../../src/lib/development_server/databases/mongodb/connect.js"],
+  "sourcesContent": ["import check_connection from \"./check_connection.js\";\nimport mongodb from \"./index.js\";\n\nconst connect = async (settings = {}, port = 2610) => {\n  const has_connection = settings.connection && Object.keys(settings.connection).length > 0;\n\n  if (has_connection) {\n    await check_connection(settings.connection, settings.options);\n  }\n\n  return {\n    pid: !has_connection ? await mongodb(port) : null,\n    connection: has_connection ? settings.connection : {\n      hosts: [\n        {\n          hostname: \"127.0.0.1\",\n          port,\n        },\n      ],\n      database: \"app\",\n      username: \"\",\n      password: \"\",\n    },\n  };\n};\n\nexport default connect;\n"],
+  "mappings": "AAAA,OAAOA,MAAsB,wBAC7B,OAAOC,MAAa,aAEpB,MAAMC,EAAU,MAAOC,EAAW,CAAC,EAAGC,EAAO,OAAS,CACpD,MAAMC,EAAiBF,EAAS,YAAc,OAAO,KAAKA,EAAS,UAAU,EAAE,OAAS,EAExF,OAAIE,GACF,MAAML,EAAiBG,EAAS,WAAYA,EAAS,OAAO,EAGvD,CACL,IAAME,EAAuC,KAAtB,MAAMJ,EAAQG,CAAI,EACzC,WAAYC,EAAiBF,EAAS,WAAa,CACjD,MAAO,CACL,CACE,SAAU,YACV,KAAAC,CACF,CACF,EACA,SAAU,MACV,SAAU,GACV,SAAU,EACZ,CACF,CACF,EAEA,IAAOE,EAAQJ",
+  "names": ["check_connection", "mongodb", "connect", "settings", "port", "has_connection", "connect_default"]
+}

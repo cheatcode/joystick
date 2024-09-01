@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../src/index.js"],
+  "sourcesContent": ["#!/usr/bin/env node\n\nimport { spawn } from 'child_process';\nimport { fileURLToPath } from 'url';\nimport { dirname } from 'path';\n\nconst __filename = fileURLToPath(import.meta.url);\nconst __dirname = dirname(__filename);\n\n// NOTE: Capture args passed to command line to forward to spawned script.\nconst args = process.argv.slice(2, process.argv.length);\n\nspawn('node', ['--no-warnings', `${__dirname}/cli.js`, ...args], { stdio: 'inherit' });"],
+  "mappings": ";AAEA,OAAS,SAAAA,MAAa,gBACtB,OAAS,iBAAAC,MAAqB,MAC9B,OAAS,WAAAC,MAAe,OAExB,MAAMC,EAAaF,EAAc,YAAY,GAAG,EAC1CG,EAAYF,EAAQC,CAAU,EAG9BE,EAAO,QAAQ,KAAK,MAAM,EAAG,QAAQ,KAAK,MAAM,EAEtDL,EAAM,OAAQ,CAAC,gBAAiB,GAAGI,CAAS,UAAW,GAAGC,CAAI,EAAG,CAAE,MAAO,SAAU,CAAC",
+  "names": ["spawn", "fileURLToPath", "dirname", "__filename", "__dirname", "args"]
+}

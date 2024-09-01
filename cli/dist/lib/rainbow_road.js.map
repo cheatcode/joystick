@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../src/lib/rainbow_road.js"],
+  "sourcesContent": ["import chalk from 'chalk';\n\nconst rainbow_road = () => {\n  return `${chalk.red('=')}${chalk.green('=')}${chalk.blue('=')}${chalk.red('=')}${chalk.green('=')}${chalk.blue('=')}`;\n};\n\nexport default rainbow_road;\n"],
+  "mappings": "AAAA,OAAOA,MAAW,QAElB,MAAMC,EAAe,IACZ,GAAGD,EAAM,IAAI,GAAG,CAAC,GAAGA,EAAM,MAAM,GAAG,CAAC,GAAGA,EAAM,KAAK,GAAG,CAAC,GAAGA,EAAM,IAAI,GAAG,CAAC,GAAGA,EAAM,MAAM,GAAG,CAAC,GAAGA,EAAM,KAAK,GAAG,CAAC,GAGrH,IAAOE,EAAQD",
+  "names": ["chalk", "rainbow_road", "rainbow_road_default"]
+}

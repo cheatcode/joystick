@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../../src/lib/build/browser_path_exclusions.js"],
+  "sourcesContent": ["import get_platform_safe_path from \"./get_platform_safe_path.js\";\n\nconst browser_path_exclusions = [\n  get_platform_safe_path(\"lib/node\"),\n  get_platform_safe_path(\"tests/\"),\n];\n\nexport default browser_path_exclusions;\n"],
+  "mappings": "AAAA,OAAOA,MAA4B,8BAEnC,MAAMC,EAA0B,CAC9BD,EAAuB,UAAU,EACjCA,EAAuB,QAAQ,CACjC,EAEA,IAAOE,EAAQD",
+  "names": ["get_platform_safe_path", "browser_path_exclusions", "browser_path_exclusions_default"]
+}

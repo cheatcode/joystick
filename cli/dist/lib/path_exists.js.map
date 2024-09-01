@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../src/lib/path_exists.js"],
+  "sourcesContent": ["import fs from 'fs';\n\nconst path_exists = (path = '') => {\n  return new Promise((resolve) => {\n    fs.access(path, fs.constants.F_OK, error => {\n      resolve(!error);\n    });\n  });\n};\n\nexport default path_exists;\n"],
+  "mappings": "AAAA,OAAOA,MAAQ,KAEf,MAAMC,EAAc,CAACC,EAAO,KACnB,IAAI,QAASC,GAAY,CAC9BH,EAAG,OAAOE,EAAMF,EAAG,UAAU,KAAMI,GAAS,CAC1CD,EAAQ,CAACC,CAAK,CAChB,CAAC,CACH,CAAC,EAGH,IAAOC,EAAQJ",
+  "names": ["fs", "path_exists", "path", "resolve", "error", "path_exists_default"]
+}

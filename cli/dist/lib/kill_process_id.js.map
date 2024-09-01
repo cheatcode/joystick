@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../src/lib/kill_process_id.js"],
+  "sourcesContent": ["import child_process from 'child_process';\nimport util from 'util';\n\nconst exec = util.promisify(child_process.exec);\n\nconst kill_process_id = async (process_id = 0) => {\n\tconst process_id_as_integer = parseInt(process_id, 10);\n\t\n\tif (process_id_as_integer) {\n\t\tif (process.platform === 'win32') {\n\t\t\tawait exec(`taskkill /F /PID ${process_id_as_integer}`);\n\t\t\treturn;\n\t\t}\n\n\t\tawait exec(`kill -9 ${process_id_as_integer}`);\n\t}\n};\n\nexport default kill_process_id;\n"],
+  "mappings": "AAAA,OAAOA,MAAmB,gBAC1B,OAAOC,MAAU,OAEjB,MAAMC,EAAOD,EAAK,UAAUD,EAAc,IAAI,EAExCG,EAAkB,MAAOC,EAAa,IAAM,CACjD,MAAMC,EAAwB,SAASD,EAAY,EAAE,EAErD,GAAIC,EAAuB,CAC1B,GAAI,QAAQ,WAAa,QAAS,CACjC,MAAMH,EAAK,oBAAoBG,CAAqB,EAAE,EACtD,MACD,CAEA,MAAMH,EAAK,WAAWG,CAAqB,EAAE,CAC9C,CACD,EAEA,IAAOC,EAAQH",
+  "names": ["child_process", "util", "exec", "kill_process_id", "process_id", "process_id_as_integer", "kill_process_id_default"]
+}

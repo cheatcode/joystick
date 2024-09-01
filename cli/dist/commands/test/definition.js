@@ -1,1 +1,2 @@
 import s from"./index.js";const[a,i,...t]=process.argv,e={description:"Start an existing Joystick app and run its tests.",args:{},options:{watch:{flags:{"-w":{set:!!t.includes("-w"),value:!!t.includes("-w"),parent:"test"},"--watch":{set:!!t.includes("--watch"),value:!!t.includes("--watch"),parent:"test"}},description:"Run joystick test in watch mode."}},command:s};var c=e;export{c as default};
+//# sourceMappingURL=definition.js.map

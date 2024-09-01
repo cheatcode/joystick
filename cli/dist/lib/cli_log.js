@@ -11,3 +11,4 @@ ${l.padding||""}${n()}
 `);for(let o=0;o<l?.tools?.length;o+=1){const c=l?.tools[o];console.log(`${l.padding||""}${e.blue(`${c.title} \u2014 ${c.url}`)}
 `)}}console.log(`${l.padding||""}${n()}
 `)};var h=t;export{h as default};
+//# sourceMappingURL=cli_log.js.map

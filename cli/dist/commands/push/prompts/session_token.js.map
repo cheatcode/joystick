@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../../../src/commands/push/prompts/session_token.js"],
+  "sourcesContent": ["import chalk from 'chalk';\n\nconst session_token = () => [{\n  name: 'session_token',\n  type: 'text',\n  prefix: '',\n  message: `\\n${chalk.yellowBright('>')} To login to Push, paste your session token below:\\n`,\n  suffix: `  ${chalk.yellowBright('Find your session token here:')} https://push.cheatcode.co/account/profile\\n\\n`,\n}];\n\nexport default session_token;\n"],
+  "mappings": "AAAA,OAAOA,MAAW,QAElB,MAAMC,EAAgB,IAAM,CAAC,CAC3B,KAAM,gBACN,KAAM,OACN,OAAQ,GACR,QAAS;AAAA,EAAKD,EAAM,aAAa,GAAG,CAAC;AAAA,EACrC,OAAQ,KAAKA,EAAM,aAAa,+BAA+B,CAAC;AAAA;AAAA,CAClE,CAAC,EAED,IAAOE,EAAQD",
+  "names": ["chalk", "session_token", "session_token_default"]
+}

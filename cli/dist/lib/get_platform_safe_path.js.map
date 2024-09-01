@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../src/lib/get_platform_safe_path.js"],
+  "sourcesContent": ["import os from 'os';\n\nconst get_platform_safe_path = (path = '') => {\n  // NOTE: This is why serial killers exist.\n  return os.platform() === \"win32\" ? path.replace(/\\//g, '\\\\') : path;\n};\n\nexport default get_platform_safe_path;\n"],
+  "mappings": "AAAA,OAAOA,MAAQ,KAEf,MAAMC,EAAyB,CAACC,EAAO,KAE9BF,EAAG,SAAS,IAAM,QAAUE,EAAK,QAAQ,MAAO,IAAI,EAAIA,EAGjE,IAAOC,EAAQF",
+  "names": ["os", "get_platform_safe_path", "path", "get_platform_safe_path_default"]
+}

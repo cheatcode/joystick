@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../src/lib/parse_options.js"],
+  "sourcesContent": ["const parse_options = (options = {}) => {\n  return Object.entries(options).reduce((values, [option_name, option_definition]) => {\n    if (option_definition && option_definition.flags) {\n      const flags = Object.values(option_definition.flags);\n      for (let i = 0; i < flags?.length; i += 1) {\n        const flag = flags[i];\n        if (flag && flag.value) {\n          values[option_name] = flag.value && ![`${flag.value}`.substring(0, 1)].includes('-')? flag.value : null;\n        }\n      }\n    }\n    return values;\n  }, {});\n};\n\nexport default parse_options;\n"],
+  "mappings": "AAAA,MAAMA,EAAgB,CAACC,EAAU,CAAC,IACzB,OAAO,QAAQA,CAAO,EAAE,OAAO,CAACC,EAAQ,CAACC,EAAaC,CAAiB,IAAM,CAClF,GAAIA,GAAqBA,EAAkB,MAAO,CAChD,MAAMC,EAAQ,OAAO,OAAOD,EAAkB,KAAK,EACnD,QAASE,EAAI,EAAGA,EAAID,GAAO,OAAQC,GAAK,EAAG,CACzC,MAAMC,EAAOF,EAAMC,CAAC,EAChBC,GAAQA,EAAK,QACfL,EAAOC,CAAW,EAAII,EAAK,OAAS,CAAC,CAAC,GAAGA,EAAK,KAAK,GAAG,UAAU,EAAG,CAAC,CAAC,EAAE,SAAS,GAAG,EAAGA,EAAK,MAAQ,KAEvG,CACF,CACA,OAAOL,CACT,EAAG,CAAC,CAAC,EAGP,IAAOM,EAAQR",
+  "names": ["parse_options", "options", "values", "option_name", "option_definition", "flags", "i", "flag", "parse_options_default"]
+}

@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../src/lib/node_path_polyfills.js"],
+  "sourcesContent": ["import os from 'os';\nimport { dirname } from \"path\";\nimport { fileURLToPath as file_url_to_path } from \"url\";\n\nconst current_file_path = file_url_to_path(import.meta.url);\nconst __package = dirname(current_file_path);\nconst is_windows = os.platform() === 'win32';\n\nconst node_path_polyfills = {\n\t__package: __package?.replace(\n    is_windows ? '\\\\dist\\\\lib' : '/dist/lib',\n    is_windows ? '\\\\dist' : '/dist'\n  ),\n  __filename: (url = '') => {\n    return file_url_to_path(url);\n  },\n  __dirname: (url = '') => {\n    const currentFilePath = file_url_to_path(url);\n    return dirname(currentFilePath);\n  },\n};\n\nexport default node_path_polyfills;\n"],
+  "mappings": "AAAA,OAAOA,MAAQ,KACf,OAAS,WAAAC,MAAe,OACxB,OAAS,iBAAiBC,MAAwB,MAElD,MAAMC,EAAoBD,EAAiB,YAAY,GAAG,EACpDE,EAAYH,EAAQE,CAAiB,EACrCE,EAAaL,EAAG,SAAS,IAAM,QAE/BM,EAAsB,CAC3B,UAAWF,GAAW,QACnBC,EAAa,cAAgB,YAC7BA,EAAa,SAAW,OAC1B,EACA,WAAY,CAACE,EAAM,KACVL,EAAiBK,CAAG,EAE7B,UAAW,CAACA,EAAM,KAAO,CACvB,MAAMC,EAAkBN,EAAiBK,CAAG,EAC5C,OAAON,EAAQO,CAAe,CAChC,CACF,EAEA,IAAOC,EAAQH",
+  "names": ["os", "dirname", "file_url_to_path", "current_file_path", "__package", "is_windows", "node_path_polyfills", "url", "currentFilePath", "node_path_polyfills_default"]
+}

@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../../src/commands/help/definition.js"],
+  "sourcesContent": ["import help from './index.js';\n\nconst [_node, _bin, ...raw_args] = process.argv;\n\nconst definition = {\n  description: 'Output this help information',\n  args: {},\n  options: {},\n  command: help,\n};\n\nexport default definition;\n"],
+  "mappings": "AAAA,OAAOA,MAAU,aAEjB,KAAM,CAACC,EAAOC,EAAM,GAAGC,CAAQ,EAAI,QAAQ,KAErCC,EAAa,CACjB,YAAa,+BACb,KAAM,CAAC,EACP,QAAS,CAAC,EACV,QAASJ,CACX,EAEA,IAAOK,EAAQD",
+  "names": ["help", "_node", "_bin", "raw_args", "definition", "definition_default"]
+}

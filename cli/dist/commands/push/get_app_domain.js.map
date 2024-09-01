@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../../src/commands/push/get_app_domain.js"],
+  "sourcesContent": ["const get_app_domain = (provision_server = 'production') => {\n\t// NOTE: Rely on provision_server CLI option flag here because that will need\n\t// to be paired with the appropriate app server.\n\treturn {\n\t\tdevelopment: 'http://localhost:2600',\n\t\tstaging: 'https://staging.push.cheatcode.co',\n\t\tproduction: 'https://push.cheatcode.co',\n\t}[provision_server];\n};\n\nexport default get_app_domain;\n"],
+  "mappings": "AAAA,MAAMA,EAAiB,CAACC,EAAmB,gBAGnC,CACN,YAAa,wBACb,QAAS,oCACT,WAAY,2BACb,GAAEA,CAAgB,EAGnB,IAAOC,EAAQF",
+  "names": ["get_app_domain", "provision_server", "get_app_domain_default"]
+}

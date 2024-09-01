@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../src/lib/debounce.js"],
+  "sourcesContent": ["const debounce = (() => {\n  let timer = 0;\n  return (callback, ms) => {\n    clearTimeout(timer);\n    timer = setTimeout(callback, ms);\n  };\n})();\n\nexport default debounce;\n"],
+  "mappings": "AAAA,MAAMA,GAAY,IAAM,CACtB,IAAIC,EAAQ,EACZ,MAAO,CAACC,EAAUC,IAAO,CACvB,aAAaF,CAAK,EAClBA,EAAQ,WAAWC,EAAUC,CAAE,CACjC,CACF,GAAG,EAEH,IAAOC,EAAQJ",
+  "names": ["debounce", "timer", "callback", "ms", "debounce_default"]
+}

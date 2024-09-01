@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../../../src/lib/build/plugins/warn_node_environment.js"],
+  "sourcesContent": ["import fs from 'fs';\nimport chalk from 'chalk';\n\nconst { readFile } = fs.promises;\n\nconst warn_node_environment = (build = {}) => {\n\tbuild.onLoad({ filter: /\\.js$/ }, async (args = {}) => {\n    const code = await readFile(args.path, \"utf-8\");\n\n    if (code?.match(/process.env.NODE_ENV\\s+=\\s/gi)?.length) {\n      console.warn(\n        chalk.yellowBright(\n          \"\\n[WARNING] process.env.NODE_ENV should only be set via a CLI flag in development or via external environment variables in production.\\n\"\n        )\n      );\n    }\n  });\n};\n\nexport default warn_node_environment;\n"],
+  "mappings": "AAAA,OAAOA,MAAQ,KACf,OAAOC,MAAW,QAElB,KAAM,CAAE,SAAAC,CAAS,EAAIF,EAAG,SAElBG,EAAwB,CAACC,EAAQ,CAAC,IAAM,CAC7CA,EAAM,OAAO,CAAE,OAAQ,OAAQ,EAAG,MAAOC,EAAO,CAAC,IAAM,EACvC,MAAMH,EAASG,EAAK,KAAM,OAAO,IAEpC,MAAM,8BAA8B,GAAG,QAC/C,QAAQ,KACNJ,EAAM,aACJ;AAAA;AAAA,CACF,CACF,CAEJ,CAAC,CACH,EAEA,IAAOK,EAAQH",
+  "names": ["fs", "chalk", "readFile", "warn_node_environment", "build", "args", "warn_node_environment_default"]
+}

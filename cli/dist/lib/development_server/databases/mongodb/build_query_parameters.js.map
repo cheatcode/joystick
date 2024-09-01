@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../../../../src/lib/development_server/databases/mongodb/build_query_parameters.js"],
+  "sourcesContent": ["import available_query_parameters from \"./available_query_parameters.js\";\n\nconst build_query_parameters = (connection = {}) => {\n  const query_parameters = {};\n\n  for (let i = 0; i < available_query_parameters.length; i += 1) {\n    const available_query_parameter = available_query_parameters[i];\n\n    if (connection && connection[available_query_parameter]) {\n      query_parameters[available_query_parameter] = connection[available_query_parameter];\n    }\n  }\n\n  return query_parameters;\n};\n\nexport default build_query_parameters;\n"],
+  "mappings": "AAAA,OAAOA,MAAgC,kCAEvC,MAAMC,EAAyB,CAACC,EAAa,CAAC,IAAM,CAClD,MAAMC,EAAmB,CAAC,EAE1B,QAASC,EAAI,EAAGA,EAAIJ,EAA2B,OAAQI,GAAK,EAAG,CAC7D,MAAMC,EAA4BL,EAA2BI,CAAC,EAE1DF,GAAcA,EAAWG,CAAyB,IACpDF,EAAiBE,CAAyB,EAAIH,EAAWG,CAAyB,EAEtF,CAEA,OAAOF,CACT,EAEA,IAAOG,EAAQL",
+  "names": ["available_query_parameters", "build_query_parameters", "connection", "query_parameters", "i", "available_query_parameter", "build_query_parameters_default"]
+}

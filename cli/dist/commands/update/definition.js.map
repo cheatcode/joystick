@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../../src/commands/update/definition.js"],
+  "sourcesContent": ["import update from './index.js';\n\nconst [_node, _bin, ...raw_args] = process.argv;\n\nconst definition = {\n  description: 'Update all Joystick packages to their latest version.',\n  args: {},\n  options: {\n    release: {\n      flags: {\n        '-r': {\n          set: !!raw_args.includes('-r'),\n          value: !!raw_args.includes('-r') && raw_args[raw_args.indexOf('-r') + 1],\n          parent: 'create',\n        },\n        '--release': {\n          set: !!raw_args.includes('--release'),\n          value: !!raw_args.includes('--release') && raw_args[raw_args.indexOf('--release') + 1],\n          parent: 'create',\n        },\n      },\n      description: 'The release of Joystick to update (production or canary).',\n    },\n  },\n  command: update,\n};\n\nexport default definition;\n"],
+  "mappings": "AAAA,OAAOA,MAAY,aAEnB,KAAM,CAACC,EAAOC,EAAM,GAAGC,CAAQ,EAAI,QAAQ,KAErCC,EAAa,CACjB,YAAa,wDACb,KAAM,CAAC,EACP,QAAS,CACP,QAAS,CACP,MAAO,CACL,KAAM,CACJ,IAAK,CAAC,CAACD,EAAS,SAAS,IAAI,EAC7B,MAAO,CAAC,CAACA,EAAS,SAAS,IAAI,GAAKA,EAASA,EAAS,QAAQ,IAAI,EAAI,CAAC,EACvE,OAAQ,QACV,EACA,YAAa,CACX,IAAK,CAAC,CAACA,EAAS,SAAS,WAAW,EACpC,MAAO,CAAC,CAACA,EAAS,SAAS,WAAW,GAAKA,EAASA,EAAS,QAAQ,WAAW,EAAI,CAAC,EACrF,OAAQ,QACV,CACF,EACA,YAAa,2DACf,CACF,EACA,QAASH,CACX,EAEA,IAAOK,EAAQD",
+  "names": ["update", "_node", "_bin", "raw_args", "definition", "definition_default"]
+}

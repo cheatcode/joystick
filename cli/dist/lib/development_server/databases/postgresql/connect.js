@@ -1,1 +1,2 @@
 import e from"os";import t from"./check_connection.js";import a from"./index.js";const r=async(o={},c=2610)=>{try{const n=o.connection&&Object.keys(o.connection).length>0;return n&&await t(o.connection,o.options),{pid:n?null:await a(c),connection:n?o.connection:{hosts:[{hostname:"127.0.0.1",port:c}],database:"app",username:(e.userInfo()||{}).username||"",password:""}}}catch(n){console.warn(n)}};var m=r;export{m as default};
+//# sourceMappingURL=connect.js.map

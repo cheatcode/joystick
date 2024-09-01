@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../../src/lib/build/get_file_operation.js"],
+  "sourcesContent": ["import copy_paths from \"./copy_paths.js\";\n\nconst check_if_is_copy_path = (path = '') => {\n  return copy_paths.some((file_to_copy) => {\n    return file_to_copy.regex.test(path);\n  });\n};\n\nconst check_if_is_javascript = (file_extension = '') => {\n\treturn file_extension === 'js';\n};\n\nconst get_file_operation = (path = '') => {\n\tconst file_extension = path?.split('.')?.pop();\n\tconst is_javascript = check_if_is_javascript(file_extension);\n\tconst is_copy_path = check_if_is_copy_path(path);\n\n\tif (!is_javascript || (is_javascript && is_copy_path)) {\n\t\treturn 'copy_file';\n\t}\n\n\treturn 'build_file';\n};\n\nexport default get_file_operation;\n"],
+  "mappings": "AAAA,OAAOA,MAAgB,kBAEvB,MAAMC,EAAwB,CAACC,EAAO,KAC7BF,EAAW,KAAMG,GACfA,EAAa,MAAM,KAAKD,CAAI,CACpC,EAGGE,EAAyB,CAACC,EAAiB,KACzCA,IAAmB,KAGrBC,EAAqB,CAACJ,EAAO,KAAO,CACzC,MAAMG,EAAiBH,GAAM,MAAM,GAAG,GAAG,IAAI,EACvCK,EAAgBH,EAAuBC,CAAc,EACrDG,EAAeP,EAAsBC,CAAI,EAE/C,MAAI,CAACK,GAAkBA,GAAiBC,EAChC,YAGD,YACR,EAEA,IAAOC,EAAQH",
+  "names": ["copy_paths", "check_if_is_copy_path", "path", "file_to_copy", "check_if_is_javascript", "file_extension", "get_file_operation", "is_javascript", "is_copy_path", "get_file_operation_default"]
+}

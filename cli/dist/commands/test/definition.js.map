@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../../src/commands/test/definition.js"],
+  "sourcesContent": ["import test from './index.js';\n\nconst [_node, _bin, ...raw_args] = process.argv;\n\nconst definition = {\n  description: 'Start an existing Joystick app and run its tests.',\n  args: {},\n  options: {\n    watch: {\n      flags: {\n        '-w': {\n          set: !!raw_args.includes('-w'),\n          value: !!raw_args.includes('-w'),\n          parent: 'test'\n        },\n        '--watch': {\n          set: !!raw_args.includes('--watch'),\n          value: !!raw_args.includes('--watch'),\n          parent: 'test'\n        },\n      },\n      description: 'Run joystick test in watch mode.',\n    },\n  },\n  command: test,\n};\n\nexport default definition;\n"],
+  "mappings": "AAAA,OAAOA,MAAU,aAEjB,KAAM,CAACC,EAAOC,EAAM,GAAGC,CAAQ,EAAI,QAAQ,KAErCC,EAAa,CACjB,YAAa,oDACb,KAAM,CAAC,EACP,QAAS,CACP,MAAO,CACL,MAAO,CACL,KAAM,CACJ,IAAK,CAAC,CAACD,EAAS,SAAS,IAAI,EAC7B,MAAO,CAAC,CAACA,EAAS,SAAS,IAAI,EAC/B,OAAQ,MACV,EACA,UAAW,CACT,IAAK,CAAC,CAACA,EAAS,SAAS,SAAS,EAClC,MAAO,CAAC,CAACA,EAAS,SAAS,SAAS,EACpC,OAAQ,MACV,CACF,EACA,YAAa,kCACf,CACF,EACA,QAASH,CACX,EAEA,IAAOK,EAAQD",
+  "names": ["test", "_node", "_bin", "raw_args", "definition", "definition_default"]
+}

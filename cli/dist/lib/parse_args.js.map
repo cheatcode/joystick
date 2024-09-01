@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../src/lib/parse_args.js"],
+  "sourcesContent": ["const parse_args = (args = {}) => {\n  return Object.entries(args).reduce((values, [arg_name, arg_definition]) => {\n  \t// NOTE: Handle hyphenated value for app name in joystick crate <name>.\n    if (arg_definition && arg_definition.value && arg_definition.parent && arg_definition.parent === 'create') {\n      values[arg_name] = arg_definition.value;\n    }\n\n    if (arg_definition && arg_definition.value && (!arg_definition.parent || arg_definition.parent !== 'create')) {\n      values[arg_name] = !arg_definition.value.includes('-') ? arg_definition.value : null;\n    }\n\n    return values;\n  }, {});\n};\n\nexport default parse_args;\n"],
+  "mappings": "AAAA,MAAMA,EAAa,CAACC,EAAO,CAAC,IACnB,OAAO,QAAQA,CAAI,EAAE,OAAO,CAACC,EAAQ,CAACC,EAAUC,CAAc,KAE/DA,GAAkBA,EAAe,OAASA,EAAe,QAAUA,EAAe,SAAW,WAC/FF,EAAOC,CAAQ,EAAIC,EAAe,OAGhCA,GAAkBA,EAAe,QAAU,CAACA,EAAe,QAAUA,EAAe,SAAW,YACjGF,EAAOC,CAAQ,EAAKC,EAAe,MAAM,SAAS,GAAG,EAA2B,KAAvBA,EAAe,OAGnEF,GACN,CAAC,CAAC,EAGP,IAAOG,EAAQL",
+  "names": ["parse_args", "args", "values", "arg_name", "arg_definition", "parse_args_default"]
+}

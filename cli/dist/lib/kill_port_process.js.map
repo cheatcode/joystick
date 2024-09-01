@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../src/lib/kill_port_process.js"],
+  "sourcesContent": ["import get_process_id_from_port from \"./get_process_id_from_port.js\";\nimport kill_process_id from \"./kill_process_id.js\";\n\nconst kill_port_process = async (port = 0) => {\n\tconst process_id = await get_process_id_from_port(port);\n\n\tif (process_id) {\n\t\tawait kill_process_id(process_id);\n\t}\n};\n\nexport default kill_port_process;\n"],
+  "mappings": "AAAA,OAAOA,MAA8B,gCACrC,OAAOC,MAAqB,uBAE5B,MAAMC,EAAoB,MAAOC,EAAO,IAAM,CAC7C,MAAMC,EAAa,MAAMJ,EAAyBG,CAAI,EAElDC,GACH,MAAMH,EAAgBG,CAAU,CAElC,EAEA,IAAOC,EAAQH",
+  "names": ["get_process_id_from_port", "kill_process_id", "kill_port_process", "port", "process_id", "kill_port_process_default"]
+}

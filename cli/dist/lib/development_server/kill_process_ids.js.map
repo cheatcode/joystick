@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../../src/lib/development_server/kill_process_ids.js"],
+  "sourcesContent": ["const kill_process_ids = (process_ids = []) => {\n  for (let i = 0; i < process_ids?.length; i += 1) {\n    const process_id = process_ids[i];\n    process.kill(process_id);\n  }\n};\n\nexport default kill_process_ids;\n"],
+  "mappings": "AAAA,MAAMA,EAAmB,CAACC,EAAc,CAAC,IAAM,CAC7C,QAASC,EAAI,EAAGA,EAAID,GAAa,OAAQC,GAAK,EAAG,CAC/C,MAAMC,EAAaF,EAAYC,CAAC,EAChC,QAAQ,KAAKC,CAAU,CACzB,CACF,EAEA,IAAOC,EAAQJ",
+  "names": ["kill_process_ids", "process_ids", "i", "process_id", "kill_process_ids_default"]
+}

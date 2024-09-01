@@ -1,1 +1,2 @@
 import n from"./bootstrap_component.js";import o from"./generate_file_dependency_map.js";import t from"./warn_node_environment.js";const p={bootstrap_component:{name:"bootstrap_component",setup(e){n(e)}},generate_file_dependency_map:{name:"generate_file_dependency_map",setup(e){o(e)}},warn_node_environment:{name:"warn_node_environment",setup(e){t(e)}}};var a=p;export{a as default};
+//# sourceMappingURL=index.js.map

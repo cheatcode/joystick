@@ -1,1 +1,2 @@
 import r from"./index.js";const[t,o,...e]=process.argv,a={description:"Update all Joystick packages to their latest version.",args:{},options:{release:{flags:{"-r":{set:!!e.includes("-r"),value:!!e.includes("-r")&&e[e.indexOf("-r")+1],parent:"create"},"--release":{set:!!e.includes("--release"),value:!!e.includes("--release")&&e[e.indexOf("--release")+1],parent:"create"}},description:"The release of Joystick to update (production or canary)."}},command:r};var i=a;export{i as default};
+//# sourceMappingURL=definition.js.map

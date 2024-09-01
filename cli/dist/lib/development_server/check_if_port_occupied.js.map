@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../../src/lib/development_server/check_if_port_occupied.js"],
+  "sourcesContent": ["import net from 'net';\n\nconst reset_client = (client = {}) => {\n  client.end();\n  client.destroy();\n  client.unref();  \n};\n\nconst check_if_port_occupied = (port = 2600) => {\n  return new Promise((resolve) => {\n    const client = new net.Socket();\n\n    // NOTE: This is inverted. If we can connect, the port is occupied. If we can't, the port is free.\n    client.once('connect', () => {\n      reset_client(client);\n      resolve(true);\n    });\n\n    client.once('error', () => {\n      reset_client(client);\n      resolve(false);\n    });\n\n    client.connect({\n      port,\n      host: '127.0.0.1',\n    }, function() {});\n  });\n};\n\nexport default check_if_port_occupied;\n"],
+  "mappings": "AAAA,OAAOA,MAAS,MAEhB,MAAMC,EAAe,CAACC,EAAS,CAAC,IAAM,CACpCA,EAAO,IAAI,EACXA,EAAO,QAAQ,EACfA,EAAO,MAAM,CACf,EAEMC,EAAyB,CAACC,EAAO,OAC9B,IAAI,QAASC,GAAY,CAC9B,MAAMH,EAAS,IAAIF,EAAI,OAGvBE,EAAO,KAAK,UAAW,IAAM,CAC3BD,EAAaC,CAAM,EACnBG,EAAQ,EAAI,CACd,CAAC,EAEDH,EAAO,KAAK,QAAS,IAAM,CACzBD,EAAaC,CAAM,EACnBG,EAAQ,EAAK,CACf,CAAC,EAEDH,EAAO,QAAQ,CACb,KAAAE,EACA,KAAM,WACR,EAAG,UAAW,CAAC,CAAC,CAClB,CAAC,EAGH,IAAOE,EAAQH",
+  "names": ["net", "reset_client", "client", "check_if_port_occupied", "port", "resolve", "check_if_port_occupied_default"]
+}

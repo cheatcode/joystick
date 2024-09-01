@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../../src/commands/build/index.js"],
+  "sourcesContent": ["import build_app from '../../lib/build/index.js';\n\nconst build = (_args = {}, options = {}) => {\n\tbuild_app(options);\n};\n\nexport default build;\n"],
+  "mappings": "AAAA,OAAOA,MAAe,2BAEtB,MAAMC,EAAQ,CAACC,EAAQ,CAAC,EAAGC,EAAU,CAAC,IAAM,CAC3CH,EAAUG,CAAO,CAClB,EAEA,IAAOC,EAAQH",
+  "names": ["build_app", "build", "_args", "options", "build_default"]
+}

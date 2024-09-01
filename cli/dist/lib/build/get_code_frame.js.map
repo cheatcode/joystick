@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../../src/lib/build/get_code_frame.js"],
+  "sourcesContent": ["import fs from 'fs';\nimport { codeFrameColumns } from \"@babel/code-frame\";\n\nconst { readFile } = fs.promises;\n\nconst get_code_frame = async (path = \"\", location = {}) => {\n  const file = await readFile(path, \"utf-8\");\n  return codeFrameColumns(file, { start: location });\n};\n\nexport default get_code_frame;\n"],
+  "mappings": "AAAA,OAAOA,MAAQ,KACf,OAAS,oBAAAC,MAAwB,oBAEjC,KAAM,CAAE,SAAAC,CAAS,EAAIF,EAAG,SAElBG,EAAiB,MAAOC,EAAO,GAAIC,EAAW,CAAC,IAAM,CACzD,MAAMC,EAAO,MAAMJ,EAASE,EAAM,OAAO,EACzC,OAAOH,EAAiBK,EAAM,CAAE,MAAOD,CAAS,CAAC,CACnD,EAEA,IAAOE,EAAQJ",
+  "names": ["fs", "codeFrameColumns", "readFile", "get_code_frame", "path", "location", "file", "get_code_frame_default"]
+}

@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../../src/commands/push_v2/get_push_domain.js"],
+  "sourcesContent": ["const get_push_domain = (push_server = 'production') => {\n\treturn {\n\t\tdevelopment: 'http://localhost:2603',\n\t\tproduction: 'https://push.cheatcode.co',\n\t}[push_server];\n};\n\nexport default get_push_domain;\n"],
+  "mappings": "AAAA,MAAMA,EAAkB,CAACC,EAAc,gBAC/B,CACN,YAAa,wBACb,WAAY,2BACb,GAAEA,CAAW,EAGd,IAAOC,EAAQF",
+  "names": ["get_push_domain", "push_server", "get_push_domain_default"]
+}

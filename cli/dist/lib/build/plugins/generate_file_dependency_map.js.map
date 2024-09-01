@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../../../src/lib/build/plugins/generate_file_dependency_map.js"],
+  "sourcesContent": ["import fs from 'fs';\nimport get_platform_safe_path from '../../get_platform_safe_path.js';\nimport update_file_map from './update_file_map.js';\n\nconst { readFile } = fs.promises;\n\nconst generate_file_dependency_map = (build = {}) => {\n  build.onLoad({ filter: /\\.js$/ }, async (args) => {\n    const can_add_to_map = ![\"node_modules\", \".joystick\", \"?\", \"commonjsHelpers.js\"].some((excluded_path) => {\n      return get_platform_safe_path(args.path).includes(excluded_path);\n    });\n\n    if (can_add_to_map) {\n      const code = await readFile(get_platform_safe_path(args.path), \"utf-8\");\n      await update_file_map(get_platform_safe_path(args.path), code);\n    }\n  });\n};\n\nexport default generate_file_dependency_map;\n"],
+  "mappings": "AAAA,OAAOA,MAAQ,KACf,OAAOC,MAA4B,kCACnC,OAAOC,MAAqB,uBAE5B,KAAM,CAAE,SAAAC,CAAS,EAAIH,EAAG,SAElBI,EAA+B,CAACC,EAAQ,CAAC,IAAM,CACnDA,EAAM,OAAO,CAAE,OAAQ,OAAQ,EAAG,MAAOC,GAAS,CAKhD,GAJuB,CAAC,CAAC,eAAgB,YAAa,IAAK,oBAAoB,EAAE,KAAMC,GAC9EN,EAAuBK,EAAK,IAAI,EAAE,SAASC,CAAa,CAChE,EAEmB,CAClB,MAAMC,EAAO,MAAML,EAASF,EAAuBK,EAAK,IAAI,EAAG,OAAO,EACtE,MAAMJ,EAAgBD,EAAuBK,EAAK,IAAI,EAAGE,CAAI,CAC/D,CACF,CAAC,CACH,EAEA,IAAOC,EAAQL",
+  "names": ["fs", "get_platform_safe_path", "update_file_map", "readFile", "generate_file_dependency_map", "build", "args", "excluded_path", "code", "generate_file_dependency_map_default"]
+}

@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../../src/commands/push_v2/check_if_settings_valid.js"],
+  "sourcesContent": ["const check_if_settings_valid = (settings = '') => {\n  try {\n    JSON.parse(settings);\n    return true;\n  } catch (exception) {\n    return false;\n  }\n};\n\nexport default check_if_settings_valid;\n"],
+  "mappings": "AAAA,MAAMA,EAA0B,CAACC,EAAW,KAAO,CACjD,GAAI,CACF,YAAK,MAAMA,CAAQ,EACZ,EACT,MAAoB,CAClB,MAAO,EACT,CACF,EAEA,IAAOC,EAAQF",
+  "names": ["check_if_settings_valid", "settings", "check_if_settings_valid_default"]
+}

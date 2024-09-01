@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../src/lib/serialize_query_parameters.js"],
+  "sourcesContent": ["const serialize_query_parameters = (query_parameters = {}) => {\n  return Object.entries(query_parameters).map(([key, value]) => {\n    return `${key}=${value}`;\n  })?.join('&');\n};\n\nexport default serialize_query_parameters;\n"],
+  "mappings": "AAAA,MAAMA,EAA6B,CAACC,EAAmB,CAAC,IAC/C,OAAO,QAAQA,CAAgB,EAAE,IAAI,CAAC,CAACC,EAAKC,CAAK,IAC/C,GAAGD,CAAG,IAAIC,CAAK,EACvB,GAAG,KAAK,GAAG,EAGd,IAAOC,EAAQJ",
+  "names": ["serialize_query_parameters", "query_parameters", "key", "value", "serialize_query_parameters_default"]
+}
