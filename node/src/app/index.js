@@ -283,6 +283,7 @@ class App {
 	async start() {
 		// NOTE: Order here is intentionally not alphabetical to ensure load
 		// order plays nice with things like tests.
+		this.register_push();
 		await this.connect_databases();
 		this.register_caches();
 		this.register_cron_jobs();
@@ -290,7 +291,6 @@ class App {
 		this.start_express();
 		this.register_tests();
 		this.register_accounts();
-		this.register_push();
 		this.register_api();
 		this.register_routes();
 		this.register_dynamic_pages();
