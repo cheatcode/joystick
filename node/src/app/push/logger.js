@@ -1,6 +1,6 @@
 import winston from 'winston';
 import fs from 'fs';
-import path_exists from '../lib/path_exists.js';
+import path_exists from '../../lib/path_exists.js';
 
 const { mkdir } = fs.promises;
 
