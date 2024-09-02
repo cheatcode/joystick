@@ -227,10 +227,10 @@ class App {
   }
 
   async register_push() {
-		// if (process.env.NODE_ENV !== "development" && process.env.IS_PUSH_DEPLOYED) {
-		// 	await push_logger();
-		// 	await push();
-		// }
+		if (process.env.NODE_ENV !== "development" && process.env.IS_PUSH_DEPLOYED) {
+			await push_logger();
+			await push();
+		}
   }
 
   register_queues() {

@@ -50,12 +50,6 @@ export const fixture = _fixture;
 
 export const origin = get_origin();
 
-export const push = {
-  continent: (await path_exists('/root/push/continent.txt')) ? (await readFile('/root/push/continent.txt', 'utf-8'))?.replace('\n', '') : null,
-  instance_token: (await path_exists('/root/push/instance_token.txt')) ? (await readFile('/root/push/instance_token.txt', 'utf-8'))?.replace('\n', '') : null,
-  current_version: (await path_exists('/root/push/versions/current')) ? (await readFile('/root/push/versions/current', 'utf-8'))?.replace('\n', '') : null,
-};
-
 export const sanitize = _sanitize_api_response;
 
 export const settings = load_settings();
@@ -78,7 +72,6 @@ const joystick = {
   fixture,
   id: generate_id,
   origin,
-  push,
   sanitize,
   settings,
   sql,
