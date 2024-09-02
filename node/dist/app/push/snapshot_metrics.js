@@ -1,0 +1,2 @@
+import c from"os";import{execSync as u}from"child_process";const d=()=>{const e=c.totalmem(),t=c.freemem();return((e-t)/e*100).toFixed(2)},i=()=>{const e=c.cpus(),t=e.reduce((s,o)=>s+o.times.idle,0)/e.length,m=e.reduce((s,o)=>s+Object.values(o.times).reduce((n,r)=>n+r,0),0)/e.length;return((1-t/m)*100).toFixed(2)},a=()=>u("df -h /").toString().split(`
+`)[1].split(/\s+/)[4],g=()=>({memory:`${d()}%`,cpu:`${i()}%`,disk:a()});var p=g;export{p as default};

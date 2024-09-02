@@ -1,0 +1,1 @@
+import s from"node-fetch";const c=async(e="",o="")=>{const t=`https://push.cheatcode.co/api/instances/${e}`;if(!(await s(t,{method:"HEAD"})).ok)return;const n=await s(t,{method:"POST",headers:{"x-push-instance-token":process.env.PUSH_INSTANCE_TOKEN,"Content-Type":"application/json"},body:JSON.stringify({type:e,data:o})});if(n.ok)return n};var i=c;export{i as default};

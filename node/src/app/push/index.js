@@ -2,7 +2,7 @@ import fs from 'fs';
 import { NODE_CRON_EVERY_MINUTE, NODE_CRON_EVERY_TEN_SECONDS, NODE_CRON_EVERY_THIRTY_SECONDS } from "../../lib/constants.js";
 import path_exists from "../../lib/path_exists.js";
 import send_instance_data_to_push from './send_instance_data_to_push.js';
-import node_path_polyfills from '../../lib/node_path_polyfills.js';
+import snapshot_metrics from './snapshot_metrics.js';
 
 const { readFile } = fs.promises;
 
@@ -24,7 +24,7 @@ const push = () => {
   });
 
   const sync_metrics_job = cron.schedule(NODE_CRON_EVERY_THIRTY_SECONDS, () => {
-    const metrics = execSync(`chmod +x ${node_path_polyfills?.__package}/app/push/snapshot_metrics.sh && sh ${node_path_polyfills?.__package}/app/push/snapshot_metrics.sh`);
+    const metrics = snapshot_metrics();
     send_instance_data_to_push('metrics', metrics);
   });
 
