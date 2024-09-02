@@ -9,6 +9,12 @@ const push_logs = async () => {
     await mkdir('/root/push/logs', { recursive: true });
   }
 
+  const log_file_path = '/root/push/logs/app.log';
+  
+  if (!(await path_exists(log_file_path))) {
+    await writeFile(log_file_path, ''); // Create an empty file if it doesn't exist
+  }
+
   const logger = winston.createLogger({
     format: winston.format.combine(
       winston.format.timestamp(),
@@ -16,7 +22,7 @@ const push_logs = async () => {
     ),
     transports: [
       new winston.transports.File({
-        filename: '/root/push/logs/app.log',
+        filename: log_file_path,
         maxsize: 1024 * 1024 * 10, // 10MB,
         maxFiles: 1,
         tailable: true,
