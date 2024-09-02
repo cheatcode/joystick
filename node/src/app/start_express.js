@@ -2,20 +2,22 @@ import express from "express";
 import https from "https";
 import built_in_middleware from "./middleware/built_in.js";
 import get_joystick_build_path from "../lib/get_joystick_build_path.js";
-import get_ssl_certificates from "./get_ssl_certificates.js";
 import types from "../lib/types.js";
 
 const start_express = (on_after_start_server = null, app_instance = {}) => {
   const config = joystick?.settings?.config || {};
   const joystick_build_path = get_joystick_build_path();
-  const ssl = get_ssl_certificates(app_instance?.options?.ssl);
   const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 2600;
 
   // NOTE: Reassign process.env in case we fell back to default port.
   process.env.PORT = port;
 
   const express_app = express();
-  const server = ssl ? https.createServer(ssl, express_app).listen(port) : express_app.listen(port);
+ 
+  // NOTE: Bind the app to localhost in production environments to avoid exposing the app
+  // to the world via the host machine's IP address.
+  const host = process.env.NODE_ENV !== 'development' ? '127.0.0.1' : '0.0.0.0';
+  const server = express_app.listen(port, host);
 
   built_in_middleware({
     app_instance,
