@@ -16,7 +16,7 @@ const push_logs = async () => {
     ),
     transports: [
       new winston.transports.File({
-        filename: log_file_path,
+        filename: '/root/push/logs/app.log',
         maxsize: 1024 * 1024 * 10, // 10MB,
         maxFiles: 1,
         tailable: true,
