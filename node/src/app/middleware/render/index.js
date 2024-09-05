@@ -52,9 +52,12 @@ const render_middleware = (req, res, next, app_instance = {}) => {
         })
       );
     }
+    
+    const env_component_path = process.env.NODE_ENV !== 'development' ? `${component_path}` : `${component_path}?v=${new Date().getTime()}`;
+    const env_layout_path = process.env.NODE_ENV !== 'development' ? `${layout_path}` : `${layout_path}?v=${new Date().getTime()}`;
 
-    const Component = await dynamic_import(`${component_path}?v=${new Date().getTime()}`);
-    const Layout = layout_path ? await dynamic_import(`${layout_path}?v=${new Date().getTime()}`) : null;
+    const Component = await dynamic_import(env_component_path);
+    const Layout = layout_path ? await dynamic_import(env_layout_path) : null;
     const props = { ...(render_options?.props || {}) };
 
     if (layout_path) {
