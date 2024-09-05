@@ -1,3 +1,4 @@
+import http from 'http';
 import api_accounts_authenticated from "./api/accounts/authenticated.js";
 import api_accounts_login from "./api/accounts/login.js";
 import api_accounts_logout from "./api/accounts/logout.js";
@@ -47,6 +48,8 @@ const app_settings = load_settings();
 
 class App {
 	constructor(app_options = {}) {
+		http.globalAgent.maxSockets = Infinity;
+		
 		handle_process_errors(app_options?.events);
 
 		register_app_options(this, app_options);
