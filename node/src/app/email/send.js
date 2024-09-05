@@ -13,7 +13,7 @@ import validate_smtp_settings from "./validate_smtp_settings.js";
 
 const settings = load_settings();
 const joystick_build_path = get_joystick_build_path();
-const email_language_files_path = `${get_translations_options?.joystick_build_path}i18n/email`;
+const email_language_files_path = `${joystick_build_path}i18n/email`;
 const email_language_files = (await path_exists(email_language_files_path) && fs.readdirSync(email_language_files_path)) || [];
 
 const send_email = async (send_email_options = {}, smtp_overrides = {}) => {

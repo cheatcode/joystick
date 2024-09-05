@@ -11,7 +11,7 @@ import strip_preceeding_slash from '../../../lib/strip_preceeding_slash.js';
 const { readFile } = fs.promises;
 
 const joystick_build_path = get_joystick_build_path();
-const language_files_path = `${get_translations_options?.joystick_build_path}i18n`;
+const language_files_path = `${joystick_build_path}i18n`;
 const language_files = (await path_exists(language_files_path) && fs.readdirSync(language_files_path)) || [];
 
 const get_base_html = () => {
