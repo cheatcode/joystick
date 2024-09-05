@@ -17,6 +17,9 @@ const get_base_html = () => {
   return readFile('index.html', 'utf-8');
 };
 
+// NOTE: Safe to do here as the base HTML will only change on a server restart.
+const cached_base_html = await get_base_html();
+
 const render_middleware = (req, res, next, app_instance = {}) => {
   // NOTE: Set res.render here so we have access to req, res, and
   // app_instance objects inside of the definition.
@@ -58,7 +61,7 @@ const render_middleware = (req, res, next, app_instance = {}) => {
       props.page = Component;
     }
 
-    const base_html = await get_base_html();
+    const base_html = process.env.NODE_ENV !== 'development' ? cached_base_html : await get_base_html();
     const translations = await get_translations({
       joystick_build_path,
       render_component_path,
