@@ -7,11 +7,12 @@ import get_url from './get_url.js';
 import path_exists from '../../../lib/path_exists.js';
 import ssr from '../../ssr/index.js';
 import strip_preceeding_slash from '../../../lib/strip_preceeding_slash.js';
-import get_browser_safe_request from '../../../lib/get_browser_safe_request.js';
 
 const { readFile } = fs.promises;
 
 const joystick_build_path = get_joystick_build_path();
+const language_files_path = `${get_translations_options?.joystick_build_path}i18n`;
+const language_files = (await path_exists(language_files_path) && fs.readdirSync(language_files_path)) || [];
 
 const get_base_html = () => {
   return readFile('index.html', 'utf-8');
@@ -66,7 +67,8 @@ const render_middleware = (req, res, next, app_instance = {}) => {
 
     const base_html = process.env.NODE_ENV !== 'development' ? cached_base_html : await get_base_html();
     const translations = await get_translations({
-      joystick_build_path,
+      language_files,
+      language_files_path,
       render_component_path,
       req,
     });

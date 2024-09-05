@@ -12,6 +12,9 @@ import track_function_call from "../../test/track_function_call.js";
 import validate_smtp_settings from "./validate_smtp_settings.js";
 
 const settings = load_settings();
+const joystick_build_path = get_joystick_build_path();
+const email_language_files_path = `${get_translations_options?.joystick_build_path}i18n/email`;
+const email_language_files = (await path_exists(email_language_files_path) && fs.readdirSync(email_language_files_path)) || [];
 
 const send_email = async (send_email_options = {}, smtp_overrides = {}) => {
   if (process.env.NODE_ENV === 'test') {
@@ -46,7 +49,6 @@ const send_email = async (send_email_options = {}, smtp_overrides = {}) => {
       })
     : null;
 
-  const joystick_build_path = get_joystick_build_path();
   const template_path = `${joystick_build_path}email/${send_email_options?.template}.js`;
   const template_exists = send_email_options?.template && await path_exists(template_path);
 
@@ -65,7 +67,8 @@ const send_email = async (send_email_options = {}, smtp_overrides = {}) => {
     const translations = await get_translations({
     	is_email: true,
     	email_template_name: send_email_options?.template,
-    	joystick_build_path,
+    	email_language_files_path,
+      email_language_files,
     	req: {
     		context: {
     			user: send_email_options?.user,

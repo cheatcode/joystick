@@ -8,8 +8,12 @@ import types from './types.js';
 const settings = load_settings();
 
 const get_translations_file = async (language_file_path = '', language_files_path = '', render_component_path = '') => {
+  const env_language_file_path = process.env.NODE_ENV !== 'development' ?
+    `${language_files_path}/${language_file_path}` :
+    `${language_files_path}/${language_file_path}?v=${new Date().getTime()}`;
+  
   const language_file = await dynamic_import(
-    get_platform_safe_path(`${language_files_path}/${language_file_path}?v=${new Date().getTime()}`)
+    get_platform_safe_path(env_language_file_path)
   );
 
   const is_valid_language_file = language_file && types.is_object(language_file);
@@ -72,11 +76,15 @@ const parse_browser_languages = (languages = '') => {
 };
 
 const get_translations = async (get_translations_options = {}) => {
+  // NOTE: This is utilized below for retrieving the specific language file.
   const language_files_path = get_translations_options?.is_email ?
-    `${get_translations_options?.joystick_build_path}i18n/email` :
-    `${get_translations_options?.joystick_build_path}i18n`;
+    get_translations_options?.email_language_files_path :
+    get_translations_options?.language_files_path;
 
-  const language_files = (await path_exists(language_files_path) && fs.readdirSync(language_files_path)) || [];
+  const language_files = get_translations_options?.is_email ?
+    get_translations_options?.email_language_files :
+    get_translations_options?.language_files;
+
   const browser_languages = get_translations_options?.is_email ? [] : parse_browser_languages(get_translations_options?.req?.headers['accept-language']);
   const language_preferences = get_language_preference_regexes(
     get_translations_options?.req?.context?.user?.language,
