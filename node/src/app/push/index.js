@@ -20,17 +20,29 @@ const get_logs = async () => {
 
 const push = () => {
   const sync_logs_job = cron.schedule(NODE_CRON_EVERY_TEN_SECONDS, async () => {
-    const logs = await get_logs();
-    send_instance_data_to_push('logs', logs);
+    try {
+      const logs = await get_logs();
+      send_instance_data_to_push('logs', logs);
+    } catch (exception) {
+      console.warn('sync_logs_job', exception);
+    }    
   });
 
   const sync_metrics_job = cron.schedule(NODE_CRON_EVERY_THIRTY_SECONDS, () => {
-    const metrics = snapshot_metrics();
-    send_instance_data_to_push('metrics', metrics);
+    try {
+      const metrics = snapshot_metrics();
+      send_instance_data_to_push('metrics', metrics);
+    } catch (exception) {
+      console.warn('sync_metrics_job', exception);
+    }
   });
 
   const health_check_job = cron.schedule(NODE_CRON_EVERY_MINUTE, () => {
-    send_instance_data_to_push('health-checks');
+    try {
+      send_instance_data_to_push('health-checks');
+    } catch (exception) {
+      console.warn('health_check_job', exception);
+    }
   });
 
   sync_logs_job.start();

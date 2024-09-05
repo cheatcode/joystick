@@ -1,6 +1,7 @@
 import winston from 'winston';
 import fs from 'fs';
 import path_exists from '../../lib/path_exists.js';
+import generate_id from '../../lib/generate_id.js';
 
 const { mkdir } = fs.promises;
 
@@ -12,6 +13,10 @@ const push_logs = async () => {
   const logger = winston.createLogger({
     format: winston.format.combine(
       winston.format.timestamp(),
+      winston.format((info) => {
+        info._id = generate_id(16);
+        return info;
+      })(),      
       winston.format.json(),
     ),
     transports: [

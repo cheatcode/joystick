@@ -20,30 +20,24 @@ const build_path = get_joystick_build_path();
 
 const built_in = (options = {}) => {
 	options.express_app.set('trust proxy', 1);
+  options.express_app.use(build_error_middleware);
 
-	if (!['development', 'test'].includes(process.env.NODE_ENV)) {
-		options.express_app.use(insecure_middleware);
-	}
+  if (!['development', 'test'].includes(process.env.NODE_ENV)) {
+    options.express_app.use(insecure_middleware);
+  }
 
-	options.express_app.use(build_error_middleware);
-	options.express_app.use(request_methods_middleware);
+  if (options?.csp_config) {
+    options.express_app.use((req, res, next) => csp(req, res, next, options?.csp_config));
+  }
 
-	if (options?.csp_config) {
-		options.express_app.use((req, res, next) => csp(req, res, next, options?.csp_config));
-	}
-
-	if (process.env.NODE_ENV !== 'development') {
+  if (process.env.NODE_ENV !== 'development') {
 		options.express_app.use(compression());
 	}
 
   options.express_app.use(express.static('public'));
-
-  if (options?.middleware_config?.public_paths?.length > 0) {
-    for (let i = 0; i < options?.middleware_config?.public_paths?.length; i += 1) {
-      const custom_public_path = options?.middleware_config?.public_paths[i];
-      options.express_app.use(custom_public_path?.route, express.static(custom_public_path?.directory));
-    }
-  }
+  options.express_app.use('/_joystick/utils/process.js', process_browser_polyfill_middleware);
+  options.express_app.use('/_joystick', express.static(options?.joystick_build_path));
+  // options.express_app.use('/_joystick/ui', express.static(`${build_path}ui`));
 
   // NOTE: Difference here is that if the /index.css imports a file from the /css folder
   // at the root of the app, the import URL will be prefixed w/ /_joystick. This ensures
@@ -51,16 +45,7 @@ const built_in = (options = {}) => {
   // from within /index.css.
   options.express_app.use('/css', express.static('css'));
   options.express_app.use('/_joystick/css', express.static('css'));
-
-  options.express_app.use('/_joystick/utils/process.js', process_browser_polyfill_middleware);
-  options.express_app.use('/_joystick/index.client.js', express.static(`${options?.joystick_build_path}index.client.js`));
-  options.express_app.use('/_joystick/index.css', express.static(`${options?.joystick_build_path}index.css`));
-  options.express_app.use('/_joystick/ui', express.static(`${build_path}ui`));
-
-  if (process.env.NODE_ENV === 'development') {
-  	options.express_app.use("/_joystick/hmr/client.js", hmr_client_middleware);
-  }
-
+  
   options.express_app.use(async (req, res, next) => {
     const favicon_exists = await path_exists('public/favicon.ico');
     if (favicon_exists) {
@@ -72,7 +57,10 @@ const built_in = (options = {}) => {
 
   options.express_app.use(cookieParser());
   options.express_app.use(body_parser(options?.middleware_config?.bodyParser));
+
   options.express_app.use(cors(options?.middleware_config?.cors, options?.port));
+
+	options.express_app.use(request_methods_middleware);
 
   if (process.databases?._sessions) {
     options.express_app.use((req, res, next) => session_middleware(req, res, next));
@@ -83,8 +71,20 @@ const built_in = (options = {}) => {
   }
 
   options.express_app.use((req, res, next) => context_middleware(req, res, next));
-  
+
+  if (options?.middleware_config?.public_paths?.length > 0) {
+    for (let i = 0; i < options?.middleware_config?.public_paths?.length; i += 1) {
+      const custom_public_path = options?.middleware_config?.public_paths[i];
+      options.express_app.use(custom_public_path?.route, express.static(custom_public_path?.directory));
+    }
+  }
+
   options.express_app.use((req, res, next) => render_middleware(req, res, next, options?.app_instance));
+
+
+  if (process.env.NODE_ENV === 'development') {
+  	options.express_app.use("/_joystick/hmr/client.js", hmr_client_middleware);
+  }
 };
 
 export default built_in;
