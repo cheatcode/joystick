@@ -91,10 +91,6 @@ class App {
 	    process.databases._sessions = sessions_database?.connection;
 	    process.databases._users = users_database?.connection;
 
-			console.log({
-				dbs: process.databases,
-			});
-
 	    const internal_database_targets = [queues_database, sessions_database, users_database];
 
 	    const mongodb_targets = internal_database_targets?.filter((target) => target?.provider === 'mongodb')?.map((target) => target?.database_type);
