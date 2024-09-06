@@ -53,6 +53,11 @@ const queues ={
       null_lock_query.created_by = this.machine_id;
     }
 
+    console.log({
+      no_existing_lock_query,
+      null_lock_query,
+    });
+
     const next_job = await db.findOneAndUpdate({
       $or: [
         no_existing_lock_query,
