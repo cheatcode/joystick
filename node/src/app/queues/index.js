@@ -31,6 +31,8 @@ class Queue {
     const db = this._get_database_connection();
 
     if (types.is_object(db) && types.is_object(queue_queries_for_database_provider)) {
+      console.log('INIT DATABASE FOR QUEUES');
+      
       this.db = Object.entries(queue_queries_for_database_provider || {})?.reduce(
         (bound_queries = {}, [query_function_name, query_function]) => {
           bound_queries[query_function_name] = query_function.bind({
