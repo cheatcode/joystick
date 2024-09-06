@@ -73,47 +73,41 @@ const queues ={
     return next_job;
   },
   initialize_database: async function () {
-    try {
-      // NOTE: Add this check to avoid clustered apps from creating a race condition
-      // when initializing indexes below (they step on each other's toes and cause
-      // errors to be thrown). Only a primary or 1st worker should run this.
+    // NOTE: Add this check to avoid clustered apps from creating a race condition
+    // when initializing indexes below (they step on each other's toes and cause
+    // errors to be thrown). Only a primary or 1st worker should run this.
 
-      console.log('CLUSTER', cluster.isPrimary, cluster.isWorker);
-
-      if (cluster.isPrimary || (cluster.isWorker && cluster.worker.id === 1)) {
-        try {
-          await this.db.createCollection(`queue_${this.queue.name}`);
-        } catch {
-          // NOTE: Drop the error. We anticipate it after the first run.
-        }
-
-        const db = this.db?.collection(`queue_${this.queue.name}`);
-
-        const indexes = await db?.indexes();
-
-        await db.createIndex({ status: 1 });
-        await db.createIndex({ status: 1, next_run_at: 1 });
-        await db.createIndex({ status: 1, environment: 1, next_run_at: 1, locked_by: 1 });
-        await db.createIndex({ status: 1, environment: 1, next_run_at: 1, locked_by: 1, created_at: 1 });
-
-        if (this.queue.options?.cleanup?.completedAfterSeconds || this.queue.options?.cleanup?.completed_after_seconds) {
-          if (indexes?.find((index) => index?.name === 'completed_at_1')) {
-            await db.dropIndex({ completed_at: 1 });
-          }
-
-          await db.createIndex({ completed_at: 1 }, { expireAfterSeconds: this?.queue?.options?.cleanup?.completedAfterSeconds || this.queue.options?.cleanup?.completed_after_seconds });
-        }
-
-        if (this.queue.options?.cleanup?.failedAfterSeconds || this.queue.options?.cleanup?.failed_after_seconds) {
-          if (indexes?.find((index) => index?.name === 'failed_at_1')) {
-            await db.dropIndex({ failed_at: 1 });
-          }
-
-          await db.createIndex({ failed_at: 1 }, { expireAfterSeconds: this?.queue?.options?.cleanup?.failedAfterSeconds || this.queue.options?.cleanup?.failed_after_seconds });
-        }
+    if (cluster.isPrimary || (cluster.isWorker && cluster.worker.id === 1)) {
+      try {
+        await this.db.createCollection(`queue_${this.queue.name}`);
+      } catch {
+        // NOTE: Drop the error. We anticipate it after the first run.
       }
-    } catch (exception) {
-      console.warn(exception);
+
+      const db = this.db?.collection(`queue_${this.queue.name}`);
+
+      const indexes = await db?.indexes();
+
+      await db.createIndex({ status: 1 });
+      await db.createIndex({ status: 1, next_run_at: 1 });
+      await db.createIndex({ status: 1, environment: 1, next_run_at: 1, locked_by: 1 });
+      // await db.createIndex({ status: 1, environment: 1, next_run_at: 1, locked_by: 1, created_at: 1 });
+
+      if (this.queue.options?.cleanup?.completedAfterSeconds || this.queue.options?.cleanup?.completed_after_seconds) {
+        if (indexes?.find((index) => index?.name === 'completed_at_1')) {
+          await db.dropIndex({ completed_at: 1 });
+        }
+
+        await db.createIndex({ completed_at: 1 }, { expireAfterSeconds: this?.queue?.options?.cleanup?.completedAfterSeconds || this.queue.options?.cleanup?.completed_after_seconds });
+      }
+
+      if (this.queue.options?.cleanup?.failedAfterSeconds || this.queue.options?.cleanup?.failed_after_seconds) {
+        if (indexes?.find((index) => index?.name === 'failed_at_1')) {
+          await db.dropIndex({ failed_at: 1 });
+        }
+
+        await db.createIndex({ failed_at: 1 }, { expireAfterSeconds: this?.queue?.options?.cleanup?.failedAfterSeconds || this.queue.options?.cleanup?.failed_after_seconds });
+      }
     }
   },
   log_attempt: function (job_id = '') {
