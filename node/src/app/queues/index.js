@@ -31,8 +31,6 @@ class Queue {
     const db = this._get_database_connection();
 
     if (types.is_object(db) && types.is_object(queue_queries_for_database_provider)) {
-      console.log('INIT DATABASE FOR QUEUES');
-      
       this.db = Object.entries(queue_queries_for_database_provider || {})?.reduce(
         (bound_queries = {}, [query_function_name, query_function]) => {
           bound_queries[query_function_name] = query_function.bind({
@@ -53,6 +51,8 @@ class Queue {
       // a connection to it so we can add jobs remotely.
       if (!is_external) {
         await this.db.initialize_database(queues_database);
+
+        console.log('POST INIT', this.options);
 
         if (this?.options?.runOnStartup || this?.options?.run_on_startup) {
           this.run();
