@@ -6,6 +6,7 @@ const queues ={
     const db = this.db?.collection(`queue_${this.queue.name}`);
     return db.insertOne({
       ...job_to_add,
+      created_by: this.machine_id,
       attempts: 0,
     });
   },
@@ -31,22 +32,31 @@ const queues ={
   get_next_job_to_run: async function () {
     const db = this.db?.collection(`queue_${this.queue.name}`);
 
+    const no_existing_lock_query = {
+      status: 'pending',
+      environment: process.env.NODE_ENV,
+      // NOTE: Do this to avoid accidentally running jobs intended for the future too early.
+      next_run_at: { $lte: timestamps.get_current_time() },
+      locked_by: { $exists: false },
+    };
+
+    const null_lock_query = {
+      status: 'pending',
+      environment: process.env.NODE_ENV,
+      // NOTE: Do this to avoid accidentally running jobs intended for the future too early.
+      next_run_at: { $lte: timestamps.get_current_time() },
+      locked_by: null,
+    };
+
+    if (!this?.queue?.options?.share_jobs_with_other_machines) {
+      no_existing_lock_query.created_by = this.machine_id;
+      null_lock_query.created_by = this.machine_id;
+    }
+
     const next_job = await db.findOneAndUpdate({
       $or: [
-        {
-          status: 'pending',
-          environment: process.env.NODE_ENV,
-          // NOTE: Do this to avoid accidentally running jobs intended for the future too early.
-          next_run_at: { $lte: timestamps.get_current_time() },
-          locked_by: { $exists: false }
-        },
-        {
-          status: 'pending',
-          environment: process.env.NODE_ENV,
-          // NOTE: Do this to avoid accidentally running jobs intended for the future too early.
-          next_run_at: { $lte: timestamps.get_current_time() },
-          locked_by: null,
-        }
+        no_existing_lock_query,
+        null_lock_query,
       ]
     }, {
       $set: {
@@ -81,6 +91,7 @@ const queues ={
       await db.createIndex({ status: 1 });
       await db.createIndex({ status: 1, next_run_at: 1 });
       await db.createIndex({ status: 1, environment: 1, next_run_at: 1, locked_by: 1 });
+      await db.createIndex({ status: 1, environment: 1, next_run_at: 1, locked_by: 1, created_at: 1 });
 
       if (this.queue.options?.cleanup?.completedAfterSeconds || this.queue.options?.cleanup?.completed_after_seconds) {
         if (indexes?.find((index) => index?.name === 'completed_at_1')) {

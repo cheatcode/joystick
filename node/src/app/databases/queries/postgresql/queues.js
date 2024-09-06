@@ -26,9 +26,10 @@ const queues = {
         job,
         payload,
         next_run_at,
-        attempts
+        attempts,
+        created_by
       ) VALUES (
-        $1, $2, $3, $4, $5, $6, $7
+        $1, $2, $3, $4, $5, $6, $7, $8
       )
     `, [
       job_to_add?._id,
@@ -37,7 +38,8 @@ const queues = {
       job_to_add?.job,
       JSON.stringify(job_to_add?.payload),
       job_to_add?.nextRunAt || job_to_add?.next_run_at,
-      0
+      0,
+      this.machine_id
     ]);
   },
   count_jobs: async function (status = '') {
@@ -105,7 +107,7 @@ const queues = {
   get_next_job_to_run: async function () {
     const db = this?.db;
 
-    const [next_job] = await db?.query(`
+    let next_job_query = `
       SELECT * FROM
         queue_${this.queue.name}
       WHERE
@@ -118,11 +120,36 @@ const queues = {
         locked_by IS NULL
       ORDER BY
         next_run_at ASC
-    `, [
+    `;
+
+    const next_job_query_values = [
       'pending',
       process.env.NODE_ENV,
       timestamps.get_current_time()
-    ]);
+    ];
+
+    if (!this?.queue?.options?.share_jobs_with_other_machines) {
+      next_job_query = `
+        SELECT * FROM
+          queue_${this.queue.name}
+        WHERE
+          status = $1
+        AND
+          environment = $2
+        AND
+          next_run_at::timestamp <= $3
+        AND
+          locked_by IS NULL
+        AND
+          created_by = $4
+        ORDER BY
+          next_run_at ASC
+      `;
+
+      next_job_query_values.push(this.machine_id);
+    }
+
+    const [next_job] = await db?.query(next_job_query, next_job_query_values);
 
     if (next_job?._id) {
       await db?.query(`
@@ -168,17 +195,20 @@ const queues = {
           failed_at text,
           error text,
           environment text,
-          attempts smallint
+          attempts smallint,
+          created_by text
         )
       `);
 
       // NOTE: Add additional attempts field as a standalone column to support existing queue_ tables.
       await db?.query(`ALTER TABLE queue_${this.queue.name} ADD COLUMN IF NOT EXISTS environment text`);
       await db?.query(`ALTER TABLE queue_${this.queue.name} ADD COLUMN IF NOT EXISTS attempts smallint`);
+      await db?.query(`ALTER TABLE queue_${this.queue.name} ADD COLUMN IF NOT EXISTS created_by text`);
 
       await db?.query(`CREATE INDEX IF NOT EXISTS status_index ON queue_${this.queue.name} (status)`);
       await db?.query(`CREATE INDEX IF NOT EXISTS status_next_run_at_index ON queue_${this.queue.name} (status, next_run_at)`);
       await db?.query(`CREATE INDEX IF NOT EXISTS next_job_index ON queue_${this.queue.name} (status, environment, next_run_at, locked_by)`);
+      await db?.query(`CREATE INDEX IF NOT EXISTS next_job_owner_index ON queue_${this.queue.name} (status, environment, next_run_at, locked_by, created_by)`);
 
       await db?.query(`CREATE INDEX IF NOT EXISTS completed_at_index ON queue_${this.queue.name} (completed_at)`);
       await db?.query(`CREATE INDEX IF NOT EXISTS failed_at_index ON queue_${this.queue.name} (failed_at)`);
