@@ -78,6 +78,8 @@ const queues ={
       // when initializing indexes below (they step on each other's toes and cause
       // errors to be thrown). Only a primary or 1st worker should run this.
 
+      console.log('CLUSTER', cluster.isPrimary, cluster.isWorker);
+
       if (cluster.isPrimary || (cluster.isWorker && cluster.worker.id === 1)) {
         try {
           await this.db.createCollection(`queue_${this.queue.name}`);
