@@ -50,11 +50,7 @@ class Queue {
       // NOTE: Let an external queue manage its own configuration and operation. We only want
       // a connection to it so we can add jobs remotely.
       if (!is_external) {
-        console.log('PRE INIT', this.options);
-        
         await this.db.initialize_database(queues_database);
-
-        console.log('POST INIT', this.options);
 
         if (this?.options?.runOnStartup || this?.options?.run_on_startup) {
           this.run();
