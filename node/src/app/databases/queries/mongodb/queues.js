@@ -37,14 +37,14 @@ const queues ={
           status: 'pending',
           environment: process.env.NODE_ENV,
           // NOTE: Do this to avoid accidentally running jobs intended for the future too early.
-          next_run_at: { $lte: timestamps.get_current_time() },
+          next_run_at: { $lte: timestamps.get_current_time({ mongodb_ttl: true }) },
           locked_by: { $exists: false }
         },
         {
           status: 'pending',
           environment: process.env.NODE_ENV,
           // NOTE: Do this to avoid accidentally running jobs intended for the future too early.
-          next_run_at: { $lte: timestamps.get_current_time() },
+          next_run_at: { $lte: timestamps.get_current_time({ mongodb_ttl: true }) },
           locked_by: null,
         }
       ]
