@@ -82,6 +82,6 @@ const joystick = {
 
 global.joystick = joystick;
 
-process.env.ROOT_URL = settings?.config?.ROOT_URL || '';
+process.env.ROOT_URL = settings?.config?.ROOT_URL || process.env.ROOT_URL;
 
 export default joystick;
