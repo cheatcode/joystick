@@ -63,39 +63,51 @@ const queues ={
     return next_job;
   },
   initialize_database: async function () {
-    // NOTE: Add this check to avoid clustered apps from creating a race condition
-    // when initializing indexes below (they step on each other's toes and cause
-    // errors to be thrown). Only a primary or 1st worker should run this.
-
     if (cluster.isPrimary || (cluster.isWorker && cluster.worker.id === 1)) {
-      try {
-        await this.db.createCollection(`queue_${this.queue.name}`);
-      } catch {
-        // NOTE: Drop the error. We anticipate it after the first run.
+      const collection_name = `queue_${this.queue.name}`;
+      
+      const collections = await this.db.listCollections().toArray();
+      if (!collections.some(collection => collection.name === collection_name)) {
+        await this.db.createCollection(collection_name);
       }
-
-      const db = this.db?.collection(`queue_${this.queue.name}`);
-
-      const indexes = await db?.indexes();
-
-      await db.createIndex({ status: 1 });
-      await db.createIndex({ status: 1, next_run_at: 1 });
-      await db.createIndex({ status: 1, environment: 1, next_run_at: 1, locked_by: 1 });
-
-      if (this.queue.options?.cleanup?.completedAfterSeconds || this.queue.options?.cleanup?.completed_after_seconds) {
-        if (indexes?.find((index) => index?.name === 'completed_at_1')) {
-          await db.dropIndex({ completed_at: 1 });
+  
+      const db = this.db.collection(collection_name);
+  
+      const existing_indexes = await db.indexes();
+  
+      const create_index_if_not_exists = async (index_spec, options = {}) => {
+        const index_name = Object.keys(index_spec).join('_');
+        if (!existing_indexes.some(index => index.name === index_name)) {
+          await db.createIndex(index_spec, options);
         }
-
-        await db.createIndex({ completed_at: 1 }, { expireAfterSeconds: this?.queue?.options?.cleanup?.completedAfterSeconds || this.queue.options?.cleanup?.completed_after_seconds });
+      };
+  
+      await create_index_if_not_exists({ status: 1 });
+      await create_index_if_not_exists({ status: 1, next_run_at: 1 });
+      await create_index_if_not_exists({ status: 1, environment: 1, next_run_at: 1, locked_by: 1 });
+  
+      const completed_after_seconds = this.queue.options?.cleanup?.completedAfterSeconds || this.queue.options?.cleanup?.completed_after_seconds;
+      if (completed_after_seconds) {
+        const index_name = 'completed_at_1';
+        const existing_index = existing_indexes.find(index => index.name === index_name);
+        if (existing_index && existing_index.expireAfterSeconds !== completed_after_seconds) {
+          await db.dropIndex(index_name);
+          await create_index_if_not_exists({ completed_at: 1 }, { expireAfterSeconds: completed_after_seconds });
+        } else if (!existing_index) {
+          await create_index_if_not_exists({ completed_at: 1 }, { expireAfterSeconds: completed_after_seconds });
+        }
       }
-
-      if (this.queue.options?.cleanup?.failedAfterSeconds || this.queue.options?.cleanup?.failed_after_seconds) {
-        if (indexes?.find((index) => index?.name === 'failed_at_1')) {
-          await db.dropIndex({ failed_at: 1 });
+  
+      const failed_after_seconds = this.queue.options?.cleanup?.failedAfterSeconds || this.queue.options?.cleanup?.failed_after_seconds;
+      if (failed_after_seconds) {
+        const index_name = 'failed_at_1';
+        const existing_index = existing_indexes.find(index => index.name === index_name);
+        if (existing_index && existing_index.expireAfterSeconds !== failed_after_seconds) {
+          await db.dropIndex(index_name);
+          await create_index_if_not_exists({ failed_at: 1 }, { expireAfterSeconds: failed_after_seconds });
+        } else if (!existing_index) {
+          await create_index_if_not_exists({ failed_at: 1 }, { expireAfterSeconds: failed_after_seconds });
         }
-
-        await db.createIndex({ failed_at: 1 }, { expireAfterSeconds: this?.queue?.options?.cleanup?.failedAfterSeconds || this.queue.options?.cleanup?.failed_after_seconds });
       }
     }
   },
