@@ -317,7 +317,6 @@ const start_app = async (options = {}) => {
 const app = (options = {}) => {
 	return new Promise(async (resolve) => {
 		if (options?.cluster) {
-			console.log('INIT CLUSTER', process.env);
 			start_node_as_cluster(async () => {
 				const app = await start_app(options);
         return resolve(app.express);
