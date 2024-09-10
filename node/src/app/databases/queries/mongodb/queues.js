@@ -51,7 +51,7 @@ const queues ={
     }, {
       $set: {
         status: 'running',
-        started_at: timestamps.get_current_time(),
+        started_at: timestamps.get_current_time({ mongodb_ttl: true }),
         locked_by: this.machine_id,
       },
     }, {
