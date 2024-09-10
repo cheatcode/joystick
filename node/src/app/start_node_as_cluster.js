@@ -6,7 +6,7 @@ const start_node_as_cluster = (callback = null) => {
 
   if (cluster.isPrimary) {
     for (let i = 0; i < cpus; i++) {
-      const worker = cluster.fork();
+      const worker = cluster.fork(process.env);
 
       worker.on("message", (message) => {
         if (process.send) {
