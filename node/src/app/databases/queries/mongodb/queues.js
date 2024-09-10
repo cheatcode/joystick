@@ -60,8 +60,6 @@ const queues ={
       },
     });
 
-    console.log({ next_job });
-
     return next_job;
   },
   initialize_database: async function () {
