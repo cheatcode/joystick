@@ -22,7 +22,8 @@ const start_node_as_cluster = (start_app = null) => {
   if (cluster.isPrimary) {
     console.log(`Primary ${process.pid} is running`);
 
-    for (let i = 0; i < cpus; i++) {
+    // Fork workers
+    for (let i = 1; i < cpus; i++) {
       const worker = cluster.fork(process.env);
       setup_worker(worker);
     }
@@ -41,6 +42,7 @@ const start_node_as_cluster = (start_app = null) => {
       }
     });
 
+    // Start the app in the primary process
     if (typeof start_app === 'function') {
       start_app();
     }
@@ -48,10 +50,6 @@ const start_node_as_cluster = (start_app = null) => {
 
   if (cluster.isWorker) {
     console.log(`Worker ${process.pid} started`);
-
-    if (typeof start_app === 'function') {
-      start_app();
-    }
   }
 };
 
