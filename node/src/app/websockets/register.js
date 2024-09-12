@@ -31,6 +31,7 @@ const handle_websocket_connection_events = (websocket_connection = {}, connectio
 
   websocket_connection.on("message", (message) => {
     const message_as_json = JSON.parse(message);
+    console.log(`[Process ${process.pid}] Received message:`, message_as_json);
 
     if (types.is_function(websocket_definition?.on_message)) {
       websocket_definition?.on_message(message_as_json, websocket_connection);
@@ -47,6 +48,7 @@ const handle_websocket_connection_events = (websocket_connection = {}, connectio
 
   // Add listener for shared messages
   websocket_message_emitter.on('message', (shared_message) => {
+    console.log(`[Process ${process.pid}] Sending shared message to WebSocket:`, shared_message);
     websocket_connection.send(JSON.stringify(shared_message));
   });
 };
@@ -165,20 +167,24 @@ const get_websocket_servers = (user_websocket_definitions = {}) => {
 };
 
 const share_message_across_cluster = (message) => {
+  console.log(`[Process ${process.pid}] Sharing message across cluster:`, message);
   if (cluster.isPrimary) {
     // Primary process: share with all workers
     for (const id in cluster.workers) {
+      console.log(`[Primary ${process.pid}] Sending message to worker ${id}`);
       cluster.workers[id].send({ type: 'websocket_message', message });
     }
     // Also handle locally
     websocket_message_emitter.emit('message', message);
   } else {
     // Worker process: send to primary
+    console.log(`[Worker ${process.pid}] Sending message to primary`);
     process.send({ type: 'websocket_message', message });
   }
 };
 
 const register = (user_websocket_definitions = {}, app_instance = {}) => {
+  console.log(`[Process ${process.pid}] Registering WebSocket servers`);
   const websocket_servers_to_create = get_websocket_servers(user_websocket_definitions);
   const websocket_servers = Object.entries(websocket_servers_to_create);
 
@@ -190,16 +196,21 @@ const register = (user_websocket_definitions = {}, app_instance = {}) => {
   handle_websocket_connection_upgrade(app_instance.express.server, websocket_servers_to_create);
 
   if (cluster.isPrimary) {
+    console.log(`[Primary ${process.pid}] Setting up message handling for primary`);
     // Primary process: listen for messages from workers
     cluster.on('message', (worker, msg) => {
       if (msg.type === 'websocket_message') {
-        websocket_message_emitter.emit('message', msg.message);
+        console.log(`[Primary ${process.pid}] Received message from worker ${worker.id}:`, msg.message);
+        // Broadcast to all workers (including the sender)
+        share_message_across_cluster(msg.message);
       }
     });
   } else {
+    console.log(`[Worker ${process.pid}] Setting up message handling for worker`);
     // Worker process: listen for messages from primary
     process.on('message', (msg) => {
       if (msg.type === 'websocket_message') {
+        console.log(`[Worker ${process.pid}] Received message from primary:`, msg.message);
         websocket_message_emitter.emit('message', msg.message);
       }
     });
