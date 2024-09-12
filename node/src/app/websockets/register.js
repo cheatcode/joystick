@@ -5,8 +5,6 @@ import track_function_call from "../../test/track_function_call.js";
 import types from "../../lib/types.js";
 import cluster from 'cluster';
 
-const websocket_message_emitter = new EventEmitter();
-
 const handle_websocket_connection_upgrade = (express_server = {}, websocket_servers = {}) => {
   express_server.on('upgrade', (request, socket, head) => {
     if (request?.url?.includes('/api/_websockets')) {
@@ -44,12 +42,6 @@ const handle_websocket_connection_events = (websocket_connection = {}, connectio
     if (types.is_function(websocket_definition?.on_close)) {
       websocket_definition?.on_close(code, reason?.toString(), websocket_connection);
     }
-  });
-
-  // Add listener for shared messages
-  websocket_message_emitter.on('message', (shared_message) => {
-    console.log(`[Process ${process.pid}] Sending shared message to WebSocket:`, shared_message);
-    websocket_connection.send(JSON.stringify(shared_message));
   });
 };
 
@@ -175,11 +167,27 @@ const share_message_across_cluster = (message) => {
       cluster.workers[id].send({ type: 'websocket_message', message });
     }
     // Also handle locally
-    websocket_message_emitter.emit('message', message);
+    handle_shared_message(message);
   } else {
     // Worker process: send to primary
     console.log(`[Worker ${process.pid}] Sending message to primary`);
     process.send({ type: 'websocket_message', message });
+  }
+};
+
+const handle_shared_message = (message) => {
+  console.log(`[Process ${process.pid}] Handling shared message:`, message);
+  const { emitter_name, event, payload } = message;
+  const emitters = joystick?.emitters[emitter_name];
+  if (types.is_array(emitters)) {
+    console.log(`[Process ${process.pid}] Found ${emitters.length} emitters for ${emitter_name}`);
+    for (let i = 0; i < emitters?.length; i += 1) {
+      const emitter_recipient = emitters[i];
+      console.log(`[Process ${process.pid}] Emitting ${event} event to emitter ${i}`);
+      emitter_recipient.emit(event, payload);
+    }
+  } else {
+    console.log(`[Process ${process.pid}] No emitters found for ${emitter_name}`);
   }
 };
 
@@ -203,12 +211,6 @@ const register = (user_websocket_definitions = {}, app_instance = {}) => {
         console.log(`[Primary ${process.pid}] Received message from worker ${worker.id}:`, msg.message);
         // Broadcast to all workers (including the sender)
         share_message_across_cluster(msg.message);
-      } else if (msg.type === 'websocket_event') {
-        console.log(`[Primary ${process.pid}] Received websocket_event from worker ${worker.id}:`, msg);
-        // Forward websocket_event to all workers
-        for (const id in cluster.workers) {
-          cluster.workers[id].send(msg);
-        }
       }
     });
   } else {
@@ -217,24 +219,11 @@ const register = (user_websocket_definitions = {}, app_instance = {}) => {
     process.on('message', (msg) => {
       if (msg.type === 'websocket_message') {
         console.log(`[Worker ${process.pid}] Received message from primary:`, msg.message);
-        websocket_message_emitter.emit('message', msg.message);
-      } else if (msg.type === 'websocket_event') {
-        console.log(`[Worker ${process.pid}] Received websocket_event from primary:`, msg);
-        // Handle websocket_event
-        const { emitter_id, event_name, payload } = msg;
-        const emitters = joystick?.emitters[emitter_id];
-        if (types.is_array(emitters)) {
-          for (let i = 0; i < emitters?.length; i += 1) {
-            const emitter_recipient = emitters[i];
-            emitter_recipient.emit(event_name, payload);
-          }
-        }
+        handle_shared_message(msg.message);
       }
     });
   }
 };
 
-// Export the share_message_across_cluster function so it can be used in the websockets module
 export { share_message_across_cluster };
-
 export default register;
