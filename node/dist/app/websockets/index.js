@@ -1,1 +1,1 @@
-import c from"./emit_event.js";import m from"../../test/track_function_call.js";const r=(t="")=>({send:(e={},o="")=>{const s=o?`${t}_${o}`:t;c(s,"message",e),m(`node.websockets.${t}.send`,[e])}});var n=r;export{n as default};
+import r from"../../test/track_function_call.js";import{share_message_across_cluster as c}from"./register.js";const m=(s="")=>({send:(t={},e="")=>{const o=e?`${s}_${e}`:s;c({emitter_name:o,event:"message",payload:t}),r(`node.websockets.${s}.send`,[t])}});var n=m;export{n as default};

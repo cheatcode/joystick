@@ -203,6 +203,12 @@ const register = (user_websocket_definitions = {}, app_instance = {}) => {
         console.log(`[Primary ${process.pid}] Received message from worker ${worker.id}:`, msg.message);
         // Broadcast to all workers (including the sender)
         share_message_across_cluster(msg.message);
+      } else if (msg.type === 'websocket_event') {
+        console.log(`[Primary ${process.pid}] Received websocket_event from worker ${worker.id}:`, msg);
+        // Forward websocket_event to all workers
+        for (const id in cluster.workers) {
+          cluster.workers[id].send(msg);
+        }
       }
     });
   } else {
@@ -212,9 +218,23 @@ const register = (user_websocket_definitions = {}, app_instance = {}) => {
       if (msg.type === 'websocket_message') {
         console.log(`[Worker ${process.pid}] Received message from primary:`, msg.message);
         websocket_message_emitter.emit('message', msg.message);
+      } else if (msg.type === 'websocket_event') {
+        console.log(`[Worker ${process.pid}] Received websocket_event from primary:`, msg);
+        // Handle websocket_event
+        const { emitter_id, event_name, payload } = msg;
+        const emitters = joystick?.emitters[emitter_id];
+        if (types.is_array(emitters)) {
+          for (let i = 0; i < emitters?.length; i += 1) {
+            const emitter_recipient = emitters[i];
+            emitter_recipient.emit(event_name, payload);
+          }
+        }
       }
     });
   }
 };
+
+// Export the share_message_across_cluster function so it can be used in the websockets module
+export { share_message_across_cluster };
 
 export default register;

@@ -1,1 +1,1 @@
-import o from"../../lib/types.js";const s=(i="",r="",m={})=>{const t=joystick?.emitters[i];if(o.is_array(t))for(let e=0;e<t?.length;e+=1)t[e].emit(r,m)};var p=s;export{p as default};
+import c from"../../lib/types.js";import r from"cluster";const m=(i="",s="",o={})=>{if(r.isPrimary)for(const t in r.workers)r.workers[t].send({type:"websocket_event",emitter_id:i,event_name:s,payload:o});const e=joystick?.emitters[i];if(c.is_array(e))for(let t=0;t<e?.length;t+=1)e[t].emit(s,o)};var k=m;export{k as default};
