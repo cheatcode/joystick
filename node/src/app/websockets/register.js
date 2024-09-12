@@ -184,6 +184,8 @@ const handle_shared_message = (wrapped_message) => {
   
   // Send to all connected WebSocket clients
   Object.values(websocket_servers).forEach(({ server }) => {
+		// TODO: This appears to be wrong as the messages are not being sent even though the
+		// event_emitter appears to be working?
     server.clients.forEach((client) => {
       if (client.readyState === WebSocket.OPEN) {
         console.log(`[Process ${process.pid}] Sending message to client`);

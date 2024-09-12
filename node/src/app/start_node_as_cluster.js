@@ -1,29 +1,57 @@
 import cluster from "cluster";
 import os from "os";
 
-const start_node_as_cluster = (callback = null) => {
+const setup_worker = (worker) => {
+  worker.on("message", (message) => {
+    // Broadcast message to all workers
+    for (const id in cluster.workers) {
+      if (cluster.workers[id].id !== worker.id) {
+        cluster.workers[id].send(message);
+      }
+    }
+    // Also send to primary if it has a send method
+    if (process.send) {
+      process.send(message);
+    }
+  });
+};
+
+const start_node_as_cluster = (start_app = null) => {
   const cpus = os.cpus().length;
 
   if (cluster.isPrimary) {
+    console.log(`Primary ${process.pid} is running`);
+
     for (let i = 0; i < cpus; i++) {
       const worker = cluster.fork(process.env);
-
-      worker.on("message", (message) => {
-        if (process.send) {
-          process.send(message);
-        }
-      });
-
-      process.on("message", (message) => {
-        worker.send(message);
-      });
+      setup_worker(worker);
     }
 
-    cluster.on("exit", (worker) => {
-      console.warn(`Worker ${worker.process.pid} died.`);
+    cluster.on("exit", (worker, code, signal) => {
+      console.warn(`Worker ${worker.process.pid} died. Restarting...`);
+      const new_worker = cluster.fork(process.env);
+      setup_worker(new_worker);
     });
-  } else {
-    callback();
+
+    // Handle messages received by the primary
+    process.on("message", (message) => {
+      // Broadcast to all workers
+      for (const id in cluster.workers) {
+        cluster.workers[id].send(message);
+      }
+    });
+
+    if (typeof start_app === 'function') {
+      start_app();
+    }
+  }
+
+  if (cluster.isWorker) {
+    console.log(`Worker ${process.pid} started`);
+
+    if (typeof start_app === 'function') {
+      start_app();
+    }
   }
 };
 
