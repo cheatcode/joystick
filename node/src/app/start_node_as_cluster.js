@@ -58,11 +58,6 @@ const start_node_as_cluster = (start_app = null) => {
     }
   } else if (cluster.isWorker) {
     console.log(`Worker ${process.pid} started`);
-
-    // Start the app in the worker process
-    if (typeof start_app === 'function') {
-      start_app();
-    }
   }
 };
 
