@@ -7,6 +7,18 @@ import cluster from 'cluster';
 
 const websocket_servers = {};
 
+// NOTE: Used to properly route websocket messages between cluster workers and the
+// master process where the websocket server lives.
+global.handle_websocket_message = (message) => {
+  const { emitter_name, event, payload } = message;
+  const emitters = joystick?.emitters[emitter_name];
+  if (Array.isArray(emitters)) {
+    emitters.forEach(emitter => {
+      emitter.emit(event, payload);
+    });
+  }
+};
+
 const handle_websocket_connection_upgrade = (express_server = {}, websocket_servers = {}) => {
   express_server.on('upgrade', (request, socket, head) => {
     if (request?.url?.includes('/api/_websockets')) {
