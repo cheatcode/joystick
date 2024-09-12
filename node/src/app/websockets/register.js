@@ -43,7 +43,6 @@ const handle_websocket_connection_events = (websocket_connection = {}, connectio
 
   websocket_connection.on("message", (message) => {
     const message_as_json = JSON.parse(message);
-    console.log(`[Process ${process.pid}] Received message:`, message_as_json);
 
     if (types.is_function(websocket_definition?.on_message)) {
       websocket_definition?.on_message(message_as_json, websocket_connection);
@@ -173,58 +172,42 @@ const get_websocket_servers = (user_websocket_definitions = {}) => {
 };
 
 const share_message_across_cluster = (message, emitter_name = null) => {
-  console.log(`[Process ${process.pid}] Sharing message across cluster:`, message);
   const wrapped_message = { message, emitter_name };
+
   if (cluster.isPrimary) {
-    // Primary process: share with all workers
     for (const id in cluster.workers) {
-      console.log(`[Primary ${process.pid}] Sending message to worker ${id}`);
       cluster.workers[id].send({ type: 'websocket_message', wrapped_message });
     }
     // Also handle locally
     handle_shared_message(wrapped_message);
   } else {
-    // Worker process: send to primary
-    console.log(`[Worker ${process.pid}] Sending message to primary`);
     process.send({ type: 'websocket_message', wrapped_message });
   }
 };
 
 const handle_shared_message = (wrapped_message) => {
-  console.log(`[Process ${process.pid}] Handling shared message:`, wrapped_message);
   const { message, emitter_name } = wrapped_message;
-  
-  // Send to all connected WebSocket clients
+
   Object.values(websocket_servers).forEach(({ server }) => {
-		// TODO: This appears to be wrong as the messages are not being sent even though the
-		// event_emitter appears to be working?
     server.clients.forEach((client) => {
       if (client.readyState === WebSocket.OPEN) {
-        console.log(`[Process ${process.pid}] Sending message to client`);
-        // Send the message as-is
         client.send(JSON.stringify(message));
       }
     });
   });
 
-  // Also emit to any registered emitters if emitter_name is provided
   if (emitter_name) {
     const emitters = joystick?.emitters[emitter_name];
     if (types.is_array(emitters)) {
-      console.log(`[Process ${process.pid}] Found ${emitters.length} emitters for ${emitter_name}`);
       for (let i = 0; i < emitters?.length; i += 1) {
         const emitter_recipient = emitters[i];
-        console.log(`[Process ${process.pid}] Emitting message to emitter ${i}`);
         emitter_recipient.emit('message', message);
       }
-    } else {
-      console.log(`[Process ${process.pid}] No emitters found for ${emitter_name}`);
     }
   }
 };
 
 const register = (user_websocket_definitions = {}, app_instance = {}) => {
-  console.log(`[Process ${process.pid}] Registering WebSocket servers`);
   const websocket_servers_to_create = get_websocket_servers(user_websocket_definitions);
   Object.assign(websocket_servers, websocket_servers_to_create);
   const websocket_server_entries = Object.entries(websocket_servers);
@@ -237,26 +220,19 @@ const register = (user_websocket_definitions = {}, app_instance = {}) => {
   handle_websocket_connection_upgrade(app_instance.express.server, websocket_servers);
 
   if (cluster.isPrimary) {
-    console.log(`[Primary ${process.pid}] Setting up message handling for primary`);
-    // Primary process: listen for messages from workers
     cluster.on('message', (worker, msg) => {
       if (msg.type === 'websocket_message') {
-        console.log(`[Primary ${process.pid}] Received message from worker ${worker.id}:`, msg.wrapped_message);
-        // Broadcast to all workers (including the sender)
+        // NOTE: Broadcast to all workers (including the sender).
         share_message_across_cluster(msg.wrapped_message.message, msg.wrapped_message.emitter_name);
       }
     });
   } else {
-    console.log(`[Worker ${process.pid}] Setting up message handling for worker`);
-    // Worker process: listen for messages from primary
     process.on('message', (msg) => {
       if (msg.type === 'websocket_message') {
-        console.log(`[Worker ${process.pid}] Received message from primary:`, msg.wrapped_message);
         handle_shared_message(msg.wrapped_message);
       }
     });
   }
 };
 
-export { share_message_across_cluster };
 export default register;

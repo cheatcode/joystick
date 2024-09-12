@@ -2,21 +2,25 @@ import types from "../../lib/types.js";
 import cluster from 'cluster';
 
 const emit_event = (emitter_id = '', event_name = '', payload = {}) => {
+  const message = {
+    type: 'websocket',
+    emitter_name: emitter_id,
+    event: event_name,
+    payload
+  };
+
   if (cluster.isPrimary) {
-    // In the primary process, we need to send the event to all workers
-    for (const id in cluster.workers) {
-      cluster.workers[id].send({
-        type: 'websocket_event',
-        emitter_id,
-        event_name,
-        payload
-      });
+    // If in primary process, handle the message directly
+    if (typeof global.handle_websocket_message === 'function') {
+      global.handle_websocket_message(message);
     }
+  } else {
+    // If in worker process, send the message to the primary
+    process.send(message);
   }
 
-  // Emit locally (this works for both primary and worker processes)
+  // Also emit locally
   const emitters = joystick?.emitters[emitter_id];
-
   if (types.is_array(emitters)) {
     for (let i = 0; i < emitters?.length; i += 1) {
       const emitter_recipient = emitters[i];

@@ -1,5 +1,4 @@
 import track_function_call from "../../test/track_function_call.js";
-import { share_message_across_cluster } from "./register.js";
 import cluster from "cluster";
 
 const websockets = (server_name = '') => {
@@ -15,12 +14,10 @@ const websockets = (server_name = '') => {
       };
 
       if (cluster.isPrimary) {
-        // If in primary process, handle the message directly
         if (typeof global.handle_websocket_message === 'function') {
           global.handle_websocket_message(message);
         }
       } else {
-        // If in worker process, send the message to the primary
         process.send(message);
       }
 
