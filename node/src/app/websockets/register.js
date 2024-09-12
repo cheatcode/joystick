@@ -5,7 +5,7 @@ import track_function_call from "../../test/track_function_call.js";
 import types from "../../lib/types.js";
 import cluster from 'cluster';
 
-const cluster_message_emitter = new EventEmitter();
+const websocket_message_emitter = new EventEmitter();
 
 const handle_websocket_connection_upgrade = (express_server = {}, websocket_servers = {}) => {
   express_server.on('upgrade', (request, socket, head) => {
@@ -43,6 +43,11 @@ const handle_websocket_connection_events = (websocket_connection = {}, connectio
     if (types.is_function(websocket_definition?.on_close)) {
       websocket_definition?.on_close(code, reason?.toString(), websocket_connection);
     }
+  });
+
+  // Add listener for shared messages
+  websocket_message_emitter.on('message', (shared_message) => {
+    websocket_connection.send(JSON.stringify(shared_message));
   });
 };
 
@@ -165,8 +170,8 @@ const share_message_across_cluster = (message) => {
     for (const id in cluster.workers) {
       cluster.workers[id].send({ type: 'websocket_message', message });
     }
-    // Also emit locally
-    cluster_message_emitter.emit('message', message);
+    // Also handle locally
+    websocket_message_emitter.emit('message', message);
   } else {
     // Worker process: send to primary
     process.send({ type: 'websocket_message', message });
@@ -188,27 +193,17 @@ const register = (user_websocket_definitions = {}, app_instance = {}) => {
     // Primary process: listen for messages from workers
     cluster.on('message', (worker, msg) => {
       if (msg.type === 'websocket_message') {
-        share_message_across_cluster(msg.message);
+        websocket_message_emitter.emit('message', msg.message);
       }
     });
   } else {
     // Worker process: listen for messages from primary
     process.on('message', (msg) => {
       if (msg.type === 'websocket_message') {
-        cluster_message_emitter.emit('message', msg.message);
+        websocket_message_emitter.emit('message', msg.message);
       }
     });
   }
-
-  // Listen for shared messages
-  cluster_message_emitter.on('message', (message) => {
-    // Emit the shared message to all relevant emitters
-    Object.values(joystick.emitters || {}).forEach(emitters => {
-      emitters.forEach(emitter => {
-        emitter.emit('message', message);
-      });
-    });
-  });
 };
 
 export default register;
