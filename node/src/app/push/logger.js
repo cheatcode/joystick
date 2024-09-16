@@ -2,8 +2,16 @@ import winston from 'winston';
 import fs from 'fs';
 import path_exists from '../../lib/path_exists.js';
 import generate_id from '../../lib/generate_id.js';
+import push_encrypt from '../../lib/push_encrypt.js';
 
 const { mkdir } = fs.promises;
+
+const encrypt_message = winston.format((info) => {
+  return {
+    ...info,
+    message: push_encrypt(info.message, process.env.PUSH_INSTANCE_TOKEN),
+  };
+});
 
 const push_logs = async () => {
   if (!(await path_exists('/root/push/logs'))) {
@@ -13,6 +21,7 @@ const push_logs = async () => {
   const logger = winston.createLogger({
     format: winston.format.combine(
       winston.format.timestamp(),
+      encrypt_message(),
       winston.format((info) => {
         info._id = generate_id(16);
         return info;
