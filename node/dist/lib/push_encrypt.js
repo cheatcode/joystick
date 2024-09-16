@@ -1,0 +1,1 @@
+import r from"crypto";const p="aes-256-ctr",s=16,i=(c,n)=>{const t=r.randomBytes(s),e=r.createCipheriv(p,n,t),o=Buffer.concat([e.update(c),e.final()]);return t.toString("hex")+":"+o.toString("hex")};var f=i;export{f as default};

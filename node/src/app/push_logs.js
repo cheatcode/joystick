@@ -1,6 +1,7 @@
 import winston from 'winston';
 import fs from 'fs';
 import path_exists from '../lib/path_exists.js';
+import push_encrypt from '../lib/push_encrypt.js';
 
 const { mkdir } = fs.promises;
 
@@ -12,6 +13,10 @@ const push_logs = async () => {
   const logger = winston.createLogger({
     format: winston.format.combine(
       winston.format.timestamp(),
+      winston.format(async (info) => {
+        info.message = push_encrypt(info.message, process.env.PUSH_INSTANCE_TOKEN);
+        return info;
+      }),
       winston.format.json(),
     ),
     transports: [
