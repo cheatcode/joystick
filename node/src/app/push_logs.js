@@ -9,7 +9,6 @@ const encrypt_message = winston.format((info) => {
   if (info.message) {
     info.message = push_encrypt(info.message, process.env.PUSH_INSTANCE_TOKEN);
   }
-
   return info;
 });
 
@@ -21,7 +20,7 @@ const push_logs = async () => {
   const logger = winston.createLogger({
     format: winston.format.combine(
       winston.format.timestamp(),
-      encrypt_message,
+      encrypt_message(),  // Note the parentheses here
       winston.format.json(),
     ),
     transports: [
