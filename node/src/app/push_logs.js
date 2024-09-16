@@ -21,7 +21,7 @@ const push_logs = async () => {
   const logger = winston.createLogger({
     format: winston.format.combine(
       winston.format.timestamp(),
-      encrypt_message(),
+      encrypt_message,
       winston.format.json(),
     ),
     transports: [
