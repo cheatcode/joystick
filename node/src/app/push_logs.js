@@ -13,7 +13,7 @@ const push_logs = async () => {
   const logger = winston.createLogger({
     format: winston.format.combine(
       winston.format.timestamp(),
-      winston.format(async (info) => {
+      winston.format((info) => {
         info.message = push_encrypt(info.message, process.env.PUSH_INSTANCE_TOKEN);
         return info;
       }),
