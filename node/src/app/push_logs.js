@@ -5,6 +5,14 @@ import push_encrypt from '../lib/push_encrypt.js';
 
 const { mkdir } = fs.promises;
 
+const encrypt_message = winston.format((info) => {
+  if (info.message) {
+    info.message = push_encrypt(info.message, process.env.PUSH_INSTANCE_TOKEN);
+  }
+
+  return info;
+});
+
 const push_logs = async () => {
   if (!(await path_exists('/root/push/logs'))) {
     await mkdir('/root/push/logs', { recursive: true });
@@ -13,10 +21,7 @@ const push_logs = async () => {
   const logger = winston.createLogger({
     format: winston.format.combine(
       winston.format.timestamp(),
-      winston.format((info) => {
-        info.message = push_encrypt(info.message, process.env.PUSH_INSTANCE_TOKEN);
-        return info;
-      }),
+      encrypt_message(),
       winston.format.json(),
     ),
     transports: [
