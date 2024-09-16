@@ -7,7 +7,19 @@ const { mkdir } = fs.promises;
 
 const encrypt_message = winston.format((info) => {
   if (info.message) {
-    info.message = push_encrypt(info.message, process.env.PUSH_INSTANCE_TOKEN);
+    // Debug: Log the original message
+    console.log('Original message:', info.message);
+    
+    // Ensure message is a string
+    const messageString = typeof info.message === 'string' 
+      ? info.message 
+      : JSON.stringify(info.message);
+    
+    // Apply encryption
+    info.message = push_encrypt(messageString, process.env.PUSH_INSTANCE_TOKEN);
+    
+    // Debug: Log the encrypted message
+    console.log('Encrypted message:', info.message);
   }
   return info;
 });
@@ -17,10 +29,13 @@ const push_logs = async () => {
     await mkdir('/root/push/logs', { recursive: true });
   }
 
+  // Debug: Log the encryption key (be careful with this in production!)
+  console.log('Encryption key:', process.env.PUSH_INSTANCE_TOKEN);
+
   const logger = winston.createLogger({
     format: winston.format.combine(
       winston.format.timestamp(),
-      encrypt_message(),  // Note the parentheses here
+      encrypt_message(),
       winston.format.json(),
     ),
     transports: [
@@ -33,12 +48,18 @@ const push_logs = async () => {
     ],
   });
 
+  // Wrap the original write methods
+  const originalStdoutWrite = process.stdout.write;
+  const originalStderrWrite = process.stderr.write;
+
   process.stdout.write = (data) => {
     logger.info(data);
+    return originalStdoutWrite.call(process.stdout, data);
   };
 
   process.stderr.write = (data) => {
     logger.error(data);
+    return originalStderrWrite.call(process.stderr, data);
   };
   
   process.on('uncaughtException', (error) => {
