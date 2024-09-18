@@ -1,5 +1,5 @@
 import os from 'os';
-import { execSync } from 'child_process';
+import si from 'systeminformation';
 
 const get_memory_usage = () => {
   const total_mem = os.totalmem();
@@ -15,16 +15,21 @@ const get_cpu_usage = () => {
   return ((1 - avg_idle / avg_total) * 100).toFixed(2);
 };
 
-const get_disk_usage = () => {
-  const df = execSync('df -h /').toString();
-  const usage = df.split('\n')[1].split(/\s+/)[4];
-  return usage;
+const get_disk_usage = async () => {
+  try {
+    const fsSize = await si.fsSize();
+    const rootFs = fsSize.find(fs => fs.mount === '/');
+    return rootFs ? `${rootFs.use}%` : 'N/A';
+  } catch (error) {
+    console.error('Error getting disk usage:', error);
+    return 'N/A';
+  }
 };
 
-const snapshot_metrics = () => ({
+const snapshot_metrics = async () => ({
   memory: `${get_memory_usage()}%`,
   cpu: `${get_cpu_usage()}%`,
-  disk: get_disk_usage()
+  disk: await get_disk_usage()
 });
 
 export default snapshot_metrics;
