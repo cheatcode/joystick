@@ -22,7 +22,7 @@ const push_logs = async () => {
   const logger = winston.createLogger({
     format: winston.format.combine(
       winston.format.timestamp(),
-      // encrypt_message(), Temp disable for debugging.
+      encrypt_message(),
       winston.format((info) => {
         info._id = generate_id(16);
         return info;
@@ -41,6 +41,8 @@ const push_logs = async () => {
 
   // Helper function to get the caller's file and line number
   function get_caller_info() {
+    if (process.env.PUSH_DEBUG !== 'true') return '';
+    
     const original_prepare_stack_trace = Error.prepareStackTrace;
     Error.prepareStackTrace = (_, stack) => stack;
     const stack = new Error().stack;
@@ -50,14 +52,19 @@ const push_logs = async () => {
     const caller = stack[2];
     const file_name = path.relative(process.cwd(), caller.getFileName());
     const line_number = caller.getLineNumber();
-    return `${file_name}:${line_number}`;
+    return `[${file_name}:${line_number}] `;
+  }
+
+  // Helper function to format log message
+  function format_log_message(data, caller_info) {
+    return caller_info + data;
   }
 
   // Modify stdout.write
   process.stdout.write = (function(write) {
     return function(data) {
       const caller_info = get_caller_info();
-      logger.info(`[${caller_info}] ${data}`);
+      logger.info(format_log_message(data, caller_info));
       write.apply(process.stdout, arguments);
     };
   })(process.stdout.write);
@@ -66,7 +73,7 @@ const push_logs = async () => {
   process.stderr.write = (function(write) {
     return function(data) {
       const caller_info = get_caller_info();
-      logger.error(`[${caller_info}] ${data}`);
+      logger.error(format_log_message(data, caller_info));
       write.apply(process.stderr, arguments);
     };
   })(process.stderr.write);
@@ -74,13 +81,13 @@ const push_logs = async () => {
   // Handle uncaught exceptions
   process.on('uncaughtException', (error) => {
     const caller_info = get_caller_info();
-    logger.error(`[${caller_info}] Uncaught Exception: ${error instanceof Error ? error.stack : error}`);
+    logger.error(format_log_message(`Uncaught Exception: ${error instanceof Error ? error.stack : error}`, caller_info));
   });
 
   // Handle unhandled rejections
   process.on('unhandledRejection', (error) => {
     const caller_info = get_caller_info();
-    logger.error(`[${caller_info}] Unhandled Rejection: ${error instanceof Error ? error.stack : error}`);
+    logger.error(format_log_message(`Unhandled Rejection: ${error instanceof Error ? error.stack : error}`, caller_info));
   });
 };
 
