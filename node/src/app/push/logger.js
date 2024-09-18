@@ -57,14 +57,16 @@ const push_logs = async () => {
 
   // Helper function to format log message
   function format_log_message(data, caller_info) {
-    return caller_info + data;
+    // Remove trailing newline if it exists
+    const trimmedData = data.endsWith('\n') ? data.slice(0, -1) : data;
+    return caller_info + trimmedData;
   }
 
   // Modify stdout.write
   process.stdout.write = (function(write) {
     return function(data) {
       const caller_info = get_caller_info();
-      logger.info(format_log_message(data, caller_info));
+      logger.info(format_log_message(data.toString(), caller_info));
       write.apply(process.stdout, arguments);
     };
   })(process.stdout.write);
@@ -73,7 +75,7 @@ const push_logs = async () => {
   process.stderr.write = (function(write) {
     return function(data) {
       const caller_info = get_caller_info();
-      logger.error(format_log_message(data, caller_info));
+      logger.error(format_log_message(data.toString(), caller_info));
       write.apply(process.stderr, arguments);
     };
   })(process.stderr.write);
