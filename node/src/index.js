@@ -1,4 +1,3 @@
-import fs from 'fs';
 import _accounts from './app/accounts/index.js';
 import _action from "./action/index.js";
 import _cache from './cache/index.js';
@@ -14,10 +13,7 @@ import generate_id from './lib/generate_id.js';
 import get_origin from './lib/get_origin.js';
 import load_settings from './app/settings/load.js';
 import node_path_polyfills from './lib/node_path_polyfills.js';
-import path_exists from './lib/path_exists.js';
 import send_email from './app/email/send.js';
-
-const { readFile } = fs.promises;
 
 // NOTE: Ensure backwards compatibility for existing apps by offering
 // original camelCase versions of methods.
@@ -82,6 +78,6 @@ const joystick = {
 
 global.joystick = joystick;
 
-process.env.ROOT_URL = settings?.config?.ROOT_URL || process.env.ROOT_URL;
+process.env.ROOT_URL = settings?.config?.ROOT_URL || process.env.ROOT_URL || `http://localhost:${process.env.PORT}`;
 
 export default joystick;

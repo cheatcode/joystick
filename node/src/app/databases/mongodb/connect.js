@@ -18,6 +18,7 @@ const connect_mongodb = async (database_settings = {}, database_port = 2610) => 
     const parsed_uri = mongo_uri.parseUri(connection_string);
 
     const connection_options = {
+      maxIdleTimeMS: 15000,
       ssl: !['development', 'test'].includes(process.env.NODE_ENV),
       ...(database_settings?.options || {})
     };
