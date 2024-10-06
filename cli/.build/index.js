@@ -46,7 +46,6 @@ const files = filesToBuild.map((path) => {
 
   const copyPaths = [
     getPlatformSafePath("commands/create/template"),
-    getPlatformSafePath("commands/push_v2/Dockerfile"), // TODO: Convert to just push/Dockerfile.
   ];
 
   const isCopyPath = copyPaths.some((copyPath) => {

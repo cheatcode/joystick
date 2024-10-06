@@ -1,2 +1,0 @@
-import n from"node-fetch";const t=(a={})=>n(`${a?.push_provision_domain}/api/deployments/${a?.push_config?.domain}/validate`,{method:"POST",headers:{"Content-Type":"application/json","x-push-session-token":a?.session_token},body:JSON.stringify(a?.push_config)})?.then(async e=>(await e.json())?.data).catch(e=>{console.warn(e)});var i=t;export{i as default};
-//# sourceMappingURL=validate_deployment.js.map

@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["../../../src/commands/push_v2/handle_initial_deployment.js"],
-  "sourcesContent": ["import fetch from \"node-fetch\";\n\nconst handle_initial_deployment = async (options = {}) => {\n  return fetch(`${options?.push_provision_domain}/api/deployments/${options?.deployment?.domain}`, {\n   method: \"POST\",\n   headers: {\n     \"x-push-session-token\": options?.session_token,\n     'Content-Type': 'application/json',\n   },\n   body: JSON.stringify({\n     environment: options?.environment,\n     build_timestamp: options?.build_timestamp,\n     domain: options?.deployment?.domain,\n     deployment_id: options?.deployment?._id,\n   }),\n  }).then(async (response) => {\n   const data = await response.json();\n   return data?.data;\n  }).catch((error) => {\n    console.warn(error);\n  });\n};\n\nexport default handle_initial_deployment;\n"],
-  "mappings": "AAAA,OAAOA,MAAW,aAElB,MAAMC,EAA4B,MAAOC,EAAU,CAAC,IAC3CF,EAAM,GAAGE,GAAS,qBAAqB,oBAAoBA,GAAS,YAAY,MAAM,GAAI,CAChG,OAAQ,OACR,QAAS,CACP,uBAAwBA,GAAS,cACjC,eAAgB,kBAClB,EACA,KAAM,KAAK,UAAU,CACnB,YAAaA,GAAS,YACtB,gBAAiBA,GAAS,gBAC1B,OAAQA,GAAS,YAAY,OAC7B,cAAeA,GAAS,YAAY,GACtC,CAAC,CACF,CAAC,EAAE,KAAK,MAAOC,IACD,MAAMA,EAAS,KAAK,IACpB,IACb,EAAE,MAAOC,GAAU,CAClB,QAAQ,KAAKA,CAAK,CACpB,CAAC,EAGH,IAAOC,EAAQJ",
-  "names": ["fetch", "handle_initial_deployment", "options", "response", "error", "handle_initial_deployment_default"]
-}
