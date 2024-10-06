@@ -15,7 +15,7 @@ const commands = {
   help,
   logout,
   push,
-  push_v2,
+  // push_v2,
   start,
   test,
   update,

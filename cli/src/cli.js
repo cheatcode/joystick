@@ -69,14 +69,14 @@ if (commands_called.includes('push')) {
 }
 
 // NOTE: Temporary. Eventually will replace block above.
-if (commands_called.includes('push_v2')) {
-  const args = parse_args(commands.push_v2.args);
-  const options = parse_options(commands.push_v2.options);
+// if (commands_called.includes('push_v2')) {
+//   const args = parse_args(commands.push_v2.args);
+//   const options = parse_options(commands.push_v2.options);
 
-  if (commands.push_v2.command) {
-    commands.push_v2.command(args, options);
-  }
-}
+//   if (commands.push_v2.command) {
+//     commands.push_v2.command(args, options);
+//   }
+// }
 
 if (commands_called.includes('start')) {
   const args = parse_args(commands.start.args);

@@ -21,7 +21,7 @@ const read_settings_file = async (environment = '') => {
     return process.exit(0);
   }
 
-  return readFile(settings_file_name, 'utf-8');
+  return readFile(settings_file_name);
 };
 
 const get_settings_file = async (options) => {

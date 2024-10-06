@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../../src/commands/push_old/get_deployment.js"],
+  "sourcesContent": ["import fetch from 'node-fetch';\n\nconst get_deployment = (options = {}) => {\n\treturn fetch(`${options?.push_provision_domain}/api/deployments/${options?.domain}`, {\n\t\tmethod: 'GET',\n\t\theaders: {\n\t\t\t'x-push-session-token': options?.session_token,\n\t\t\tAccept: 'application/json',\n\t\t},\n\t})?.then(async (response) => {\n\t\t// NOTE: We only care about the data in the response here so just return it.\n\t\tconst data = await response.json();\n\t\treturn data?.data;\n\t}).catch((error) => {\n\t\tconsole.warn(error);\n\t});\n};\n\nexport default get_deployment;\n"],
+  "mappings": "AAAA,OAAOA,MAAW,aAElB,MAAMC,EAAiB,CAACC,EAAU,CAAC,IAC3BF,EAAM,GAAGE,GAAS,qBAAqB,oBAAoBA,GAAS,MAAM,GAAI,CACpF,OAAQ,MACR,QAAS,CACR,uBAAwBA,GAAS,cACjC,OAAQ,kBACT,CACD,CAAC,GAAG,KAAK,MAAOC,IAEF,MAAMA,EAAS,KAAK,IACpB,IACb,EAAE,MAAOC,GAAU,CACnB,QAAQ,KAAKA,CAAK,CACnB,CAAC,EAGF,IAAOC,EAAQJ",
+  "names": ["fetch", "get_deployment", "options", "response", "error", "get_deployment_default"]
+}
