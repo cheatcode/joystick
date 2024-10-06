@@ -85,7 +85,7 @@ const push = async (args = {}, options = {}) => {
 
 	console.log({ deployment });
 
-	process.loader.print('Deploying...')
+	process.loader.print('Deploying test...')
 	console.log(deployment?.intial_deployment_completed ? `\nMonitor your deployment at ${push_domain}/deployments/${deployment?._id}.\n` : `\nFinish your deployment's setup at ${push_domain}/deployments/${deployment?._id}/setup.\n`);
 };
 
