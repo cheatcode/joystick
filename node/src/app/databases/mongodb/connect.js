@@ -27,7 +27,7 @@ const connect_mongodb = async (database_settings = {}, database_port = 2610) => 
       connection_options.ca = fs.readFileSync(database_settings?.options?.ca);
     }
 
-    console.log({ connection_string, connection_options });
+    console.log({ connection_string, connection_options, parsed_uri });
 
     const client = await MongoClient.connect(connection_string, connection_options);
     const db = client.db(parsed_uri.db);
