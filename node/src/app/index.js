@@ -288,7 +288,6 @@ class App {
 		// order plays nice with things like tests.
 		this.register_push();
 		await this.connect_databases();
-		console.log('AFTER DB START');
 		this.register_caches();
 		this.register_cron_jobs();
 		this.register_queues();
