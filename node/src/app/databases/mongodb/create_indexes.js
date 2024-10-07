@@ -27,7 +27,11 @@ const create_indexes = async (database_types_to_index = []) => {
 	for (let i = 0; i < database_types_to_index?.length; i += 1) {
 		const database_type = database_types_to_index[i];
 		if (types.is_function(indexes[database_type])) {
-			await indexes[database_type]();
+			try {
+				await indexes[database_type]();
+			} catch (exception) {
+				console.warn(exception);
+			}
 		}
 	}
 };

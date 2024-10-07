@@ -72,37 +72,33 @@ class App {
 	}
 
 	async connect_databases() {
-		try {
-			const databases_from_settings = app_settings?.config?.databases;
+		const databases_from_settings = app_settings?.config?.databases;
 
-			for (let i = 0; i < databases_from_settings?.length; i += 1) {
-				const database_from_settings = databases_from_settings[i];
-				const database_port = parseInt(process.env.PORT, 10) + 10 + i;
-				const has_multiple_of_provider = (databases_from_settings?.filter((database) => database_from_settings?.provider === database?.provider))?.length > 1;
-	
-				await register_database(database_from_settings, database_port, has_multiple_of_provider);
-			}
-	
-			if (databases_from_settings?.length > 0) {
-				const queues_database = get_target_database_connection('queues');
-				const sessions_database = get_target_database_connection('sessions');
-				const users_database = get_target_database_connection('users');
-	
-				process.databases._queues = queues_database?.connection;
-				process.databases._sessions = sessions_database?.connection;
-				process.databases._users = users_database?.connection;
-	
-				const internal_database_targets = [queues_database, sessions_database, users_database];
-	
-				const mongodb_targets = internal_database_targets?.filter((target) => target?.provider === 'mongodb')?.map((target) => target?.database_type);
-				await create_mongodb_indexes(mongodb_targets);
-	
-				const postgresql_targets = internal_database_targets?.filter((target) => target?.provider === 'postgresql')?.map((target) => target?.database_type);
-				await create_postgresql_tables(postgresql_targets);
-				await create_postgresql_indexes(postgresql_targets);
-			}
-		} catch (exception) {
-			console.warn(exception);
+		for (let i = 0; i < databases_from_settings?.length; i += 1) {
+			const database_from_settings = databases_from_settings[i];
+      const database_port = parseInt(process.env.PORT, 10) + 10 + i;
+			const has_multiple_of_provider = (databases_from_settings?.filter((database) => database_from_settings?.provider === database?.provider))?.length > 1;
+
+			await register_database(database_from_settings, database_port, has_multiple_of_provider);
+		}
+
+		if (databases_from_settings?.length > 0) {
+			const queues_database = get_target_database_connection('queues');
+			const sessions_database = get_target_database_connection('sessions');
+			const users_database = get_target_database_connection('users');
+
+	    process.databases._queues = queues_database?.connection;
+	    process.databases._sessions = sessions_database?.connection;
+	    process.databases._users = users_database?.connection;
+
+	    const internal_database_targets = [queues_database, sessions_database, users_database];
+
+	    const mongodb_targets = internal_database_targets?.filter((target) => target?.provider === 'mongodb')?.map((target) => target?.database_type);
+	    await create_mongodb_indexes(mongodb_targets);
+
+	    const postgresql_targets = internal_database_targets?.filter((target) => target?.provider === 'postgresql')?.map((target) => target?.database_type);
+	    await create_postgresql_tables(postgresql_targets);
+	    await create_postgresql_indexes(postgresql_targets);
 		}
 	}
 

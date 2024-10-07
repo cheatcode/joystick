@@ -27,11 +27,8 @@ const connect_mongodb = async (database_settings = {}, database_port = 2610) => 
       connection_options.ca = fs.readFileSync(database_settings?.options?.ca);
     }
 
-    
     const client = await MongoClient.connect(connection_string, connection_options);
     const db = client.db(parsed_uri.db);
-    
-    console.log({ client, db });
 
     return Promise.resolve(db);
   } catch (exception) {
