@@ -6,22 +6,22 @@ const indexes = {
 	// to account for developer customization options.
 	sessions: async () => {
 		try {
-			// await process.databases._sessions?.collection('sessions').createIndex({ createdAt: 1 }, { expireAfterSeconds: 3600, background: true });
+			await process.databases._sessions?.collection('sessions').createIndex({ createdAt: 1 }, { expireAfterSeconds: 3600, background: true });
 		} catch (exception) {
-			console.log(exception);
+			console.warn(exception);
 		}
 	},
 	users: async () => {
 		try {
 			await process.databases._users?.collection('users').createIndex({ emailAddress: 1 }, { background: true, unique: true });
-			// await process.databases._users?.collection('users').createIndex({ username: 1 }, { background: true, unique: true });
-			// await process.databases._users?.collection('users').createIndex({ 'sessions.token': 1 }, { background: true });
-			// await process.databases._users?.collection('users').createIndex({ 'passwordResetTokens.token': 1 }, { background: true });
-			// await process.databases._users?.collection('users').createIndex({ 'passwordResetTokens.token': 1, _id: 1 }, { background: true });
-			// await process.databases._users?.collection('users').createIndex({ roles: 1 }, { background: true });
-			// await process.databases._users?.collection('users').createIndex({ roles: 1, _id: 1 }, { background: true });
-			// await process.databases._users?.collection('roles').createIndex({ role: 1 }, { background: true });
-			// await process.databases._users?.collection('roles').createIndex({ role: 1, userId: 1 }, { background: true });
+			await process.databases._users?.collection('users').createIndex({ username: 1 }, { background: true, unique: true });
+			await process.databases._users?.collection('users').createIndex({ 'sessions.token': 1 }, { background: true });
+			await process.databases._users?.collection('users').createIndex({ 'passwordResetTokens.token': 1 }, { background: true });
+			await process.databases._users?.collection('users').createIndex({ 'passwordResetTokens.token': 1, _id: 1 }, { background: true });
+			await process.databases._users?.collection('users').createIndex({ roles: 1 }, { background: true });
+			await process.databases._users?.collection('users').createIndex({ roles: 1, _id: 1 }, { background: true });
+			await process.databases._users?.collection('roles').createIndex({ role: 1 }, { background: true });
+			await process.databases._users?.collection('roles').createIndex({ role: 1, userId: 1 }, { background: true });
 		} catch (exception) {
 			console.warn(exception);
 		}		
