@@ -19,7 +19,7 @@ const connect_mongodb = async (database_settings = {}, database_port = 2610) => 
 
     const connection_options = {
       maxIdleTimeMS: 15000,
-      tls: !['development', 'test'].includes(process.env.NODE_ENV),
+      ssl: !['development', 'test'].includes(process.env.NODE_ENV),
       ...(database_settings?.options || {})
     };
 
