@@ -8,7 +8,7 @@ const indexes = {
 		try {
 			await process.databases._sessions?.collection('sessions').createIndex({ createdAt: 1 }, { expireAfterSeconds: 3600, background: true });
 		} catch (exception) {
-			console.warn(exception);
+			console.log(exception);
 		}
 	},
 	users: async () => {
