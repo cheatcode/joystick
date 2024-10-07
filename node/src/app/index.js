@@ -94,7 +94,9 @@ class App {
 	    const internal_database_targets = [queues_database, sessions_database, users_database];
 
 	    const mongodb_targets = internal_database_targets?.filter((target) => target?.provider === 'mongodb')?.map((target) => target?.database_type);
+			console.log('PRE INDEX');
 	    await create_mongodb_indexes(mongodb_targets);
+			console.log('POST INDEX');
 
 	    const postgresql_targets = internal_database_targets?.filter((target) => target?.provider === 'postgresql')?.map((target) => target?.database_type);
 	    await create_postgresql_tables(postgresql_targets);
