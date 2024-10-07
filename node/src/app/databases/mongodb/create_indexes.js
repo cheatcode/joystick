@@ -5,8 +5,8 @@ const indexes = {
   // app/databases/queries/<provider>/queues.js initialize_database function
   // to account for developer customization options.
   sessions: async () => {
-    await process.databases._sessions?.collection('sessions').createIndex('sessions', { _id: 1 });
-    await process.databases._sessions?.collection('sessions').createIndex('sessions', { createdAt: 1 }, { expireAfterSeconds: 3600 });
+    await process.databases._sessions?.collection('sessions').createIndex({ _id: 1 });
+    await process.databases._sessions?.collection('sessions').createIndex({ createdAt: 1 }, { expireAfterSeconds: 3600 });
   },
   users: async () => {
     // Users
