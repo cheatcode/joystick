@@ -6,7 +6,7 @@ const validate_session = async (req = null, res = null) => {
     session_id: req?.cookies?.joystick_session,
   });
 
-  if (csrf_token === 'joystick_test') {
+  if (csrf_token === 'joystick_test' && process.env.NODE_ENV === 'test') {
     return true;
   }
 
