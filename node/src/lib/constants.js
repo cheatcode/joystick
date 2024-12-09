@@ -8,7 +8,6 @@ export const NODE_CRON_EVERY_THIRTY_SECONDS = '*/30 * * * * *';
 export const NODE_CRON_EVERY_MINUTE = '* * * * *';
 
 const constants = {
-	HTML_ENTITY_MAP,
 	KILOBYTE,
 	MEGABYTE,
 };
