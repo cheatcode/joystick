@@ -1,1 +1,1 @@
-import o from"../databases/queries/sessions.js";const n=async(e=null,r=null)=>{const t=e?.headers["x-joystick-csrf"],s=await o("get_session",{session_id:e?.cookies?.joystick_session});return t==="joystick_test"?!0:!(!s||s&&s.csrf!==t)};var c=n;export{c as default};
+import o from"../databases/queries/sessions.js";const n=async(e=null,r=null)=>{const t=e?.headers["x-joystick-csrf"],s=await o("get_session",{session_id:e?.cookies?.joystick_session});return t==="joystick_test"&&process.env.NODE_ENV==="test"?!0:!(!s||s&&s.csrf!==t)};var c=n;export{c as default};
