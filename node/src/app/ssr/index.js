@@ -108,6 +108,25 @@ const ssr = async (ssr_options = {}) => {
 	const email_base_css = ssr_options?.is_email ? await get_base_css_for_email(ssr_options?.email_options?.base_html_name) : null;
 	const email_base_html = ssr_options?.is_email ? await get_base_html_for_email(ssr_options?.email_options?.base_html_name) : null;
 
+	let mod_css = '';
+
+	if (ssr?.mod?.theme) {
+		const plus_css_path = `private/mod/mod-${ssr?.mod?.theme}-plus.min.css`;
+		const free_css_path = `private/mod/mod-${ssr?.mod?.theme}.min.css`;
+		const has_plus_css = await path_exists(plus_css_path);
+		const has_free_css = await path_exists(free_css_path);
+
+		if (!has_plus_css && !has_free_css) {
+			console.warn(`You passed a mod options object to a res.render() call but Mod could not be found in your app. Follow the instructions here to ensure Joystick can find Mod's CSS files in your app: https://docs.cheatcode.co/mod/getting-started/using-mod-with-joystick`)
+			return;
+		}
+
+		const css_to_tree_shake = await readFile(has_plus_css ? plus_css_path : free_css_path, 'utf-8');
+		const tree_shaked_css = await tree_shake_mod_css(ssr_render?.html, css_to_tree_shake);
+
+		mod_css = tree_shaked_css;
+	}
+
 	const html = build_html_response({
 		is_email: ssr_options?.is_email,
 		attributes: ssr_options?.attributes,
@@ -116,7 +135,7 @@ const ssr = async (ssr_options = {}) => {
 		css: ssr_options?.is_email ? `
 			${email_base_css}
 			${ssr_render?.css}
-		` : ssr_render?.css,
+		` : `${mod_css}\n${ssr_render?.css}`, // Concat final CSS here?
 		data: Object.entries(ssr_render?.data || {})?.reduce((encoded = {}, [key, value]) => {
 		  encoded[key] = value ? Buffer.from(JSON.stringify(value), 'utf8').toString('base64') : '';
 		  return encoded;

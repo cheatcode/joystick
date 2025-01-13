@@ -74,7 +74,6 @@ const render_middleware = (req, res, next, app_instance = {}) => {
     });
 
     const url = get_url(req);
-
     const html = await ssr({
       api_schema: app_instance?.options?.api,
       attributes: render_options?.attributes,
@@ -91,6 +90,9 @@ const render_middleware = (req, res, next, app_instance = {}) => {
       render_component_path: sanitized_render_component_path,
       render_layout_path: sanitized_render_layout_path,
       req,
+      // NOTE: If the developer has passed mod settings, assume we're going to tree-shake
+      // Mod's CSS during SSR.
+      mod: render_options?.mod || null,
     });
 
     return res.status(200).send(html);
