@@ -111,9 +111,9 @@ const ssr = async (ssr_options = {}) => {
 
 	let mod_css = '';
 
-	if (ssr?.mod?.theme) {
-		const plus_css_path = `private/mod/mod-${ssr?.mod?.theme}-plus.min.css`;
-		const free_css_path = `private/mod/mod-${ssr?.mod?.theme}.min.css`;
+	if (ssr_options?.mod?.theme) {
+		const plus_css_path = `private/mod/mod-${ssr_options?.mod?.theme}-plus.min.css`;
+		const free_css_path = `private/mod/mod-${ssr_options?.mod?.theme}.min.css`;
 		const has_plus_css = await path_exists(plus_css_path);
 		const has_free_css = await path_exists(free_css_path);
 
