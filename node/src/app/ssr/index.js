@@ -20,7 +20,10 @@ const { document: linkedom_document } = parseHTML('<div></div>');
 
 const build_html_response_for_browser = (options = {}) => {
 	return options?.base_html
-		.replace('${css}', `<style type="text/css" js-css>${options?.css}</style>`)
+		.replace('${css}', `
+			<style type="text/css" js-css>${options?.css}</style>
+			${options?.mod_css ? `<style type="text/css" mod-css>${options?.mod_css}</style>` : ''}
+		`)
 		.replace(`<div id="app"></div>`, `
 			<div id="app">${options?.html}</div>
 			<script>
@@ -136,7 +139,8 @@ const ssr = async (ssr_options = {}) => {
 		css: ssr_options?.is_email ? `
 			${email_base_css}
 			${ssr_render?.css}
-		` : `${mod_css}\n${ssr_render?.css}`, // Concat final CSS here?
+		` : ssr_render?.css, // Concat final CSS here?
+		mod_css,
 		data: Object.entries(ssr_render?.data || {})?.reduce((encoded = {}, [key, value]) => {
 		  encoded[key] = value ? Buffer.from(JSON.stringify(value), 'utf8').toString('base64') : '';
 		  return encoded;
