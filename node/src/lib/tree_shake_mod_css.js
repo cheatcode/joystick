@@ -10,10 +10,14 @@ const purge_css_string = async (html = '', css = '') => {
       raw: css,
     }],
     safelist: [
-      /^\[data-mod-theme=("|')?light\1?\]$/,
-      /^\[data-mod-theme=("|')?dark\1?\]$/,
-      /^\.mod-modal$/,
-      /^\.mod-dialog$/
+      '[data-mod-theme="light"]',
+      '[data-mod-theme=\'light\']',
+      '[data-mod-theme=light]',
+      '[data-mod-theme="dark"]',
+      '[data-mod-theme=\'dark\']',
+      '[data-mod-theme=dark]',
+      '.mod-modal',
+      '.mod-dialog'
     ]
   });
   
