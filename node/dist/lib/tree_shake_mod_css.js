@@ -1,1 +1,1 @@
-import{PurgeCSS as s}from"purgecss";const n=async(t="",e="")=>{const r=await new s().purge({content:[{raw:t,extension:"html"}],css:[{raw:e}]});return r[0]&&r[0].css||""};var o=n;export{o as default};
+import{PurgeCSS as r}from"purgecss";const s=async(e="",a="")=>{const t=await new r().purge({content:[{raw:e,extension:"html"}],css:[{raw:a}],safelist:[/\[data-mod-theme=("|')?light\1?\]/,/\[data-mod-theme=("|')?dark\1?\]/,/mod-modal/,/mod-dialog/]});return t[0]&&t[0].css||""};var d=s;export{d as default};

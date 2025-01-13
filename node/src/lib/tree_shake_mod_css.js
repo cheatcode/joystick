@@ -8,7 +8,13 @@ const purge_css_string = async (html = '', css = '') => {
     }],
     css: [{
       raw: css,
-    }]
+    }],
+    safelist: [
+      /\[data-mod-theme=("|')?light\1?\]/,
+      /\[data-mod-theme=("|')?dark\1?\]/,
+      /mod-modal/,
+      /mod-dialog/
+    ]
   });
   
   return purge_result[0] && purge_result[0].css || '';
