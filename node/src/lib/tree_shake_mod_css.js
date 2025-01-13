@@ -1,4 +1,4 @@
-import PurgeCSS from 'purgecss'
+import PurgeCSS from 'purgecss';
 
 const purge_css_string = async (html = '', css = '') => {
   const purge_result = await new PurgeCSS().purge({
