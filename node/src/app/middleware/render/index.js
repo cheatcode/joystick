@@ -95,6 +95,7 @@ const render_middleware = (req, res, next, app_instance = {}) => {
       // via the res.render() options and fall back to a value in cookies (default = light).
       mod: {
         ...(app_instance?.mod || {}),
+        keep: render_options?.mod?.keep || [],
         theme: render_options?.mod?.theme || req?.cookies?.theme || 'light',
       },
     });
