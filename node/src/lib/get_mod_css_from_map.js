@@ -59,7 +59,7 @@ const get_mod_css_from_map = (map = {}, keep_list = [], theme = 'light') => {
   if (map.components) {
     for (let i = 0; i < keep_list.length; i++) {
       const component_name = keep_list[i];
-      if (map.components[component_name][theme]) {
+      if (map.components[component_name] && map.components[component_name][theme]) {
         css += map.components[component_name][theme];
       }
     }
