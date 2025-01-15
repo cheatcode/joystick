@@ -1,37 +1,14 @@
 const filter_icons_css = (icons_css = '', required_icons = []) => {
-  const lines = icons_css.split('\n')
-  const output = []
-  
-  // Always include font-face declarations and base icon rules
-  let include_current = false
-  
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i].trim()
-    
-    // Start including when we hit a font-face or base icon rule
-    if (line.startsWith('@font-face') || 
-        line.startsWith('[class^="mod-icon-"]') ||
-        line.startsWith('[class*=" mod-icon-"]')) {
-      include_current = true
-    }
-    
-    // Include specific icon classes that are required
-    if (line.startsWith('.mod-icon-') && required_icons.length > 0) {
-      const icon_name = line.match(/mod-icon-([^:]+)/)?.[1]
-      include_current = required_icons.includes(icon_name)
-    }
-    
-    // Stop including when we hit a closing brace
-    if (line === '}') {
-      include_current = false
-    }
-    
-    if (include_current) {
-      output.push(lines[i])
-    }
+  // If no icons required, return empty string
+  if (required_icons.length === 0) {
+    return ''
   }
   
-  return output.join('\n')
+  // Create regex pattern to match unwanted icon selectors
+  const keep_icons = required_icons.map(name => `mod-icon-${name}`).join('|')
+  const remove_pattern = new RegExp(`\\.mod-icon-(?!(${keep_icons})[^{]+){[^}]+}`, 'g')
+  
+  return icons_css.replace(remove_pattern, '')
 }
 
 const get_mod_css_from_map = (map = {}, keep_list = [], theme = 'light') => {
