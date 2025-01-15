@@ -114,22 +114,24 @@ const ssr = async (ssr_options = {}) => {
 
 	let mod_css = '';
 
-	if (ssr_options?.mod?.theme) {
-		const plus_css_path = `private/mod/mod-${ssr_options?.mod?.theme}-plus.min.css`;
-		const free_css_path = `private/mod/mod-${ssr_options?.mod?.theme}.min.css`;
-		const has_plus_css = await path_exists(plus_css_path);
-		const has_free_css = await path_exists(free_css_path);
+	const theme = ssr_options?.mod?.theme;
+	const has_plus_css = ssr_options?.mod?.plus?.css?.light || ssr_options?.mod?.plus?.css?.dark;
+	const has_free_css = ssr_options?.mod?.free?.css?.light || ssr_options?.mod?.free?.css?.dark;
 
-		if (!has_plus_css && !has_free_css) {
-			console.warn(`You passed a mod options object to a res.render() call but Mod could not be found in your app. Follow the instructions here to ensure Joystick can find Mod's CSS files in your app: https://docs.cheatcode.co/mod/getting-started/using-mod-with-joystick`)
-			return;
-		}
-
-		const css_to_tree_shake = await readFile(has_plus_css ? plus_css_path : free_css_path, 'utf-8');
-		const tree_shaked_css = await tree_shake_mod_css(ssr_render?.html, css_to_tree_shake);
-
-		mod_css = tree_shaked_css;
+	if ((has_plus_css || has_free_css) && !component_instance?.mod) {
+		// NOTE: Just load the entirety of Mod as we don't know what to cut out if they don't tell us.
+		const css_to_load = (ssr_options?.mod?.plus?.css || ssr_options?.mod?.free?.css)[theme];
+		mod_css = await readFile(css_to_load, 'utf-8');
 	}
+
+	if (((has_plus_css && !!ssr_options?.mod?.plus?.map) || (has_free_css && !!ssr_options?.mod?.free?.map)) && component_instance?.mod) {
+		const map = ssr_options?.mod?.plus?.map || ssr_options?.mod?.free?.map;
+		const css_from_map = get_mod_css_from_map(map, component_instance?.mod?.keep || [], theme);
+
+		mod_css += css_from_map;
+		// Mod Base + Theme + Purged Icons + CSS From Map.
+	}
+
 
 	const html = build_html_response({
 		is_email: ssr_options?.is_email,

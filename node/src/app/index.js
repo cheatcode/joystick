@@ -1,4 +1,5 @@
 import http from 'http';
+import fs from 'fs';
 import api_accounts_authenticated from "./api/accounts/authenticated.js";
 import api_accounts_login from "./api/accounts/login.js";
 import api_accounts_logout from "./api/accounts/logout.js";
@@ -44,6 +45,7 @@ import start_node_as_cluster from "./start_node_as_cluster.js";
 import strip_preceeding_slash from '../lib/strip_preceeding_slash.js';
 import types from "../lib/types.js";
 
+const { readFile } = fs.promises;
 const app_settings = load_settings();
 
 class App {
@@ -229,6 +231,35 @@ class App {
     }
   }
 
+	async register_mod() {
+		// NOTE: Load Mod's CSS and maps into memory on server startup so they're readily
+		// accessible during SSR (skips the need to reload on each SSR attempt).
+		const mod_free_light_path = `private/mod/mod-light.min.css`;
+		const mod_free_dark_path = `private/mod/mod-dark.min.css`;
+		const mod_free_map_path = `private/mod/mod_css_map_free.json`;
+
+		const mod_plus_light_path = `private/mod/mod-light-plus.min.css`;
+		const mod_plus_dark_path = `private/mod/mod-dark-plus.min.css`;
+		const mod_plus_map_path = `private/mod/mod_css_map_plus.json`;
+
+		this.mod = {
+			free: {
+				css: {
+					light: await path_exists(mod_free_light_path) ? await readFile(mod_free_light_path) : '',
+					dark: await path_exists(mod_free_dark_path) ? await readFile(mod_free_dark_path) : '',
+				},
+				map: await path_exists(mod_free_map_path) ? JSON.parse(await readFile(mod_free_map_path)) : '',
+			},
+			plus: {
+				css: {
+					light: await path_exists(mod_plus_light_path) ? await readFile(mod_plus_light_path) : '',
+					dark: await path_exists(mod_plus_dark_path) ? await readFile(mod_plus_dark_path) : '',
+				},
+				map: await path_exists(mod_plus_map_path) ? JSON.parse(await readFile(mod_plus_map_path)) : '',
+			},			
+		};
+	}
+
   async register_push() {
 		if (process.env.NODE_ENV !== "development" && process.env.IS_PUSH_DEPLOYED) {
 			await push_logger();
@@ -301,6 +332,8 @@ class App {
 		this.register_uploaders();
 		this.register_fixtures();
 		this.register_indexes();
+		// NOTE: Always keep Mod stuff last as we want to prioritize server-side stuff.
+		this.register_mod();
 	}
 
 	start_express() {

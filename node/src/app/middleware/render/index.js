@@ -90,9 +90,13 @@ const render_middleware = (req, res, next, app_instance = {}) => {
       render_component_path: sanitized_render_component_path,
       render_layout_path: sanitized_render_layout_path,
       req,
-      // NOTE: If the developer has passed mod settings, assume we're going to tree-shake
-      // Mod's CSS during SSR.
-      mod: render_options?.mod || null,
+      // NOTE: If we detected a copy of Mod in the app at startup, we've loaded its CSS and map
+      // into memory and can use it for tree-shaking during SSR. For theme, prefer the one passed
+      // via the res.render() options and fall back to a value in cookies (default = light).
+      mod: {
+        ...(app_instance?.mod || {}),
+        theme: render_options?.mod?.theme || req?.cookies?.theme || 'light',
+      },
     });
 
     return res.status(200).send(html);

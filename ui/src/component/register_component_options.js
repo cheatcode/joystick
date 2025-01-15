@@ -30,6 +30,7 @@ const register_component_options = (component_instance = {}, component_options =
 	component_instance.instance_id = generate_id(8);
 	component_instance.lifecycle = component_options?.lifecycle || {};
 	component_instance.methods = compile_methods(component_instance, component_options?.methods || {});
+	component_instance.mod = component_options?.mod || null;
 	component_instance.options = component_options;	
 	component_instance.url = typeof window !== 'undefined' ? compile_url(window.__joystick_url__) : compile_url(component_options?.url);
 	component_instance.user = typeof window !== 'undefined' ? window.__joystick_user__ : component_options?.user;
