@@ -121,7 +121,7 @@ const ssr = async (ssr_options = {}) => {
 	if ((has_plus_css || has_free_css) && !component_instance?.mod) {
 		// NOTE: Just load the entirety of Mod as we don't know what to cut out if they don't tell us.
 		const css_to_load = (ssr_options?.mod?.plus?.css || ssr_options?.mod?.free?.css)[theme];
-		mod_css = await readFile(css_to_load, 'utf-8');
+		mod_css = css_to_load;
 	}
 
 	if (((has_plus_css && !!ssr_options?.mod?.plus?.map) || (has_free_css && !!ssr_options?.mod?.free?.map)) && component_instance?.mod) {

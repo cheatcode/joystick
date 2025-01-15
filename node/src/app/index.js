@@ -245,17 +245,17 @@ class App {
 		this.mod = {
 			free: {
 				css: {
-					light: await path_exists(mod_free_light_path) ? await readFile(mod_free_light_path) : '',
-					dark: await path_exists(mod_free_dark_path) ? await readFile(mod_free_dark_path) : '',
+					light: await path_exists(mod_free_light_path) ? await readFile(mod_free_light_path, 'utf-8') : '',
+					dark: await path_exists(mod_free_dark_path) ? await readFile(mod_free_dark_path, 'utf-8') : '',
 				},
-				map: await path_exists(mod_free_map_path) ? JSON.parse(await readFile(mod_free_map_path)) : '',
+				map: await path_exists(mod_free_map_path) ? JSON.parse(await readFile(mod_free_map_path, 'utf-8')) : '',
 			},
 			plus: {
 				css: {
-					light: await path_exists(mod_plus_light_path) ? await readFile(mod_plus_light_path) : '',
-					dark: await path_exists(mod_plus_dark_path) ? await readFile(mod_plus_dark_path) : '',
+					light: await path_exists(mod_plus_light_path) ? await readFile(mod_plus_light_path, 'utf-8') : '',
+					dark: await path_exists(mod_plus_dark_path) ? await readFile(mod_plus_dark_path, 'utf-8') : '',
 				},
-				map: await path_exists(mod_plus_map_path) ? JSON.parse(await readFile(mod_plus_map_path)) : '',
+				map: await path_exists(mod_plus_map_path) ? JSON.parse(await readFile(mod_plus_map_path, 'utf-8')) : '',
 			},			
 		};
 	}
