@@ -11,7 +11,6 @@ import register_websockets_on_component from '../websockets/register_on_componen
 import types from '../lib/types.js';
 
 const register_component_options = (component_instance = {}, component_options = {}) => {
-	console.log('HERE', component_options);
 	// NOTE: Set this first as we reference internally in some of the functions below.
 	component_instance.id = component_options?._componentId || null;
 

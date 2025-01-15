@@ -114,8 +114,6 @@ const ssr = async (ssr_options = {}) => {
 
 	let mod_css = '';
 
-	console.log(ssr_options?.mod);
-	
 	const theme = ssr_options?.mod?.theme;
 	const has_plus_css = ssr_options?.mod?.plus?.css?.light || ssr_options?.mod?.plus?.css?.dark;
 	const has_free_css = ssr_options?.mod?.free?.css?.light || ssr_options?.mod?.free?.css?.dark;
@@ -134,6 +132,7 @@ const ssr = async (ssr_options = {}) => {
 		// Mod Base + Theme + Purged Icons + CSS From Map.
 	}
 
+	console.log('GOT TO HERE');
 
 	const html = build_html_response({
 		is_email: ssr_options?.is_email,
