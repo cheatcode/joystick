@@ -129,8 +129,6 @@ const ssr = async (ssr_options = {}) => {
 		const map = ssr_options?.mod?.plus?.map || ssr_options?.mod?.free?.map;
 		const css_from_map = get_mod_css_from_map(map, ssr_options?.mod?.keep || [], theme);
 
-		console.log('YES', css_from_map);
-
 		mod_css += css_from_map;
 		// Mod Base + Theme + Purged Icons + CSS From Map.
 	}
