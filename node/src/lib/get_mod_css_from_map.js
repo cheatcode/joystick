@@ -25,7 +25,7 @@ const get_mod_css_from_map = (map = {}, keep_list = [], theme = 'light') => {
 
     // Add filtered icons CSS if icons exist in map.global
     if (map.global.icons) {
-      css += mod.global.icons;
+      css += map.global.icons;
       // const required_icons = keep_list.filter(item => item.startsWith('icon-'));
       // const filtered_icons_css = filter_icons_css(map.global.icons, required_icons);
       // console.log(filtered_icons_css);
