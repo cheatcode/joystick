@@ -5,6 +5,7 @@ const filter_icons_css = (icons_css = '', required_icons = []) => {
   let in_font_face = false
   let in_base_icon_rule = false
   let in_brand_icon_rule = false
+  let in_icon_rule = false
   
   for (let i = 0; i < lines.length; i++) {
     const trimmed_line = lines[i].trim()
@@ -15,22 +16,26 @@ const filter_icons_css = (icons_css = '', required_icons = []) => {
       in_base_icon_rule = true
     } else if (trimmed_line.startsWith('[class^="mod-icon-brand-"], [class*=" mod-icon-brand-"] {')) {
       in_brand_icon_rule = true
-    } else if (trimmed_line === '}') {
-      in_font_face = false
-      in_base_icon_rule = false
-      in_brand_icon_rule = false
-    }
-    
-    if (in_font_face || in_base_icon_rule || in_brand_icon_rule) {
-      output.push(lines[i])
     } else if (trimmed_line.startsWith('.mod-icon-')) {
       const icon_name = trimmed_line
         .replace('.mod-icon-', '')
         .split(':before')[0]
         
       if (required_icons.includes(`icon-${icon_name}`)) {
+        in_icon_rule = true
+      }
+    } else if (trimmed_line === '}') {
+      if (in_icon_rule) {
+        in_icon_rule = false
         output.push(lines[i])
       }
+      in_font_face = false
+      in_base_icon_rule = false
+      in_brand_icon_rule = false
+    }
+    
+    if (in_font_face || in_base_icon_rule || in_brand_icon_rule || in_icon_rule) {
+      output.push(lines[i])
     }
   }
   
@@ -50,10 +55,10 @@ const get_mod_css_from_map = (map = {}, keep_list = [], theme = 'light') => {
     }
 
     // Add filtered icons CSS if icons exist in map.global
-    // if (map.global.icons) {
-    //   const required_icons = keep_list.filter(item => item.startsWith('icon-'));
-    //   css += filter_icons_css(map.global.icons, required_icons);
-    // }
+    if (map.global.icons) {
+      const required_icons = keep_list.filter(item => item.startsWith('icon-'));
+      css += filter_icons_css(map.global.icons, required_icons);
+    }
   }
 
   if (map.components) {
