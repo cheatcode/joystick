@@ -2,53 +2,31 @@ const filter_icons_css = (icons_css = '', required_icons = []) => {
   const lines = icons_css.split('\n')
   const output = []
   
-  let in_font_face = false
-  let in_base_icon_rule = false
-  let in_brand_icon_rule = false
-  let in_icon_rule = false
-  let brace_count = 0
+  // Always include font-face declarations and base icon rules
+  let include_current = false
   
   for (let i = 0; i < lines.length; i++) {
-    const trimmed_line = lines[i].trim()
+    const line = lines[i].trim()
     
-    // Count braces
-    if (trimmed_line.includes('{')) brace_count++
-    if (trimmed_line.includes('}')) brace_count--
-    
-    if (trimmed_line.startsWith('@font-face')) {
-      in_font_face = true
-    } else if (trimmed_line.startsWith('[class^="mod-icon-"], [class*=" mod-icon-"] {')) {
-      in_base_icon_rule = true
-    } else if (trimmed_line.startsWith('[class^="mod-icon-brand-"], [class*=" mod-icon-brand-"] {')) {
-      in_brand_icon_rule = true
-    } else if (trimmed_line.startsWith('.mod-icon-')) {
-      const icon_name = trimmed_line
-        .replace('.mod-icon-', '')
-        .split(':before')[0]
-        
-      if (required_icons.includes(`icon-${icon_name}`)) {
-        in_icon_rule = true
-      }
+    // Start including when we hit a font-face or base icon rule
+    if (line.startsWith('@font-face') || 
+        line.startsWith('[class^="mod-icon-"]') ||
+        line.startsWith('[class*=" mod-icon-"]')) {
+      include_current = true
     }
     
-    // Only reset states when we're at the matching closing brace
-    if (brace_count === 0) {
-      if (in_font_face) {
-        in_font_face = false
-      }
-      if (in_base_icon_rule) {
-        in_base_icon_rule = false
-      }
-      if (in_brand_icon_rule) {
-        in_brand_icon_rule = false
-      }
-      if (in_icon_rule) {
-        in_icon_rule = false
-        output.push(lines[i])
-      }
+    // Include specific icon classes that are required
+    if (line.startsWith('.mod-icon-') && required_icons.length > 0) {
+      const icon_name = line.match(/mod-icon-([^:]+)/)?.[1]
+      include_current = required_icons.includes(icon_name)
     }
     
-    if (in_font_face || in_base_icon_rule || in_brand_icon_rule || in_icon_rule) {
+    // Stop including when we hit a closing brace
+    if (line === '}') {
+      include_current = false
+    }
+    
+    if (include_current) {
       output.push(lines[i])
     }
   }
