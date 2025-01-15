@@ -118,6 +118,8 @@ const ssr = async (ssr_options = {}) => {
 	const has_plus_css = ssr_options?.mod?.plus?.css?.light || ssr_options?.mod?.plus?.css?.dark;
 	const has_free_css = ssr_options?.mod?.free?.css?.light || ssr_options?.mod?.free?.css?.dark;
 
+	console.log(component_instance);
+	
 	if ((has_plus_css || has_free_css) && !component_instance?.mod) {
 		// NOTE: Just load the entirety of Mod as we don't know what to cut out if they don't tell us.
 		const css_to_load = (ssr_options?.mod?.plus?.css || ssr_options?.mod?.free?.css)[theme];
