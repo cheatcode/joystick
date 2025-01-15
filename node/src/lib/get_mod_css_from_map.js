@@ -6,9 +6,14 @@ const filter_icons_css = (icons_css = '', required_icons = []) => {
   let in_base_icon_rule = false
   let in_brand_icon_rule = false
   let in_icon_rule = false
+  let brace_count = 0
   
   for (let i = 0; i < lines.length; i++) {
     const trimmed_line = lines[i].trim()
+    
+    // Count braces
+    if (trimmed_line.includes('{')) brace_count++
+    if (trimmed_line.includes('}')) brace_count--
     
     if (trimmed_line.startsWith('@font-face')) {
       in_font_face = true
@@ -24,14 +29,23 @@ const filter_icons_css = (icons_css = '', required_icons = []) => {
       if (required_icons.includes(`icon-${icon_name}`)) {
         in_icon_rule = true
       }
-    } else if (trimmed_line === '}') {
+    }
+    
+    // Only reset states when we're at the matching closing brace
+    if (brace_count === 0) {
+      if (in_font_face) {
+        in_font_face = false
+      }
+      if (in_base_icon_rule) {
+        in_base_icon_rule = false
+      }
+      if (in_brand_icon_rule) {
+        in_brand_icon_rule = false
+      }
       if (in_icon_rule) {
         in_icon_rule = false
         output.push(lines[i])
       }
-      in_font_face = false
-      in_base_icon_rule = false
-      in_brand_icon_rule = false
     }
     
     if (in_font_face || in_base_icon_rule || in_brand_icon_rule || in_icon_rule) {
