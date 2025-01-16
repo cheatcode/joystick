@@ -125,12 +125,12 @@ const ssr = async (ssr_options = {}) => {
 		mod_css = css_to_load;
 	}
 
+	// TODO: This isn't working at the moment. See note about icons inside of get_mod_css_from_map(). It works
+	// 99% of the way but not safe enough to trust it.
 	if (((has_plus_css && !!ssr_options?.mod?.plus?.map) || (has_free_css && !!ssr_options?.mod?.free?.map)) && ssr_options?.mod?.keep?.length > 0) {
 		const map = ssr_options?.mod?.plus?.map || ssr_options?.mod?.free?.map;
 		const css_from_map = get_mod_css_from_map(map, ssr_options?.mod?.keep || [], theme);
-
 		mod_css += css_from_map;
-		// Mod Base + Theme + Purged Icons + CSS From Map.
 	}
 
 	const html = build_html_response({

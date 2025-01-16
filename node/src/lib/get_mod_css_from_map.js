@@ -27,6 +27,11 @@ const get_mod_css_from_map = (map = {}, keep_list = [], theme = 'light') => {
     // Add filtered icons CSS if icons exist in map.global
     if (map.global.icons) {
       css += map.global.icons;
+      // TODO: Figure out why this is breaking the render. It works to 99%, but then some of the icons
+      // get rendered inside of <p> tags? The existing filtering is also not filtering the icons, it still
+      // dumps all of them on the page. My guess is that something is being changed in the core icon styles
+      // or the icon styles themselves are being mangled.
+      
       // const required_icons = keep_list.filter(item => item.startsWith('icon-'));
       // const filtered_icons_css = filter_icons_css(map.global.icons, required_icons);
       // css += filtered_icons_css;
