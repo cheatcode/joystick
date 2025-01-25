@@ -5,11 +5,10 @@ const read_mod_component_css = async (tier) => {
   const components = {};
   const theme_paths = ['light', 'dark'];
   
-  const components_directory = join('private/mod/components', tier);
-  const files = await fs.readdir(components_directory);
+  // NOTE: We just use the light path as that has the same components as dark.
+  const light_directory_path = join('private/mod/components', tier, 'light');
+  const files = await fs.readdir(light_directory_path);
   const css_files = files.filter(file => file.endsWith('.css'));
-
-  console.log(files);
 
   for (let i = 0; i < css_files.length; i++) {
     const css_file = css_files[i];
