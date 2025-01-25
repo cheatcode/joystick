@@ -115,7 +115,7 @@ const ssr = async (ssr_options = {}) => {
 
 	let mod_css = '';
 
-	console.log(ssr_options?.mod?.components);
+	console.log(ssr_options?.mod?.css?.components);
 
 	// NOTE: If no components specified, load in the full theme CSS.
 	if (ssr_options?.mod?.in_use && !ssr_options?.mod?.components_in_use) {
