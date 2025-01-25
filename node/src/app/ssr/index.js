@@ -7,9 +7,7 @@ import load_settings from '../settings/load.js';
 import set_base_attributes_in_html from "./set_base_attributes_in_html.js";
 import set_head_tags_in_html from "./set_head_tags_in_html.js";
 import path_exists from "../../lib/path_exists.js";
-import tree_shake_mod_css from '../../lib/tree_shake_mod_css.js';
 import get_browser_safe_user from '../accounts/get_browser_safe_user.js';
-import get_mod_css_from_map from '../../lib/get_mod_css_from_map.js';
 
 const { readFile } = fs.promises;
 const app_settings = load_settings();

@@ -1,2 +1,0 @@
-const g=(o="",t=[])=>{if(t.length===0)return"";const[s,n]=o.split(`.split-point-for-tree-shaking {
-}`),l=t.map(c=>`mod-icon-${c}`).join("|"),e=new RegExp(`\\.mod-icon-(?!(${l})[^{]+){[^}]+}`,"g");return s+n.replace(e,"")},i=(o={},t=[],s="light")=>{let n="";if(o.global&&(o.global.base&&(n+=o.global.base),o.global[s]&&(n+=o.global[s]),o.global.icons&&(n+=o.global.icons)),o.components)for(let l=0;l<t.length;l++){const e=t[l];o.components[e]&&o.components[e][s]&&(n+=o.components[e][s])}return n};var r=i;export{r as default};
