@@ -131,11 +131,11 @@ const ssr = async (ssr_options = {}) => {
 	// NOTE: If components specified, load incrementally.
 	if (ssr_options?.mod?.in_use && ssr_options?.mod?.components_in_use && ssr_options?.mod?.components_in_use?.length > 0) {
 		// NOTE: We don't need the globals for one of the themes. Determine which and nuke it.
-		const theme_base_to_remove = ssr_options?.mod?.theme === 'light' ? 'dark' : 'light';
-		const theme_specific_base = { ...(ssr_options?.mod?.css?.base) };
-		delete theme_specific_base[theme_base_to_remove];
+		const theme_global_to_remove = ssr_options?.mod?.theme === 'light' ? 'dark' : 'light';
+		const theme_specific_globals = { ...(ssr_options?.mod?.css?.globals) };
+		delete theme_specific_globals[theme_global_to_remove];
 
-		mod_css += Object.values(theme_specific_base || {})?.reduce((base_css = '', css = '') => {
+		mod_css += Object.values(theme_specific_globals || {})?.reduce((base_css = '', css = '') => {
 			base_css += css;
 			return base_css;
 		}, '');
@@ -150,7 +150,7 @@ const ssr = async (ssr_options = {}) => {
 
 		for (let i = 0; i < valid_components?.length; i += 1) {
 			const [_component_name, component_css] = valid_components[i];
-			mod_css += component_css;
+			mod_css += component_css[ssr_options?.mod?.theme];
 		}
 
 		console.log('MOD CSS AFTER COMPS', mod_css);
