@@ -18,9 +18,17 @@ const is_development = process.env.NODE_ENV === 'development';
 const { document: linkedom_document } = parseHTML('<div></div>');
 
 const build_html_response_for_browser = (options = {}) => {
+	let base_html = options?.base_html;
+
+	if (options?.mod_theme) {
+		const linkedom_base_html = parseHTML(base_html);
+		linkedom_base_html.document.querySelector('body').setAttribute('data-mod-theme', options?.mod_theme);
+		base_html = linkedom_base_html.document.toString();
+	}
+
 	// NOTE: Put Mod CSS first for specificity. If they have overrides at the component level
 	// we should respect them.
-	return options?.base_html
+	return base_html
 		.replace('${css}', `
 			${options?.mod_css ? `<style type="text/css" mod-css>${options?.mod_css}</style>` : ''}
 			<style type="text/css" js-css>${options?.css}</style>
@@ -154,6 +162,7 @@ const ssr = async (ssr_options = {}) => {
 			${ssr_render?.css}
 		` : ssr_render?.css, // Concat final CSS here?
 		mod_css,
+		mod_theme: ssr_options?.mod?.theme,
 		data: Object.entries(ssr_render?.data || {})?.reduce((encoded = {}, [key, value]) => {
 		  encoded[key] = value ? Buffer.from(JSON.stringify(value), 'utf8').toString('base64') : '';
 		  return encoded;
