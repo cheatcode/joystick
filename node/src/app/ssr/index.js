@@ -135,30 +135,19 @@ const ssr = async (ssr_options = {}) => {
 		const theme_specific_globals = { ...(ssr_options?.mod?.css?.globals) };
 		delete theme_specific_globals[theme_global_to_remove];
 
-		console.log({
-			theme_specific_globals,
-			theme_global_to_remove,
-		});
-
 		mod_css += Object.values(theme_specific_globals || {})?.reduce((base_css = '', css = '') => {
 			base_css += css;
 			return base_css;
 		}, '');
 
-		console.log('MOD CSS AFTER BASE', mod_css);
-
 		const valid_components = Object.entries(ssr_options?.mod?.css?.components)?.filter(([component_name] = '') => {
 			return ssr_options?.mod?.components_in_use?.includes(component_name);
 		});
-
-		console.log('VALID COMPONENTS', valid_components);
 
 		for (let i = 0; i < valid_components?.length; i += 1) {
 			const [_component_name, component_css] = valid_components[i];
 			mod_css += component_css[ssr_options?.mod?.theme];
 		}
-
-		console.log('MOD CSS AFTER COMPS', mod_css);
 	}
 
 	const html = build_html_response({
