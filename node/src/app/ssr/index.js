@@ -123,8 +123,6 @@ const ssr = async (ssr_options = {}) => {
 
 	let mod_css = '';
 
-	console.log(ssr_options?.mod?.css?.components);
-
 	// NOTE: If no components specified, load in the full theme CSS.
 	if (ssr_options?.mod?.in_use && !ssr_options?.mod?.components_in_use) {
 		mod_css = ssr_options?.mod?.css[ssr_options?.mod?.theme];
@@ -142,14 +140,20 @@ const ssr = async (ssr_options = {}) => {
 			return base_css;
 		}, '');
 
+		console.log('MOD CSS AFTER BASE', mod_css);
+
 		const valid_components = Object.entries(ssr_options?.mod?.css?.components)?.filter(([component_name] = '') => {
 			return ssr_options?.mod?.components_in_use?.includes(component_name);
 		});
+
+		console.log('VALID COMPONENTS', valid_components);
 
 		for (let i = 0; i < valid_components?.length; i += 1) {
 			const [_component_name, component_css] = valid_components[i];
 			mod_css += component_css;
 		}
+
+		console.log('MOD CSS AFTER COMPS', mod_css);
 	}
 
 	const html = build_html_response({

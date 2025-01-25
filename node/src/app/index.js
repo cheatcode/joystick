@@ -277,8 +277,6 @@ class App {
 			};
 		}
 
-		console.log(components);
-
 		this.mod = {
 			light: mod_light,
 			dark: mod_dark,
