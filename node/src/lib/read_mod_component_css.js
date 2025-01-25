@@ -9,6 +9,8 @@ const read_mod_component_css = async (tier) => {
   const files = await fs.readdir(components_directory);
   const css_files = files.filter(file => file.endsWith('.css'));
 
+  console.log(files);
+
   for (let i = 0; i < css_files.length; i++) {
     const css_file = css_files[i];
     const component_name = basename(css_file, '.css');
