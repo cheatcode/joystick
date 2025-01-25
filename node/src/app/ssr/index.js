@@ -115,22 +115,33 @@ const ssr = async (ssr_options = {}) => {
 
 	let mod_css = '';
 
-	const theme = ssr_options?.mod?.theme;
-	const has_plus_css = ssr_options?.mod?.plus?.css?.light || ssr_options?.mod?.plus?.css?.dark;
-	const has_free_css = ssr_options?.mod?.free?.css?.light || ssr_options?.mod?.free?.css?.dark;
+	console.log(ssr_options?.mod);
 
-	if ((has_plus_css || has_free_css) && ssr_options?.mod?.keep?.length === 0) {
-		// NOTE: Just load the entirety of Mod as we don't know what to cut out if they don't tell us.
-		const css_to_load = (ssr_options?.mod?.plus?.css || ssr_options?.mod?.free?.css)[theme];
-		mod_css = css_to_load;
+	// NOTE: If no components specified, load in the full theme CSS.
+	if (ssr_options?.mod?.in_use && !ssr_options?.mod?.components_in_use) {
+		mod_css = ssr_options?.mod?.css[ssr_options?.mod?.theme];
 	}
 
-	// TODO: This isn't working at the moment. See note about icons inside of get_mod_css_from_map(). It works
-	// 99% of the way but not safe enough to trust it.
-	if (((has_plus_css && !!ssr_options?.mod?.plus?.map) || (has_free_css && !!ssr_options?.mod?.free?.map)) && ssr_options?.mod?.keep?.length > 0) {
-		const map = ssr_options?.mod?.plus?.map || ssr_options?.mod?.free?.map;
-		const css_from_map = get_mod_css_from_map(map, ssr_options?.mod?.keep || [], theme);
-		mod_css += css_from_map;
+	// NOTE: If components specified, load incrementally.
+	if (ssr_options?.mod?.in_use && ssr_options?.mod?.components_in_use && ssr_options?.mod?.components_in_use?.length > 0) {
+		// NOTE: We don't need the globals for one of the themes. Determine which and nuke it.
+		const theme_base_to_remove = ssr_options?.mod?.theme === 'light' ? 'dark' : 'light';
+		const theme_specific_base = { ...(ssr_options?.mod?.css?.base) };
+		delete theme_specific_base[theme_base_to_remove];
+
+		mod_css += Object.values(theme_specific_base || {})?.reduce((base_css = '', css = '') => {
+			base_css += css;
+			return base_css;
+		}, '');
+
+		const valid_components = Object.entries(ssr_options?.mod?.css?.components)?.filter(([component_name] = '') => {
+			return ssr_options?.mod?.components_in_use?.includes(component_name);
+		});
+
+		for (let i = 0; i < valid_components?.length; i += 1) {
+			const [_component_name, component_css] = valid_components[i];
+			mod_css += component_css;
+		}
 	}
 
 	const html = build_html_response({

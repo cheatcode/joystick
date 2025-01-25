@@ -30,6 +30,8 @@ import path_exists from '../lib/path_exists.js';
 import push from "./push/index.js";
 import push_logger from "./push/logger.js";
 import Queue from "./queues/index.js";
+import read_mod_component_css from '../lib/read_mod_component_css.js';
+import read_mod_global_css from '../lib/read_mod_global_css.js';
 import register_app_options from "./register_app_options.js";
 import register_cron_jobs from "./cron_jobs/register.js";
 import register_database from './databases/register_database.js';
@@ -234,29 +236,52 @@ class App {
 	async register_mod() {
 		// NOTE: Load Mod's CSS and maps into memory on server startup so they're readily
 		// accessible during SSR (skips the need to reload on each SSR attempt).
-		const mod_free_light_path = `private/mod/mod-light.min.css`;
-		const mod_free_dark_path = `private/mod/mod-dark.min.css`;
-		const mod_free_map_path = `private/mod/mod_css_map_free.json`;
+		const mod_exists = await path_exists('private/mod');
 
-		const mod_plus_light_path = `private/mod/mod-light-plus.min.css`;
-		const mod_plus_dark_path = `private/mod/mod-dark-plus.min.css`;
-		const mod_plus_map_path = `private/mod/mod_css_map_plus.json`;
+		if (!mod_exists) {
+			return;
+		}
+
+		// NOTE: Value will be a string of 'free' or 'plus'.
+		const mod_version = (
+			await path_exists('private/mod/mod_version.txt') &&
+			(await readFile('private/mod/mod_version.txt', 'utf-8'))?.trim()
+		) || 'free';
+
+		let mod_light;
+		let mod_dark;
+		let globals = {};
+		let components = {};
+
+		if (mod_version === 'plus') {
+			mod_light = (await path_exists('private/mod/mod-light-plus.min.css') && await readFile('private/mod/mod-light-plus.min.css', 'utf-8')) || '';
+			mod_dark = (await path_exists('private/mod/mod-dark-plus.min.css') && await readFile('private/mod/mod-dark-plus.min.css', 'utf-8')) || '';
+			
+			globals = await read_mod_global_css();
+			const free_components = await read_mod_component_css('free');
+			const plus_components = await read_mod_component_css('plus');
+			
+			components = {
+				...(free_components || {}),
+				...(plus_components || {}),
+			};
+		} else {
+			mod_light = (await path_exists('private/mod/mod-light.min.css') && await readFile('private/mod/mod-light.min.css', 'utf-8')) || '';
+			mod_dark = (await path_exists('private/mod/mod-dark.min.css') && await readFile('private/mod/mod-dark.min.css', 'utf-8')) || '';
+
+			globals = await read_mod_global_css();
+			const free_components = await read_mod_component_css('free');
+
+			components = {
+				...(free_components || {}),
+			};
+		}
 
 		this.mod = {
-			free: {
-				css: {
-					light: await path_exists(mod_free_light_path) ? await readFile(mod_free_light_path, 'utf-8') : '',
-					dark: await path_exists(mod_free_dark_path) ? await readFile(mod_free_dark_path, 'utf-8') : '',
-				},
-				map: await path_exists(mod_free_map_path) ? JSON.parse(await readFile(mod_free_map_path, 'utf-8')) : '',
-			},
-			plus: {
-				css: {
-					light: await path_exists(mod_plus_light_path) ? await readFile(mod_plus_light_path, 'utf-8') : '',
-					dark: await path_exists(mod_plus_dark_path) ? await readFile(mod_plus_dark_path, 'utf-8') : '',
-				},
-				map: await path_exists(mod_plus_map_path) ? JSON.parse(await readFile(mod_plus_map_path, 'utf-8')) : '',
-			},			
+			light: mod_light,
+			dark: mod_dark,
+			globals,
+			components,
 		};
 	}
 

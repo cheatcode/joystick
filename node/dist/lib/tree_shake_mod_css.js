@@ -1,1 +1,0 @@
-import{PurgeCSS as r}from"purgecss";const a=async(t="",s="")=>{const e=await new r().purge({content:[{raw:t,extension:"html"}],css:[{raw:s}],safelist:{standard:["mod-modal","mod-dialog"],deep:[/data-mod-theme/]}});return e[0]&&e[0].css||""};var n=a;export{n as default};

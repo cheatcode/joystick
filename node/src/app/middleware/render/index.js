@@ -90,13 +90,14 @@ const render_middleware = (req, res, next, app_instance = {}) => {
       render_component_path: sanitized_render_component_path,
       render_layout_path: sanitized_render_layout_path,
       req,
-      // NOTE: If we detected a copy of Mod in the app at startup, we've loaded its CSS and map
+      // NOTE: If we detected a copy of Mod in the app at startup, we've loaded its CSS 
       // into memory and can use it for tree-shaking during SSR. For theme, prefer the one passed
-      // via the res.render() options and fall back to a value in cookies (default = light).
+      // via cookies, then the app options, and fall back to light if neither are set.
       mod: {
-        ...(app_instance?.mod || {}),
-        keep: render_options?.mod?.keep || [],
-        theme: render_options?.mod?.theme || req?.cookies?.theme || 'light',
+        in_use: !!app_instance?.mod,
+        css: app_instance?.mod || null,
+        theme: req?.cookies?.theme || app_instance?.options?.mod?.default_theme || 'light',
+        components_in_use: render_options?.mod?.components,
       },
     });
 

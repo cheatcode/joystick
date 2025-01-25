@@ -1,0 +1,1 @@
+import{promises as a}from"fs";import{basename as r}from"path";const i=async()=>{const o={},e=(await a.readdir("private/mod/components/globals")).filter(s=>s.endsWith(".css"));for(let s=0;s<e.length;s++){const t=e[s],l=r(t,".css");o[l]={light:"",dark:""}}return o};var m=i;export{m as default};
