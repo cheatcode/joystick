@@ -135,6 +135,11 @@ const ssr = async (ssr_options = {}) => {
 		const theme_specific_globals = { ...(ssr_options?.mod?.css?.globals) };
 		delete theme_specific_globals[theme_global_to_remove];
 
+		console.log({
+			theme_specific_globals,
+			theme_global_to_remove,
+		});
+
 		mod_css += Object.values(theme_specific_globals || {})?.reduce((base_css = '', css = '') => {
 			base_css += css;
 			return base_css;
