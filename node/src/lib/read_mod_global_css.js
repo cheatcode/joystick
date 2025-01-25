@@ -4,7 +4,7 @@ import { basename } from 'path';
 const read_mod_global_css = async () => {
   const globals = {};
  
-  const files = await fs.readdir('private/mod/components/globals');
+  const files = await fs.readdir('private/mod/globals');
   const css_files = files.filter(file => file.endsWith('.css'));
 
   for (let i = 0; i < css_files.length; i++) {
