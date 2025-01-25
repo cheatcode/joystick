@@ -253,6 +253,8 @@ class App {
 		let globals = {};
 		let components = {};
 
+		console.log({ mod_version });
+
 		if (mod_version === 'plus') {
 			mod_light = (await path_exists('private/mod/mod-light-plus.min.css') && await readFile('private/mod/mod-light-plus.min.css', 'utf-8')) || '';
 			mod_dark = (await path_exists('private/mod/mod-dark-plus.min.css') && await readFile('private/mod/mod-dark-plus.min.css', 'utf-8')) || '';

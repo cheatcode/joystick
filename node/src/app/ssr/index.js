@@ -18,10 +18,12 @@ const is_development = process.env.NODE_ENV === 'development';
 const { document: linkedom_document } = parseHTML('<div></div>');
 
 const build_html_response_for_browser = (options = {}) => {
+	// NOTE: Put Mod CSS first for specificity. If they have overrides at the component level
+	// we should respect them.
 	return options?.base_html
 		.replace('${css}', `
-			<style type="text/css" js-css>${options?.css}</style>
 			${options?.mod_css ? `<style type="text/css" mod-css>${options?.mod_css}</style>` : ''}
+			<style type="text/css" js-css>${options?.css}</style>
 		`)
 		.replace(`<div id="app"></div>`, `
 			<div id="app">${options?.html}</div>
@@ -113,7 +115,7 @@ const ssr = async (ssr_options = {}) => {
 
 	let mod_css = '';
 
-	console.log(ssr_options?.mod);
+	console.log(ssr_options?.mod?.components);
 
 	// NOTE: If no components specified, load in the full theme CSS.
 	if (ssr_options?.mod?.in_use && !ssr_options?.mod?.components_in_use) {
