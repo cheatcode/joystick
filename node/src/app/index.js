@@ -121,6 +121,8 @@ class App {
       if (typeof message === 'string') {
         const parsed_message = JSON.parse(message);
 
+				console.log({ parsed_message });
+
         if (['RESTART'].includes(parsed_message?.type)) {
 
         }
