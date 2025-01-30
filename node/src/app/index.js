@@ -234,7 +234,6 @@ class App {
   }
 
 	async register_mod() {
-		console.log('REGISTER MOD');
 		// NOTE: Load Mod's CSS and maps into memory on server startup so they're readily
 		// accessible during SSR (skips the need to reload on each SSR attempt).
 		const mod_exists = await path_exists('private/mod');
