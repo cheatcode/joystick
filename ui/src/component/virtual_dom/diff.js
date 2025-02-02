@@ -1,3 +1,5 @@
+import { special_attributes, set_special_attribute } from './special_attributes.js';
+
 const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
 const XLINK_NAMESPACE = 'http://www.w3.org/1999/xlink';
 
@@ -29,11 +31,30 @@ const create_element = (virtual_node, is_svg = false) => {
   return element;
 };
 
+const set_attribute = (element, attr, value, is_svg) => {
+  if (is_svg && attr.startsWith('xlink:')) {
+    element.setAttributeNS(XLINK_NAMESPACE, attr, value);
+    return;
+  }
+
+  const was_special = set_special_attribute(element, attr, value);
+  if (!was_special) {
+    element.setAttribute(attr, value);
+  }
+};
+
 const update_attributes = (element, old_attrs, new_attrs, is_svg = false) => {
   const all_attrs = new Set([...Object.keys(old_attrs), ...Object.keys(new_attrs)]);
   
   for (const attr of all_attrs) {
     if (!(attr in new_attrs)) {
+      if (special_attributes[attr]?.includes(element.tagName.toLowerCase())) {
+        if (typeof old_attrs[attr] === 'boolean') {
+          element[attr] = false;
+        } else {
+          element[attr] = null;
+        }
+      }
       element.removeAttribute(attr);
     } else if (old_attrs[attr] !== new_attrs[attr]) {
       set_attribute(element, attr, new_attrs[attr], is_svg);
@@ -41,19 +62,9 @@ const update_attributes = (element, old_attrs, new_attrs, is_svg = false) => {
   }
 };
 
-const set_attribute = (element, attr, value, is_svg) => {
-  if (is_svg && attr.startsWith('xlink:')) {
-    element.setAttributeNS(XLINK_NAMESPACE, attr, value);
-  } else {
-    element.setAttribute(attr, value);
-  }
-};
-
-const get_dom_patches = (old_virtual_node = undefined, new_virtual_node = undefined, is_svg = false) => {
-  // Both nodes are undefined or null
+const diff = (old_virtual_node = undefined, new_virtual_node = undefined, is_svg = false) => {
   if (!old_virtual_node && !new_virtual_node) return null;
 
-  // Node removed
   if (!new_virtual_node) {
     return (node) => {
       if (node && node.parentNode) {
@@ -63,12 +74,10 @@ const get_dom_patches = (old_virtual_node = undefined, new_virtual_node = undefi
     };
   }
 
-  // New node added
   if (!old_virtual_node) {
     return () => create_element(new_virtual_node, is_svg);
   }
 
-  // Both nodes are strings (text nodes)
   if (typeof old_virtual_node === 'string' && typeof new_virtual_node === 'string') {
     if (old_virtual_node !== new_virtual_node) {
       return (node) => {
@@ -83,17 +92,14 @@ const get_dom_patches = (old_virtual_node = undefined, new_virtual_node = undefi
     return null;
   }
 
-  // One node is a string, the other is an object
   if (typeof old_virtual_node !== typeof new_virtual_node) {
     return () => create_element(new_virtual_node, is_svg);
   }
 
-  // Both nodes are objects (elements)
   if (old_virtual_node.tag_name !== new_virtual_node.tag_name) {
     return () => create_element(new_virtual_node, is_svg);
   }
 
-  // At this point, we're dealing with two elements of the same type
   return (node) => {
     if (!node || node.nodeType !== Node.ELEMENT_NODE) {
       return create_element(new_virtual_node, is_svg);
@@ -101,10 +107,8 @@ const get_dom_patches = (old_virtual_node = undefined, new_virtual_node = undefi
 
     is_svg = is_svg || is_svg_tag(new_virtual_node.tag_name);
 
-    // Update attributes
     update_attributes(node, old_virtual_node.attributes || {}, new_virtual_node.attributes || {}, is_svg);
 
-    // Update children
     const old_children = old_virtual_node.children || [];
     const new_children = new_virtual_node.children || [];
     const max_length = Math.max(old_children.length, new_children.length);
@@ -133,17 +137,13 @@ const get_dom_patches = (old_virtual_node = undefined, new_virtual_node = undefi
 
       if (old_child && new_child && old_child.attributes && new_child.attributes &&
           old_child.attributes.key && new_child.attributes.key) {
-        // Both nodes have keys
         if (old_child.attributes.key !== new_child.attributes.key) {
-          // Keys are different, create a new element
           child_patch = () => create_element(new_child, is_svg);
         } else {
-          // Keys are the same, update normally
-          child_patch = get_dom_patches(old_child, new_child, is_svg);
+          child_patch = diff(old_child, new_child, is_svg);
         }
       } else {
-        // No keys or only one has a key, update normally
-        child_patch = get_dom_patches(old_child, new_child, is_svg);
+        child_patch = diff(old_child, new_child, is_svg);
       }
 
       if (child_patch) {
@@ -160,7 +160,6 @@ const get_dom_patches = (old_virtual_node = undefined, new_virtual_node = undefi
       }
     }
 
-    // Remove any extra old children
     while (node.childNodes.length > new_children.length) {
       node.removeChild(node.lastChild);
     }
@@ -169,4 +168,4 @@ const get_dom_patches = (old_virtual_node = undefined, new_virtual_node = undefi
   };
 };
 
-export default get_dom_patches;
+export default diff;
