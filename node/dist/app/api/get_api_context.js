@@ -1,1 +1,1 @@
-const s=(t={},n={},a=null)=>new Promise(async o=>{if(typeof a=="function"){const c=await a(t,n);return o({...c,...t?.context||{},req:t,res:n,...process.databases||{}})}return o({...a,...t?.context||{},req:t,res:n,...process.databases||{}})});var e=s;export{e as default};
+const s=(t={},n={},a=null)=>new Promise(async o=>{if(typeof a=="function"){const c=await a(t,n);return o({...c,...t?.context||{},...process.databases||{},req:t,res:n})}return o({...a,...t?.context||{},...process.databases||{},req:t,res:n})});var e=s;export{e as default};

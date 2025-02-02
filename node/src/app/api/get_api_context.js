@@ -8,18 +8,18 @@ const get_api_context = (req = {}, res = {}, api_context = null) => {
       return resolve({
         ...compiled_api_context,
         ...(req?.context || {}),
+        ...(process.databases || {}),
         req,
         res,
-        ...(process.databases || {}),
       });
     }
 
     return resolve({
       ...api_context,
       ...(req?.context || {}),
+      ...(process.databases || {}),
       req,
       res,
-      ...(process.databases || {}),
     });
   });
 };
