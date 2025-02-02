@@ -15,7 +15,7 @@ const test_bootstrap = async (req = {}, res = {}, app_instance = {}) => {
 
   if (component_to_render) {
     const component_instance = component_to_render();
-    const api_for_data_functions = get_api_for_data_functions(req, app_instance?.options?.api);
+    const api_for_data_functions = get_api_for_data_functions(req, res, app_instance?.options?.api);
     const browser_safe_request = get_browser_safe_request(req);
     const data = await component_instance.fetch_data(api_for_data_functions, browser_safe_request, {}, component_instance);
 

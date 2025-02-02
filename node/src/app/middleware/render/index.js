@@ -90,6 +90,7 @@ const render_middleware = (req, res, next, app_instance = {}) => {
       render_component_path: sanitized_render_component_path,
       render_layout_path: sanitized_render_layout_path,
       req,
+      res,
       // NOTE: If we detected a copy of Mod in the app at startup, we've loaded its CSS 
       // into memory and can use it for tree-shaking during SSR. For theme, prefer the one passed
       // via cookies, then the app options, and fall back to light if neither are set.

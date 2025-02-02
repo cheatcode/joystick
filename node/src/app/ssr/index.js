@@ -106,7 +106,7 @@ const get_component_instance = (component_to_render = null, component_options = 
 
 const ssr = async (ssr_options = {}) => {
 	const component_instance = get_component_instance(ssr_options?.component_to_render, ssr_options?.component_options);
-	const api = get_api_for_data_functions(ssr_options?.req, ssr_options?.api_schema);
+	const api = get_api_for_data_functions(ssr_options?.req, ssr_options?.res, ssr_options?.api_schema);
 	const ssr_tree = [];
 	const ssr_render = await component_instance.render_for_ssr(api, ssr_options?.req, ssr_tree, {
 		linkedom_document,
