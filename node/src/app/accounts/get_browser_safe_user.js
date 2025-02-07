@@ -25,7 +25,7 @@ const get_browser_safe_user = (user = null) => {
 
   return {
     ...browser_safe_user,
-    email_address: browser_safe_user?.email_address,
+    email_address: browser_safe_user?.emailAddress,
   };
 };
 
