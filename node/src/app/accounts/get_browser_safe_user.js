@@ -23,7 +23,10 @@ const get_browser_safe_user = (user = null) => {
     return fields;
   }, {});
 
-  return browser_safe_user;
+  return {
+    ...browser_safe_user,
+    email_address: browser_safe_user?.email_address,
+  };
 };
 
 export default get_browser_safe_user;
