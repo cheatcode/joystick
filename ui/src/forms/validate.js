@@ -140,9 +140,7 @@ class ValidateForm {
       const field = this?.fields[i];
       if (field?.element && field?.listen_for_changes) {
         const field_event_listener = () => {
-          debounce(() => {
-            this.validate(field.name);
-          }, 100);
+          this.validate(field.name);
         };
 
         field.element.removeEventListener("input", field_event_listener);
@@ -238,6 +236,10 @@ class ValidateForm {
   }
 
   is_valid_value(is_checkable, value, validation) {
+    if (typeof validation.rule === 'function') {
+      return validation.rule(value, this.form);
+    }
+
     const validator = validators[validation.name];
 
     if (validator) {
