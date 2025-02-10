@@ -17,8 +17,12 @@ class ValidateForm {
       "radio",
       "range",
       "search",
+      "select",
+      "select-one",
+      "select-multiple",
       "tel",
       "text",
+      "textarea",
       "time",
       "url",
       "week",
@@ -138,16 +142,18 @@ class ValidateForm {
 
     for (let i = 0; i < this?.fields?.length; i += 1) {
       const field = this?.fields[i];
-      if (field?.element && field?.listen_for_changes) {
+      if (field?.element) {
         const field_event_listener = () => {
           this.validate(field.name);
         };
 
         field.element.removeEventListener("input", field_event_listener);
-        field.element.addEventListener("input", field_event_listener);
-
         field.element.removeEventListener("change", field_event_listener);
+        field.element.removeEventListener("blur", field_event_listener);
+
+        field.element.addEventListener("input", field_event_listener);
         field.element.addEventListener("change", field_event_listener);
+        field.element.addEventListener("blur", field_event_listener);
       }
     }
   }
