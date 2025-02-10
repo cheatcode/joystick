@@ -14,7 +14,7 @@ const indexes = {
 	users: async () => {
 		try {
 			await process.databases._users?.collection('users').createIndex({ emailAddress: 1 }, { background: true, unique: true });
-			await process.databases._users?.collection('users').createIndex({ username: 1 }, { background: true, unique: true });
+			await process.databases._users?.collection('users').createIndex({ username: 1 }, { background: true });
 			await process.databases._users?.collection('users').createIndex({ 'sessions.token': 1 }, { background: true });
 			await process.databases._users?.collection('users').createIndex({ 'passwordResetTokens.token': 1 }, { background: true });
 			await process.databases._users?.collection('users').createIndex({ 'passwordResetTokens.token': 1, _id: 1 }, { background: true });
