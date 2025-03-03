@@ -20,6 +20,16 @@ const connect_mongodb = async (database_settings = {}, database_port = 2610) => 
     const connection_options = {
       maxIdleTimeMS: 15000,
       ssl: !['development', 'test'].includes(process.env.NODE_ENV),
+      maxPoolSize: 100,
+      serverSelectionTimeoutMS: 30000,
+      heartbeatFrequencyMS: 10000,
+      
+      ...(process.env.NODE_ENV === 'development' ? {
+        directConnection: true,
+        minHeartbeatFrequencyMS: 2000,
+        writeConcern: { w: 1 }
+      } : {}),
+
       ...(database_settings?.options || {})
     };
 
