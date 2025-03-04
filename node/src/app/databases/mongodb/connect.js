@@ -21,21 +21,24 @@ const connect_mongodb = async (database_settings = {}, database_port = 2610) => 
     const connection_options = {
       maxIdleTimeMS: 15000,
       ssl: !['development', 'test'].includes(process.env.NODE_ENV),
-      maxPoolSize: 100,
-      serverSelectionTimeoutMS: 30000,
-      heartbeatFrequencyMS: 10000,
-      
+      maxPoolSize: 500,
+      minPoolSize: 50,
+      serverSelectionTimeoutMS: 60000,
+      waitQueueTimeoutMS: 10000,
+
       ...(process.env.NODE_ENV === 'development' ? {
-        directConnection: true,
+        directConnection: !is_srv,
         minHeartbeatFrequencyMS: 2000,
         writeConcern: { w: 1 }
-      } : {}),
+      } : {
+        writeConcern: { w: 'majority' }
+      }),
 
       ...(database_settings?.options || {})
     };
 
     if (is_srv) {
-      connection_options.tls = true;
+      connection_options.tls = true; // Move inside SRV condition for clarity
     }
 
     if (database_settings?.options?.ca) {
