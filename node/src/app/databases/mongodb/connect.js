@@ -16,6 +16,7 @@ const connect_mongodb = async (database_settings = {}, database_port = 2610) => 
 
     const connection_string = build_connection_string(connection);
     const parsed_uri = mongo_uri.parseUri(connection_string);
+    const is_srv = connection_string.startsWith("mongodb+srv://");
 
     const connection_options = {
       maxIdleTimeMS: 15000,
@@ -32,6 +33,10 @@ const connect_mongodb = async (database_settings = {}, database_port = 2610) => 
 
       ...(database_settings?.options || {})
     };
+
+    if (is_srv) {
+      connection_options.tls = true;
+    }
 
     if (database_settings?.options?.ca) {
       connection_options.ca = fs.readFileSync(database_settings?.options?.ca);
