@@ -2,5 +2,5 @@ import p from"../../lib/build/index.js";import n from"../../lib/cli_log.js";impo
 Monitor your deployment at ${o}/deployments/${t?._id}.
 `:`
 Finish your deployment's setup at ${o}/deployments/${t?._id}/setup.
-`)};var D=g;export{D as default};
+`),process.exit(0)};var D=g;export{D as default};
 //# sourceMappingURL=index.js.map

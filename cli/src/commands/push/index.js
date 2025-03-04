@@ -27,13 +27,10 @@ const get_token_for_deployment = async (input_deployment_token = '') => {
 
 const push = async (args = {}, options = {}) => {
 	if (!options?.domain) {
-    cli_log(
-      `Must pass a deployment via -d or --domain flag.`,
-      {
-        level: "danger",
-        docs: "https://cheatcode.co/docs/push/cli"
-      }
-    );
+    cli_log(`Must pass a deployment via -d or --domain flag.`, {
+			level: "danger",
+			docs: "https://cheatcode.co/docs/push/cli"
+		});
 
     return process.exit(0);	
 	}
@@ -85,6 +82,7 @@ const push = async (args = {}, options = {}) => {
 
 	process.loader.print('Deploying...')
 	console.log(deployment?.initial_deployment_completed ? `\nMonitor your deployment at ${push_domain}/deployments/${deployment?._id}.\n` : `\nFinish your deployment's setup at ${push_domain}/deployments/${deployment?._id}/setup.\n`);
+	process.exit(0);
 };
 
 export default push;
