@@ -7,6 +7,7 @@ import account_middleware from './account.js';
 import body_parser from './body_parser.js';
 import build_error_middleware from './build_error.js';
 import context_middleware from './context.js';
+import detect_device_type from './detect_device_type.js';
 import get_joystick_build_path from '../../lib/get_joystick_build_path.js';
 import hmr_client_middleware from './hmr_client.js';
 import insecure_middleware from './insecure.js';
@@ -59,8 +60,12 @@ const built_in = (options = {}) => {
   options.express_app.use(body_parser(options?.middleware_config?.bodyParser));
 
   options.express_app.use(cors(options?.middleware_config?.cors, options?.port));
-
 	options.express_app.use(request_methods_middleware);
+
+  options.express_app.use((req, _res, next) => {
+    req.device = detect_device_type(req);
+    next();
+  });
 
   if (process.databases?._sessions) {
     options.express_app.use((req, res, next) => session_middleware(req, res, next));

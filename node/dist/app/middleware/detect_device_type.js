@@ -1,0 +1,1 @@
+const n=(t={})=>{const e=t.headers["user-agent"]||"",r=/Mobile|Android|iPhone|iPod|BlackBerry|Windows Phone/i;return/Tablet|iPad/i.test(e)?"tablet":r.test(e)?"handheld":"desktop"};var a=n;export{a as default};
