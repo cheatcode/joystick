@@ -6,6 +6,7 @@ import favicon from "serve-favicon";
 import account_middleware from './account.js';
 import body_parser from './body_parser.js';
 import build_error_middleware from './build_error.js';
+import csp from './csp.js';
 import context_middleware from './context.js';
 import detect_device_type from './detect_device_type.js';
 import get_joystick_build_path from '../../lib/get_joystick_build_path.js';

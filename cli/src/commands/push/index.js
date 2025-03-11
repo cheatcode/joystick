@@ -26,6 +26,8 @@ const get_token_for_deployment = async (input_deployment_token = '') => {
 };
 
 const push = async (args = {}, options = {}) => {
+	// NOTE: Require domain as an option as loading settings requires access to the deployment
+	// env which creates a chicken and egg problem w/ getting the domain.
 	if (!options?.domain) {
     cli_log(`Must pass a deployment via -d or --domain flag.`, {
 			level: "danger",
