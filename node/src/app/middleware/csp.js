@@ -14,7 +14,6 @@ const csp_middleware = (_req, res, next, csp_config = null) => {
       'img-src': ["'self'"],
       'manifest-src': ["'self'"],
       'media-src': ["'self'"],
-      'navigate-to': ["'self'"],
       'object-src': ["'self'"],
       'script-src': ["'self'"],
       'script-src-attr': ["'self'"],
