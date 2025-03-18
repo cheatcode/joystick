@@ -379,6 +379,10 @@ class Component {
 	  		child_node.DOMNode = child_node_in_parent_dom;
 
 	  		replace_child_in_vdom(virtual_dom, child_node?.instance_id, child_node?.virtual_dom);
+
+				// TODO: Look into running the child's tree jobs here. The problem is that until we do the above,
+				// the child's internals may not have what they need to work (e.g., on_update_props may need
+				// access to DOMNode which isn't set until above).
 	  	}
   	}
   }
