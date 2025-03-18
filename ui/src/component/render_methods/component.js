@@ -24,19 +24,8 @@ const component = function component(Component = {}, props = {}) {
 	const existing_component_in_state_map = parent?.existing_state_map[component_instance?.id];
 	const existing_state_for_component = existing_component_in_state_map && existing_component_in_state_map[(new_component_on_parent?.length - 1) || 0];
 
-	if (existing_state_for_component) {
-		component_instance.state = existing_state_for_component;
-	}
-
 	const existing_component_in_props_map = parent?.existing_props_map[component_instance?.id];
 	const existing_props_for_component = existing_component_in_props_map && existing_component_in_props_map[(new_component_on_parent?.length - 1) || 0];
-
-	if (existing_props_for_component && types.is_function(component_instance?.lifecycle?.onUpdateProps) || types.is_function(component_instance?.lifecycle?.on_update_props)) {
-		const has_different_props = nested_object_diff(existing_props_for_component, props);
-		if (has_different_props) {
-			(component_instance.lifecycle.onUpdateProps || component_instance.lifecycle.on_update_props)(existing_props_for_component, props, component_instance);
-		}
-	}
 
 	const new_children = {};
 
@@ -49,6 +38,17 @@ const component = function component(Component = {}, props = {}) {
 	component_instance.DOMNode = dom;
 	component_instance.virtual_dom = virtual_dom;
 	component_instance.children = new_children;
+
+	if (existing_state_for_component) {
+		component_instance.state = existing_state_for_component;
+	}
+
+	if (existing_props_for_component && types.is_function(component_instance?.lifecycle?.onUpdateProps) || types.is_function(component_instance?.lifecycle?.on_update_props)) {
+		const has_different_props = nested_object_diff(existing_props_for_component, props);
+		if (has_different_props) {
+			(component_instance.lifecycle.onUpdateProps || component_instance.lifecycle.on_update_props)(existing_props_for_component, props, component_instance);
+		}
+	}	
 
 	return html;
 };
