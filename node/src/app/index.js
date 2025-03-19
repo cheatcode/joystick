@@ -321,6 +321,14 @@ class App {
 				register_route_from_object(this.express.app, route_path, route_handler);
 			}
 		}
+
+		if (process.env.NODE_ENV !== 'development') {
+			// NOTE: Add a universal health check endpoint that can be utilized by third-parties
+			// for monitoring purposes.
+			this.express.app.get('/health', (req = {}, res = {}) => {
+				return res.status(200).send('ok');
+			});
+		}
 	}
 
 	register_tests() {
