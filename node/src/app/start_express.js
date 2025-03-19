@@ -16,7 +16,12 @@ const start_express = (on_after_start_server = null, app_instance = {}) => {
  
   // NOTE: Bind the app to localhost in production environments to avoid exposing the app
   // to the world via the host machine's IP address.
-  const host = process.env.NODE_ENV !== 'development' ? '127.0.0.1' : '0.0.0.0';
+  let host = '0.0.0.0';
+
+  if (process.env.NODE_ENV !== 'development' && process.env.PUSH_DEPLOYMENT_TYPE === 'standalone') {
+    host = '127.0.0.1';
+  }
+
   const server = express_app.listen(port, host);
 
   built_in_middleware({
