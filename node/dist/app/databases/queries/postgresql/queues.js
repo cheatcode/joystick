@@ -1,4 +1,4 @@
-import i from"node-cron";import s from"cluster";import a from"../../postgresql/handle_cleanup_queues.js";import n from"../../../../lib/timestamps.js";import o from"../../../../lib/wait.js";const _={add_job:async function(e={}){const t=this?.db,[u]=await t?.query("SELECT * FROM information_schema.tables WHERE table_name = $1",[`queue_${this.queue.name}`]);return u||await o(1),t?.query(`
+import i from"node-cron";import s from"cluster";import o from"../../postgresql/handle_cleanup_queues.js";import a from"../../../../lib/timestamps.js";import r from"../../../../lib/wait.js";const _={add_job:async function(e={}){const t=this?.db,[u]=await t?.query("SELECT * FROM information_schema.tables WHERE table_name = $1",[`queue_${this.queue.name}`]);u||await r(1);const n=typeof e.next_run_at=="string"?e.next_run_at:e.next_run_at?.toISOString();return t?.query(`
       INSERT INTO queue_${this.queue.name} (
         _id,
         status,
@@ -10,7 +10,7 @@ import i from"node-cron";import s from"cluster";import a from"../../postgresql/h
       ) VALUES (
         $1, $2, $3, $4, $5, $6, $7
       )
-    `,[e?._id,e?.status,e?.environment,e?.job,JSON.stringify(e?.payload),e?.nextRunAt||e?.next_run_at,0])},count_jobs:async function(e=""){const t=this?.db,[u]=await t?.query(`
+    `,[e?._id,e?.status,e?.environment,e?.job,JSON.stringify(e?.payload),n,0])},count_jobs:async function(e=""){const t=this?.db,[u]=await t?.query(`
       SELECT
         count(*)
       FROM
@@ -40,7 +40,7 @@ import i from"node-cron";import s from"cluster";import a from"../../postgresql/h
         AND
           environment = $2
       `:""}
-    `,[e?.status,process.env.NODE_ENV])},get_next_job_to_run:async function(){const e=this?.db,[t]=await e?.query(`
+    `,[e?.status,process.env.NODE_ENV])},get_next_job_to_run:async function(){const e=this?.db,t=a.get_database_format(e),u=a.get_current_time({format:t}),[n]=await e?.query(`
       SELECT * FROM
         queue_${this.queue.name}
       WHERE
@@ -48,12 +48,12 @@ import i from"node-cron";import s from"cluster";import a from"../../postgresql/h
       AND
         environment = $2
       AND
-        next_run_at::timestamp <= $3
+        next_run_at::timestamp <= $3::timestamp
       AND
         locked_by IS NULL
       ORDER BY
         next_run_at ASC
-    `,["pending",process.env.NODE_ENV,n.get_current_time()]);return t?._id&&await e?.query(`
+    `,["pending",process.env.NODE_ENV,u]);return n?._id&&await e?.query(`
         UPDATE
           queue_${this.queue.name}
         SET
@@ -62,7 +62,7 @@ import i from"node-cron";import s from"cluster";import a from"../../postgresql/h
           locked_by = $3
         WHERE
           _id = $4
-      `,["running",n.get_current_time(),this.machine_id,t?._id]),t?{...t,payload:t?.payload?JSON.parse(t?.payload||""):{}}:{}},initialize_database:async function(){if(s.isPrimary||s.isWorker&&s.worker.id===1){const e=this?.db;await e?.query(`
+      `,["running",a.get_current_time({format:"postgresql"}),this.machine_id,n?._id]),n?{...n,payload:n?.payload?JSON.parse(n?.payload||""):{}}:{}},initialize_database:async function(){if(s.isPrimary||s.isWorker&&s.worker.id===1){const e=this?.db;await e?.query(`
         CREATE TABLE IF NOT EXISTS queue_${this.queue.name} (
           _id text PRIMARY KEY,
           status text,
@@ -77,7 +77,7 @@ import i from"node-cron";import s from"cluster";import a from"../../postgresql/h
           environment text,
           attempts smallint
         )
-      `),await e?.query(`ALTER TABLE queue_${this.queue.name} ADD COLUMN IF NOT EXISTS environment text`),await e?.query(`ALTER TABLE queue_${this.queue.name} ADD COLUMN IF NOT EXISTS attempts smallint`),await e?.query(`CREATE INDEX IF NOT EXISTS status_index ON queue_${this.queue.name} (status)`),await e?.query(`CREATE INDEX IF NOT EXISTS status_next_run_at_index ON queue_${this.queue.name} (status, next_run_at)`),await e?.query(`CREATE INDEX IF NOT EXISTS next_job_index ON queue_${this.queue.name} (status, environment, next_run_at, locked_by)`),await e?.query(`CREATE INDEX IF NOT EXISTS completed_at_index ON queue_${this.queue.name} (completed_at)`),await e?.query(`CREATE INDEX IF NOT EXISTS failed_at_index ON queue_${this.queue.name} (failed_at)`),(this.queue.options?.cleanup?.completedAfterSeconds||this.queue.options?.cleanup?.completed_after_seconds)&&i.schedule("*/30 * * * * *",()=>{a({database:e,table:`queue_${this.queue.name}`,seconds:this.queue.options?.cleanup?.completedAfterSeconds||this.queue.options?.cleanup?.completed_after_seconds})}),(this.queue.options?.cleanup?.failedAfterSeconds||this.queue.options?.cleanup?.failed_after_seconds)&&i.schedule("*/30 * * * * *",()=>{a({database:e,table:`queue_${this.queue.name}`,seconds:this.queue.options?.cleanup?.failedAfterSeconds||this.queue.options?.cleanup?.failed_after_seconds})})}},log_attempt:function(e=""){return this?.db?.query(`
+      `),await e?.query(`ALTER TABLE queue_${this.queue.name} ADD COLUMN IF NOT EXISTS environment text`),await e?.query(`ALTER TABLE queue_${this.queue.name} ADD COLUMN IF NOT EXISTS attempts smallint`),await e?.query(`CREATE INDEX IF NOT EXISTS status_index ON queue_${this.queue.name} (status)`),await e?.query(`CREATE INDEX IF NOT EXISTS status_next_run_at_index ON queue_${this.queue.name} (status, next_run_at)`),await e?.query(`CREATE INDEX IF NOT EXISTS next_job_index ON queue_${this.queue.name} (status, environment, next_run_at, locked_by)`),await e?.query(`CREATE INDEX IF NOT EXISTS completed_at_index ON queue_${this.queue.name} (completed_at)`),await e?.query(`CREATE INDEX IF NOT EXISTS failed_at_index ON queue_${this.queue.name} (failed_at)`),(this.queue.options?.cleanup?.completedAfterSeconds||this.queue.options?.cleanup?.completed_after_seconds)&&i.schedule("*/30 * * * * *",()=>{o({database:e,table:`queue_${this.queue.name}`,seconds:this.queue.options?.cleanup?.completedAfterSeconds||this.queue.options?.cleanup?.completed_after_seconds})}),(this.queue.options?.cleanup?.failedAfterSeconds||this.queue.options?.cleanup?.failed_after_seconds)&&i.schedule("*/30 * * * * *",()=>{o({database:e,table:`queue_${this.queue.name}`,seconds:this.queue.options?.cleanup?.failedAfterSeconds||this.queue.options?.cleanup?.failed_after_seconds})})}},log_attempt:function(e=""){return this?.db?.query(`
       UPDATE
         queue_${this.queue.name}
       SET
@@ -93,7 +93,7 @@ import i from"node-cron";import s from"cluster";import a from"../../postgresql/h
         locked_by = $3
       WHERE
         _id = $4
-    `,["pending",t,null,e])},set_job_completed:function(e=""){return this?.db?.query(`
+    `,["pending",t,null,e])},set_job_completed:function(e=""){const t=this?.db;return t?.query(`
       UPDATE
         queue_${this.queue.name}
       SET
@@ -101,7 +101,7 @@ import i from"node-cron";import s from"cluster";import a from"../../postgresql/h
         completed_at = $2
       WHERE
         _id = $3
-    `,["completed",n.get_current_time(),e])},set_job_failed:function(e="",t=""){return this?.db?.query(`
+    `,["completed",a.get_current_time({format:a.get_database_format(t)}),e])},set_job_failed:function(e="",t=""){const u=this?.db;return u?.query(`
       UPDATE
         queue_${this.queue.name}
       SET
@@ -110,7 +110,7 @@ import i from"node-cron";import s from"cluster";import a from"../../postgresql/h
         error = $3
       WHERE
         _id = $4
-    `,["failed",n.get_current_time(),t,e])},set_jobs_for_machine_pending:function(){return this?.db?.query(`
+    `,["failed",a.get_current_time({format:a.get_database_format(u)}),t,e])},set_jobs_for_machine_pending:function(){return this?.db?.query(`
       UPDATE
         queue_${this.queue.name}
       SET
@@ -120,4 +120,4 @@ import i from"node-cron";import s from"cluster";import a from"../../postgresql/h
         status = ANY($3)
       AND
         locked_by = $4
-    `,["pending",null,["pending","running"],this.machine_id])}};var q=_;export{q as default};
+    `,["pending",null,["pending","running"],this.machine_id])}};var l=_;export{l as default};
