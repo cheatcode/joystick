@@ -7,17 +7,22 @@ import wait from '../../../../lib/wait.js';
 const queues = {
   add_job: async function (job_to_add = {}) {
     const db = this?.db;
-
+  
     // NOTE: Ensure that table was created via initialize_database on first startup. If not, wait 1s
     // while PostgreSQL creates the table.
     const [existing_table] = await db?.query(`SELECT * FROM information_schema.tables WHERE table_name = $1`, [
       `queue_${this.queue.name}`
     ]);
-
+  
     if (!existing_table) {
       await wait(1);
     }
-
+    
+    // Ensure next_run_at is a string for PostgreSQL
+    const next_run_at = typeof job_to_add.next_run_at === 'string'
+      ? job_to_add.next_run_at
+      : job_to_add.next_run_at?.toISOString();
+  
     return db?.query(`
       INSERT INTO queue_${this.queue.name} (
         _id,
@@ -36,7 +41,7 @@ const queues = {
       job_to_add?.environment,
       job_to_add?.job,
       JSON.stringify(job_to_add?.payload),
-      job_to_add?.nextRunAt || job_to_add?.next_run_at,
+      next_run_at,
       0
     ]);
   },
@@ -104,7 +109,10 @@ const queues = {
   },
   get_next_job_to_run: async function () {
     const db = this?.db;
-
+    const format = timestamps.get_database_format(db);
+    const current_time = timestamps.get_current_time({ format });
+  
+    // PostgreSQL's TIMESTAMP type can compare with ISO strings
     const [next_job] = await db?.query(`
       SELECT * FROM
         queue_${this.queue.name}
@@ -113,7 +121,7 @@ const queues = {
       AND
         environment = $2
       AND
-        next_run_at::timestamp <= $3
+        next_run_at::timestamp <= $3::timestamp
       AND
         locked_by IS NULL
       ORDER BY
@@ -121,9 +129,9 @@ const queues = {
     `, [
       'pending',
       process.env.NODE_ENV,
-      timestamps.get_current_time()
+      current_time
     ]);
-
+  
     if (next_job?._id) {
       await db?.query(`
         UPDATE
@@ -136,12 +144,12 @@ const queues = {
           _id = $4
       `, [
         'running',
-        timestamps.get_current_time(),
+        timestamps.get_current_time({ format: 'postgresql' }),
         this.machine_id,
         next_job?._id,
       ]);
     }
-
+  
     return next_job ? {
       ...next_job,
       payload: next_job?.payload ? JSON.parse(next_job?.payload || '') : {},
@@ -249,7 +257,7 @@ const queues = {
         _id = $3
     `, [
       'completed',
-      timestamps.get_current_time(),
+      timestamps.get_current_time({ format: timestamps.get_database_format(db) }),
       job_id
     ]);
   },
@@ -266,7 +274,7 @@ const queues = {
         _id = $4
     `, [
       'failed',
-      timestamps.get_current_time(),
+      timestamps.get_current_time({ format: timestamps.get_database_format(db) }),
       error,
       job_id,
     ]);

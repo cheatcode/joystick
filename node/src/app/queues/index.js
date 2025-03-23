@@ -79,12 +79,24 @@ class Queue {
   }
 
   async add(options = {}) {
+    // Use the new get_database_format method to determine format
+    const date_format = timestamps.get_database_format(this?.db?._connection);
+    
     // NOTE: If no next_run_at specified, run the job ASAP.
-    const next_run_at =
-      (options?.nextRunAt || options?.next_run_at) === "now" || (!options?.nextRunAt && !options?.next_run_at)
-        ? timestamps.get_future_time()
-        : (options?.nextRunAt || options?.next_run_at);
-
+    let next_run_at;
+    
+    if ((options?.nextRunAt || options?.next_run_at) === "now" || 
+        (!options?.nextRunAt && !options?.next_run_at)) {
+      // Use "now" as the default
+      next_run_at = timestamps.get_future_time(null, 0, { format: date_format });
+    } else {
+      // Normalize the provided date to the correct format
+      next_run_at = timestamps.normalize_date(
+        options?.nextRunAt || options?.next_run_at, 
+        { format: date_format }
+      );
+    }
+  
     const job_to_add = {
       _id: generate_id(16),
       status: "pending",
@@ -93,26 +105,23 @@ class Queue {
       job: options?.job,
       payload: options?.payload,
     };
-
+  
     const job_definition = this?.options?.jobs && this?.options?.jobs[options?.job];
-
+  
     // NOTE: This doesn't work on an external queue because external queues
-    // do not define the job, only the remote job does. In an external setup,
-    // we don't have access to the queue config, only a pointer to the
-    // database for the queue. We opt to just add the job blindly, trusting
-    // that the external queue will handle validation of the job run.
+    // do not define the job, only the remote job does... rest of comment unchanged
     if (
       job_definition && (
-      	types.is_function(job_definition?.preflight?.onBeforeAdd) ||
-      	types.is_function(job_definition?.preflight?.on_before_add)
+        types.is_function(job_definition?.preflight?.onBeforeAdd) ||
+        types.is_function(job_definition?.preflight?.on_before_add)
       )
     ) {
       const can_add_job = await (job_definition?.preflight?.onBeforeAdd || job_definition?.preflight?.on_before_add)(
-      	job_to_add,
-      	this.db._connection,
-      	`queue_${this.name}`
+        job_to_add,
+        this.db._connection,
+        `queue_${this.name}`
       );
-
+  
       if (!can_add_job) {
         return null;
       }
@@ -236,13 +245,16 @@ class Queue {
   }
 
   _handle_job_failed(next_job = {}, job_definition = {}, error = "") {
+    // Use the new get_database_format method
+    const date_format = timestamps.get_database_format(this?.db?._connection);
+    
     if (job_definition?.requeueOnFailure || job_definition?.requeue_on_failure) {
       return this._handle_requeue_job(
         next_job,
-        timestamps.get_future_time('seconds', 10),
+        timestamps.get_future_time('seconds', 10, { format: date_format }),
       );
     }
-
+  
     return this.db.set_job_failed(next_job?._id, error);
   }
 
@@ -251,7 +263,21 @@ class Queue {
   }
 
   _handle_requeue_job(job = {}, next_run_at = null) {
-    return this.db.requeue_job(job?._id, next_run_at || timestamps.get_future_time());
+    let normalized_date;
+    
+    if (next_run_at) {
+      normalized_date = this._normalize_date_for_db(next_run_at);
+    } else {
+      normalized_date = this._normalize_date_for_db(new Date());
+    }
+    
+    return this.db.requeue_job(job?._id, normalized_date);
+  }
+
+  _normalize_date_for_db(date_input) {
+    // Use the new get_database_format method
+    const date_format = timestamps.get_database_format(this?.db?._connection);
+    return timestamps.normalize_date(date_input, { format: date_format });
   }
 
   list(status = "") {
@@ -263,6 +289,64 @@ class Queue {
 
     return this.db.get_jobs(query);
   }
+
+  async normalize_job_dates() {
+    if (!this.db) {
+      return { migrated: 0, error: "No database connection available" };
+    }
+    
+    try {
+      const is_postgresql = timestamps.get_database_format(this?.db?._connection) === 'postgresql';
+      const all_jobs = await this.list();
+      let migrated_count = 0;
+      
+      for (const job of all_jobs) {
+        let updated = false;
+        
+        // Process each date field
+        const date_fields = ['next_run_at', 'started_at', 'completed_at', 'failed_at'];
+        const updates = {};
+        
+        for (const field of date_fields) {
+          if (job[field]) {
+            try {
+              if (is_postgresql && typeof job[field] !== 'string') {
+                updates[field] = job[field].toISOString();
+                updated = true;
+              } else if (!is_postgresql && typeof job[field] === 'string') {
+                updates[field] = new Date(job[field]);
+                updated = true;
+              }
+            } catch (e) {
+              console.warn(`Could not normalize ${field} for job ${job._id}:`, e);
+            }
+          }
+        }
+        
+        // If any updates are needed, update the job
+        if (updated) {
+          if (is_postgresql) {
+            await this.db._connection.query(`
+              UPDATE queue_${this.name}
+              SET ${Object.keys(updates).map((field, i) => `${field} = $${i + 2}`).join(', ')}
+              WHERE _id = $1
+            `, [job._id, ...Object.values(updates)]);
+          } else {
+            await this.db._connection.collection(`queue_${this.name}`).updateOne(
+              { _id: job._id },
+              { $set: updates }
+            );
+          }
+          migrated_count++;
+        }
+      }
+      
+      return { migrated: migrated_count, total: all_jobs.length };
+    } catch (error) {
+      console.error("Error normalizing job dates:", error);
+      return { migrated: 0, error: error.message };
+    }
+  }  
 }
 
 export default Queue;

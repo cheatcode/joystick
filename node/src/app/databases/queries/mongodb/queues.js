@@ -4,8 +4,14 @@ import timestamps from '../../../../lib/timestamps.js';
 const queues ={
   add_job: function (job_to_add = {}) {
     const db = this.db?.collection(`queue_${this.queue.name}`);
+    // Ensure next_run_at is a proper Date object for MongoDB
+    const next_run_at = job_to_add.next_run_at instanceof Date 
+      ? job_to_add.next_run_at 
+      : new Date(job_to_add.next_run_at);
+    
     return db.insertOne({
       ...job_to_add,
+      next_run_at, // Use the normalized Date object
       attempts: 0,
     });
   },
@@ -30,28 +36,38 @@ const queues ={
   },
   get_next_job_to_run: async function () {
     const db = this.db?.collection(`queue_${this.queue.name}`);
-
+  
+    // Use the database format detector
+    const format = timestamps.get_database_format(this.db);
+    const current_time = timestamps.get_current_time({ format });
+    
     const next_job = await db.findOneAndUpdate({
       $or: [
         {
           status: 'pending',
           environment: process.env.NODE_ENV,
-          // NOTE: Do this to avoid accidentally running jobs intended for the future too early.
-          next_run_at: { $lte: timestamps.get_current_time({ mongodb_ttl: true }) },
+          // Handle both Date objects and ISO strings in existing data
+          $or: [
+            { next_run_at: { $lte: current_time } },
+            { next_run_at: { $lte: current_time.toISOString() } }
+          ],
           locked_by: { $exists: false }
         },
         {
           status: 'pending',
           environment: process.env.NODE_ENV,
-          // NOTE: Do this to avoid accidentally running jobs intended for the future too early.
-          next_run_at: { $lte: timestamps.get_current_time({ mongodb_ttl: true }) },
+          // Handle both Date objects and ISO strings in existing data
+          $or: [
+            { next_run_at: { $lte: current_time } },
+            { next_run_at: { $lte: current_time.toISOString() } }
+          ],
           locked_by: null,
         }
       ]
     }, {
       $set: {
         status: 'running',
-        started_at: timestamps.get_current_time({ mongodb_ttl: true }),
+        started_at: timestamps.get_current_time({ format: 'mongodb' }),
         locked_by: this.machine_id,
       },
     }, {
@@ -59,7 +75,23 @@ const queues ={
         next_run_at: 1,
       },
     });
-
+  
+    // When reading a job, ensure all date fields are normalized
+    if (next_job) {
+      if (next_job.next_run_at && typeof next_job.next_run_at === 'string') {
+        next_job.next_run_at = new Date(next_job.next_run_at);
+      }
+      if (next_job.started_at && typeof next_job.started_at === 'string') {
+        next_job.started_at = new Date(next_job.started_at);
+      }
+      if (next_job.completed_at && typeof next_job.completed_at === 'string') {
+        next_job.completed_at = new Date(next_job.completed_at);
+      }
+      if (next_job.failed_at && typeof next_job.failed_at === 'string') {
+        next_job.failed_at = new Date(next_job.failed_at);
+      }
+    }
+  
     return next_job;
   },
   initialize_database: async function () {
@@ -136,8 +168,9 @@ const queues ={
     return db.updateOne({ _id: job_id }, {
       $set: {
         status: 'completed',
-        // NOTE: Format this way for ttl indexes.
-        completed_at: timestamps.get_current_time({ mongodb_ttl: true }),
+        completed_at: timestamps.get_current_time({ 
+          format: timestamps.get_database_format(this.db) 
+        }),
       },
     });
   },
@@ -146,8 +179,9 @@ const queues ={
     return db.updateOne({ _id: job_id }, {
       $set: {
         status: 'failed',
-        // NOTE: Format this way for ttl indexes.
-        failed_at: timestamps.get_current_time({ mongodb_ttl: true }),
+        failed_at: timestamps.get_current_time({ 
+          format: timestamps.get_database_format(this.db) 
+        }),
         error,
       },
     });
