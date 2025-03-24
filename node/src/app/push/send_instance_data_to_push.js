@@ -2,42 +2,46 @@ import load_settings from '../../app/settings/load.js';
 import fetch from 'node-fetch';
 
 const send_instance_data_to_push = async (type = '', data = '') => {
-  const settings = load_settings();
-  const url = `${settings?.private?.cheatcode?.push_debug_url || 'https://push.cheatcode.co'}/api/instances/${type}`;
-
-  const check_response = await fetch(url, { method: 'HEAD' });
-
-  console.log('HEAD response received:', {
-    url,
-    status: check_response.status,
-    ok: check_response.ok,
-    statusText: check_response.statusText
-  });
-
-  if (!check_response.ok) {
-    return; // NOTE: Do nothing because Push isn't available.
-  }
-
-  const response = await fetch(url, {
-    method: 'POST',
-    headers: {
-      'x-push-instance-token': process.env.PUSH_INSTANCE_TOKEN,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ type, data }),
-  });
-
-  console.log('POST response received:', {
-    status: response.status,
-    ok: response.ok,
-    statusText: response.statusText
-  });
+  try {
+    const settings = load_settings();
+    const url = `${settings?.private?.cheatcode?.push_debug_url || 'https://push.cheatcode.co'}/api/instances/${type}`;
   
-  if (!response.ok) {
-    return; // NOTE: Fail silently because Push had an error.
+    const check_response = await fetch(url, { method: 'HEAD' });
+  
+    console.log('HEAD response received:', {
+      url,
+      status: check_response.status,
+      ok: check_response.ok,
+      statusText: check_response.statusText
+    });
+  
+    if (!check_response.ok) {
+      return; // NOTE: Do nothing because Push isn't available.
+    }
+  
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'x-push-instance-token': process.env.PUSH_INSTANCE_TOKEN,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ type, data }),
+    });
+  
+    console.log('POST response received:', {
+      status: response.status,
+      ok: response.ok,
+      statusText: response.statusText
+    });
+    
+    if (!response.ok) {
+      return; // NOTE: Fail silently because Push had an error.
+    }
+  
+    return response;
+  } catch (exception) {
+    console.error(exception);
   }
-
-  return response;
 };
 
 export default send_instance_data_to_push;
