@@ -6,6 +6,11 @@ const send_instance_data_to_push = async (type = '', data = '') => {
   const url = `${settings?.private?.cheatcode?.push_debug_url || 'https://push.cheatcode.co'}/api/instances/${type}`;
 
   const check_response = await fetch(url, { method: 'HEAD' });
+
+  console.log({
+    check_response,
+  });
+
   if (!check_response.ok) {
     return; // NOTE: Do nothing because Push isn't available.
   }
