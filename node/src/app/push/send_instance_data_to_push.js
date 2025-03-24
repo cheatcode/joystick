@@ -8,7 +8,9 @@ const send_instance_data_to_push = async (type = '', data = '') => {
   const check_response = await fetch(url, { method: 'HEAD' });
 
   console.log({
-    check_response,
+    status: check_response.status,
+    ok: check_response.ok,
+    statusText: check_response.statusText
   });
 
   if (!check_response.ok) {
