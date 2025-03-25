@@ -37,7 +37,7 @@ const push = () => {
     }
   });
 
-  const health_check_job = cron.schedule(NODE_CRON_EVERY_MINUTE, () => {
+  const health_check_job = cron.schedule(NODE_CRON_EVERY_TEN_SECONDS, () => {
     try {
       send_instance_data_to_push('health-checks');
     } catch (exception) {
