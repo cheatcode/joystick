@@ -57,8 +57,7 @@ const push_logs = async () => {
 
   // Helper function to format log message
   function format_log_message(data, caller_info) {
-    // Remove trailing newline if it exists
-    const trimmedData = data.endsWith('\n') ? data.slice(0, -1) : data;
+    const trimmedData = typeof data === 'string' && data.endsWith('\n') ? data.slice(0, -1) : data;
     return caller_info + trimmedData;
   }
 
@@ -79,6 +78,15 @@ const push_logs = async () => {
       write.apply(process.stderr, arguments);
     };
   })(process.stderr.write);
+
+  // Capture console.warn and log as 'warn' level
+  const original_console_warn = console.warn;
+  console.warn = function(...args) {
+    const message = args.map((arg) => typeof arg === 'string' ? arg : JSON.stringify(arg)).join(' ');
+    const caller_info = get_caller_info();
+    logger.warn(format_log_message(message, caller_info));
+    original_console_warn.apply(console, args);
+  };
 
   // Handle uncaught exceptions
   process.on('uncaughtException', (error) => {
