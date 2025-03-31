@@ -20,12 +20,14 @@ const send_instance_data_to_push = async (type = '', data = '') => {
     });
 
     req.on('error', (err) => {
+      console.log('send_instance_data_to_push', error);
       resolve(false);
     });
-
+    
     req.end();
   });
-
+  
+  console.log('send_instance_data_to_push', { head_ok });
   if (!head_ok) {
     return; // NOTE: Do nothing because Push isn't available.
   }
