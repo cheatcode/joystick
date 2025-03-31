@@ -363,16 +363,16 @@ class Component {
 			state,
 			callback,
 		]);
-
+	
 		this._pending_state_updates.push(state);
-
+	
 		if (callback && types.is_function(callback)) {
 			this._pending_state_callbacks.push(callback);
 		}
-
+	
 		if (!this._is_render_scheduled) {
 			this._is_render_scheduled = true;
-
+	
 			Promise.resolve().then(() => {
 				this._flush_state_and_render();
 			});
@@ -382,18 +382,18 @@ class Component {
 	_flush_state_and_render() {
 		const final_state = Object.assign({}, this.state || {}, ...this._pending_state_updates);
 		this.state = compile_state(this, final_state);
-
+	
 		this.queue_rerender({
 			after_set_state_rerender: () => {
 				for (const cb of this._pending_state_callbacks) {
 					cb();
 				}
-
-				this._pending_state_updates = [];
-				this._pending_state_callbacks = [];
-				this._is_render_scheduled = false;
 			},
 		});
+	
+		this._pending_state_updates = [];
+		this._pending_state_callbacks = [];
+		this._is_render_scheduled = false;
 	}
 
   set_timeout(callback = null, delay = 0) {
