@@ -21,7 +21,7 @@
     "compression": "^1.7.4",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
-    "express": "^4.18.2",
+    "express": "^4.21.2",
     "html-to-text": "^9.0.5",
     "juice": "^9.1.0",
     "linkedom": "^0.16.4",
