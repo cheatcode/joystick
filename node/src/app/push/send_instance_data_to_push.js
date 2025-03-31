@@ -2,33 +2,45 @@ import https from 'https';
 import { URL } from 'url';
 import load_settings from '../../app/settings/load.js';
 
+const ping_push = async (base_url) => {
+  const url = new URL(`${base_url}/ping`);
+
+  return new Promise((resolve) => {
+    const req = https.request({
+      method: 'GET',
+      hostname: url.hostname,
+      port: url.port || 443,
+      path: url.pathname,
+      timeout: 3000
+    }, (res) => {
+      resolve(res.statusCode >= 200 && res.statusCode < 400);
+    });
+
+    req.on('error', (err) => {
+      console.log('[ping_push] error', err);
+      resolve(false);
+    });
+
+    req.on('timeout', () => {
+      req.destroy();
+      resolve(false);
+    });
+
+    req.end();
+  });
+};
+
 const send_instance_data_to_push = async (type = '', data = '') => {
   const settings = load_settings();
   const base_url = settings?.private?.cheatcode?.push_debug_url || 'https://push.cheatcode.co';
   const url = `${base_url}/api/instances/${type}`;
   const parsed_url = new URL(url);
 
-  const head_ok = await new Promise((resolve) => {
-    const req = https.request({
-      method: 'HEAD',
-      hostname: parsed_url.hostname,
-      port: parsed_url.port || 443,
-      path: parsed_url.pathname,
-      headers: {}
-    }, (res) => {
-      resolve(res.statusCode >= 200 && res.statusCode < 400);
-    });
+  const push_available = await ping_push(base_url);
 
-    req.on('error', (err) => {
-      console.log('send_instance_data_to_push', error);
-      resolve(false);
-    });
-    
-    req.end();
-  });
+  console.log('send_instance_data_to_push', { push_available });
   
-  console.log('send_instance_data_to_push', { head_ok });
-  if (!head_ok) {
+  if (!push_available) {
     return; // NOTE: Do nothing because Push isn't available.
   }
 
@@ -44,7 +56,8 @@ const send_instance_data_to_push = async (type = '', data = '') => {
         'x-push-instance-token': process.env.PUSH_INSTANCE_TOKEN,
         'Content-Type': 'application/json',
         'Content-Length': Buffer.byteLength(post_body)
-      }
+      },
+      timeout: 5000
     }, (res) => {
       let response_data = '';
 
@@ -62,6 +75,12 @@ const send_instance_data_to_push = async (type = '', data = '') => {
     });
 
     req.on('error', (err) => {
+      console.log('send_instance_data_to_push POST error', err);
+      resolve();
+    });
+
+    req.on('timeout', () => {
+      req.destroy();
       resolve();
     });
 
