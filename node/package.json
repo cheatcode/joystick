@@ -43,6 +43,6 @@
     "ws": "^8.15.1"
   },
   "devDependencies": {
-    "esbuild": "^0.19.9"
+    "esbuild": "^0.25.2"
   }
 }
