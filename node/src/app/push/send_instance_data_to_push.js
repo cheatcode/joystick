@@ -2,47 +2,11 @@ import https from 'https';
 import { URL } from 'url';
 import load_settings from '../../app/settings/load.js';
 
-const ping_push = async (base_url) => {
-  const url = new URL(`${base_url}/ping`);
-
-  return new Promise((resolve) => {
-    const req = https.request({
-      method: 'GET',
-      hostname: url.hostname,
-      port: url.port || 443,
-      path: url.pathname,
-      timeout: 3000
-    }, (res) => {
-      resolve(res.statusCode >= 200 && res.statusCode < 400);
-    });
-
-    req.on('error', (err) => {
-      console.log('[ping_push] error', err);
-      resolve(false);
-    });
-
-    req.on('timeout', () => {
-      req.destroy();
-      resolve(false);
-    });
-
-    req.end();
-  });
-};
-
 const send_instance_data_to_push = async (type = '', data = '') => {
   const settings = load_settings();
   const base_url = settings?.private?.cheatcode?.push_debug_url || 'https://push.cheatcode.co';
   const url = `${base_url}/api/instances/${type}`;
   const parsed_url = new URL(url);
-
-  const push_available = await ping_push(base_url);
-
-  console.log('send_instance_data_to_push', { push_available });
-  
-  if (!push_available) {
-    return; // NOTE: Do nothing because Push isn't available.
-  }
 
   const post_body = JSON.stringify({ type, data });
 
