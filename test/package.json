@@ -14,7 +14,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "ava": "^5.3.0",
+    "ava": "^5.3.1",
     "chalk": "^5.3.0",
     "esbuild": "^0.19.11",
     "linkedom": "^0.16.6",
