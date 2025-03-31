@@ -17,6 +17,6 @@
     "esbuild": "^0.19.8"
   },
   "dependencies": {
-    "linkedom": "^0.16.6"
+    "linkedom": "^0.16.11"
   }
 }
