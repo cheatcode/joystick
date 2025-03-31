@@ -383,17 +383,18 @@ class Component {
 		const final_state = Object.assign({}, this.state || {}, ...this._pending_state_updates);
 		this.state = compile_state(this, final_state);
 	
+		const pending_callbacks = [...this._pending_state_callbacks]; // clone to preserve
+		this._pending_state_updates = [];
+		this._pending_state_callbacks = [];
+		this._is_render_scheduled = false;
+	
 		this.queue_rerender({
 			after_set_state_rerender: () => {
-				for (const cb of this._pending_state_callbacks) {
+				for (const cb of pending_callbacks) {
 					cb();
 				}
 			},
 		});
-	
-		this._pending_state_updates = [];
-		this._pending_state_callbacks = [];
-		this._is_render_scheduled = false;
 	}
 
   set_timeout(callback = null, delay = 0) {
