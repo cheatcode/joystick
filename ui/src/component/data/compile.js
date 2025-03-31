@@ -29,7 +29,7 @@ const compile = (data_from_window = {}, request_from_window = {}, component_inst
       }
 
       if (!window?.__joystick_test__) {
-        component_instance.rerender({
+        component_instance.queue_rerender({
           after_refetch_data_rerender: () => {
             run_tree_job('lifecycle.onRefetchData', { root_instance_id: component_instance?.instance_id });
           },

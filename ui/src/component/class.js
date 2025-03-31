@@ -17,6 +17,16 @@ import types from "../lib/types.js";
 
 class Component {
 	constructor(component_options = {}) {
+		this._render_queue = [];
+		this._is_rendering = false;
+	
+		this._pending_state_updates = [];
+		this._pending_state_callbacks = [];
+	
+		this.queue_rerender = this.queue_rerender.bind(this);
+		this._process_render_queue = this._process_render_queue.bind(this);
+		this._flush_state_and_render = this._flush_state_and_render.bind(this);
+
 		this.set_interval = this.set_interval.bind(this);
 		this.setInterval = this.setInterval.bind(this);
 		this.set_timeout = this.set_timeout.bind(this);
@@ -24,6 +34,27 @@ class Component {
 		this.sync_dom_to_vdom = this.sync_dom_to_vdom.bind(this);
 		
 		register_component_options(this, component_options);
+	}
+
+	queue_rerender(options = {}) {
+		this._render_queue.push(options);
+		this._process_render_queue();
+	}
+
+	_process_render_queue() {
+		if (this._is_rendering || this._render_queue.length === 0) {
+			return;
+		}
+	
+		this._is_rendering = true;
+	
+		const options = this._render_queue.shift();
+	
+		Promise.resolve().then(() => {
+			this.rerender(options);
+			this._is_rendering = false;
+			this._process_render_queue();
+		});
 	}
 
   cleanup_html(html = '', linkedom_document = null) {
@@ -333,18 +364,36 @@ class Component {
 			callback,
 		]);
 
-		this.state = compile_state(this, {
-      ...(this.state || {}),
-      ...state,
-    });
+		this._pending_state_updates.push(state);
 
-    this.rerender({
-      after_set_state_rerender: () => {
-        if (callback && types.is_function(callback)) {
-          callback();
-        }
-      },
-    });
+		if (callback && types.is_function(callback)) {
+			this._pending_state_callbacks.push(callback);
+		}
+
+		if (!this._is_render_scheduled) {
+			this._is_render_scheduled = true;
+
+			Promise.resolve().then(() => {
+				this._flush_state_and_render();
+			});
+		}
+	}
+
+	_flush_state_and_render() {
+		const final_state = Object.assign({}, this.state || {}, ...this._pending_state_updates);
+		this.state = compile_state(this, final_state);
+
+		this.queue_rerender({
+			after_set_state_rerender: () => {
+				for (const cb of this._pending_state_callbacks) {
+					cb();
+				}
+
+				this._pending_state_updates = [];
+				this._pending_state_callbacks = [];
+				this._is_render_scheduled = false;
+			},
+		});
 	}
 
   set_timeout(callback = null, delay = 0) {

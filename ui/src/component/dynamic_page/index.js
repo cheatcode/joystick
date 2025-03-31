@@ -73,7 +73,7 @@ const load_dynamic_page = async (component_instance = {}, dynamic_page_options =
     );
   }
 
-  component_instance.rerender();
+  component_instance.queue_rerender();
 };
 
 const dynamic_page = {
