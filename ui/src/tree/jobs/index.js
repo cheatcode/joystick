@@ -37,15 +37,21 @@ const clear_timers = (root_instance_id = null, existing_tree = null) => {
 };
 
 const clear_websockets = () => {
-	// NOTE: If we call this as part of reset_tree_for_hmr, we want to wipe out ALL timers
-	// on the tree (the original root instance gets delete on remount).
-	const websockets = window.__joystick_hmr_previous_websockets__;
-	for (let i = 0; i < websockets?.length; i += 1) {
-		const websocket = websockets[i];
-		if (websocket?.client?.close && types.is_function(websocket?.client?.close)) {
-			websocket.client.close(1000);
-		}
-	}
+  const components = Object.entries(window.__joystick_hmr_previous_websockets__ || {});
+
+  for (let i = 0; i < components.length; i += 1) {
+    const [component_id, websockets_by_name] = components[i];
+
+    const websockets = Object.values(websockets_by_name || {});
+    
+    for (let j = 0; j < websockets.length; j += 1) {
+      const websocket = websockets[j];
+      
+      if (websocket?.client?.close && types.is_function(websocket.client.close)) {
+        websocket.client.close(1000); // Normal closure
+      }
+    }
+  }
 };
 
 const jobs = {
@@ -194,7 +200,7 @@ const jobs = {
 		clear_timers(null, window.__joystick_hmr_previous_tree__);
 		clear_websockets();
 		window.__joystick_hmr_previous_tree__ = [];
-		window.__joystick_hmr_previous_websockets__ = [];
+		window.__joystick_hmr_previous_websockets__ = {};
 	},
 };
 
