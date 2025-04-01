@@ -34,6 +34,7 @@ const joystick = {
 	_external: {},
 	_internal: {
   	tree: [],
+    websockets: {},
 	},
 	accounts,
 	cache,
