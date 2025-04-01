@@ -113,10 +113,13 @@ const websocket_client = (options = {}, on_connect = null) => {
   if (on_connect) on_connect(connection);
 
   if (window.joystick?._internal) {
-    window.joystick._internal.websockets = [
-      ...(window.joystick._internal.websockets || []),
-      connection,
-    ];
+    window.joystick._internal.websockets = {
+      ...(window?.joystick?._internal?.websockets || {}),
+      [options?.component_instance?.id]: {
+        ...(window?.joystick?._internal?.websockets?.[options?.component_instance?.id] || {}),
+        [options?.name]: connection,
+      },
+    };
   }
 
   return connection;
