@@ -8,7 +8,7 @@ const register_on_component = (component_options = {}, component_instance = {}) 
   for (let i = 0; i < websocket_definitions?.length; i += 1) {
     const [websocket_name, websocket_definition] = websocket_definitions[i];
 
-    if (!window?.joystick?._internal?.websockets?.[options?.component_instance?.id]?.[websocket_name]) {
+    if (!window?.joystick?._internal?.websockets?.[component_instance?.id]?.[websocket_name]) {
       websocket_client({
         name: websocket_name,
         component_instance,
