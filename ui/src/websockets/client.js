@@ -81,9 +81,18 @@ const websocket_client = (options = {}, on_connect = null) => {
     const was_intentional_close = [1000, 1001]?.includes(event?.code);
 
     if (window.joystick._internal.websockets) {
-      window.joystick._internal.websockets = window.joystick._internal.websockets?.filter((existing_websocket) => {
-        return existing_websocket?._id !== connection?._id;
-      });
+      for (const [component_id, sockets_by_name] of Object.entries(window.joystick._internal.websockets)) {
+        for (const [websocket_name, socket] of Object.entries(sockets_by_name)) {
+          if (socket?._id === connection?._id) {
+            delete window.joystick._internal.websockets[component_id][websocket_name];
+    
+            // NOTE: If no more sockets under this component, clean that up too.
+            if (Object.keys(window.joystick._internal.websockets[component_id]).length === 0) {
+              delete window.joystick._internal.websockets[component_id];
+            }
+          }
+        }
+      }
     }
 
     if ((options?.options?.autoReconnect || options?.options?.auto_reconnect) && !reconnect_interval && !was_intentional_close) {
