@@ -99,8 +99,6 @@ const remount_page_in_layout = async () => {
 	const layout_component_file = await import_layout_component();
 	const page_component_file = await import_page_component();
 
-  console.log('REMOUNT', window.joystick._internal.tree);
-
 	window.joystick.mount(
 	  layout_component_file,
 	  Object.assign({ page: page_component_file }, window.__joystick_ssr_props__),
