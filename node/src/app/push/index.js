@@ -31,7 +31,6 @@ const push = () => {
   const sync_metrics_job = cron.schedule(NODE_CRON_EVERY_THIRTY_SECONDS, async () => {
     try {
       const metrics = await snapshot_metrics();
-      console.log(`[${new Date().toISOString()}] [metrics] job started`, JSON.stringify(metrics));
       send_instance_data_to_push('metrics', metrics);
     } catch (exception) {
       console.warn('sync_metrics_job', exception);
