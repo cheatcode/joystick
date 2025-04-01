@@ -146,7 +146,7 @@ const hmr_client = (() =>
       // working in an HMR/development context.
       window.__joystick_hmr_update__ = true;
       window.__joystick_hmr_previous_tree__ = [...(window.joystick._internal.tree || [])];
-      window.__joystick_hmr_previous_websockets__ = [...(window.joystick._internal.websockets || [])];
+      window.__joystick_hmr_previous_websockets__ = {...(window.joystick._internal.websockets || {})};
 
       const previous_window_position = Object.assign({}, { scrollTop: window.scrollY });
 
