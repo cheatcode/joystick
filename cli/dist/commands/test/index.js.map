@@ -3,5 +3,5 @@
   "sources": ["../../../src/commands/test/index.js"],
   "sourcesContent": ["import development_server from \"../../lib/development_server/index.js\";\n\nconst test = async (args = {}, options = {}) => {\n  await development_server({\n    environment: 'test',\n    process,\n    port: 1977,\n    watch: options?.watch,\n  });\n};\n\nexport default test;\n"],
   "mappings": "AAAA,OAAOA,MAAwB,wCAE/B,MAAMC,EAAO,MAAOC,EAAO,CAAC,EAAGC,EAAU,CAAC,IAAM,CAC9C,MAAMH,EAAmB,CACvB,YAAa,OACb,QACA,KAAM,KACN,MAAOG,GAAS,KAClB,CAAC,CACH,EAEA,IAAOC,EAAQH",
-  "names": ["development_server", "test", "args", "options", "test_default"]
+  "names": ["development_server", "test", "args", "options", "index_default"]
 }

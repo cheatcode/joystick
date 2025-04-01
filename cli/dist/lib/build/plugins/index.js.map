@@ -3,5 +3,5 @@
   "sources": ["../../../../src/lib/build/plugins/index.js"],
   "sourcesContent": ["import bootstrap_component from './bootstrap_component.js';\nimport generate_file_dependency_map from './generate_file_dependency_map.js';\nimport warn_node_environment from \"./warn_node_environment.js\";\n\nconst plugins = {\n  bootstrap_component: {\n    name: \"bootstrap_component\",\n    setup(build) {\n    \tbootstrap_component(build);\n    },\n  },\n  generate_file_dependency_map: {\n    name: \"generate_file_dependency_map\",\n    setup(build) {\n    \tgenerate_file_dependency_map(build);\n    },\n  },\n  warn_node_environment: {\n    name: \"warn_node_environment\",\n    setup(build) {\n      warn_node_environment(build);\n    },\n  },\n};\n\nexport default plugins;\n"],
   "mappings": "AAAA,OAAOA,MAAyB,2BAChC,OAAOC,MAAkC,oCACzC,OAAOC,MAA2B,6BAElC,MAAMC,EAAU,CACd,oBAAqB,CACnB,KAAM,sBACN,MAAMC,EAAO,CACZJ,EAAoBI,CAAK,CAC1B,CACF,EACA,6BAA8B,CAC5B,KAAM,+BACN,MAAMA,EAAO,CACZH,EAA6BG,CAAK,CACnC,CACF,EACA,sBAAuB,CACrB,KAAM,wBACN,MAAMA,EAAO,CACXF,EAAsBE,CAAK,CAC7B,CACF,CACF,EAEA,IAAOC,EAAQF",
-  "names": ["bootstrap_component", "generate_file_dependency_map", "warn_node_environment", "plugins", "build", "plugins_default"]
+  "names": ["bootstrap_component", "generate_file_dependency_map", "warn_node_environment", "plugins", "build", "index_default"]
 }

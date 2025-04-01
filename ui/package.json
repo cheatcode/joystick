@@ -14,9 +14,9 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "esbuild": "^0.19.8"
+    "esbuild": "^0.25.2"
   },
   "dependencies": {
-    "linkedom": "^0.16.6"
+    "linkedom": "^0.18.9"
   }
 }

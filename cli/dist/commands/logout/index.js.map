@@ -3,5 +3,5 @@
   "sources": ["../../../src/commands/logout/index.js"],
   "sourcesContent": ["import fs from 'fs';\nimport os from 'os';\nimport color_log from '../../lib/color_log.js';\nimport path_exists from '../../lib/path_exists.js';\n\nconst { unlink } = fs.promises;\n\nconst logout = async (args = {}, options = {}) => {\n  const session_token_path = `${os.homedir()}/.push/session_token`;\n  const session_token_exists = await path_exists(session_token_path);\n\n  if (session_token_exists) {\n    await unlink(session_token_path, 'utf-8');\n    color_log('\\n\u2714 Logged out\\n', 'greenBright');\n  }\n\n  return true;\n};\n\nexport default logout;\n"],
   "mappings": "AAAA,OAAOA,MAAQ,KACf,OAAOC,MAAQ,KACf,OAAOC,MAAe,yBACtB,OAAOC,MAAiB,2BAExB,KAAM,CAAE,OAAAC,CAAO,EAAIJ,EAAG,SAEhBK,EAAS,MAAOC,EAAO,CAAC,EAAGC,EAAU,CAAC,IAAM,CAChD,MAAMC,EAAqB,GAAGP,EAAG,QAAQ,CAAC,uBAG1C,OAF6B,MAAME,EAAYK,CAAkB,IAG/D,MAAMJ,EAAOI,EAAoB,OAAO,EACxCN,EAAU;AAAA;AAAA,EAAoB,aAAa,GAGtC,EACT,EAEA,IAAOO,EAAQJ",
-  "names": ["fs", "os", "color_log", "path_exists", "unlink", "logout", "args", "options", "session_token_path", "logout_default"]
+  "names": ["fs", "os", "color_log", "path_exists", "unlink", "logout", "args", "options", "session_token_path", "index_default"]
 }
