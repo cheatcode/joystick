@@ -287,16 +287,16 @@ class App {
 
   async register_push() {
 		if (process.env.NODE_ENV !== "development" && process.env.IS_PUSH_DEPLOYED) {
-			await push_logger();
-			await push();
-
-			this.express.app.get(`/_push/health`, async (req = {}, res = {}) => {
+			this.express.app.get(`/api/_push/health`, async (req = {}, res = {}) => {
 				if (!req?.headers?.['x-push-instance-token'] === process.env.PUSH_INSTANCE_TOKEN) {
 					return res.status(403).send('403 - You are not allowed to access this endpoint.');
 				} else {
 					return res.status(200).send('ok');
 				}
 			});
+
+			await push_logger();
+			await push();
 		}
   }
 
