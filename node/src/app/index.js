@@ -286,15 +286,7 @@ class App {
 	}
 
   async register_push() {
-		console.log('debug_push', {
-			express: this.express.app,	
-			node_env: process.env.NODE_ENV,
-			is_push: process.env.IS_PUSH_DEPLOYED,
-		});
-
 		if (process.env.NODE_ENV !== "development" && process.env.IS_PUSH_DEPLOYED) {
-			console.log('PASSED PUSH CHECK');
-			
 			this.express.app.get(`/api/_push/health`, async (req = {}, res = {}) => {
 				if (!req?.headers?.['x-push-instance-token'] === process.env.PUSH_INSTANCE_TOKEN) {
 					return res.status(403).send('403 - You are not allowed to access this endpoint.');
@@ -366,13 +358,13 @@ class App {
 	async start() {
 		// NOTE: Order here is intentionally not alphabetical to ensure load
 		// order plays nice with things like tests.
-		this.register_push();
 		await this.connect_databases();
 		this.register_caches();
 		this.register_cron_jobs();
 		this.register_queues();
 		this.start_express();
 		this.register_tests();
+		this.register_push();
 		this.register_accounts();
 		this.register_api();
 		this.register_routes();
