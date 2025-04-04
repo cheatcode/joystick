@@ -37,17 +37,18 @@ const push = () => {
     }
   });
 
-  const health_check_job = cron.schedule(NODE_CRON_EVERY_TEN_SECONDS, () => {
-    try {
-      send_instance_data_to_push('health-checks');
-    } catch (exception) {
-      console.warn('health_check_job', exception);
-    }
-  });
+  // const health_check_job = cron.schedule(NODE_CRON_EVERY_TEN_SECONDS, () => {
+  //   try {
+  //     send_instance_data_to_push('health-checks');
+  //   } catch (exception) {
+  //     console.warn('health_check_job', exception);
+  //   }
+  // });
 
   sync_logs_job.start();
   sync_metrics_job.start();
-  health_check_job.start();
+  
+  // health_check_job.start();
 };
 
 export default push;

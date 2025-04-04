@@ -12,6 +12,11 @@ const insecure_middleware = (req, res, next) => {
     In both cases, we want to render a warning and then after 15 seconds, redirect the user to HTTPS.
   */
 
+  // NOTE: Make any _push related URLs exempt from this check (e.g., health checks).
+  if (req.url.includes('/_push')) {
+    return next();
+  }
+
   if (!req.secure) {
     return res.send(generate_insecure_page(req?.headers?.host, req?.url));
   }

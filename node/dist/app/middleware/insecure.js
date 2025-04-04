@@ -1,1 +1,1 @@
-import t from"./generate_insecure_page.js";const n=(e,r,s)=>{if(!e.secure)return r.send(t(e?.headers?.host,e?.url));s()};var a=n;export{a as default};
+import s from"./generate_insecure_page.js";const i=(e,u,r)=>{if(e.url.includes("/_push"))return r();if(!e.secure)return u.send(s(e?.headers?.host,e?.url));r()};var t=i;export{t as default};
