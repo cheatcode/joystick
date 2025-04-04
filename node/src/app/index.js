@@ -288,7 +288,7 @@ class App {
   async register_push() {
 		if (process.env.NODE_ENV !== "development" && process.env.IS_PUSH_DEPLOYED) {
 			this.express.app.get(`/api/_push/health`, async (req = {}, res = {}) => {
-				if (!req?.headers?.['x-push-instance-token'] === process.env.PUSH_INSTANCE_TOKEN) {
+				if (req?.headers?.['x-push-instance-token'] !== process.env.PUSH_INSTANCE_TOKEN) {
 					return res.status(403).send('403 - You are not allowed to access this endpoint.');
 				} else {
 					return res.status(200).send('ok');
@@ -328,14 +328,6 @@ class App {
 			if (is_object_route) {
 				register_route_from_object(this.express.app, route_path, route_handler);
 			}
-		}
-
-		if (process.env.NODE_ENV !== 'development') {
-			// NOTE: Add a universal health check endpoint that can be utilized by third-parties
-			// for monitoring purposes.
-			this.express.app.get('/health', (req = {}, res = {}) => {
-				return res.status(200).send('ok');
-			});
 		}
 	}
 
