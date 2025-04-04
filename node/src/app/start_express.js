@@ -13,16 +13,10 @@ const start_express = (on_after_start_server = null, app_instance = {}) => {
   process.env.PORT = port;
 
   const express_app = express();
- 
-  // NOTE: Bind the app to localhost in production environments to avoid exposing the app
-  // to the world via the host machine's IP address.
-  let host = '0.0.0.0';
 
-  if (process.env.NODE_ENV !== 'development' && process.env.PUSH_DEPLOYMENT_TYPE === 'standalone') {
-    host = '127.0.0.1';
-  }
-
-  const server = express_app.listen(port, host);
+  // NOTE: Bind the app to 0.0.0.0 so instance is always directly accessible via IP. This is safe
+  // in production as the insecure_middleware() ensures the connection is made over HTTPS.
+  const server = express_app.listen(port, '0.0.0.0');
 
   built_in_middleware({
     app_instance,
