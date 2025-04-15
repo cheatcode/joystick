@@ -66,7 +66,7 @@ const push = async (args = {}, options = {}) => {
       `Sorry, we couldn\'t find a deployment with the domain ${options?.domain} on your account. If you haven\'t created it yet, head over to the Push dashboard: https://push.cheatcode.co/deployments/create`,
       {
         level: "danger",
-        docs: "https://cheatcode.co/docs/push/deployments/create-a-new-deployment"
+        docs: "https://docs.cheatcode.co/push/billing"
       }
     );
 
