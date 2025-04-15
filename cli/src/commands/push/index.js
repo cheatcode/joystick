@@ -49,6 +49,18 @@ const push = async (args = {}, options = {}) => {
 		push_domain,
 	});
 
+	if (deployment?.status === 403) {
+		cli_log(
+      deployment?.error,
+      {
+        level: "danger",
+        docs: "https://cheatcode.co/docs/push/deployments/create-a-new-deployment"
+      }
+    );
+
+    return process.exit(0);	
+	}
+
 	if (!deployment) {
     cli_log(
       `Sorry, we couldn\'t find a deployment with the domain ${options?.domain} on your account. If you haven\'t created it yet, head over to the Push dashboard: https://push.cheatcode.co/deployments/create`,
