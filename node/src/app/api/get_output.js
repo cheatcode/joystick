@@ -11,8 +11,12 @@ const filter_output = (object = {}, fields = []) => {
       delete object[key];
     }
 
+    // if (key_in_fields && types.is_object(value) && key_in_fields.children.length === 0) {
+    //   return value;
+    // }
+
     if (key_in_fields && types.is_object(value) && key_in_fields.children.length === 0) {
-      return value;
+      continue;
     }
 
     if (key_in_fields && types.is_object(value) && key_in_fields.children.length > 0) {
