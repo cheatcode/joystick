@@ -86,7 +86,7 @@ const send_email = async (send_email_options = {}, smtp_overrides = {}) => {
       email_options: {
         base_html_name: send_email_options?.base,
       	subject: send_email_options?.subject,
-      	preheader: send_email_options?.preheader,
+      	preheader: send_email_options?.preheader ? `${send_email_options?.preheader}${'\u200C\u00A0'.repeat(250)}` : '',
       },
     });
 
