@@ -27,7 +27,8 @@ const connect_mongodb = async (database_settings = {}, database_port = 2610) => 
       waitQueueTimeoutMS: 10000,
 
       ...(process.env.NODE_ENV === 'development' ? {
-        directConnection: !is_srv,
+        // NOTE: Force directConnection if we only have a single host and srv is false/undefined.
+        directConnection: !is_srv && (connection?.hosts?.length === 1),
         minHeartbeatFrequencyMS: 2000,
         writeConcern: { w: 1 }
       } : {
