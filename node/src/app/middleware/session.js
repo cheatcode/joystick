@@ -15,6 +15,8 @@ const session_middleware = async (req, res, next) => {
         token: { $eq: push_instance_token },
       });
 
+      console.log('INSTANCE MATCHES', push_instance_token, !!instance)
+
       if (!!instance) {
         return next();
       }

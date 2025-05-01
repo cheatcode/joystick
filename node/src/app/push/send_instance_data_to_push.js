@@ -17,7 +17,6 @@ const send_instance_data_to_push = async (type = '', data = '') => {
       port: parsed_url.port || 443,
       path: parsed_url.pathname,
       headers: {
-        'x-push-instance-data': true,
         'x-push-instance-token': process.env.PUSH_INSTANCE_TOKEN,
         'Content-Type': 'application/json',
         'Content-Length': Buffer.byteLength(post_body)
