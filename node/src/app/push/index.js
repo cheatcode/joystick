@@ -1,6 +1,6 @@
 import fs from 'fs';
 import cron from 'node-cron';
-import { NODE_CRON_EVERY_MINUTE, NODE_CRON_EVERY_TEN_SECONDS, NODE_CRON_EVERY_THIRTY_SECONDS } from "../../lib/constants.js";
+import { NODE_CRON_EVERY_TEN_SECONDS, NODE_CRON_EVERY_THIRTY_SECONDS } from "../../lib/constants.js";
 import path_exists from "../../lib/path_exists.js";
 import send_instance_data_to_push from './send_instance_data_to_push.js';
 import snapshot_metrics from './snapshot_metrics.js';
@@ -37,18 +37,8 @@ const push = () => {
     }
   });
 
-  // const health_check_job = cron.schedule(NODE_CRON_EVERY_TEN_SECONDS, () => {
-  //   try {
-  //     send_instance_data_to_push('health-checks');
-  //   } catch (exception) {
-  //     console.warn('health_check_job', exception);
-  //   }
-  // });
-
   sync_logs_job.start();
   sync_metrics_job.start();
-  
-  // health_check_job.start();
 };
 
 export default push;
