@@ -20,7 +20,7 @@ const connect_mongodb = async (database_settings = {}, database_port = 2610) => 
 
     const connection_options = {
       maxIdleTimeMS: 15000,
-      ssl: !['development', 'test'].includes(process.env.NODE_ENV),
+      tls: !['development', 'test'].includes(process.env.NODE_ENV),
       maxPoolSize: 500,
       minPoolSize: 50,
       serverSelectionTimeoutMS: 60000,
@@ -39,11 +39,15 @@ const connect_mongodb = async (database_settings = {}, database_port = 2610) => 
     };
 
     if (is_srv) {
-      connection_options.tls = true; // Move inside SRV condition for clarity
+      connection_options.tls = true;
     }
 
-    if (database_settings?.options?.ca) {
-      connection_options.ca = fs.readFileSync(database_settings?.options?.ca);
+    if (database_settings?.options?.tlsCAFile) {
+      connection_options.tlsCAFile = fs.readFileSync(database_settings?.options?.tlsCAFile);
+    }
+
+    if (database_settings?.options?.tlsCertificateKeyFile) {
+      connection_options.tlsCertificateKeyFile = fs.readFileSync(database_settings?.options?.tlsCertificateKeyFile);
     }
 
     const client = await MongoClient.connect(connection_string, connection_options);
