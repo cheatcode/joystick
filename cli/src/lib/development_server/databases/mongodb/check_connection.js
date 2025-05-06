@@ -9,20 +9,25 @@ const check_connection = async (connection = {}, mongodb_options = {}) => {
   const connection_string = build_connection_string(connection);
   
   try {
-    const connectionOptions = {
+    const connection_options = {
       connectTimeoutMS: 3000,
       socketTimeoutMS: 3000,
       useNewUrlParser: true,
       useUnifiedTopology: true,
-      ssl: false,
+      tls: false,
       ...(mongodb_options || {}),
     };
 
-    if (mongodb_options?.ca) {
-      connectionOptions.ca = await readFile(mongodb_options?.ca);
+    if (mongodb_options?.tlsCAFile) {
+      connection_options.tlsCAFile = fs.readFileSync(mongodb_options?.tlsCAFile);
     }
 
-    const connection = await MongoClient.connect(connection_string, connectionOptions);
+    if (mongodb_options?.tlsCertificateKeyFile) {
+      connection_options.tlsCertificateKeyFile = fs.readFileSync(mongodb_options?.tlsCertificateKeyFile);
+    }
+
+    const connection = await MongoClient.connect(connection_string, connection_options);
+    
     connection.close();
 
     return true;
