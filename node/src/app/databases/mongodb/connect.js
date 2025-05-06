@@ -42,12 +42,12 @@ const connect_mongodb = async (database_settings = {}, database_port = 2610) => 
       connection_options.tls = true;
     }
 
-    if (database_settings?.options?.tlsCAFile) {
-      connection_options.tlsCAFile = fs.readFileSync(database_settings?.options?.tlsCAFile);
+    if (mongodb_options?.tlsCAFile) {
+      connection_options.tlsCAFile = mongodb_options?.tlsCAFile;
     }
 
-    if (database_settings?.options?.tlsCertificateKeyFile) {
-      connection_options.tlsCertificateKeyFile = fs.readFileSync(database_settings?.options?.tlsCertificateKeyFile);
+    if (mongodb_options?.tlsCertificateKeyFile) {
+      connection_options.tlsCertificateKeyFile = mongodb_options?.tlsCertificateKeyFile;
     }
 
     const client = await MongoClient.connect(connection_string, connection_options);

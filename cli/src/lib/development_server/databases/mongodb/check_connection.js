@@ -18,14 +18,12 @@ const check_connection = async (connection = {}, mongodb_options = {}) => {
       ...(mongodb_options || {}),
     };
 
-    console.log(mongodb_options);
-
     if (mongodb_options?.tlsCAFile) {
-      connection_options.tlsCAFile = fs.readFileSync(mongodb_options?.tlsCAFile);
+      connection_options.tlsCAFile = mongodb_options?.tlsCAFile;
     }
 
     if (mongodb_options?.tlsCertificateKeyFile) {
-      connection_options.tlsCertificateKeyFile = fs.readFileSync(mongodb_options?.tlsCertificateKeyFile);
+      connection_options.tlsCertificateKeyFile = mongodb_options?.tlsCertificateKeyFile;
     }
 
     const connection = await MongoClient.connect(connection_string, connection_options);
