@@ -18,6 +18,8 @@ const check_connection = async (connection = {}, mongodb_options = {}) => {
       ...(mongodb_options || {}),
     };
 
+    console.log(mongodb_options);
+
     if (mongodb_options?.tlsCAFile) {
       connection_options.tlsCAFile = fs.readFileSync(mongodb_options?.tlsCAFile);
     }
@@ -27,7 +29,7 @@ const check_connection = async (connection = {}, mongodb_options = {}) => {
     }
 
     const connection = await MongoClient.connect(connection_string, connection_options);
-    
+
     connection.close();
 
     return true;
