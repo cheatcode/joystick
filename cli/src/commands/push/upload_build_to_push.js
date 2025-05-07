@@ -27,6 +27,9 @@ const upload_build_to_push = async (options = {}) => {
    },
    body: form_data,
   }).then(async (response) => {
+  const text = await response.text();
+	console.log(text); // TODO: Temporary for debugging.
+
    const data = await response.json();
    return data?.data;
   }).catch((error) => {
