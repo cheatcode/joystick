@@ -97,7 +97,7 @@ const render_middleware = (req, res, next, app_instance = {}) => {
       mod: {
         in_use: !!app_instance?.mod,
         css: app_instance?.mod || null,
-        theme: req?.cookies?.theme || app_instance?.options?.mod?.default_theme || null,
+        theme: req?.cookies?.theme || app_instance?.options?.mod?.default_theme || 'light',
         components_in_use: render_options?.mod?.components,
       },
     });
