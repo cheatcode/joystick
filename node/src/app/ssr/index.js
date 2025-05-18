@@ -20,8 +20,6 @@ const { document: linkedom_document } = parseHTML('<div></div>');
 const build_html_response_for_browser = (options = {}) => {
 	let base_html = options?.base_html;
 
-	console.log('PROPS AT RENDER', options?.props);
-
 	if (options?.mod_theme) {
 		const linkedom_base_html = parseHTML(base_html);
 		linkedom_base_html.document.querySelector('body').setAttribute('data-mod-theme', options?.mod_theme);
@@ -182,8 +180,6 @@ const ssr = async (ssr_options = {}) => {
 	const html_with_head_tags = set_head_tags_in_html(html, ssr_options?.head, ssr_options?.req);
 	const html_with_base_attributes = set_base_attributes_in_html(html_with_head_tags, ssr_options?.attributes);
 
-	console.log(html_with_base_attributes);
-	
 	return html_with_base_attributes;
 };
 
