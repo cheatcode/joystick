@@ -20,6 +20,8 @@ const { document: linkedom_document } = parseHTML('<div></div>');
 const build_html_response_for_browser = (options = {}) => {
 	let base_html = options?.base_html;
 
+	console.log('PROPS AT RENDER', options?.props);
+
 	if (options?.mod_theme) {
 		const linkedom_base_html = parseHTML(base_html);
 		linkedom_base_html.document.querySelector('body').setAttribute('data-mod-theme', options?.mod_theme);
