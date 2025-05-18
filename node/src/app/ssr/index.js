@@ -182,6 +182,8 @@ const ssr = async (ssr_options = {}) => {
 	const html_with_head_tags = set_head_tags_in_html(html, ssr_options?.head, ssr_options?.req);
 	const html_with_base_attributes = set_base_attributes_in_html(html_with_head_tags, ssr_options?.attributes);
 
+	console.log(html_with_base_attributes);
+	
 	return html_with_base_attributes;
 };
 
