@@ -91,10 +91,14 @@ const render_middleware = (req, res, next, app_instance = {}) => {
       render_layout_path: sanitized_render_layout_path,
       req,
       res,
+      // NOTE: Load Mod only if render_options?.mod isn't false (i.e., assume we want to load it
+      // on all pages, but skip if the developer tells us not to). This is useful for when Mod is
+      // used for some pages, but not all (e.g., admin dashboar vs. a marketing site w/ custom CSS).
+      
       // NOTE: If we detected a copy of Mod in the app at startup, we've loaded its CSS 
       // into memory and can use it for tree-shaking during SSR. For theme, prefer the one passed
       // via cookies, then the app options, and fall back to light if neither are set.
-      mod: {
+      mod: render_options?.mod === false ? null : {
         in_use: !!app_instance?.mod,
         css: app_instance?.mod || null,
         theme: req?.cookies?.theme || app_instance?.options?.mod?.default_theme || 'light',
