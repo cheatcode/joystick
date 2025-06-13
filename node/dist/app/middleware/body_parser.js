@@ -1,1 +1,1 @@
-import o from"express";const p=(d={})=>(e,t,n)=>{const r=e.headers["content-type"];return r&&r==="application/x-www-form-urlencoded"?o.urlencoded({extended:!0,...d?.urlencoded||{}})(e,t,n):r==="text/plain"?o.text()(e,t,n):o.json(d?.json)(e,t,n)};var c=p;export{c as default};
+import o from"express";const p=(d={})=>(t,e,r)=>{const n=t.headers["content-type"];return n&&n==="application/x-www-form-urlencoded"?o.urlencoded({extended:!0,...d?.urlencoded||{}})(t,e,r):n.startsWith("text/plain")?o.text()(t,e,r):o.json(d?.json)(t,e,r)};var s=p;export{s as default};

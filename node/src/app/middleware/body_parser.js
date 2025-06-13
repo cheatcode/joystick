@@ -11,7 +11,9 @@ const body_parser = (config = {}) => {
       })(req, res, next);
     }
 
-    if (content_type === "text/plain") {
+    // NOTE: Use this approach as some requests with this content-type will include
+    // the charset alongside the MIME-type (e.g., AWS does stuff like "text/plain; charset=UTF-8").
+    if (content_type.startsWith("text/plain")) {
       return express.text()(req, res, next);
     }    
 
