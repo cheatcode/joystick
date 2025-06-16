@@ -1,1 +1,1 @@
-import _ from"../../lib/set_cookie.js";const k=(o=null,e=null)=>!o||!e?null:(_(o,"joystick_login_token",e.token,e.token_expires_at),_(o,"joystick_login_token_expires_at",e.token_expires_at,e.token_expires_at),o);var t=k;export{t as default};
+import o from"../../lib/set_cookie.js";const t=(_=null,e=null)=>!_||!e?null:(o(_,{name:"joystick_login_token",value:e.token,http_only:!0,expires_at:e.token_expires_at}),o(_,{name:"joystick_login_token_expires_at",value:e.token_expires_at,http_only:!0,expires_at:e.token_expires_at}),_);var r=t;export{r as default};

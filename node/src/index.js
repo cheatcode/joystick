@@ -5,7 +5,9 @@ import _escape_html from './lib/escape_html.js';
 import _escape_markdown_string from './lib/escape_markdown_string.js';
 import _fixture from './app/fixture/index.js';
 import _sanitize_api_response from './app/api/sanitize_api_response.js';
+import _set_cookie from './lib/set_cookie.js';
 import _sql from './app/databases/sql.js';
+import _unset_cookie from './lib/unset_cookie.js';
 import _validate_input from './app/api/validate_input.js';
 import _websockets from './app/websockets/index.js';
 import app from './app/index.js';
@@ -48,9 +50,13 @@ export const origin = get_origin();
 
 export const sanitize = _sanitize_api_response;
 
+export const set_cookie = _set_cookie;
+
 export const settings = load_settings();
 
 export const sql = _sql;
+
+export const unset_cookie = _unset_cookie;
 
 export const validate_input = _validate_input;
 
@@ -69,8 +75,10 @@ const joystick = {
   id: generate_id,
   origin,
   sanitize,
+  set_cookie,
   settings,
   sql,
+  unset_cookie,
   validate_input,
   websockets,
   ...node_path_polyfills,

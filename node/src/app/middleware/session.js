@@ -37,7 +37,12 @@ const session_middleware = async (req, res, next) => {
   // sessions database along with a new CSRF token.
   if (!existing_session) {
     session_id = await sessions_query('create_session');
-    set_cookie(res, 'joystick_session', session_id);
+    
+    set_cookie(res, {
+      name: 'joystick_session',
+      value: session_id,
+      http_only: true,
+    });
   }
   
   req.cookies = {

@@ -1,1 +1,1 @@
-const c=(e={},o="",l="",t=null)=>{if(!e||!o)return null;const n={secure:process.env.NODE_ENV!=="development",httpOnly:!0};t&&(n.expires=new Date(t)),e.cookie(o,l,n)};var s=c;export{s as default};
+const l=(t={},e={},c="",n="",_=null)=>{if(!t||!e?.name)return null;const a={secure:process.env.NODE_ENV!=="development",httpOnly:e?.http_only};e?.expires_at&&(a.expires=new Date(e?.expires_at)),t.cookie(e?.name,e?.value,a)};var o=l;export{o as default};
