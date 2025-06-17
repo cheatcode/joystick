@@ -10,6 +10,7 @@ import _sql from './app/databases/sql.js';
 import _unset_cookie from './lib/unset_cookie.js';
 import _validate_input from './app/api/validate_input.js';
 import _websockets from './app/websockets/index.js';
+import _worker from './app/workers/index.js';
 import app from './app/index.js';
 import generate_id from './lib/generate_id.js';
 import get_origin from './lib/get_origin.js';
@@ -62,6 +63,8 @@ export const validate_input = _validate_input;
 
 export const websockets = _websockets;
 
+export const worker = _worker;
+
 const joystick = {
 	app,
 	accounts,
@@ -81,6 +84,7 @@ const joystick = {
   unset_cookie,
   validate_input,
   websockets,
+  worker,
   ...node_path_polyfills,
 };
 
