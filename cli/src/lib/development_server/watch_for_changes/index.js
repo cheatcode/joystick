@@ -15,7 +15,6 @@ const { mkdir, copyFile, rm: remove } = fs.promises;
 const handle_build_files = async (job = {}, options = {}) => {
 	const codependencies = process.initial_build_complete ? await get_file_codependencies(job?.path) : [];
 
-	console.log(job);
 	// NOTE: If we have codependencies, make sure that the file triggering the current job is rebuilt first
 	// *before* rebuilding its codependencies. This ensures that codependencies get the latest build of the
 	// file. If we do them all together in parallel, the latest build is missed.

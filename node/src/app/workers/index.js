@@ -1,10 +1,9 @@
 import { Worker } from 'worker_threads';
 import path from 'path';
-import { pathToFileURL } from 'url';
 
 const worker = (worker_name, worker_data = {}) => {
   return new Promise((resolve, reject) => {
-    const worker_path = pathToFileURL(path.join(process.cwd(), 'workers', `${worker_name}.js`)).href;
+    const worker_path = path.join(`${process.cwd()}`, '.joystick/build', 'workers', `${worker_name}.js`);
 
     const worker_instance = new Worker(worker_path, {
       workerData: worker_data,
