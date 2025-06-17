@@ -14,6 +14,7 @@ const watch_paths = [
   { path: "ui" },
   { path: "uploaders" },
   { path: "websockets" },
+  { path: "workers" },
   { path: "index.client.js" },
   { path: "index.server.js" },
   ...copy_paths,

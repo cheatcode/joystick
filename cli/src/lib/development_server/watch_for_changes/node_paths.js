@@ -13,5 +13,6 @@ export default [
   get_platform_safe_path("tests/"),
   get_platform_safe_path("uploaders/"),
   get_platform_safe_path("websockets/"),
+  get_platform_safe_path("workers/"),
   "index.server.js",
 ];
