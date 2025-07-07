@@ -158,7 +158,7 @@ const ssr = async (ssr_options = {}) => {
 		css: ssr_options?.is_email ? `
 			${email_base_css}
 			${ssr_render?.css}
-		` : ssr_render?.css, // Concat final CSS here?
+		` : ssr_render?.css,
 		mod_css,
 		mod_theme: ssr_options?.mod?.theme,
 		data: Object.entries(ssr_render?.data || {})?.reduce((encoded = {}, [key, value]) => {
@@ -168,7 +168,12 @@ const ssr = async (ssr_options = {}) => {
 		email_options: ssr_options?.email_options,
 		head: ssr_options?.head,
 		html: ssr_render?.html,
-		props: ssr_options?.component_options?.props,
+		props: {
+			// NOTE: Pass a theme prop to ensure this is always accessible in components even if
+			// the dev doesn't pass it manually.
+			theme: ssr_options?.mod?.theme,
+			...(ssr_options?.component_options?.props || {})
+		},
 		render_component_path: ssr_options?.render_component_path,
 		render_layout_path: ssr_options?.render_layout_path,
 		req: ssr_options?.req,
