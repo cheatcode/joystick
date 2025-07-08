@@ -59,7 +59,10 @@ const render_middleware = (req, res, next, app_instance = {}) => {
 
     const Component = await dynamic_import(env_component_path);
     const Layout = layout_path ? await dynamic_import(env_layout_path) : null;
-    const props = { ...(render_options?.props || {}) };
+    const props = {
+      ...(render_options?.props || {}),
+      theme: req?.cookies?.theme || 'light',
+    };
 
     if (layout_path) {
       props.page = Component;
