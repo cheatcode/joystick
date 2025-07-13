@@ -4,6 +4,7 @@ const supported_http_methods = [
   'patch',
   'post',
   'put',
+  'options'
 ];
 
 export default supported_http_methods;

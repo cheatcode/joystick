@@ -1,1 +1,1 @@
-const t=["get","delete","patch","post","put"];var e=t;export{e as default};
+const t=["get","delete","patch","post","put","options"];var e=t;export{e as default};
