@@ -60,16 +60,13 @@ const build_html_response_for_browser = (options = {}) => {
         window.__joystick_url__ = ${JSON.stringify(options?.url)};
         window.__joystick_user__ = ${JSON.stringify(get_browser_safe_user(options?.req?.context?.user))};
 			</script>
-			window.__joystick_mod_js__ = '${options?.mod_js ? Buffer.from(options.mod_js).toString('base64') : ''}';
+			window.__joystick_mod_js__ = ${JSON.stringify(options?.mod_js || '')};
 			${options?.mod_js ? `
 				<script type="module">
 					try {
-						const js_code = atob(window.__joystick_mod_js__);
-						const module_blob = new Blob([js_code], { type: 'text/javascript' });
-						const module_url = URL.createObjectURL(module_blob);
-						const mod_module = await import(module_url);
+						const data_url = 'data:text/javascript;charset=utf-8,' + encodeURIComponent(window.__joystick_mod_js__);
+						const mod_module = await import(data_url);
 						window.__mod_js__ = mod_module.default;
-						URL.revokeObjectURL(module_url);
 					} catch (error) {
 						console.error('Failed to load mod module:', error);
 					}
