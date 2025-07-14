@@ -59,7 +59,7 @@ const build_html_response_for_browser = (options = {}) => {
         window.__joystick_ssr_props__ = ${JSON.stringify(options?.props)};
         window.__joystick_url__ = ${JSON.stringify(options?.url)};
         window.__joystick_user__ = ${JSON.stringify(get_browser_safe_user(options?.req?.context?.user))};
-				window.__joystick_mod_js__ = '${Buffer.from(mod_js).toString('base64') || ''}';
+				window.__joystick_mod_js__ = '${Buffer.from(options?.mod_js).toString('base64') || ''}';
 			</script>
 			${options?.mod_js ? `
 			<script type="module">
