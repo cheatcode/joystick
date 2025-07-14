@@ -281,8 +281,10 @@ class App {
 		}
 
 		this.mod = {
-			light: mod_light,
-			dark: mod_dark,
+			css: {
+				light: mod_light,
+				dark: mod_dark,
+			},
 			js: mod_js,
 			globals,
 			components,

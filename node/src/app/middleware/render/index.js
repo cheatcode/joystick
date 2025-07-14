@@ -103,7 +103,8 @@ const render_middleware = (req, res, next, app_instance = {}) => {
       // via cookies, then the app options, and fall back to light if neither are set.
       mod: render_options?.mod === false ? null : {
         in_use: !!app_instance?.mod,
-        css: app_instance?.mod || null,
+        css: app_instance?.mod?.css || null,
+        js: app_instance?.mod?.js || null,
         theme: req?.cookies?.theme || app_instance?.options?.mod?.default_theme || 'light',
         components_in_use: render_options?.mod?.components,
       },
