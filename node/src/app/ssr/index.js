@@ -62,8 +62,13 @@ const build_html_response_for_browser = (options = {}) => {
 			</script>
 			${options?.mod_js ? `
 				<script type="module">
-					window.__mod_js__ = ${options.mod_js};
-				</script>` : ''}
+					const module_blob = new Blob([\`${options.mod_js.replace(/`/g, '\\`').replace(/\$/g, '\\$')}\`], { type: 'text/javascript' });
+					const module_url = URL.createObjectURL(module_blob);
+					const mod_js = await import(module_url);
+					window.__mod_js__ = mod_js.default;
+					URL.revokeObjectURL(module_url);
+				</script>
+				` : ''}
 			<script type="module" src="/_joystick/utils/process.js"></script>
       <script type="module" src="/_joystick/index.client.js"></script>
       ${options?.render_component_path ? `<script data-js-component type="module" src="/_joystick/${options?.render_component_path}"></script>` : ''}
