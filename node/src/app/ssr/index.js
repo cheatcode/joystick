@@ -62,8 +62,7 @@ const build_html_response_for_browser = (options = {}) => {
 			</script>
 			${options?.mod_js ? `
 				<script type="module">
-					const mod_js = await import('data:text/javascript,${encodeURIComponent(options.mod_js)}');
-					window.__mod_js__ = mod_js.default;
+					window.__mod_js__ = ${options.mod_js};
 				</script>` : ''}
 			<script type="module" src="/_joystick/utils/process.js"></script>
       <script type="module" src="/_joystick/index.client.js"></script>
@@ -161,8 +160,6 @@ const ssr = async (ssr_options = {}) => {
 			mod_css += component_css[ssr_options?.mod?.theme];
 		}
 	}
-
-	console.log({ mod_js });
 
 	const html = build_html_response({
 		is_email: ssr_options?.is_email,
