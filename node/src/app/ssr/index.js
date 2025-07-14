@@ -59,19 +59,19 @@ const build_html_response_for_browser = (options = {}) => {
         window.__joystick_ssr_props__ = ${JSON.stringify(options?.props)};
         window.__joystick_url__ = ${JSON.stringify(options?.url)};
         window.__joystick_user__ = ${JSON.stringify(get_browser_safe_user(options?.req?.context?.user))};
+				window.__joystick_mod_js__ = '${Buffer.from(mod_js).toString('base64') || ''}';
 			</script>
-			window.__joystick_mod_js__ = ${JSON.stringify(options?.mod_js || '')};
 			${options?.mod_js ? `
-				<script type="module">
-					try {
-						const data_url = 'data:text/javascript;charset=utf-8,' + encodeURIComponent(window.__joystick_mod_js__);
-						const mod_module = await import(data_url);
-						window.__mod_js__ = mod_module.default;
-					} catch (error) {
-						console.error('Failed to load mod module:', error);
-					}
-				</script>
-				` : ''}
+			<script type="module">
+				try {
+					const mod_js = atob(window.__joystick_mod_js__);
+					const data_url = 'data:text/javascript;charset=utf-8,' + encodeURIComponent(mod_js);
+					const mod_module = await import(data_url);
+					window.__mod_js__ = mod_module.default;
+				} catch (error) {
+					console.error('Failed to load mod module:', error);
+				}
+			</script>` : ''}
 			<script type="module" src="/_joystick/utils/process.js"></script>
       <script type="module" src="/_joystick/index.client.js"></script>
       ${options?.render_component_path ? `<script data-js-component type="module" src="/_joystick/${options?.render_component_path}"></script>` : ''}
