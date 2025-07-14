@@ -250,12 +250,14 @@ class App {
 
 		let mod_light;
 		let mod_dark;
+		let mod_js;
 		let globals = {};
 		let components = {};
 
 		if (mod_version === 'plus') {
 			mod_light = (await path_exists('private/mod/mod-light-plus.min.css') && await readFile('private/mod/mod-light-plus.min.css', 'utf-8')) || '';
 			mod_dark = (await path_exists('private/mod/mod-dark-plus.min.css') && await readFile('private/mod/mod-dark-plus.min.css', 'utf-8')) || '';
+			mod_js = (await path_exists('lib/mod-plus.esm.min.js') && await readFile('lib/mod-plus.esm.min.js', 'utf-8')) || '';
 			
 			globals = await read_mod_global_css();
 			const free_components = await read_mod_component_css('free');
@@ -268,6 +270,7 @@ class App {
 		} else {
 			mod_light = (await path_exists('private/mod/mod-light.min.css') && await readFile('private/mod/mod-light.min.css', 'utf-8')) || '';
 			mod_dark = (await path_exists('private/mod/mod-dark.min.css') && await readFile('private/mod/mod-dark.min.css', 'utf-8')) || '';
+			mod_dark = (await path_exists('lib/mod.esm.min.js') && await readFile('lib/mod.esm.min.js', 'utf-8')) || '';
 
 			globals = await read_mod_global_css();
 			const free_components = await read_mod_component_css('free');
@@ -280,6 +283,7 @@ class App {
 		this.mod = {
 			light: mod_light,
 			dark: mod_dark,
+			js: mod_js,
 			globals,
 			components,
 		};

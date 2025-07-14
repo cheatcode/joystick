@@ -43,6 +43,9 @@ const register_component_options = (component_instance = {}, component_options =
 	component_instance.virtual_dom = {};
 	component_instance.wrapper = {};
 
+	// NOTE: Do this last to avoid any conflicts at render time.
+	component_instance.mod = window.__mod_js__ || {};
+
   if (typeof window !== 'undefined' && component_options?.websockets && types.is_function(component_options?.websockets)) {
   	register_websockets_on_component(component_options, component_instance);
   }

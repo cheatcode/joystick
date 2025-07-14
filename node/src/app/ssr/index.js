@@ -60,6 +60,11 @@ const build_html_response_for_browser = (options = {}) => {
         window.__joystick_url__ = ${JSON.stringify(options?.url)};
         window.__joystick_user__ = ${JSON.stringify(get_browser_safe_user(options?.req?.context?.user))};
 			</script>
+			${options?.mod_js ? `
+				<script type="module">
+					const mod_js = await import('data:text/javascript,${encodeURIComponent(options.mod_js)}');
+					window.__mod_js__ = mod_js.default;
+				</script>` : ''}
 			<script type="module" src="/_joystick/utils/process.js"></script>
       <script type="module" src="/_joystick/index.client.js"></script>
       ${options?.render_component_path ? `<script data-js-component type="module" src="/_joystick/${options?.render_component_path}"></script>` : ''}
@@ -122,10 +127,17 @@ const ssr = async (ssr_options = {}) => {
 	const email_base_html = ssr_options?.is_email ? await get_base_html_for_email(ssr_options?.email_options?.base_html_name) : null;
 
 	let mod_css = '';
+	let mod_js = '';
 
 	// NOTE: If no components specified, load in the full theme CSS.
 	if (ssr_options?.mod?.in_use && !ssr_options?.mod?.components_in_use) {
 		mod_css = ssr_options?.mod?.css[ssr_options?.mod?.theme];
+	}
+
+	// NOTE: Always load proper JS (free or plus) if Mod is in use. This is determined
+	// in this.register_mod() inside of src/app/index.js.
+	if (ssr_options?.mod?.in_use) {
+		mod_js = ssr_options?.mod?.js || '';
 	}
 
 	// NOTE: If components specified, load incrementally.
@@ -160,6 +172,7 @@ const ssr = async (ssr_options = {}) => {
 			${ssr_render?.css}
 		` : ssr_render?.css,
 		mod_css,
+		mod_js: mod_js ? Buffer.from(mod_js, 'utf8').toString('base64') : '',
 		mod_theme: ssr_options?.mod?.theme,
 		data: Object.entries(ssr_render?.data || {})?.reduce((encoded = {}, [key, value]) => {
 		  encoded[key] = value ? Buffer.from(JSON.stringify(value), 'utf8').toString('base64') : '';
