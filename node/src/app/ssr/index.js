@@ -162,6 +162,8 @@ const ssr = async (ssr_options = {}) => {
 		}
 	}
 
+	console.log({ mod_js });
+
 	const html = build_html_response({
 		is_email: ssr_options?.is_email,
 		attributes: ssr_options?.attributes,
@@ -172,7 +174,7 @@ const ssr = async (ssr_options = {}) => {
 			${ssr_render?.css}
 		` : ssr_render?.css,
 		mod_css,
-		mod_js: mod_js ? Buffer.from(mod_js, 'utf8').toString('base64') : '',
+		mod_js: mod_js || '',
 		mod_theme: ssr_options?.mod?.theme,
 		data: Object.entries(ssr_render?.data || {})?.reduce((encoded = {}, [key, value]) => {
 		  encoded[key] = value ? Buffer.from(JSON.stringify(value), 'utf8').toString('base64') : '';
