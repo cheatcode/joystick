@@ -6,6 +6,8 @@ const start_app_server_process = (exec_argv = [], watch = false) => {
     process.loader.print('Starting app...');
   }
 
+  console.log(exec_argv);
+  
   return child_process.fork(
     path.resolve(".joystick/build/index.server.js"),
     [],
