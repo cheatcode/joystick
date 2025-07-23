@@ -1,8 +1,8 @@
 {
   "name": "@joystick.js/cli-canary-canary",
   "type": "module",
-  "version": "0.0.0-canary.1948",
-  "canary_version": "0.0.0-canary.1948",
+  "version": "0.0.0-canary.1949",
+  "canary_version": "0.0.0-canary.1949",
   "description": "The CLI for Joystick.",
   "main": "dist/index.js",
   "bin": {
@@ -15,7 +15,7 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
+  "license": "SAUCR",
   "dependencies": {
     "@babel/code-frame": "^7.23.5",
     "acorn": "^8.11.2",

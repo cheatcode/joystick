@@ -12,7 +12,7 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
+  "license": "SAUCR",
   "devDependencies": {
     "esbuild": "^0.25.2"
   },
