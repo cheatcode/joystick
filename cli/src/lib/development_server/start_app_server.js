@@ -7,7 +7,7 @@ const start_app_server_process = (exec_argv = [], watch = false) => {
   }
 
   console.log(exec_argv);
-  
+
   return child_process.fork(
     path.resolve(".joystick/build/index.server.js"),
     [],
@@ -54,6 +54,7 @@ const get_exec_args = (node_major_version = 0, imports = []) => {
 };
 
 const start_app_server = (node_major_version = 0, watch = false, imports = []) => {
+  console.log({ start_app_server: imports });
   const exec_argv = get_exec_args(node_major_version, imports);
   const app_server_process = start_app_server_process(exec_argv, watch);
   return app_server_process;
