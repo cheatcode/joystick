@@ -1,5 +1,5 @@
 {
-  "name": "@joystick.js/cli-canary-canary",
+  "name": "@joystick.js/cli",
   "type": "module",
   "version": "1.0.0-rc.1",
   "canary_version": "0.0.0-canary.1951",
