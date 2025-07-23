@@ -1,7 +1,6 @@
 import development_server from "../../lib/development_server/index.js";
 
 const start = async (args = {}, options = {}) => {
-  console.log({ start_options_imports: options?.imports });
   await development_server({
     environment: options?.environment || 'development',
     port: options?.port || 2600,

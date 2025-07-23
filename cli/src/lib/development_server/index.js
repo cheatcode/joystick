@@ -405,8 +405,6 @@ const development_server = async (development_server_options = {}) => {
     settings
   });
 
-  console.log({ dev_server_imports: development_server_options?.imports });
-
   watch_for_changes({
     hot_module_reload: (jobs = []) => handle_signal_hmr_update(jobs),
     restart_app_server: () => handle_restart_app_server(

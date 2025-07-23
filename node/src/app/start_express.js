@@ -14,6 +14,12 @@ const start_express = (on_after_start_server = null, app_instance = {}) => {
 
   const express_app = express();
 
+  // NOTE: Offer a hook for tooling that needs immediate access to the Express
+  // app instance (e.g., APM services).
+  if (typeof app_instance?.options?.express?.on_after_create_app === 'function') {
+    app_instance.options.express.on_after_create_app(express_app);
+  }
+
   // NOTE: Bind the app to 0.0.0.0 so instance is always directly accessible via IP. This is safe
   // in production as the insecure_middleware() ensures the connection is made over HTTPS.
   const server = express_app.listen(port, '0.0.0.0');
