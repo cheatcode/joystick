@@ -102,7 +102,7 @@ const handle_signal_hmr_update = async (jobs = []) => {
   }));
 };
 
-const handle_hmr_server_process_messages = (node_major_version = 0, watch = false, old_settings = {}) => {
+const handle_hmr_server_process_messages = (node_major_version = 0, watch = false, old_settings = {}, imports = []) => {
   process.hmr_server_process.on("message", async (message) => {
     const process_messages = [
       "HAS_HMR_CONNECTIONS",
@@ -125,7 +125,7 @@ const handle_hmr_server_process_messages = (node_major_version = 0, watch = fals
     if (message?.type === "HMR_UPDATE_COMPLETE") {
       if (process.app_server_process && !process.app_server_restarting) {
         process.app_server_restarting = true;
-        handle_restart_app_server(node_major_version, watch, old_settings);
+        handle_restart_app_server(node_major_version, watch, old_settings, imports);
       }
     }
   });
@@ -151,11 +151,11 @@ const handle_hmr_server_process_stdio = () => {
   });
 };
 
-const handle_start_hmr_server = (node_major_version = 0, __dirname = '', watch = false, old_settings = {}) => {
+const handle_start_hmr_server = (node_major_version = 0, __dirname = '', watch = false, old_settings = {}, imports = []) => {
 	process.hmr_server_process = start_hmr_server(node_major_version, __dirname);
   process_ids.push(process.hmr_server_process?.pid);
   handle_hmr_server_process_stdio();
-  handle_hmr_server_process_messages(node_major_version, watch, old_settings);
+  handle_hmr_server_process_messages(node_major_version, watch, old_settings, imports);
 };
 
 const check_if_database_changes = async (old_settings = {}) => {
@@ -242,8 +242,8 @@ const handle_app_server_process_stdio = (watch = false) => {
   });
 };
 
-const handle_start_app_server = (node_major_version = 0, watch = false) => {
-	process.app_server_process = start_app_server(node_major_version, watch);
+const handle_start_app_server = (node_major_version = 0, watch = false, imports = []) => {
+	process.app_server_process = start_app_server(node_major_version, watch, imports);
   process_ids.push(process.app_server_process?.pid);
   handle_app_server_process_stdio(watch);
   process.app_server_restarting = false;
@@ -425,6 +425,7 @@ const development_server = async (development_server_options = {}) => {
       __dirname,
       development_server_options?.watch,
       settings,
+      development_server_options?.imports,
     ) : null,
   }, {
     excluded_paths: settings?.config?.build?.excluded_paths,
