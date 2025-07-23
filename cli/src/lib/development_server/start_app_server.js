@@ -26,7 +26,7 @@ const start_app_server_process = (exec_argv = [], watch = false) => {
   );
 };
 
-const get_exec_args = (node_major_version = 0) => {
+const get_exec_args = (node_major_version = 0, imports = []) => {
   const exec_argv = ["--no-warnings"];
 
   if (process.env.NODE_ENV === 'development') {
@@ -43,11 +43,16 @@ const get_exec_args = (node_major_version = 0) => {
     exec_argv.push("--inspect");
   }
 
+  for (let i = 0; i < imports?.length; i += 1) {
+    const import_path = imports[i];
+    exec_argv.push("--import", import_path);
+  }
+
   return exec_argv;
 };
 
-const start_app_server = (node_major_version = 0, watch = false) => {
-  const exec_argv = get_exec_args(node_major_version);
+const start_app_server = (node_major_version = 0, watch = false, imports = []) => {
+  const exec_argv = get_exec_args(node_major_version, imports);
   const app_server_process = start_app_server_process(exec_argv, watch);
   return app_server_process;
 };

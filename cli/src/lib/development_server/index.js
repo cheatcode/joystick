@@ -165,7 +165,7 @@ const check_if_database_changes = async (old_settings = {}) => {
   return new_databse_settings !== old_database_settings;
 };
 
-const handle_restart_app_server = async (node_major_version = 0, watch = false, old_settings = null) => {
+const handle_restart_app_server = async (node_major_version = 0, watch = false, old_settings = null, imports = []) => {
   debounce(async () => {
     const has_database_changes = await check_if_database_changes(old_settings);
 
@@ -190,7 +190,7 @@ const handle_restart_app_server = async (node_major_version = 0, watch = false, 
       ]);
 
       await kill_port_process(process.env.PORT);
-      handle_start_app_server(node_major_version, watch);
+      handle_start_app_server(node_major_version, watch, imports);
     }
   }, 300);
 };
@@ -411,11 +411,12 @@ const development_server = async (development_server_options = {}) => {
       node_major_version,
       development_server_options?.watch,
       settings,
+      development_server_options?.imports,
     ),
     start_app_server: () => handle_start_app_server(
       node_major_version,
       development_server_options?.watch,
-
+      development_server_options?.imports,
     ),
     start_hmr_server: development_server_options?.environment !== 'test' ? () => handle_start_hmr_server(
       node_major_version,

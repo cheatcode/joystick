@@ -2,6 +2,16 @@ import start from './index.js';
 
 const [_node, _bin, ...raw_args] = process.argv;
 
+// NOTE: Capture imports here so we can process them before passing
+// them to the start function.
+const raw_imports =
+  !!raw_args.includes('-i') && raw_args[raw_args.indexOf('-i') + 1] ||
+  !!raw_args.includes('--imports') && raw_args[raw_args.indexOf('--imports') + 1];
+
+const imports_value = raw_imports
+  ? raw_imports.split(',').map((path) => path.trim())
+  : [];
+
 const definition = {
   description: 'Start an existing Joystick app.',
   args: {},
@@ -50,6 +60,21 @@ const definition = {
         },
       },
       description: 'Run the Joystick app\'s Node.js process in debug mode with --inspect.',
+    },
+    imports: {
+      flags: {
+        '-i': {
+          set: raw_imports !== undefined,
+          value: imports_value,
+          parent: 'start'
+        },
+        '--imports': {
+          set: raw_imports !== undefined,
+          value: imports_value,
+          parent: 'start'
+        },
+      },
+      description: 'Run the specified imports before starting your Joystick app\'s Node.js process (e.g., for APM usage).',
     }
   },
   command: start,
