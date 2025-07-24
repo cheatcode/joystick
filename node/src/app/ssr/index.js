@@ -69,7 +69,7 @@ const build_html_response_for_browser = (options = {}) => {
 					const mod_module = await import(data_url);
 					window.__mod_js__ = mod_module.default;
 				} catch (error) {
-					console.error('Failed to load mod module:', error);
+					console.error(error);
 				}
 			</script>` : ''}
 			<script type="module" src="/_joystick/utils/process.js"></script>

@@ -3,7 +3,7 @@ import path from 'path';
 
 const worker = (worker_name, worker_data = {}) => {
   return new Promise((resolve, reject) => {
-    const worker_path = path.join(`${process.cwd()}`, '.joystick/build', 'workers', `${worker_name}.js`);
+    const worker_path = path.join(`${process.cwd()}`, 'workers', `${worker_name}.js`);
 
     const worker_instance = new Worker(worker_path, {
       workerData: worker_data,
