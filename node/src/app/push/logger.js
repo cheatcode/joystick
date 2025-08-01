@@ -23,7 +23,7 @@ const push_logs = async () => {
     url: 'wss://push.cheatcode.co/api/_websockets/instances',
     options: {
       max_sends_per_second: 10, // NOTE: Avoid log spam if an app has a loop.
-      logging: false,
+      logging: true,
       auto_reconnect: true,
       // NOTE: Intentional as we want to avoid losing connections back to Push
       // at all costs (otherwise they'd have to do a redeploy).
