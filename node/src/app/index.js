@@ -8,7 +8,6 @@ import api_accounts_reset_password from "./api/accounts/reset_password.js";
 import api_accounts_signup from "./api/accounts/signup.js";
 import api_accounts_user from "./api/accounts/user.js";
 import api_accounts_verify_email from "./api/accounts/verify_email.js";
-import api_push_health from './api/push/health.js';
 import api_test_accounts_delete from "./api/test/accounts/delete.js";
 import api_test_accounts_signup from "./api/test/accounts/signup.js";
 import api_test_bootstrap from "./api/test/bootstrap.js";
