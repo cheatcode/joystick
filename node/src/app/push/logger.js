@@ -1,9 +1,12 @@
 import winston from 'winston';
 import fs from 'fs';
 import path from 'path';
+import { readFile } from 'fs/promises';
 import path_exists from '../../lib/path_exists.js';
 import generate_id from '../../lib/generate_id.js';
 import push_encrypt from '../../lib/push_encrypt.js';
+import ExternalTransport from './external_transport.js';
+import websocket_client from '../../lib/websocket_client.js';
 
 const { mkdir } = fs.promises;
 
@@ -15,6 +18,22 @@ const encrypt_message = winston.format((info) => {
 });
 
 const push_logs = async () => {
+  const connection = websocket_client({
+    // NOTE: Safe to hardcode here as it won't be anything else, any time soon.
+    url: 'wss://push.cheatcode.co/api/_websockets/instances',
+    options: {
+      max_sends_per_second: 10, // NOTE: Avoid log spam if an app has a loop.
+      logging: false,
+      auto_reconnect: true,
+      // NOTE: Intentional as we want to avoid losing connections back to Push
+      // at all costs (otherwise they'd have to do a redeploy).
+      reconnect_attempts: Infinity,
+      reconnect_delay_in_seconds: 10,
+    },
+  });
+
+  const instance_token = (await readFile("/root/push/instance_token.txt", "utf-8"))?.trim();
+
   if (!(await path_exists('/root/push/logs'))) {
     await mkdir('/root/push/logs', { recursive: true });
   }
@@ -35,7 +54,16 @@ const push_logs = async () => {
         maxsize: 1024 * 1024 * 10, // 10MB,
         maxFiles: 1,
         tailable: true,
-      })
+      }),
+      new ExternalTransport({
+        on_log: async (log = {}) => {
+          connection.send({
+            headers: { 'x-push-instance-token': instance_token },
+            type: 'log',
+            log: log,
+          });
+        },
+      }),
     ],
   });
 

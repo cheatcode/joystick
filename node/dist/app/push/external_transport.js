@@ -1,0 +1,1 @@
+import e from"winston-transport";class s extends e{constructor({on_log:t,...o}){super(o),this.on_log=t}log(t={},o=()=>{}){setImmediate(()=>{this.emit("logged",t)}),typeof this.on_log=="function"&&this.on_log(t),o()}}var i=s;export{i as default};

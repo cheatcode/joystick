@@ -1,1 +1,1 @@
-const r="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ01234567890".split(""),l=(a=16)=>{let t="",e=0;for(;e<a;)t+=r[Math.floor(Math.random()*(r.length-1))],e+=1;return t};var n=l;export{n as default};
+import{randomBytes as d}from"crypto";const n="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ01234567890",a=n.length,i=(t=16)=>{const o=d(t*2);let c="",e=0;for(let r=0;e<t&&r<o.length;r++){const s=o[r];s<256-256%a&&(c+=n[s%a],e+=1)}return e<t?i(t):c};var l=i;export{l as default};

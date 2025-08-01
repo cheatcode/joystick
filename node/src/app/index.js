@@ -27,7 +27,6 @@ import handle_process_errors from "./handle_process_errors.js";
 import load_settings from "./settings/load.js";
 import parse_route_pattern from '../lib/parse_route_pattern.js';
 import path_exists from '../lib/path_exists.js';
-import push from "./push/index.js";
 import push_logger from "./push/logger.js";
 import Queue from "./queues/index.js";
 import read_mod_component_css from '../lib/read_mod_component_css.js';
@@ -302,7 +301,6 @@ class App {
 			});
 
 			await push_logger();
-			await push();
 		}
   }
 
@@ -361,13 +359,13 @@ class App {
 		this.register_cron_jobs();
 		this.register_queues();
 		this.start_express();
+		this.register_websockets();
 		this.register_tests();
 		this.register_push();
 		this.register_accounts();
 		this.register_api();
 		this.register_routes();
 		this.register_dynamic_pages();
-		this.register_websockets();
 		this.register_uploaders();
 		this.register_fixtures();
 		this.register_indexes();
