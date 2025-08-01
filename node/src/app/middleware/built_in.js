@@ -94,7 +94,7 @@ const get_middleware_groups = (options = {}) => {
 
     (req, res, next) => {
       if (req.path.startsWith('/_joystick')) {
-        return express.static(options?.joystick_build_path)(req, res, next);
+        return express.static(options?.joystick_build_path || build_path)(req, res, next);
       }
       next();
     },
