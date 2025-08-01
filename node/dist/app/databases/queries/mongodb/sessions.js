@@ -1,1 +1,0 @@
-import e from"../../../../lib/generate_id.js";const n={create_session:async()=>{const s=e(16);return await process.databases._sessions?.collection("sessions").insertOne({_id:s,csrf:e(32),created_at:new Date(new Date().toISOString())}),s},get_session:async(s={})=>process.databases._sessions?.collection("sessions").findOne({_id:s?.session_id})};var i=n;export{i as default};

@@ -1,6 +1,4 @@
-import cron from 'node-cron';
 import types from "../../../lib/types.js";
-import handle_cleanup_sessions from "./handle_cleanup_sessions.js";
 
 const create_unique_index = async (target_database = '', index_name = '', table_name = '', table_columns = []) => {
   return process.databases[target_database]?.query(`CREATE UNIQUE INDEX IF NOT EXISTS ${index_name} ON ${table_name}(${table_columns.join(', ')})`);
@@ -14,15 +12,6 @@ const indexes = {
 	// NOTE: queue indexes are set dynamically when initializing the queue in
 	// app/databases/queries/<provider>/queues.js initialize_database function
 	// to account for developer customization options.
-	sessions: async () => {
-	  await create_index('_sessions', 'session_by_id', 'sessions', ['session_id']);
-	  await create_index('_sessions', 'session_created_at', 'sessions', ['created_at']);
-
-	  // NOTE: Simulate a TTL index using cron to wipe out sessions older than 1 hour.
-    cron.schedule('*/30 * * * * *', () => {
-      handle_cleanup_sessions();
-    });
-	},
 	users: async () => {
 	  // users
 	  await create_index('_users', 'user_by_email', 'users', ['email_address']);

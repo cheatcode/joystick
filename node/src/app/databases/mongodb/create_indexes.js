@@ -4,13 +4,6 @@ const indexes = {
 	// NOTE: queue indexes are set dynamically when initializing the queue in
 	// app/databases/queries/<provider>/queues.js initialize_database function
 	// to account for developer customization options.
-	sessions: async () => {
-		try {
-			await process.databases._sessions?.collection('sessions').createIndex({ createdAt: 1 }, { expireAfterSeconds: 3600, background: true });
-		} catch (exception) {
-			console.warn(exception);
-		}
-	},
 	users: async () => {
 		try {
 			await process.databases._users?.collection('users').createIndex({ emailAddress: 1 }, { background: true, unique: true });

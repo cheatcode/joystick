@@ -10,14 +10,6 @@ const tables = {
 	// NOTE: queue tables are created dynamically when initializing the queue in
 	// app/databases/queries/<provider>/queues.js initialize_database function
 	// to account for dynamic table names.
-	sessions: async () => {
-	  await create_table('_sessions', 'sessions', [
-	    'id bigserial primary key',
-	    'session_id text',
-	    'csrf text',
-	    'created_at text'
-	  ]);
-	},
 	users: async () => {
 	  await create_table('_users', 'users', [
 	    'id bigserial primary key',

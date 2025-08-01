@@ -1,1 +1,0 @@
-import i from"../get_target_database_connection.js";import e from"./map.js";const c=async(n="",r={})=>{const s=i("sessions"),o=s&&e&&e[s?.provider]&&e[s?.provider]?.sessions,t=o&&o[n];if(s?.connection&&t){const a=await o[n](r,s?.connection);return Promise.resolve(a)}return null};var u=c;export{u as default};

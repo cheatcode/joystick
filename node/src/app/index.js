@@ -88,14 +88,12 @@ class App {
 
 		if (databases_from_settings?.length > 0) {
 			const queues_database = get_target_database_connection('queues');
-			const sessions_database = get_target_database_connection('sessions');
 			const users_database = get_target_database_connection('users');
 
 	    process.databases._queues = queues_database?.connection;
-	    process.databases._sessions = sessions_database?.connection;
 	    process.databases._users = users_database?.connection;
 
-	    const internal_database_targets = [queues_database, sessions_database, users_database];
+	    const internal_database_targets = [queues_database, users_database];
 
 	    const mongodb_targets = internal_database_targets?.filter((target) => target?.provider === 'mongodb')?.map((target) => target?.database_type);
 	    await create_mongodb_indexes(mongodb_targets);

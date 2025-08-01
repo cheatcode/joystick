@@ -41,10 +41,6 @@ const get_sanitized_context = (context = {}) => {
     delete sanitized_context._queues;
   }
 
-  if (sanitized_context._sessions) {
-    delete sanitized_context._sessions;
-  }
-  
   return sanitized_context;
 };
 
