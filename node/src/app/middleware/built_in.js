@@ -75,7 +75,6 @@ const get_middleware_groups = (options = {}) => {
       next();
     },
 
-
     (req, res, next) => {
       if (process.env.NODE_ENV !== 'development') {
         return compression()(req, res, next);
@@ -85,27 +84,10 @@ const get_middleware_groups = (options = {}) => {
 
     express.static('public'),
 
-    (req, res, next) => {
-      if (req.path === '/_joystick/utils/process.js') {
-        return process_browser_polyfill_middleware(req, res, next);
-      }
-      next();
-    },
-
-    (req, res, next) => {
-      if (req.path.startsWith('/_joystick')) {
-        return express.static(options?.joystick_build_path || build_path)(req, res, next);
-      }
-      next();
-    },
-
-    (req, res, next) => {
-      if (req.path.startsWith('/css') || req.path.startsWith('/_joystick/css')) {
-        const static_middleware = express.static('css');
-        return static_middleware(req, res, next);
-      }
-      next();
-    },
+    { path: '/_joystick/utils/process.js', middleware: process_browser_polyfill_middleware },
+    { path: '/_joystick', middleware: express.static(options?.joystick_build_path || build_path) },
+    { path: '/css', middleware: express.static('css') },
+    { path: '/_joystick/css', middleware: express.static('css') },
 
     cookieParser(),
     body_parser(options?.middleware_config?.bodyParser),
@@ -177,7 +159,12 @@ const get_middleware_groups = (options = {}) => {
 
 const apply_middleware_groups = (express_app, middleware_groups) => {
   for (let i = 0; i < middleware_groups.global.length; i += 1) {
-    express_app.use(middleware_groups.global[i]);
+    const middleware_item = middleware_groups.global[i];
+    if (typeof middleware_item === 'object' && middleware_item.path && middleware_item.middleware) {
+      express_app.use(middleware_item.path, middleware_item.middleware);
+    } else {
+      express_app.use(middleware_item);
+    }
   }
 
   for (let i = 0; i < middleware_groups.ui.length; i += 1) {
