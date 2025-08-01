@@ -17,20 +17,6 @@ const encrypt_message = winston.format((info) => {
 });
 
 const push_logs = async () => {
-  const connection = websocket_client({
-    // NOTE: Safe to hardcode here as it won't be anything else, any time soon.
-    url: 'wss://push.cheatcode.co/api/_websockets/instances',
-    options: {
-      max_sends_per_second: 10, // NOTE: Avoid log spam if an app has a loop.
-      logging: false,
-      auto_reconnect: true,
-      // NOTE: Intentional as we want to avoid losing connections back to Push
-      // at all costs (otherwise they'd have to do a redeploy).
-      reconnect_attempts: Infinity,
-      reconnect_delay_in_seconds: 10,
-    },
-  });
-
   const instance_token = process.env.PUSH_INSTANCE_TOKEN;
 
   if (!(await path_exists('/root/push/logs'))) {
@@ -56,7 +42,7 @@ const push_logs = async () => {
       }),
       new ExternalTransport({
         on_log: async (log = {}) => {
-          connection.send({
+          process.push_instances_websocket.send({
             headers: { 'x-push-instance-token': instance_token },
             type: 'log',
             log: log,

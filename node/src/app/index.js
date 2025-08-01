@@ -26,6 +26,7 @@ import handle_process_errors from "./handle_process_errors.js";
 import load_settings from "./settings/load.js";
 import parse_route_pattern from '../lib/parse_route_pattern.js';
 import path_exists from '../lib/path_exists.js';
+import push from './push/index.js';
 import push_logger from "./push/logger.js";
 import Queue from "./queues/index.js";
 import read_mod_component_css from '../lib/read_mod_component_css.js';
@@ -44,6 +45,7 @@ import start_express from "./start_express.js";
 import start_node_as_cluster from "./start_node_as_cluster.js";
 import strip_preceeding_slash from '../lib/strip_preceeding_slash.js';
 import types from "../lib/types.js";
+import websocket_client from '../lib/websocket_client.js';
 
 const { readFile } = fs.promises;
 const app_settings = load_settings();
@@ -299,6 +301,21 @@ class App {
 				}
 			});
 
+			process.push_instances_websocket = websocket_client({
+				// NOTE: Safe to hardcode here as it won't be anything else, any time soon.
+				url: 'wss://push.cheatcode.co/api/_websockets/instances',
+				options: {
+					max_sends_per_second: 10, // NOTE: Avoid log spam if an app has a loop.
+					logging: false,
+					auto_reconnect: true,
+					// NOTE: Intentional as we want to avoid losing connections back to Push
+					// at all costs (otherwise they'd have to do a redeploy).
+					reconnect_attempts: Infinity,
+					reconnect_delay_in_seconds: 10,
+				},
+			});
+
+			await push();
 			await push_logger();
 		}
   }
