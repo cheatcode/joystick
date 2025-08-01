@@ -5,7 +5,7 @@ import get_api_url_component from "./get_api_url_component.js";
 import handle_api_error from "./handle_api_error.js";
 import is_valid_json from "../../lib/is_valid_json.js";
 import types from "../../lib/types.js";
-import validate_session from "./validate_session.js";
+import validate_cookie_session from "./validate_cookie_session.js";
 
 const register_getters = (express_app = {}, getter_definitions = [], api_context = {}, api_schema_options = {}) => {
 	for (let i = 0; i < getter_definitions?.length; i += 1) {
@@ -15,7 +15,7 @@ const register_getters = (express_app = {}, getter_definitions = [], api_context
       ...(types.is_array(getter_definition?.middleware) ? getter_definition?.middleware : []),
       async (req = {}, res = {}) => {
       	if (process.databases?._sessions) {
-	        const is_valid_session = await validate_session(req, res);
+	        const is_valid_session = await validate_cookie_session(req, res);
 
 	        if (!is_valid_session) {
 				    return res.status(403).send(
@@ -54,4 +54,3 @@ const register_getters = (express_app = {}, getter_definitions = [], api_context
 };
 
 export default register_getters;
-	

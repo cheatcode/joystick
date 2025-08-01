@@ -19,11 +19,9 @@ const get = (getter_name = "", getter_options = {}) => {
       const input = getter_options.input ? JSON.stringify(getter_options.input) : null;
       const output = getter_options.output ? JSON.stringify(getter_options.output) : null;
       const url = `${window.location.origin}/api/_getters/${getter_name}?input=${encodeURIComponent(input)}&output=${encodeURIComponent(output)}`;
-      const csrf = document.querySelector('[name="csrf"]')?.getAttribute('content');
 
       const headers = {
         ...(getter_options?.headers || {}),
-        'x-joystick-csrf': csrf,
       };
 
       if (window?.__joystick_test__) {

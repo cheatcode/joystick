@@ -5,16 +5,6 @@ const set_head_tags_in_html = (html_string = '', head = null, req = {}) => {
   const html = html_parser.parse(html_string);
   const head_tag = html.querySelector('head');
 
-  if (req?.context?.session) {
-    const meta_tag_wrapper = html_parser.parse(`<meta />`);
-    const tag = meta_tag_wrapper.querySelector('meta');
-
-    tag.setAttribute('name', 'csrf');
-    tag.setAttribute('content', req?.context?.session?.csrf);
-
-    head_tag.appendChild(tag);
-  }
-
   if (!head) {
     return html.toString();
   }

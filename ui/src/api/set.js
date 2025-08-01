@@ -28,12 +28,10 @@ const set = (setter_name = "", setter_options = {}) => {
     return new Promise((resolve, reject) => {
       const url = `${window.location.origin}/api/_setters/${setter_name}`;
       const body = get_body(setter_options);
-      const csrf = document.querySelector('[name="csrf"]')?.getAttribute('content');
 
       const headers = {
         ...(setter_options?.headers || {}),
         "Content-Type": "application/json",
-        'x-joystick-csrf': csrf,
       };
 
       if (window?.__joystick_test__) {
