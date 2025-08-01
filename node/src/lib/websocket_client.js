@@ -1,5 +1,5 @@
 import WebSocket from 'ws';
-import generate_id from './lib/generate_id.js';
+import generate_id from './generate_id.js';
 
 const websocket_client = (options = {}, on_connect = null) => {
   const {
