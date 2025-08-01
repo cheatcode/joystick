@@ -1,7 +1,6 @@
 import winston from 'winston';
 import fs from 'fs';
 import path from 'path';
-import { readFile } from 'fs/promises';
 import path_exists from '../../lib/path_exists.js';
 import generate_id from '../../lib/generate_id.js';
 import push_encrypt from '../../lib/push_encrypt.js';
@@ -32,7 +31,7 @@ const push_logs = async () => {
     },
   });
 
-  const instance_token = (await readFile("/root/push/instance_token.txt", "utf-8"))?.trim();
+  const instance_token = process.env.PUSH_INSTANCE_TOKEN;
 
   if (!(await path_exists('/root/push/logs'))) {
     await mkdir('/root/push/logs', { recursive: true });
