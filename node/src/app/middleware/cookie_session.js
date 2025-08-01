@@ -48,11 +48,6 @@ const cookie_session_middleware = (req, res, next) => {
     const existing_session_cookie = req?.cookies?.[COOKIE_NAME];
     let session_data = verify_and_parse(existing_session_cookie);
 
-    console.log({
-      existing_session_cookie,
-      session_data,
-    })
-
     if (!session_data) {
       const session_id = generate_id(16);
       session_data = {
