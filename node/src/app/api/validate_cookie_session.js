@@ -1,8 +1,6 @@
 const validate_cookie_session = async (req = null, res = null) => {
   const session = req?.context?.session;
 
-  console.log('validate_session_cookie', session);
-
   if (process.env.NODE_ENV === 'test') {
     return true;
   }

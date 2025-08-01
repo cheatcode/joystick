@@ -85,6 +85,28 @@ const get_middleware_groups = (options = {}) => {
 
     express.static('public'),
 
+    (req, res, next) => {
+      if (req.path === '/_joystick/utils/process.js') {
+        return process_browser_polyfill_middleware(req, res, next);
+      }
+      next();
+    },
+
+    (req, res, next) => {
+      if (req.path.startsWith('/_joystick')) {
+        return express.static(options?.joystick_build_path)(req, res, next);
+      }
+      next();
+    },
+
+    (req, res, next) => {
+      if (req.path.startsWith('/css') || req.path.startsWith('/_joystick/css')) {
+        const static_middleware = express.static('css');
+        return static_middleware(req, res, next);
+      }
+      next();
+    },
+
     cookieParser(),
     body_parser(options?.middleware_config?.bodyParser),
     cors(options?.middleware_config?.cors, options?.port),
@@ -133,28 +155,6 @@ const get_middleware_groups = (options = {}) => {
         next();
       }
     },    
-
-    (req, res, next) => {
-      if (req.path === '/_joystick/utils/process.js') {
-        return process_browser_polyfill_middleware(req, res, next);
-      }
-      next();
-    },
-
-    (req, res, next) => {
-      if (req.path.startsWith('/_joystick')) {
-        return express.static(options?.joystick_build_path)(req, res, next);
-      }
-      next();
-    },
-
-    (req, res, next) => {
-      if (req.path.startsWith('/css') || req.path.startsWith('/_joystick/css')) {
-        const static_middleware = express.static('css');
-        return static_middleware(req, res, next);
-      }
-      next();
-    },
 
     (req, res, next) => render_middleware(req, res, next, options?.app_instance),
 
