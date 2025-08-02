@@ -26,6 +26,11 @@ const build_html_response_for_browser = (options = {}) => {
 		base_html = linkedom_base_html.document.toString();
 	}
 
+	const data_for_browser = JSON.stringify(options?.data)
+		.replace(/</g, '\\u003c')
+		.replace(/-->/g, '--\\>')
+		.replace(/<\/script/gi, '<\\/script');
+
 	// NOTE: Put Mod CSS first for specificity. If they have overrides at the component level
 	// we should respect them.
 	return base_html
@@ -35,7 +40,16 @@ const build_html_response_for_browser = (options = {}) => {
 		`)
 		.replace(`<div id="app"></div>`, `
 			<div id="app">${options?.html}</div>
+			<script type="application/json" id="__joystick_data__">
+				${data_for_browser}
+			</script>
+			<script type="text/plain" id="__joystick_mod_js__">
+				${data_for_browser}
+			</script>
 			<script>
+			  const data = JSON.parse(document.getElementById('__joystick_data__')?.textContent || '{}');
+				const mod_js = document.getElementById('__joystick_mod_js__')?.textContent || '';
+
 				window.joystick = {
 					settings: {
 						global: ${JSON.stringify(app_settings?.global)},
@@ -44,7 +58,7 @@ const build_html_response_for_browser = (options = {}) => {
 				};
 
         window.__joystick_platform__ = '${os.platform()}';
-        window.__joystick_data__ = ${JSON.stringify(options?.data)};
+        window.__joystick_data__ = data;
        	window.__joystick_i18n__ = ${JSON.stringify(options?.translations)};
         ${is_development ? `window.__joystick_hmr_port__ = ${parseInt(process.env.PORT, 10) + 1}` : ''}
         window.__joystick_layout_url__ = ${options?.render_layout_path ? `"/_joystick/${options?.render_layout_path}"` : null};
@@ -59,7 +73,7 @@ const build_html_response_for_browser = (options = {}) => {
         window.__joystick_ssr_props__ = ${JSON.stringify(options?.props)};
         window.__joystick_url__ = ${JSON.stringify(options?.url)};
         window.__joystick_user__ = ${JSON.stringify(get_browser_safe_user(options?.req?.context?.user))};
-				window.__joystick_mod_js__ = '${Buffer.from(options?.mod_js).toString('base64') || ''}';
+				window.__joystick_mod_js__ = mod_js;
 			</script>
 			${options?.mod_js ? `
 			<script type="module">
@@ -181,10 +195,11 @@ const ssr = async (ssr_options = {}) => {
 		mod_css,
 		mod_js: mod_js || '',
 		mod_theme: ssr_options?.mod?.theme,
-		data: Object.entries(ssr_render?.data || {})?.reduce((encoded = {}, [key, value]) => {
-		  encoded[key] = value ? Buffer.from(JSON.stringify(value), 'utf8').toString('base64') : '';
-		  return encoded;
-		}, {}),
+		data: ssr_render?.data,
+		// data: Object.entries(ssr_render?.data || {})?.reduce((encoded = {}, [key, value]) => {
+		//   encoded[key] = value ? Buffer.from(JSON.stringify(value), 'utf8').toString('base64') : '';
+		//   return encoded;
+		// }, {}),
 		email_options: ssr_options?.email_options,
 		head: ssr_options?.head,
 		html: ssr_render?.html,
