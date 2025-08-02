@@ -44,11 +44,10 @@ const build_html_response_for_browser = (options = {}) => {
 				${data_for_browser}
 			</script>
 			<script type="text/plain" id="__joystick_mod_js__">
-				${data_for_browser}
+				${options?.mod_js}
 			</script>
 			<script>
 			  const data = JSON.parse(document.getElementById('__joystick_data__')?.textContent || '{}');
-				const mod_js = document.getElementById('__joystick_mod_js__')?.textContent || '';
 
 				window.joystick = {
 					settings: {
@@ -73,15 +72,17 @@ const build_html_response_for_browser = (options = {}) => {
         window.__joystick_ssr_props__ = ${JSON.stringify(options?.props)};
         window.__joystick_url__ = ${JSON.stringify(options?.url)};
         window.__joystick_user__ = ${JSON.stringify(get_browser_safe_user(options?.req?.context?.user))};
-				window.__joystick_mod_js__ = mod_js;
 			</script>
 			${options?.mod_js ? `
 			<script type="module">
 				try {
-					const mod_js = atob(window.__joystick_mod_js__);
-					const data_url = 'data:text/javascript;charset=utf-8,' + encodeURIComponent(mod_js);
-					const mod_module = await import(data_url);
-					window.__mod_js__ = mod_module.default;
+					const mod_js = document.getElementById('__joystick_mod_js__')?.textContent || '';
+					
+					if (mod_js) {					
+						const data_url = 'data:text/javascript;charset=utf-8,' + encodeURIComponent(mod_js);
+						const mod_module = await import(data_url);
+						window.__mod_js__ = mod_module.default;
+					}
 				} catch (error) {
 					console.error(error);
 				}
