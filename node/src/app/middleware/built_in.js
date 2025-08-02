@@ -85,7 +85,7 @@ const get_middleware_groups = (options = {}) => {
     express.static('public'),
 
     { path: '/_joystick/utils/process.js', middleware: process_browser_polyfill_middleware },
-    { path: '/_joystick', middleware: express.static(options?.joystick_build_path || build_path) },
+    { path: '/_joystick/ui', middleware: express.static(`${options?.joystick_build_path || build_path}/ui`) },
     { path: '/css', middleware: express.static('css') },
     { path: '/_joystick/css', middleware: express.static('css') },
 
