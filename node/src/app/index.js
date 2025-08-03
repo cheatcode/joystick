@@ -112,6 +112,58 @@ class App {
 		this.joystick_process_id = await generate_process_id();
 	}
 
+	async load_ui() {
+		const ui_path = `${process.cwd()}/ui`;
+		
+		if (!(await path_exists(ui_path))) {
+			return;
+		}
+
+		process._joystick_components = [];
+
+		const scan_directory = async (directory_path, component_type) => {
+			try {
+				const entries = await fs.readdir(directory_path, { withFileTypes: true });
+				
+				for (const entry of entries) {
+					if (entry.isDirectory()) {
+						const component_directory_path = `${directory_path}/${entry.name}`;
+						const index_file_path = `${component_directory_path}/index.js`;
+						
+						if (await path_exists(index_file_path)) {
+							try {
+								const component = await dynamic_import(index_file_path);
+								const relative_path = index_file_path.replace(`${process.cwd()}/`, '');
+								
+								process._joystick_components.push({
+									type: component_type,
+									path: relative_path,
+									component
+								});
+							} catch (error) {
+								console.warn(`Failed to load ${component_type}: ${index_file_path}`, error.message);
+							}
+						}
+					}
+				}
+			} catch (error) {
+				console.warn(`Failed to scan directory: ${directory_path}`, error.message);
+			}
+		};
+
+		const component_types = [
+			{ type: 'component', path: `${ui_path}/components` },
+			{ type: 'layout', path: `${ui_path}/layouts` },
+			{ type: 'page', path: `${ui_path}/pages` }
+		];
+
+		for (const { type, path: type_path } of component_types) {
+			if (await path_exists(type_path)) {
+				await scan_directory(type_path, type);
+			}
+		}
+	}
+
 	on_after_start_server(express = {}) {
 		// NOTE: Any console.log here is picked up by the stdout listener inside of
     // the start script of the CLI.
@@ -377,6 +429,8 @@ class App {
 	}
 
 	async start() {
+		// NOTE: Always run this first so we can cache UI components in memory.
+		await this.load_ui();
 		// NOTE: Order here is intentionally not alphabetical to ensure load
 		// order plays nice with things like tests.
 		await this.connect_databases();
