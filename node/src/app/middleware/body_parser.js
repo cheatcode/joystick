@@ -3,6 +3,8 @@ import express from "express";
 const body_parser = (config = {}) => {
   return (req, res, next) => {
     const content_type = req.headers["content-type"];
+    
+    console.log(headers);
 
     if (content_type && content_type === "application/x-www-form-urlencoded") {
       return express.urlencoded({
