@@ -54,8 +54,8 @@ const render_middleware = (req, res, next, app_instance = {}) => {
       );
     }
     
-    const Component = process.__joystick_components[component_path];
-    const Layout = layout_path ? process.__joystick_components[layout_path] : null;
+    const Component = process._joystick_components[component_path];
+    const Layout = layout_path ? process._joystick_components[layout_path] : null;
     const props = {
       ...(render_options?.props || {}),
       theme: req?.cookies?.theme || 'light',
