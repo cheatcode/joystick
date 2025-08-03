@@ -117,21 +117,6 @@ const get_middleware_groups = (options = {}) => {
     { path: '/css', middleware: express.static('css') },
 
     cookieParser(),
-    (req, res, next) => {
-      const cl = req.headers['content-length'] || req.headers['Content-Length'];
-      const te = req.headers['transfer-encoding'] || req.headers['Transfer-Encoding'];
-
-      console.log(`[${new Date().toISOString()}] RAW REQUEST`, {
-        ip: req.ip,
-        method: req.method,
-        url: req.originalUrl,
-        content_length: cl,
-        transfer_encoding: te,
-        user_agent: req.headers['user-agent']
-      });
-
-      next();
-    },
     body_parser(options?.middleware_config?.bodyParser),
     cors(options?.middleware_config?.cors, options?.port),
     request_methods_middleware,
