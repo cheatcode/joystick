@@ -32,7 +32,7 @@ const render_middleware = (req, res, next, app_instance = {}) => {
     const component_path = `${joystick_build_path}${sanitized_render_component_path}`;
     const layout_path = render_options?.layout ? `${joystick_build_path}${sanitized_render_layout_path}` : null;
 
-    if (!(await path_exists(component_path))) {
+    if (!process._joystick_components[component_path]) {
       return res.status(404).send(
         generate_joystick_error_page({
           type: 'page_not_found',
@@ -43,7 +43,7 @@ const render_middleware = (req, res, next, app_instance = {}) => {
       );
     }
 
-    if (layout_path && !(await path_exists(layout_path))) {
+    if (layout_path && !process._joystick_components[layout_path]) {
       return res.status(404).send(
         generate_joystick_error_page({
           type: 'layout_not_found',
@@ -54,11 +54,8 @@ const render_middleware = (req, res, next, app_instance = {}) => {
       );
     }
     
-    const env_component_path = process.env.NODE_ENV !== 'development' ? `${component_path}` : `${component_path}?v=${new Date().getTime()}`;
-    const env_layout_path = process.env.NODE_ENV !== 'development' ? `${layout_path}` : `${layout_path}?v=${new Date().getTime()}`;
-
-    const Component = await dynamic_import(env_component_path);
-    const Layout = layout_path ? await dynamic_import(env_layout_path) : null;
+    const Component = process.__joystick_components[component_path];
+    const Layout = layout_path ? process.__joystick_components[layout_path] : null;
     const props = {
       ...(render_options?.props || {}),
       theme: req?.cookies?.theme || 'light',
