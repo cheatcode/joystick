@@ -235,6 +235,9 @@ class App {
 		// NOTE: Load Mod's CSS and maps into memory on server startup so they're readily
 		// accessible during SSR (skips the need to reload on each SSR attempt).
 		const mod_exists = await path_exists('private/mod');
+
+		console.log({ mod_exists });
+
 		if (!mod_exists) {
 			return;
 		}
@@ -288,6 +291,8 @@ class App {
 			components,
 		};
 
+		console.log('MOD IS DONE', !!this.mod);
+
 		this.express.app.get(`/_joystick/mod/mod-light.css`, async (req = {}, res = {}) => {
 			res.setHeader('Content-Type', 'text/css');
 			return res.status(200).send(this?.mod?.css?.light || '');
@@ -302,6 +307,8 @@ class App {
 			res.setHeader('Content-Type', 'text/javascript');
 			return res.status(200).send(this?.mod?.js || '');
 		});
+
+		console.log('MOD ROUTES REGISTERED');
 	}
 
   async register_push() {
