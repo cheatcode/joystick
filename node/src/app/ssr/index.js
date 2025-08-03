@@ -37,7 +37,7 @@ const build_html_response_for_browser = (options = {}) => {
 		.replace(`<div id="app"></div>`, `
 			<div id="app">${options?.html}</div>
 			<script type="application/json" id="__joystick_data__">
-				${JSON.stringify(options?.data || {})}
+				${options?.data}
 			</script>
 			<script>
 			  const data = JSON.parse(document.getElementById('__joystick_data__').textContent || '{}');
