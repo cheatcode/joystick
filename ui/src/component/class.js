@@ -158,9 +158,6 @@ class Component {
 	}
 
 	async render_for_ssr(api = {}, req = {}, ssr_tree = [], render_for_ssr_options = {}) {
-		// TODO: render_for_ssr_options?.is_dynamic_page_load will only handle the data
-		// fetching and return here. No need for full-blown SSR.
-
 		return new Promise(async (resolve) => {
 			// NOTE: Fetch data for this component before rendering to HTML so the render() method has
 			// access to the data at render time.

@@ -65,6 +65,11 @@ const render_middleware = (req, res, next, app_instance = {}) => {
       props.page = Component;
     }
 
+    console.log({
+      Component,
+      Layout,
+    })
+
     const base_html = process.env.NODE_ENV !== 'development' ? cached_base_html : await get_base_html();
     const translations = await get_translations({
       language_files,
