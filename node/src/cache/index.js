@@ -1,40 +1,68 @@
 const cache = (cache_name = '') => {
+  if (!process.caches) {
+    process.caches = {};
+  }
+
+  if (!process.caches[cache_name]) {
+    process.caches[cache_name] = new Map();
+  }
+
   return {
     add: (cache_item = {}) => {
-      process.caches[cache_name] = [
-        ...(process.caches[cache_name] || []),
-        cache_item,
-      ];
+      const id = crypto.randomUUID();
+      process.caches[cache_name].set(id, cache_item);
     },
+
     find: (query_array = null) => {
-      return query_array ? process.caches[cache_name]?.filter((cache_item) => {
-        return cache_item[query_array[0]] === query_array[1];
-      }) : process.caches[cache_name];
+      const entries = Array.from(process.caches[cache_name].values());
+
+      if (!query_array) {
+        return entries;
+      }
+
+      return entries.filter((item) => item[query_array[0]] === query_array[1]);
     },
+
     find_one: (query_array = null) => {
-      return query_array ? process.caches[cache_name]?.find((cache_item) => {
-        return cache_item[query_array[0]] === query_array[1];
-      }) : null;
+      if (!query_array) {
+        return null;
+      }
+
+      for (const item of process.caches[cache_name].values()) {
+        if (item[query_array[0]] === query_array[1]) {
+          return item;
+        }
+      }
+
+      return null;
     },
+
     set: (cache_array = []) => {
-      process.caches[cache_name] = cache_array;
+      const map = new Map();
+      for (const item of cache_array) {
+        const id = crypto.randomUUID();
+        map.set(id, item);
+      }
+      process.caches[cache_name] = map;
     },
+
     update: ([key_to_match = '', value_to_match = ''], replacement_item = {}) => {
-      const index_to_update = process.caches[cache_name]?.findIndex((cache_item = {}) => {
-        return cache_item[key_to_match] === value_to_match;
-      });
-      if (typeof index_to_update === 'number') {
-        process.caches[cache_name][index_to_update] = {
-          ...(process.caches[cache_name][index_to_update] || {}),
-          ...replacement_item,
-        };
+      for (const [id, item] of process.caches[cache_name].entries()) {
+        if (item[key_to_match] === value_to_match) {
+          process.caches[cache_name].set(id, {
+            ...item,
+            ...replacement_item,
+          });
+          break;
+        }
       }
     },
+
     remove: ([key_to_match = '', value_to_match = '']) => {
-      if (process.caches[cache_name]) {
-        process.caches[cache_name] = process.caches[cache_name].filter((cache_item = {}) => {
-          return cache_item[key_to_match] !== value_to_match;
-        });
+      for (const [id, item] of process.caches[cache_name].entries()) {
+        if (item[key_to_match] === value_to_match) {
+          process.caches[cache_name].delete(id);
+        }
       }
     },
   };
