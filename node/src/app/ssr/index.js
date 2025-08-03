@@ -35,7 +35,8 @@ const build_html_response_for_browser = (options = {}) => {
 	// we should respect them.
 	return base_html
 		.replace('${css}', `
-			${options?.mod_css ? `<style type="text/css" mod-css>${options?.mod_css}</style>` : ''}
+			${options?.mod_in_use && !options?.mod_tree_shaking ? ` <link rel="stylesheet" href="/_joystick/mod/mod-${options?.mod_theme}.css">` : ''}
+			${options?.mod_in_use && options?.mod_tree_shaking && options?.mod_css ? `<style type="text/css" mod-css>${options?.mod_css}</style>` : ''}
 			<style type="text/css" js-css>${options?.css}</style>
 		`)
 		.replace(`<div id="app"></div>`, `
@@ -43,11 +44,8 @@ const build_html_response_for_browser = (options = {}) => {
 			<script type="application/json" id="__joystick_data__">
 				${data_for_browser}
 			</script>
-			<script type="text/plain" id="__joystick_mod_js__">
-				${options?.mod_js}
-			</script>
 			<script>
-			  const data = JSON.parse(document.getElementById('__joystick_data__')?.textContent || '{}');
+			  const data = JSON.parse(document.getElementById('__joystick_data__').textContent || '{}');
 
 				window.joystick = {
 					settings: {
@@ -73,20 +71,7 @@ const build_html_response_for_browser = (options = {}) => {
         window.__joystick_url__ = ${JSON.stringify(options?.url)};
         window.__joystick_user__ = ${JSON.stringify(get_browser_safe_user(options?.req?.context?.user))};
 			</script>
-			${options?.mod_js ? `
-			<script type="module">
-				try {
-					const mod_js = document.getElementById('__joystick_mod_js__')?.textContent || '';
-					
-					if (mod_js) {					
-						const data_url = 'data:text/javascript;charset=utf-8,' + encodeURIComponent(mod_js);
-						const mod_module = await import(data_url);
-						window.__mod_js__ = mod_module.default;
-					}
-				} catch (error) {
-					console.error(error);
-				}
-			</script>` : ''}
+			${options?.mod_in_use && !options?.mod_tree_shaking ? `<script type="module" src="/_joystick/mod/mod.js"></script>` : ''}
 			<script type="module" src="/_joystick/utils/process.js"></script>
       <script type="module" src="/_joystick/index.client.js"></script>
       ${options?.render_component_path ? `<script data-js-component type="module" src="/_joystick/${options?.render_component_path}"></script>` : ''}
@@ -151,19 +136,10 @@ const ssr = async (ssr_options = {}) => {
 	let mod_css = '';
 	let mod_js = '';
 
-	// NOTE: If no components specified, load in the full theme CSS.
-	if (ssr_options?.mod?.in_use && !ssr_options?.mod?.components_in_use) {
-		mod_css = ssr_options?.mod?.css[ssr_options?.mod?.theme];
-	}
-
-	// NOTE: Always load proper JS (free or plus) if Mod is in use. This is determined
-	// in this.register_mod() inside of src/app/index.js.
-	if (ssr_options?.mod?.in_use) {
-		mod_js = ssr_options?.mod?.js || '';
-	}
-
 	// NOTE: If components specified, load incrementally.
-	if (ssr_options?.mod?.in_use && ssr_options?.mod?.components_in_use && ssr_options?.mod?.components_in_use?.length > 0) {
+	const is_tree_shaking = ssr_options?.mod?.in_use && ssr_options?.mod?.components_in_use && ssr_options?.mod?.components_in_use?.length > 0;
+
+	if (is_tree_shaking) {
 		// NOTE: We don't need the globals for one of the themes. Determine which and nuke it.
 		const theme_global_to_remove = ssr_options?.mod?.theme === 'light' ? 'dark' : 'light';
 		const theme_specific_globals = { ...(ssr_options?.mod?.css?.globals) };
@@ -193,8 +169,11 @@ const ssr = async (ssr_options = {}) => {
 			${email_base_css}
 			${ssr_render?.css}
 		` : ssr_render?.css,
+		mod_version: ssr_options?.mod?.version,
+		mod_in_use: ssr_options?.mod?.in_use,
+		mod_tree_shaking: is_tree_shaking,
 		mod_css,
-		mod_js: mod_js || '',
+		mod_js,
 		mod_theme: ssr_options?.mod?.theme,
 		data: ssr_render?.data,
 		// data: Object.entries(ssr_render?.data || {})?.reduce((encoded = {}, [key, value]) => {

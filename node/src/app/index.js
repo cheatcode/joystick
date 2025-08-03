@@ -235,7 +235,6 @@ class App {
 		// NOTE: Load Mod's CSS and maps into memory on server startup so they're readily
 		// accessible during SSR (skips the need to reload on each SSR attempt).
 		const mod_exists = await path_exists('private/mod');
-
 		if (!mod_exists) {
 			return;
 		}
@@ -279,6 +278,7 @@ class App {
 		}
 
 		this.mod = {
+			version: mod_version,
 			css: {
 				light: mod_light,
 				dark: mod_dark,
@@ -287,6 +287,21 @@ class App {
 			globals,
 			components,
 		};
+
+		this.express.app.get(`/_joystick/mod/mod-light.css`, async (req = {}, res = {}) => {
+			res.setHeader('Content-Type', 'text/css');
+			return res.status(200).send(this?.mod?.css?.light || '');
+		});
+
+		this.express.app.get(`/_joystick/mod/mod-dark.css`, async (req = {}, res = {}) => {
+			res.setHeader('Content-Type', 'text/css');
+			return res.status(200).send(this?.mod?.css?.dark || '');
+		});
+
+		this.express.app.get(`/_joystick/mod/mod.js`, async (req = {}, res = {}) => {
+			res.setHeader('Content-Type', 'text/javascript');
+			return res.status(200).send(this?.mod?.js || '');
+		});
 	}
 
   async register_push() {
@@ -369,6 +384,7 @@ class App {
 		// NOTE: Order here is intentionally not alphabetical to ensure load
 		// order plays nice with things like tests.
 		await this.connect_databases();
+		// NOTE: Always keep Mod stuff early so we can use it in other locations below.
 		this.register_caches();
 		this.register_cron_jobs();
 		this.register_queues();
@@ -383,7 +399,6 @@ class App {
 		this.register_uploaders();
 		this.register_fixtures();
 		this.register_indexes();
-		// NOTE: Always keep Mod stuff last as we want to prioritize server-side stuff.
 		this.register_mod();
 	}
 
