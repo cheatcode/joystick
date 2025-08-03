@@ -37,16 +37,12 @@ const build_html_response_for_browser = (options = {}) => {
 		.replace(`<div id="app"></div>`, `
 			<div id="app">${options?.html}</div>
 			<script type="application/json" id="__joystick_data__">
-				${JSON.stringify(options?.data || {}, (_key, value) => {
-					if (typeof value === 'string') {
-						return value
-							.replace(/</g, '\\u003c')
-							.replace(/-->/g, '--\\>')
-							.replace(/<\/script/gi, '<\\/script');
-					}
-					
-					return value;
-				})}
+				${JSON.stringify(options?.data || {})
+					.replace(/</g, '\\u003C')
+					.replace(/>/g, '\\u003E')
+					.replace(/&/g, '\\u0026')
+					.replace(/\u2028/g, '\\u2028')
+					.replace(/\u2029/g, '\\u2029')}
 			</script>
 			<script>
 			  const data = JSON.parse(document.getElementById('__joystick_data__').textContent || '{}');
