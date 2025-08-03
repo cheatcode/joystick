@@ -110,10 +110,10 @@ const get_middleware_groups = (options = {}) => {
       path: `/_joystick/mod/mod.js`,
       middleware: (req = {}, res = {}, next) => {
         res.setHeader('content-type', 'text/javascript');
-        return res.status(200).send(options?.mod?.js || '');
+        return res.status(200).send(options?.mod?.js?.iife || '');
       },
     },
-    
+
     { path: '/css', middleware: express.static('css') },
 
     cookieParser(),

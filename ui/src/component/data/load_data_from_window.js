@@ -1,5 +1,4 @@
 import compile_data from "./compile.js";
-import decode_utf8_base64_string from "../../lib/decode_utf8_base64_string.js";
 
 const load_data_from_window = (component_instance = {}) => {
   if (typeof window !== 'undefined') {

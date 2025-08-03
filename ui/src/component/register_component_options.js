@@ -43,9 +43,11 @@ const register_component_options = (component_instance = {}, component_options =
 	component_instance.virtual_dom = {};
 	component_instance.wrapper = {};
 
-	if (typeof window !== 'undefined' && window.__mod_js__) {
+	// NOTE: We assume that Joystick will load the IIFE version of Mod's JS
+	// so window.mod should be available.
+	if (typeof window !== 'undefined' && window.mod) {
 		// NOTE: Do this last to avoid any conflicts at render time.
-		component_instance.mod = window.__mod_js__ || {};
+		component_instance.mod = window.mod || {};
 	}
 
   if (typeof window !== 'undefined' && component_options?.websockets && types.is_function(component_options?.websockets)) {
