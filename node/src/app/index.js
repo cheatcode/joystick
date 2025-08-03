@@ -148,9 +148,9 @@ class App {
 		};
 
 		const component_directories = [
-			`${joystick_build_path}/components`,
-			`${joystick_build_path}/layouts`,
-			`${joystick_build_path}/pages`
+			`${joystick_build_path}/ui/components`,
+			`${joystick_build_path}/ui/layouts`,
+			`${joystick_build_path}/ui/pages`
 		];
 
 		for (const directory_path of component_directories) {
