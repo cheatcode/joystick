@@ -93,30 +93,7 @@ const get_middleware_groups = (options = {}) => {
     { path: '/_joystick/ui', middleware: express.static(`${options?.joystick_build_path || build_path}/ui`) },
     { path: '/_joystick/css', middleware: express.static('css') },
     { path: '/css', middleware: express.static('css') },
-    {
-      path: `/_joystick/mod/mod-light.css`,
-      middleware: express.static(`${options?.joystick_build_path || build_path}/private/mod/mod-light.min.css`)
-    },
-    {
-      path: `/_joystick/mod/mod-light-plus.css`,
-      middleware: express.static(`${options?.joystick_build_path || build_path}/private/mod/mod-light-plus.min.css`)
-    },
-    {
-      path: `/_joystick/mod/mod-dark.css`,
-      middleware: express.static(`${options?.joystick_build_path || build_path}/private/mod/mod-dark.min.css`)
-    },
-    {
-      path: `/_joystick/mod/mod-dark-plus.css`,
-      middleware: express.static(`${options?.joystick_build_path || build_path}/private/mod/mod-dark-plus.min.css`)
-    },
-    {
-      path: `/_joystick/mod/mod.js`,
-      middleware: express.static(`${options?.joystick_build_path || build_path}/lib/mod.esm.min.js`)
-    },
-    {
-      path: `/_joystick/mod/mod-plus.js`,
-      middleware: express.static(`${options?.joystick_build_path || build_path}/lib/mod-plus.esm.min.js`)
-    },
+    
     cookieParser(),
     body_parser(options?.middleware_config?.bodyParser),
     cors(options?.middleware_config?.cors, options?.port),
