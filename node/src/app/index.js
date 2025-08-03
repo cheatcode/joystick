@@ -119,9 +119,9 @@ class App {
 			return;
 		}
 
-		process._joystick_components = [];
+		process._joystick_components = {};
 
-		const scan_directory = async (directory_path, component_type) => {
+		const scan_directory = async (directory_path) => {
 			try {
 				const entries = await readdir(directory_path, { withFileTypes: true });
 				
@@ -135,13 +135,9 @@ class App {
 								const component = await dynamic_import(index_file_path);
 								const relative_path = index_file_path.replace(`${process.cwd()}/`, '');
 								
-								process._joystick_components.push({
-									type: component_type,
-									path: relative_path,
-									component
-								});
+								process._joystick_components[relative_path] = component;
 							} catch (error) {
-								console.warn(`Failed to load ${component_type}: ${index_file_path}`, error.message);
+								console.warn(`Failed to load component: ${index_file_path}`, error.message);
 							}
 						}
 					}
@@ -151,15 +147,15 @@ class App {
 			}
 		};
 
-		const component_types = [
-			{ type: 'component', path: `${ui_path}/components` },
-			{ type: 'layout', path: `${ui_path}/layouts` },
-			{ type: 'page', path: `${ui_path}/pages` }
+		const component_directories = [
+			`${ui_path}/components`,
+			`${ui_path}/layouts`,
+			`${ui_path}/pages`
 		];
 
-		for (const { type, path: type_path } of component_types) {
-			if (await path_exists(type_path)) {
-				await scan_directory(type_path, type);
+		for (const directory_path of component_directories) {
+			if (await path_exists(directory_path)) {
+				await scan_directory(directory_path);
 			}
 		}
 	}
