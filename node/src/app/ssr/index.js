@@ -26,11 +26,6 @@ const build_html_response_for_browser = (options = {}) => {
 		base_html = linkedom_base_html.document.toString();
 	}
 
-	const data_for_browser = JSON.stringify(options?.data)
-		.replace(/</g, '\\u003c')
-		.replace(/-->/g, '--\\>')
-		.replace(/<\/script/gi, '<\\/script');
-
 	// NOTE: Put Mod CSS first for specificity. If they have overrides at the component level
 	// we should respect them.
 	return base_html
@@ -42,7 +37,16 @@ const build_html_response_for_browser = (options = {}) => {
 		.replace(`<div id="app"></div>`, `
 			<div id="app">${options?.html}</div>
 			<script type="application/json" id="__joystick_data__">
-				${JSON.stringify(data_for_browser || {})}
+				${JSON.stringify(options?.data || {}, (_key, value) => {
+					if (typeof value === 'string') {
+						return value
+							.replace(/</g, '\\u003c')
+							.replace(/-->/g, '--\\>')
+							.replace(/<\/script/gi, '<\\/script');
+					}
+					
+					return value;
+				})}
 			</script>
 			<script>
 			  const data = JSON.parse(document.getElementById('__joystick_data__').textContent || '{}');
