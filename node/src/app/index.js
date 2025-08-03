@@ -298,6 +298,10 @@ class App {
 
   async register_push() {
 		if (process.env.NODE_ENV !== "development" && process.env.IS_PUSH_DEPLOYED) {
+			// NOTE: Intentionally fake this for Push deployed apps. This is because Express
+			// is registered before Push's logging kicks in, so we don't get a 100% clean startup log.
+			console.log(`App running at http://localhost:2600`);
+
 			this.express.app.get(`/api/_push/health`, async (req = {}, res = {}) => {
 				if (req?.headers?.['x-push-instance-token'] !== process.env.PUSH_INSTANCE_TOKEN) {
 					return res.status(403).send('403 - You are not allowed to access this endpoint.');
