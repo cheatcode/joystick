@@ -47,7 +47,7 @@ import strip_preceeding_slash from '../lib/strip_preceeding_slash.js';
 import types from "../lib/types.js";
 import websocket_client from '../lib/websocket_client.js';
 
-const { readFile } = fs.promises;
+const { readFile, readdir } = fs.promises;
 const app_settings = load_settings();
 
 class App {
@@ -123,7 +123,7 @@ class App {
 
 		const scan_directory = async (directory_path, component_type) => {
 			try {
-				const entries = await fs.readdir(directory_path, { withFileTypes: true });
+				const entries = await readdir(directory_path, { withFileTypes: true });
 				
 				for (const entry of entries) {
 					if (entry.isDirectory()) {
