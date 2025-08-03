@@ -236,8 +236,6 @@ class App {
 		// accessible during SSR (skips the need to reload on each SSR attempt).
 		const mod_exists = await path_exists('private/mod');
 
-		console.log({ mod_exists });
-
 		if (!mod_exists) {
 			return;
 		}
@@ -270,7 +268,7 @@ class App {
 		} else {
 			mod_light = (await path_exists('private/mod/mod-light.min.css') && await readFile('private/mod/mod-light.min.css', 'utf-8')) || '';
 			mod_dark = (await path_exists('private/mod/mod-dark.min.css') && await readFile('private/mod/mod-dark.min.css', 'utf-8')) || '';
-			mod_dark = (await path_exists('lib/mod.esm.min.js') && await readFile('lib/mod.esm.min.js', 'utf-8')) || '';
+			mod_js = (await path_exists('lib/mod.esm.min.js') && await readFile('lib/mod.esm.min.js', 'utf-8')) || '';
 
 			globals = await read_mod_global_css();
 			const free_components = await read_mod_component_css('free');
@@ -290,25 +288,6 @@ class App {
 			globals,
 			components,
 		};
-
-		console.log('MOD IS DONE', !!this.mod);
-
-		this.express.app.get(`/_joystick/mod/mod-light.css`, async (req = {}, res = {}) => {
-			res.setHeader('Content-Type', 'text/css');
-			return res.status(200).send(this?.mod?.css?.light || '');
-		});
-
-		this.express.app.get(`/_joystick/mod/mod-dark.css`, async (req = {}, res = {}) => {
-			res.setHeader('Content-Type', 'text/css');
-			return res.status(200).send(this?.mod?.css?.dark || '');
-		});
-
-		this.express.app.get(`/_joystick/mod/mod.js`, async (req = {}, res = {}) => {
-			res.setHeader('Content-Type', 'text/javascript');
-			return res.status(200).send(this?.mod?.js || '');
-		});
-
-		console.log('MOD ROUTES REGISTERED');
 	}
 
   async register_push() {
@@ -392,6 +371,7 @@ class App {
 		// order plays nice with things like tests.
 		await this.connect_databases();
 		// NOTE: Always keep Mod stuff early so we can use it in other locations below.
+		await this.register_mod();
 		this.register_caches();
 		this.register_cron_jobs();
 		this.register_queues();
@@ -406,7 +386,6 @@ class App {
 		this.register_uploaders();
 		this.register_fixtures();
 		this.register_indexes();
-		this.register_mod();
 	}
 
 	start_express() {

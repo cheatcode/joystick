@@ -35,7 +35,7 @@ const build_html_response_for_browser = (options = {}) => {
 	// we should respect them.
 	return base_html
 		.replace('${css}', `
-			${options?.mod_in_use && !options?.mod_tree_shaking ? ` <link rel="stylesheet" href="/_joystick/mod/mod-${options?.mod_theme}${options?.mod_version === 'plus' ? '-plus' : ''}.css">` : ''}
+			${options?.mod_in_use && !options?.mod_tree_shaking ? ` <link rel="stylesheet" href="/_joystick/mod/mod-${options?.mod_theme}.css">` : ''}
 			${options?.mod_in_use && options?.mod_tree_shaking && options?.mod_css ? `<style type="text/css" mod-css>${options?.mod_css}</style>` : ''}
 			<style type="text/css" js-css>${options?.css}</style>
 		`)
@@ -71,7 +71,7 @@ const build_html_response_for_browser = (options = {}) => {
         window.__joystick_url__ = ${JSON.stringify(options?.url)};
         window.__joystick_user__ = ${JSON.stringify(get_browser_safe_user(options?.req?.context?.user))};
 			</script>
-			${options?.mod_in_use && !options?.mod_tree_shaking ? `<script type="module" src="/_joystick/mod/mod${options?.mod_version === 'plus' ? '-plus' : ''}.js"></script>` : ''}
+			${options?.mod_in_use && !options?.mod_tree_shaking ? `<script type="module" src="/_joystick/mod/mod.js"></script>` : ''}
 			<script type="module" src="/_joystick/utils/process.js"></script>
       <script type="module" src="/_joystick/index.client.js"></script>
       ${options?.render_component_path ? `<script data-js-component type="module" src="/_joystick/${options?.render_component_path}"></script>` : ''}

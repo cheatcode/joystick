@@ -92,8 +92,20 @@ const get_middleware_groups = (options = {}) => {
     { path: '/_joystick/index.css', middleware: express.static(`${options?.joystick_build_path}index.css`) },
     { path: '/_joystick/ui', middleware: express.static(`${options?.joystick_build_path || build_path}/ui`) },
     { path: '/_joystick/css', middleware: express.static('css') },
+    {
+      path: `/_joystick/mod/mod-light.css`,
+      middleware: express.static(`${options?.joystick_build_path || build_path}/private/mod/mod-light${options?.mod?.version === 'plus' ? '-plus' : ''}.min.css`)
+    },
+    {
+      path: `/_joystick/mod/mod-dark.css`,
+      middleware: express.static(`${options?.joystick_build_path || build_path}/private/mod/mod-dark${options?.mod?.version === 'plus' ? '-plus' : ''}.min.css`)
+    },
+    {
+      path: `/_joystick/mod/mod.js`,
+      middleware: express.static(`${options?.joystick_build_path || build_path}/lib/mod${options?.mod?.version === 'plus' ? '-plus' : ''}.min.css`)
+    },
     { path: '/css', middleware: express.static('css') },
-    
+
     cookieParser(),
     body_parser(options?.middleware_config?.bodyParser),
     cors(options?.middleware_config?.cors, options?.port),

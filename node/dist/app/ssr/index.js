@@ -1,5 +1,5 @@
 import k from"fs";import{parseHTML as o}from"linkedom";import v from"os";import O from"../api/get_api_for_data_functions.js";import N from"../../lib/get_browser_safe_request.js";import S from"../settings/load.js";import q from"./set_base_attributes_in_html.js";import J from"./set_head_tags_in_html.js";import u from"../../lib/path_exists.js";import x from"../accounts/get_browser_safe_user.js";const{readFile:y}=k.promises,c=S(),h=process.env.NODE_ENV==="development",{document:C}=o("<div></div>"),E=(e={})=>{let t=e?.base_html;if(e?.mod_theme){const a=o(t);a.document.querySelector("body").setAttribute("data-mod-theme",e?.mod_theme),t=a.document.toString()}const i=JSON.stringify(e?.data).replace(/</g,"\\u003c").replace(/-->/g,"--\\>").replace(/<\/script/gi,"<\\/script");return t.replace("${css}",`
-			${e?.mod_in_use&&!e?.mod_tree_shaking?` <link rel="stylesheet" href="/_joystick/mod/mod-${e?.mod_theme}${e?.mod_version==="plus"?"-plus":""}.css">`:""}
+			${e?.mod_in_use&&!e?.mod_tree_shaking?` <link rel="stylesheet" href="/_joystick/mod/mod-${e?.mod_theme}.css">`:""}
 			${e?.mod_in_use&&e?.mod_tree_shaking&&e?.mod_css?`<style type="text/css" mod-css>${e?.mod_css}</style>`:""}
 			<style type="text/css" js-css>${e?.css}</style>
 		`).replace('<div id="app"></div>',`
@@ -31,7 +31,7 @@ import k from"fs";import{parseHTML as o}from"linkedom";import v from"os";import 
         window.__joystick_url__ = ${JSON.stringify(e?.url)};
         window.__joystick_user__ = ${JSON.stringify(x(e?.req?.context?.user))};
 			</script>
-			${e?.mod_in_use&&!e?.mod_tree_shaking?`<script type="module" src="/_joystick/mod/mod${e?.mod_version==="plus"?"-plus":""}.js"></script>`:""}
+			${e?.mod_in_use&&!e?.mod_tree_shaking?'<script type="module" src="/_joystick/mod/mod.js"></script>':""}
 			<script type="module" src="/_joystick/utils/process.js"></script>
       <script type="module" src="/_joystick/index.client.js"></script>
       ${e?.render_component_path?`<script data-js-component type="module" src="/_joystick/${e?.render_component_path}"></script>`:""}
