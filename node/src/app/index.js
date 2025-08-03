@@ -113,9 +113,9 @@ class App {
 	}
 
 	async load_ui() {
-		const ui_path = `${process.cwd()}/ui`;
+		const joystick_build_path = get_joystick_build_path();
 		
-		if (!(await path_exists(ui_path))) {
+		if (!(await path_exists(joystick_build_path))) {
 			return;
 		}
 
@@ -133,7 +133,7 @@ class App {
 						if (await path_exists(index_file_path)) {
 							try {
 								const component = await dynamic_import(index_file_path);
-								const relative_path = index_file_path.replace(`${process.cwd()}/`, '');
+								const relative_path = index_file_path.replace(`${joystick_build_path}/`, '');
 								
 								process._joystick_components[relative_path] = component;
 							} catch (error) {
@@ -148,9 +148,9 @@ class App {
 		};
 
 		const component_directories = [
-			`${ui_path}/components`,
-			`${ui_path}/layouts`,
-			`${ui_path}/pages`
+			`${joystick_build_path}/components`,
+			`${joystick_build_path}/layouts`,
+			`${joystick_build_path}/pages`
 		];
 
 		for (const directory_path of component_directories) {

@@ -20,8 +20,6 @@ const { document: linkedom_document } = parseHTML('<div></div>');
 const build_html_response_for_browser = (options = {}) => {
 	let base_html = options?.base_html;
 
-	console.log('DATA in bhrfb', options?.data);
-
 	if (options?.mod_theme) {
 		const linkedom_base_html = parseHTML(base_html);
 		linkedom_base_html.document.querySelector('body').setAttribute('data-mod-theme', options?.mod_theme);
@@ -119,10 +117,6 @@ const get_component_instance = (component_to_render = null, component_options = 
 };
 
 const ssr = async (ssr_options = {}) => {
-	console.log({
-		component_to_render: ssr_options?.component_to_render,
-		component_options: ssr_options?.component_options,
-	})
 	const component_instance = get_component_instance(ssr_options?.component_to_render, ssr_options?.component_options);
 	const api = get_api_for_data_functions(ssr_options?.req, ssr_options?.res, ssr_options?.api_schema);
 	const ssr_tree = [];
@@ -131,10 +125,6 @@ const ssr = async (ssr_options = {}) => {
 		is_email: ssr_options?.is_email,
 		is_dynamic_page_render: ssr_options?.is_dynamic_page_render,
 	});
-
-	console.log({
-		ssr_render
-	})
 
 	if (ssr_options?.is_dynamic_page_render) {
 		return ssr_render?.data;
