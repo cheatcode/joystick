@@ -29,8 +29,8 @@ const render_middleware = (req, res, next, app_instance = {}) => {
     // has a forward slash prepended, just strip it for them.
     const sanitized_render_component_path = strip_preceeding_slash(render_component_path);
     const sanitized_render_layout_path = strip_preceeding_slash(render_options?.layout);
-    const component_path = `${joystick_build_path}${sanitized_render_component_path}`;
-    const layout_path = render_options?.layout ? `${joystick_build_path}${sanitized_render_layout_path}` : null;
+    const component_path = sanitized_render_component_path;
+    const layout_path = render_options?.layout ? sanitized_render_layout_path : null;
 
     if (!process._joystick_components[component_path]) {
       return res.status(404).send(
