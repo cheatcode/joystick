@@ -26,6 +26,7 @@ const start_express = (on_after_start_server = null, app_instance = {}) => {
 
   built_in_middleware({
     app_instance,
+    mod: app_instance?.mod,
     csp_config: app_instance?.options?.csp,
   	express_app,
   	joystick_build_path,

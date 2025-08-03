@@ -94,16 +94,26 @@ const get_middleware_groups = (options = {}) => {
     { path: '/_joystick/css', middleware: express.static('css') },
     {
       path: `/_joystick/mod/mod-light.css`,
-      middleware: express.static(`${options?.joystick_build_path || build_path}/private/mod/mod-light${options?.mod?.version === 'plus' ? '-plus' : ''}.min.css`)
+      middleware: (req = {}, res = {}, next) => {
+        res.setHeader('content-type', 'text/css');
+        return res.status(200).send(options?.mod?.css?.light || '');
+      },
     },
     {
       path: `/_joystick/mod/mod-dark.css`,
-      middleware: express.static(`${options?.joystick_build_path || build_path}/private/mod/mod-dark${options?.mod?.version === 'plus' ? '-plus' : ''}.min.css`)
+      middleware: (req = {}, res = {}, next) => {
+        res.setHeader('content-type', 'text/css');
+        return res.status(200).send(options?.mod?.css?.dark || '');
+      },
     },
     {
       path: `/_joystick/mod/mod.js`,
-      middleware: express.static(`${options?.joystick_build_path || build_path}/lib/mod${options?.mod?.version === 'plus' ? '-plus' : ''}.min.css`)
+      middleware: (req = {}, res = {}, next) => {
+        res.setHeader('content-type', 'text/javascript');
+        return res.status(200).send(options?.mod?.js || '');
+      },
     },
+    
     { path: '/css', middleware: express.static('css') },
 
     cookieParser(),
