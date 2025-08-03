@@ -118,8 +118,8 @@ const get_middleware_groups = (options = {}) => {
 
     cookieParser(),
     (req, res, next) => {
-      const cl = req.headers['content-length'];
-      const te = req.headers['transfer-encoding'];
+      const cl = req.headers['content-length'] || req.headers['Content-Length'];
+      const te = req.headers['transfer-encoding'] || req.headers['Transfer-Encoding'];
 
       console.log(`[${new Date().toISOString()}] RAW REQUEST`, {
         ip: req.ip,
