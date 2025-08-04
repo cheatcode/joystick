@@ -1,5 +1,6 @@
 import html_parser from 'node-html-parser';
 import types from '../../lib/types.js';
+import escape_html from '../../lib/escape_html.js';
 
 const set_head_tags_in_html = (html_string = '', head = null, req = {}) => {
   const html = html_parser.parse(html_string);
@@ -11,14 +12,15 @@ const set_head_tags_in_html = (html_string = '', head = null, req = {}) => {
 
   if (head.title) {
     const existing_title = head_tag.querySelector('title');
+    const escaped_title = escape_html(head.title);
     
     if (existing_title) {
-      const new_title = html_parser.parse(`<title>${head.title}</title>`);
+      const new_title = html_parser.parse(`<title>${escaped_title}</title>`);
       head_tag.exchangeChild(existing_title, new_title);
     }
   
     if (!existing_title) {
-      head_tag.insertAdjacentHTML('afterbegin', `<title>${head.title}</title>`);
+      head_tag.insertAdjacentHTML('afterbegin', `<title>${escaped_title}</title>`);
     }
   }
 
@@ -33,7 +35,7 @@ const set_head_tags_in_html = (html_string = '', head = null, req = {}) => {
 
       for (let i = 0; i < meta_tag_entries?.length; i += 1) {
       	const [attribute_name, attribute_value] = meta_tag_entries[i];
-      	new_tag.querySelector('meta').setAttribute(attribute_name, attribute_value);
+      	new_tag.querySelector('meta').setAttribute(attribute_name, escape_html(attribute_value));
       }
 
       if (existing_tag) {
@@ -55,7 +57,7 @@ const set_head_tags_in_html = (html_string = '', head = null, req = {}) => {
   
   		for (let i = 0; i < link_tag_entries?.length; i += 1) {
   			const [attribute_name, attribute_value] = link_tag_entries[i];
-        new_tag.querySelector('link').setAttribute(attribute_name, attribute_value);
+        new_tag.querySelector('link').setAttribute(attribute_name, escape_html(attribute_value));
   		}
 
       head_tag.appendChild(new_tag);
@@ -71,7 +73,7 @@ const set_head_tags_in_html = (html_string = '', head = null, req = {}) => {
 
       for (let i = 0; i < script_tag_entries?.length; i += 1) {
         const [attribute_name, attribute_value] = script_tag_entries[i];
-        new_tag.querySelector('script').setAttribute(attribute_name, attribute_value);
+        new_tag.querySelector('script').setAttribute(attribute_name, escape_html(attribute_value));
       }
   
       head_tag.appendChild(new_tag);
@@ -88,11 +90,11 @@ const set_head_tags_in_html = (html_string = '', head = null, req = {}) => {
 
       for (let i = 0; i < attribute_entries?.length; i += 1) {
         const [attribute_name, attribute_value] = attribute_entries[i];
-        style_tag.setAttribute(attribute_name, attribute_value);
+        style_tag.setAttribute(attribute_name, escape_html(attribute_value));
       }
 
       if (content) {
-        style_tag.innerHTML = content;
+        style_tag.innerHTML = escape_html(content);
       }
 
       head_tag.appendChild(new_tag);

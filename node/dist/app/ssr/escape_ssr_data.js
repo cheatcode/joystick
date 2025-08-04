@@ -1,0 +1,1 @@
+import s from"../../lib/escape_html.js";const n=e=>{if(e==null)return e;if(typeof e=="string")return s(e);if(typeof e=="number"||typeof e=="boolean")return e;if(Array.isArray(e))return e.map(r=>n(r));if(typeof e=="object"){const r={};for(const[o,f]of Object.entries(e))r[o]=n(f);return r}return e};var u=n;export{u as default};

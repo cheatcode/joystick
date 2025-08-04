@@ -1,5 +1,6 @@
 import { parseHTML } from 'linkedom';
 import types from '../../lib/types.js';
+import escape_html from '../../lib/escape_html.js';
 
 const add_attributes_to_dom = (dom = {}, attributes = {}) => {
   const attribute_keys = Object.keys(attributes || {});
@@ -9,10 +10,11 @@ const add_attributes_to_dom = (dom = {}, attributes = {}) => {
 
   if (types.is_array(attributes?.class?.list)) {
     if (attributes?.class?.method === "replace") {
-      dom.setAttribute("class", attributes.class.list.join(" "));
+      const escaped_class_names = attributes.class.list.map(class_name => escape_html(class_name));
+      dom.setAttribute("class", escaped_class_names.join(" "));
     } else {
       for (let i = 0; i < attributes.class.list.length; i += 1) {
-      	const class_name = attributes.class.list[i];
+      	const class_name = escape_html(attributes.class.list[i]);
         dom.classList.add(class_name);
       }
     }
@@ -20,7 +22,7 @@ const add_attributes_to_dom = (dom = {}, attributes = {}) => {
 
   for (let i = 0; i < attribute_keys_without_class_list.length; i += 1) {
   	const attribute = attribute_keys_without_class_list[i];
-    dom.setAttribute(attribute, attributes[attribute]);
+    dom.setAttribute(attribute, escape_html(attributes[attribute]));
   }
 
   return dom;

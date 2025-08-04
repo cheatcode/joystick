@@ -8,6 +8,8 @@ import set_base_attributes_in_html from "./set_base_attributes_in_html.js";
 import set_head_tags_in_html from "./set_head_tags_in_html.js";
 import path_exists from "../../lib/path_exists.js";
 import get_browser_safe_user from '../accounts/get_browser_safe_user.js';
+import escape_html from '../../lib/escape_html.js';
+import escape_ssr_data from './escape_ssr_data.js';
 
 const { readFile } = fs.promises;
 const app_settings = load_settings();
@@ -37,12 +39,7 @@ const build_html_response_for_browser = (options = {}) => {
 		.replace(`<div id="app"></div>`, `
 			<div id="app">${options?.html}</div>
 			<script type="application/json" id="__joystick_data__">
-				${JSON.stringify(options?.data || {})
-					.replace(/</g, '\\u003C')
-					.replace(/>/g, '\\u003E')
-					.replace(/&/g, '\\u0026')
-					.replace(/\u2028/g, '\\u2028')
-					.replace(/\u2029/g, '\\u2029')}
+				${JSON.stringify(options?.data || {})}
 			</script>
 			<script>
 			  const data = JSON.parse(document.getElementById('__joystick_data__').textContent || '{}');
@@ -83,8 +80,8 @@ const build_html_response_for_browser = (options = {}) => {
 const build_html_response_for_email = (options = {}) => {
   return options?.base_html
   	.replace('${css}', `<style type="text/css">${options?.css}</style>`)
-    .replace("${subject}", options?.email_options?.subject)
-    .replace("${preheader}", options?.email_options?.preheader || "")
+    .replace("${subject}", escape_html(options?.email_options?.subject || ""))
+    .replace("${preheader}", escape_html(options?.email_options?.preheader || ""))
     .replace('<div id="email"></div>', `<div id="email">${options?.html}</div>`);
 };
 
@@ -189,7 +186,7 @@ const ssr = async (ssr_options = {}) => {
 		mod_css,
 		mod_js,
 		mod_theme: ssr_options?.mod?.theme,
-		data: ssr_render?.data,
+		data: escape_ssr_data(ssr_render?.data),
 		// data: Object.entries(ssr_render?.data || {})?.reduce((encoded = {}, [key, value]) => {
 		//   encoded[key] = value ? Buffer.from(JSON.stringify(value), 'utf8').toString('base64') : '';
 		//   return encoded;
