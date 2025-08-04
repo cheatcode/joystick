@@ -112,6 +112,56 @@ class App {
 		this.joystick_process_id = await generate_process_id();
 	}
 
+	async load_translations() {
+		const joystick_build_path = get_joystick_build_path();
+		
+		if (!(await path_exists(joystick_build_path))) {
+			return;
+		}
+
+		process._joystick_translations = {
+			normal: {
+				files: [],
+				path: `${joystick_build_path}i18n`,
+				cache: {}
+			},
+			email: {
+				files: [],
+				path: `${joystick_build_path}i18n/email`,
+				cache: {}
+			}
+		};
+
+		const load_translation_files = async (translation_type) => {
+			const translation_config = process._joystick_translations[translation_type];
+			
+			if (!(await path_exists(translation_config.path))) {
+				return;
+			}
+
+			try {
+				const files = await readdir(translation_config.path);
+				translation_config.files = files.filter(file => file.endsWith('.js'));
+
+				for (const file of translation_config.files) {
+					const file_path = `${translation_config.path}/${file}`;
+					
+					try {
+						const translation_module = await dynamic_import(file_path);
+						translation_config.cache[file] = translation_module;
+					} catch (error) {
+						console.warn(`Failed to load translation file: ${file_path}`, error.message);
+					}
+				}
+			} catch (error) {
+				console.warn(`Failed to scan translation directory: ${translation_config.path}`, error.message);
+			}
+		};
+
+		await load_translation_files('normal');
+		await load_translation_files('email');
+	}
+
 	async load_ui() {
 		const joystick_build_path = get_joystick_build_path();
 		
@@ -426,7 +476,9 @@ class App {
 	}
 
 	async start() {
-		// NOTE: Always run this first so we can cache UI components in memory.
+		// NOTE: Always run this first so we can cache translations in memory.
+		await this.load_translations();
+		// NOTE: Always run this second so we can cache UI components in memory.
 		await this.load_ui();
 		// NOTE: Order here is intentionally not alphabetical to ensure load
 		// order plays nice with things like tests.

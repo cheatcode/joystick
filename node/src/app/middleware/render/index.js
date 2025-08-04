@@ -11,8 +11,6 @@ import strip_preceeding_slash from '../../../lib/strip_preceeding_slash.js';
 const { readFile } = fs.promises;
 
 const joystick_build_path = get_joystick_build_path();
-const language_files_path = `${joystick_build_path}i18n`;
-const language_files = (await path_exists(language_files_path) && fs.readdirSync(language_files_path)) || [];
 
 const render_middleware = (req, res, next, app_instance = {}) => {
   // NOTE: Set res.render here so we have access to req, res, and
@@ -60,8 +58,8 @@ const render_middleware = (req, res, next, app_instance = {}) => {
 
     const base_html = process._joystick_html;
     const translations = await get_translations({
-      language_files,
-      language_files_path,
+      language_files: process._joystick_translations?.normal?.files || [],
+      language_files_path: process._joystick_translations?.normal?.path || `${joystick_build_path}i18n`,
       render_component_path,
       req,
     });

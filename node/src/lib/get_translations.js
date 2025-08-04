@@ -8,6 +8,18 @@ import types from './types.js';
 const settings = load_settings();
 
 const get_translations_file = async (language_file_path = '', language_files_path = '', render_component_path = '') => {
+  // NOTE: Try to get from cache first if available
+  if (process._joystick_translations) {
+    const translation_type = language_files_path.includes('/email') ? 'email' : 'normal';
+    const cached_translation = process._joystick_translations[translation_type]?.cache?.[language_file_path];
+    
+    if (cached_translation && types.is_object(cached_translation)) {
+      const translations_for_page = cached_translation[render_component_path];
+      return translations_for_page ? translations_for_page : cached_translation;
+    }
+  }
+
+  // NOTE: Fallback to disk loading if cache is not available (for development or edge cases)
   const env_language_file_path = process.env.NODE_ENV !== 'development' ?
     `${language_files_path}/${language_file_path}` :
     `${language_files_path}/${language_file_path}?v=${new Date().getTime()}`;
