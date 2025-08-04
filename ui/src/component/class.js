@@ -103,6 +103,12 @@ class Component {
     }, {});
 	}
 
+	is_plain_object(obj) {
+		return obj !== null && 
+		       typeof obj === 'object' && 
+		       (obj.constructor === Object || obj.constructor === undefined);
+	}
+
 	escape_ssr_data(data) {
 		if (data === null || data === undefined) {
 			return data;
@@ -120,7 +126,7 @@ class Component {
 			return data.map(item => this.escape_ssr_data(item));
 		}
 
-		if (typeof data === 'object') {
+		if (this.is_plain_object(data)) {
 			const escaped_object = {};
 			for (const [key, value] of Object.entries(data)) {
 				escaped_object[key] = this.escape_ssr_data(value);
@@ -128,6 +134,7 @@ class Component {
 			return escaped_object;
 		}
 
+		// For all other objects (Date, RegExp, custom classes, etc.), return as-is
 		return data;
 	}
 
