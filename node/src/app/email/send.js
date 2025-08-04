@@ -48,7 +48,11 @@ const send_email = async (send_email_options = {}, smtp_overrides = {}) => {
     : null;
 
   const template_path = `${joystick_build_path}email/${send_email_options?.template}.js`;
-  const template_exists = send_email_options?.template && await path_exists(template_path);
+  // NOTE: Check cache first, then fallback to disk existence check
+  const template_exists = send_email_options?.template && (
+    process._joystick_email_templates?.[send_email_options?.template] || 
+    await path_exists(template_path)
+  );
 
   const nodemailer_options = {
     from: settings?.config?.email?.from,
@@ -60,7 +64,9 @@ const send_email = async (send_email_options = {}, smtp_overrides = {}) => {
   }
 
   if (template_exists) {
-    const email_template_component = await dynamic_import(`${template_path}?v=${new Date().getTime()}`);
+    // NOTE: Try to get email template from cache first, fallback to disk loading
+    const email_template_component = process._joystick_email_templates?.[send_email_options?.template] || 
+      await dynamic_import(`${template_path}?v=${new Date().getTime()}`);
 
     const translations = await get_translations({
     	is_email: true,

@@ -162,6 +162,36 @@ class App {
 		await load_translation_files('email');
 	}
 
+	async load_email_templates() {
+		const joystick_build_path = get_joystick_build_path();
+		const email_templates_path = `${joystick_build_path}email`;
+		
+		if (!(await path_exists(email_templates_path))) {
+			return;
+		}
+
+		process._joystick_email_templates = {};
+
+		try {
+			const files = await readdir(email_templates_path);
+			const template_files = files.filter(file => file.endsWith('.js'));
+
+			for (const file of template_files) {
+				const file_path = `${email_templates_path}/${file}`;
+				const template_name = file.replace('.js', '');
+				
+				try {
+					const email_template_component = await dynamic_import(file_path);
+					process._joystick_email_templates[template_name] = email_template_component;
+				} catch (error) {
+					console.warn(`Failed to load email template: ${file_path}`, error.message);
+				}
+			}
+		} catch (error) {
+			console.warn(`Failed to scan email templates directory: ${email_templates_path}`, error.message);
+		}
+	}
+
 	async load_ui() {
 		const joystick_build_path = get_joystick_build_path();
 		
@@ -478,7 +508,9 @@ class App {
 	async start() {
 		// NOTE: Always run this first so we can cache translations in memory.
 		await this.load_translations();
-		// NOTE: Always run this second so we can cache UI components in memory.
+		// NOTE: Always run this second so we can cache email templates in memory.
+		await this.load_email_templates();
+		// NOTE: Always run this third so we can cache UI components in memory.
 		await this.load_ui();
 		// NOTE: Order here is intentionally not alphabetical to ensure load
 		// order plays nice with things like tests.
