@@ -171,11 +171,13 @@ class App {
 		}
 
 		process._joystick_email_templates = {};
+		process._joystick_email_base_files = {};
 
 		try {
 			const files = await readdir(email_templates_path);
+			
+			// Load email template components (.js files)
 			const template_files = files.filter(file => file.endsWith('.js'));
-
 			for (const file of template_files) {
 				const file_path = `${email_templates_path}/${file}`;
 				const template_name = file.replace('.js', '');
@@ -185,6 +187,19 @@ class App {
 					process._joystick_email_templates[template_name] = email_template_component;
 				} catch (error) {
 					console.warn(`Failed to load email template: ${file_path}`, error.message);
+				}
+			}
+
+			// Load email base HTML and CSS files
+			const base_files = files.filter(file => file.startsWith('base') && (file.endsWith('.html') || file.endsWith('.css')));
+			for (const file of base_files) {
+				const file_path = `${email_templates_path}/${file}`;
+				
+				try {
+					const file_content = await readFile(file_path, 'utf-8');
+					process._joystick_email_base_files[file] = file_content;
+				} catch (error) {
+					console.warn(`Failed to load email base file: ${file_path}`, error.message);
 				}
 			}
 		} catch (error) {

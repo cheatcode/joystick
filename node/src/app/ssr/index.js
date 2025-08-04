@@ -93,21 +93,35 @@ const build_html_response = (options = {}) => {
 };
 
 const get_base_html_for_email = async (base_html_name = '') => {
-	if (await path_exists(`email/${base_html_name ? `base_${base_html_name}` : 'base'}.html`)) {
-		return readFile(`email/${base_html_name ? `base_${base_html_name}` : 'base'}.html`, 'utf-8');
+	const file_name = `${base_html_name ? `base_${base_html_name}` : 'base'}.html`;
+	
+	// NOTE: Try to get from cache first, fallback to disk loading
+	if (process._joystick_email_base_files?.[file_name]) {
+		return process._joystick_email_base_files[file_name];
 	}
 
-	console.warn(`Could not find email/${base_html_name ? `base_${base_html_name}` : 'base'}.html`);
+	if (await path_exists(`email/${file_name}`)) {
+		return readFile(`email/${file_name}`, 'utf-8');
+	}
+
+	console.warn(`Could not find email/${file_name}`);
 
 	return '';
 };
 
 const get_base_css_for_email = async (base_html_name = '') => {
-	if (await path_exists(`email/${base_html_name ? `base_${base_html_name}` : 'base'}.css`)) {
-		return readFile(`email/${base_html_name ? `base_${base_html_name}` : 'base'}.css`, 'utf-8');
+	const file_name = `${base_html_name ? `base_${base_html_name}` : 'base'}.css`;
+	
+	// NOTE: Try to get from cache first, fallback to disk loading
+	if (process._joystick_email_base_files?.[file_name]) {
+		return process._joystick_email_base_files[file_name];
 	}
 
-	console.warn(`Could not find email/${base_html_name ? `base_${base_html_name}` : 'base'}.css`);
+	if (await path_exists(`email/${file_name}`)) {
+		return readFile(`email/${file_name}`, 'utf-8');
+	}
+
+	console.warn(`Could not find email/${file_name}`);
 
 	return '';
 };
