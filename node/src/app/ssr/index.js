@@ -227,11 +227,7 @@ const ssr = async (ssr_options = {}) => {
 		mod_css,
 		mod_js,
 		mod_theme: ssr_options?.mod?.theme,
-		data: escape_ssr_data(ssr_render?.data),
-		// data: Object.entries(ssr_render?.data || {})?.reduce((encoded = {}, [key, value]) => {
-		//   encoded[key] = value ? Buffer.from(JSON.stringify(value), 'utf8').toString('base64') : '';
-		//   return encoded;
-		// }, {}),
+		data: ssr_render?.data, // NOTE: Assume this data was escaped by the component instance.
 		email_options: ssr_options?.email_options,
 		head: ssr_options?.head,
 		html: ssr_render?.html,

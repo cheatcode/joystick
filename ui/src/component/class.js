@@ -103,11 +103,40 @@ class Component {
     }, {});
 	}
 
+	escape_ssr_data(data) {
+		if (data === null || data === undefined) {
+			return data;
+		}
+
+		if (typeof data === 'string') {
+			return this.escape_html(data);
+		}
+
+		if (typeof data === 'number' || typeof data === 'boolean') {
+			return data;
+		}
+
+		if (Array.isArray(data)) {
+			return data.map(item => this.escape_ssr_data(item));
+		}
+
+		if (typeof data === 'object') {
+			const escaped_object = {};
+			for (const [key, value] of Object.entries(data)) {
+				escaped_object[key] = this.escape_ssr_data(value);
+			}
+			return escaped_object;
+		}
+
+		return data;
+	}
+
 	async fetch_data(api = {}, req = {}, input = {}, component_instance = this) {
 	  if (component_instance?.options?.data && types.is_function(component_instance.options.data)) {
-	    const data = await component_instance.options.data(api, req, input, component_instance);
-	    component_instance.data = data;
-	    return data;
+	    const raw_data = await component_instance.options.data(api, req, input, component_instance);
+	    const escaped_data = this.escape_ssr_data(raw_data);
+	    component_instance.data = escaped_data;
+	    return escaped_data;
 	  }
 
 	  return null;
@@ -219,9 +248,29 @@ class Component {
     return html;
 	}
 
+	escape_html(string = '') {
+		return String(string).replace(/[&<>"'`=/]/g, function (match) {
+			const entity_map = {
+				'&': '&amp;',
+				'<': '&lt;',
+				'>': '&gt;',
+				'"': '&quot;',
+				"'": '&#39;',
+				'/': '&#x2F;',
+				'`': '&#x60;',
+				'=': '&#x3D;'
+			};
+			return entity_map[match];
+		});
+	}
+
 	render_to_html(new_children = {}, existing_state_map = {}, existing_props_map = {}, ssr_tree = null, linkedom_document = {}) {
 		const render_methods = this.compile_render_methods(new_children, existing_state_map, existing_props_map, ssr_tree);
-		const html = this.options.render({ ...(this || {}), ...render_methods });
+		const html = this.options.render({ 
+			...(this || {}), 
+			...render_methods,
+			escape: this.escape_html
+		});
 		const clean_html = this.cleanup_html(html, linkedom_document);
 		const sanitized_html = this.sanitize_html(clean_html);
 		const wrapped_html = this.wrap_html(sanitized_html);
