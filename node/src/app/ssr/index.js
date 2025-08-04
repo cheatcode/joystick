@@ -98,16 +98,16 @@ const build_html_response_for_browser = (options = {}) => {
         ${is_development ? `window.__joystick_hmr_port__ = ${parseInt(process.env.PORT, 10) + 1}` : ''}
         window.__joystick_layout_url__ = ${options?.render_layout_path ? `"/_joystick/${options?.render_layout_path}"` : null};
         window.__joystick_page_url__ = ${options?.render_component_path ? `"/_joystick/${options?.render_component_path}"` : null};
-       	window.__joystick_request__ = ${JSON.stringify(get_browser_safe_request(options?.req))};
+       	window.__joystick_request__ = ${JSON.stringify(escape_ssr_data(get_browser_safe_request(options?.req)))};
         window.__joystick_settings__ = ${JSON.stringify({
           global: app_settings?.global,
           public: app_settings?.public,
         })};
 
         window.__joystick_should_auto_mount__ = true;
-        window.__joystick_ssr_props__ = ${JSON.stringify(options?.props)};
+        window.__joystick_ssr_props__ = ${JSON.stringify(escape_ssr_data(options?.props))};
         window.__joystick_url__ = ${JSON.stringify(options?.url)};
-        window.__joystick_user__ = ${JSON.stringify(get_browser_safe_user(options?.req?.context?.user))};
+        window.__joystick_user__ = ${JSON.stringify(escape_ssr_data(get_browser_safe_user(options?.req?.context?.user)))};
 			</script>
 			${options?.mod_in_use && !options?.mod_tree_shaking ? `<script src="/_joystick/mod/mod.js"></script>` : ''}
 			<script type="module" src="/_joystick/utils/process.js"></script>
