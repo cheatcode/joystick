@@ -56,7 +56,9 @@ import O from"fs";import{parseHTML as o}from"linkedom";import S from"os";import 
 			  };
 
 			  const parsed_data = JSON.parse(document.getElementById('__joystick_data__').textContent || '{}');
+				console.log({ parsed_data });
 			  const data = escape_ssr_data(parsed_data);
+				console.log({ reescaped_data: data });
 
 				window.joystick = {
 					settings: {

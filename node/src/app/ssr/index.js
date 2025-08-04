@@ -90,7 +90,9 @@ const build_html_response_for_browser = (options = {}) => {
 			  };
 
 			  const parsed_data = JSON.parse(document.getElementById('__joystick_data__').textContent || '{}');
+				console.log({ parsed_data });
 			  const data = escape_ssr_data(parsed_data);
+				console.log({ reescaped_data: data });
 
 				window.joystick = {
 					settings: {
