@@ -14,13 +14,6 @@ const joystick_build_path = get_joystick_build_path();
 const language_files_path = `${joystick_build_path}i18n`;
 const language_files = (await path_exists(language_files_path) && fs.readdirSync(language_files_path)) || [];
 
-const get_base_html = () => {
-  return readFile('index.html', 'utf-8');
-};
-
-// NOTE: Safe to do here as the base HTML will only change on a server restart.
-const cached_base_html = await get_base_html();
-
 const render_middleware = (req, res, next, app_instance = {}) => {
   // NOTE: Set res.render here so we have access to req, res, and
   // app_instance objects inside of the definition.
@@ -65,7 +58,7 @@ const render_middleware = (req, res, next, app_instance = {}) => {
       props.page = Component;
     }
 
-    const base_html = process.env.NODE_ENV !== 'development' ? cached_base_html : await get_base_html();
+    const base_html = process._joystick_html;
     const translations = await get_translations({
       language_files,
       language_files_path,

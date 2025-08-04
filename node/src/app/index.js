@@ -119,6 +119,7 @@ class App {
 			return;
 		}
 
+		process._joystick_html = await readFile('index.html', 'utf-8');
 		process._joystick_components = {};
 
 		const scan_directory = async (directory_path) => {
