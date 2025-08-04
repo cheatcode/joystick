@@ -42,7 +42,48 @@ const build_html_response_for_browser = (options = {}) => {
 				${JSON.stringify(options?.data || {})}
 			</script>
 			<script>
-			  const data = JSON.parse(document.getElementById('__joystick_data__').textContent || '{}');
+			  const escape_html = (string = '') => {
+			    return String(string)
+			      .replace(/&/g, '&amp;')
+			      .replace(/</g, '&lt;')
+			      .replace(/>/g, '&gt;')
+			      .replace(/"/g, '&quot;')
+			      .replace(/'/g, '&#39;')
+			      .replace(/\\//g, '&#x2F;')
+			      .replace(/\`/g, '&#x60;')
+			      .replace(/=/g, '&#x3D;');
+			  };
+
+			  const escape_ssr_data = (data) => {
+			    if (data === null || data === undefined) {
+			      return data;
+			    }
+
+			    if (typeof data === 'string') {
+			      return escape_html(data);
+			    }
+
+			    if (typeof data === 'number' || typeof data === 'boolean') {
+			      return data;
+			    }
+
+			    if (Array.isArray(data)) {
+			      return data.map(item => escape_ssr_data(item));
+			    }
+
+			    if (typeof data === 'object') {
+			      const escaped_object = {};
+			      for (const [key, value] of Object.entries(data)) {
+			        escaped_object[key] = escape_ssr_data(value);
+			      }
+			      return escaped_object;
+			    }
+
+			    return data;
+			  };
+
+			  const raw_data = JSON.parse(document.getElementById('__joystick_data__').textContent || '{}');
+			  const data = escape_ssr_data(raw_data);
 
 				window.joystick = {
 					settings: {
@@ -186,7 +227,7 @@ const ssr = async (ssr_options = {}) => {
 		mod_css,
 		mod_js,
 		mod_theme: ssr_options?.mod?.theme,
-		data: escape_ssr_data(ssr_render?.data),
+		data: ssr_render?.data,
 		// data: Object.entries(ssr_render?.data || {})?.reduce((encoded = {}, [key, value]) => {
 		//   encoded[key] = value ? Buffer.from(JSON.stringify(value), 'utf8').toString('base64') : '';
 		//   return encoded;
