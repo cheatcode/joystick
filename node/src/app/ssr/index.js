@@ -82,8 +82,8 @@ const build_html_response_for_browser = (options = {}) => {
 			    return data;
 			  };
 
-			  const raw_data = JSON.parse(document.getElementById('__joystick_data__').textContent || '{}');
-			  const data = escape_ssr_data(raw_data);
+			  const parsed_data = JSON.parse(document.getElementById('__joystick_data__').textContent || '{}');
+			  const data = escape_ssr_data(parsed_data);
 
 				window.joystick = {
 					settings: {
@@ -227,7 +227,7 @@ const ssr = async (ssr_options = {}) => {
 		mod_css,
 		mod_js,
 		mod_theme: ssr_options?.mod?.theme,
-		data: ssr_render?.data,
+		data: escape_ssr_data(ssr_render?.data),
 		// data: Object.entries(ssr_render?.data || {})?.reduce((encoded = {}, [key, value]) => {
 		//   encoded[key] = value ? Buffer.from(JSON.stringify(value), 'utf8').toString('base64') : '';
 		//   return encoded;
