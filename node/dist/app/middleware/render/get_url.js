@@ -1,1 +1,1 @@
-import a from"../../../lib/escape_html.js";import p from"../../../lib/escape_key_value_pair.js";const o=(r={})=>{const[t=null]=r.url?.split("?");return{params:p(r.params),query:p(r.query),route:a(r.route.path),path:a(t)}};var m=o;export{m as default};
+import r from"../../../lib/escape_key_value_pair.js";const t=(a={})=>{const[p=null]=a.url?.split("?");return{params:r(a.params),query:r(a.query),route:a.route.path,path:p}};var o=t;export{o as default};

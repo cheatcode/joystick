@@ -42,57 +42,7 @@ const build_html_response_for_browser = (options = {}) => {
 				${JSON.stringify(options?.data || {})}
 			</script>
 			<script>
-			  const escape_html = (string = '') => {
-			    return String(string)
-			      .replace(/&/g, '&amp;')
-			      .replace(/</g, '&lt;')
-			      .replace(/>/g, '&gt;')
-			      .replace(/"/g, '&quot;')
-			      .replace(/'/g, '&#39;')
-			      .replace(/\\//g, '&#x2F;')
-			      .replace(/\`/g, '&#x60;')
-			      .replace(/=/g, '&#x3D;');
-			  };
-
-			  const is_plain_object = (obj) => {
-			    return obj !== null && 
-			           typeof obj === 'object' && 
-			           (obj.constructor === Object || obj.constructor === undefined);
-			  };
-
-			  const escape_ssr_data = (data) => {
-			    if (data === null || data === undefined) {
-			      return data;
-			    }
-
-			    if (typeof data === 'string') {
-			      return escape_html(data);
-			    }
-
-			    if (typeof data === 'number' || typeof data === 'boolean') {
-			      return data;
-			    }
-
-			    if (Array.isArray(data)) {
-			      return data.map(item => escape_ssr_data(item));
-			    }
-
-			    if (is_plain_object(data)) {
-			      const escaped_object = {};
-			      for (const [key, value] of Object.entries(data)) {
-			        escaped_object[key] = escape_ssr_data(value);
-			      }
-			      return escaped_object;
-			    }
-
-			    // For all other objects (Date, RegExp, custom classes, etc.), return as-is
-			    return data;
-			  };
-
 			  const data = JSON.parse(document.getElementById('__joystick_data__').textContent || '{}');
-				// console.log({ parsed_data });
-			  // const data = escape_ssr_data(parsed_data);
-				// console.log({ reescaped_data: data });
 
 				window.joystick = {
 					settings: {

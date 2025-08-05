@@ -1,1 +1,1 @@
-import r from"./escape_html.js";const c=(e={})=>{const l=Object.entries(e||{});for(let t=0;t<l?.length;t+=1){const[o,s]=l[t];delete e[o],e[r(o)]=r(s)}return e};var p=c;export{p as default};
+const a=(e="")=>String(e).replace(/[&<>"'`=]/g,function(t){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;","`":"&#x60;","=":"&#x3D;"}[t]}),p=(e={})=>{const t=Object.entries(e||{});for(let n=0;n<t?.length;n+=1){const[r,c]=t[n];delete e[r],e[a(r)]=a(c)}return e};var l=p;export{l as default};
