@@ -1,5 +1,4 @@
 import api from '../../api/index.js';
-import fetch_data from './fetch.js';
 import generate_id from "../../lib/generate_id.js";
 import track_function_call from "../../test/track_function_call.js";
 import run_tree_job from '../../tree/jobs/run.js';
@@ -12,7 +11,7 @@ const compile = (data_from_window = {}, request_from_window = {}, component_inst
         input
       ]);
       
-      const data = await fetch_data(
+      const data = await component_instance.fetch_data(
         api,
         request_from_window,
         input,
