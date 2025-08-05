@@ -13,8 +13,6 @@ const unescape_html = (escaped_string) => {
     .replace(/&#x60;/g, "`")
     .replace(/&#x3D;/g, "=");
 
-  console.log({ escaped_string, unescaped_string });
-  
   return unescaped_string; 
 };
 
