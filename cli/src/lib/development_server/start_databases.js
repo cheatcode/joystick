@@ -50,11 +50,21 @@ const validate_databases_from_settings = (databases = []) => {
 
   const user_databases = databases.filter((database) => !!database.users);
   const queue_databases = databases.filter((database) => !!database.queues);
+  const redis_user_databases = user_databases.filter((database) => database.provider === 'redis');
 
   if (databases_not_as_objects && databases_not_as_objects.length > 0) {
     cli_log(`Please ensure that each database in the config.databases array in your settings.${process.env.NODE_ENV}.json is an object. Correct the array and restart your app.`, {
       level: 'danger',
       docs: 'https://cheatcode.co/docs/joystick/cli/databases',
+    });
+
+    process.exit(1);
+  }
+
+  if (redis_user_databases && redis_user_databases.length > 0) {
+    cli_log(`Redis cannot be used for user accounts. Please use MongoDB or PostgreSQL for users and restart your app.`, {
+      level: 'danger',
+      docs: 'https://cheatcode.co/docs/joystick/cli/databases#users',
     });
 
     process.exit(1);

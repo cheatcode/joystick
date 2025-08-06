@@ -4,7 +4,14 @@ const timestamps = {
 		
 		// Try to detect the database type
 		if (db_connection.provider) {
-			return db_connection.provider === 'postgresql' ? 'postgresql' : 'mongodb';
+			if (db_connection.provider === 'postgresql') return 'postgresql';
+			if (db_connection.provider === 'redis') return 'redis';
+			return 'mongodb';
+		}
+		
+		// Fall back to checking if it's a Redis client
+		if (db_connection.client && typeof db_connection.client.set === 'function') {
+			return 'redis';
 		}
 		
 		// Fall back to checking if it's a MongoDB collection
@@ -18,7 +25,7 @@ const timestamps = {
 		}
 		
 		return 'mongodb'; // Default to MongoDB format
-	},	
+	},
   // Base ISO string timestamp
   get_iso_string: (date = new Date()) => {
     return date.toISOString();
@@ -32,6 +39,8 @@ const timestamps = {
       return now; // MongoDB expects Date objects
     } else if (options?.format === 'postgresql') {
       return now.toISOString(); // PostgreSQL works with ISO strings
+    } else if (options?.format === 'redis') {
+      return now.toISOString(); // Redis works with ISO strings
     } else {
       return now.toISOString(); // Default to ISO string
     }
@@ -47,6 +56,11 @@ const timestamps = {
     return date.toISOString(); // PostgreSQL works with ISO strings
   },
   
+  // For Redis specifically
+  get_redis_date: (date = new Date()) => {
+    return date.toISOString(); // Redis works with ISO strings
+  },
+  
   // Normalize date input to the correct format based on database type
   normalize_date: (date_input, options = {}) => {
     // If null/undefined, return current time formatted appropriately
@@ -55,6 +69,8 @@ const timestamps = {
       if (options?.format === 'mongodb') {
         return now;
       } else if (options?.format === 'postgresql') {
+        return now.toISOString();
+      } else if (options?.format === 'redis') {
         return now.toISOString();
       } else {
         return now.toISOString(); // Default to ISO string
@@ -90,6 +106,8 @@ const timestamps = {
       return date;
     } else if (options?.format === 'postgresql') {
       return date.toISOString();
+    } else if (options?.format === 'redis') {
+      return date.toISOString();
     } else {
       return date.toISOString(); // Default to ISO string
     }
@@ -118,6 +136,8 @@ const timestamps = {
       return date; // Return Date object for MongoDB
     } else if (options?.format === 'postgresql') {
       return date.toISOString(); // Return ISO string for PostgreSQL
+    } else if (options?.format === 'redis') {
+      return date.toISOString(); // Return ISO string for Redis
     } else {
       return date.toISOString(); // Default to ISO string
     }
@@ -146,6 +166,8 @@ const timestamps = {
       return date; // Return Date object for MongoDB
     } else if (options?.format === 'postgresql') {
       return date.toISOString(); // Return ISO string for PostgreSQL
+    } else if (options?.format === 'redis') {
+      return date.toISOString(); // Return ISO string for Redis
     } else {
       return date.toISOString(); // Default to ISO string
     }

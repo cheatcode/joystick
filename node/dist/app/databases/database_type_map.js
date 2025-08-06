@@ -1,1 +1,1 @@
-const o={mongodb:"nosql",postgresql:"sql"};var s=o;export{s as default};
+const s={mongodb:"nosql",postgresql:"sql",redis:"nosql"};var o=s;export{o as default};

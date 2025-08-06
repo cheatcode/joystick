@@ -1,0 +1,3 @@
+import a from"redis";import r from"../../../color_log.js";const c=async(t={},n={})=>{try{const e=t?.hosts&&t?.hosts[0],s={socket:{host:e?.hostname||"127.0.0.1",port:e?.port||6379,connectTimeout:3e3},database:t?.database||0};t?.username&&(s.username=t.username),t?.password&&(s.password=t.password);const o=a.createClient(s);return await o.connect(),await o.ping(),await o.disconnect(),!0}catch(e){console.warn(e),r(`
+\u2716 Failed to connect to Redis. Please double-check connection settings and try again.`,"yellow"),process.exit(1)}};var p=c;export{p as default};
+//# sourceMappingURL=check_connection.js.map

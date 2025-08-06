@@ -1,1 +1,1 @@
-import o from"./mongodb/accounts.js";import e from"./mongodb/queues.js";import s from"./postgresql/accounts.js";import u from"./postgresql/queues.js";const r={mongodb:{accounts:o,queues:e},postgresql:{accounts:s,queues:u}};var p=r;export{p as default};
+import e from"./mongodb/accounts.js";import o from"./mongodb/queues.js";import s from"./postgresql/accounts.js";import u from"./postgresql/queues.js";import r from"./redis/queues.js";const t={mongodb:{accounts:e,queues:o},postgresql:{accounts:s,queues:u},redis:{queues:r}};var c=t;export{c as default};

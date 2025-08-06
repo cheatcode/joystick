@@ -1,2 +1,2 @@
-import n from"os";import m from"./mongodb/installers/macos.js";import i from"./mongodb/installers/windows.js";import l from"./mongodb/installers/linux.js";import p from"./postgresql/installers/macos.js";import e from"./postgresql/installers/windows.js";import a from"./postgresql/installers/linux.js";const t={darwin:{mongodb:m,postgresql:p},win32:{mongodb:i,postgresql:e},linux:{mongodb:l,postgresql:a}},d=async(r="")=>{const o=n.platform(),s=t[o]&&t[o][r];typeof s=="function"?await s():console.warn(`${r} not supported on ${o}`)};var u=d;export{u as default};
+import o from"./installer.js";const r=async(a="")=>{try{await o(a)}catch(t){console.warn(`Failed to install ${a}: ${t.message}`)}};var s=r;export{s as default};
 //# sourceMappingURL=download_database_binary.js.map
