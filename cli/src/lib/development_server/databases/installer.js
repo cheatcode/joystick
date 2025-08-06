@@ -29,7 +29,8 @@ const get_architecture = () => {
 };
 
 const build_download_url = (database, version, platform, architecture) => {
-  return `https://cdn.joystickjs.com/${database}/${version}/${platform}/${architecture}.tar.gz`;
+  const cache_buster = Date.now();
+  return `https://cdn.joystickjs.com/${database}/${version}/${platform}/${architecture}.tar.gz?t=${cache_buster}`;
 };
 
 const check_if_file_exists = async (file_path) => {
