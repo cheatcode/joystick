@@ -4,6 +4,7 @@ import os from 'os';
 import { promisify } from 'util';
 import { pipeline } from 'stream';
 import { execFile } from 'child_process';
+import get_architecture from '../../get_architecture.js';
 
 const stream_pipeline = promisify(pipeline);
 const exec_file_async = promisify(execFile);
@@ -27,12 +28,6 @@ const get_platform = () => {
   throw new Error(`Unsupported platform: ${platform}. Please use WSL2 on Windows.`);
 };
 
-const get_architecture = () => {
-  const arch = os.arch();
-  if (arch === 'arm64') return 'arm64';
-  if (arch === 'x64') return 'x86_64';
-  throw new Error(`Unsupported architecture: ${arch}`);
-};
 
 const build_download_url = (database, version, platform, architecture) => {
   const cache_buster = Date.now();

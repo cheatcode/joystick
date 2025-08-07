@@ -1,0 +1,2 @@
+import t from"os";const c=()=>{if(t.platform()==="darwin"){if(process.env.ARCHPREFERENCE==="i386"||process.env.ARCHPREFERENCE==="x86_64"||process.arch==="x64")return"x86_64";try{const{execSync:e}=require("child_process");if(e("sysctl -n sysctl.proc_translated 2>/dev/null || echo 0",{encoding:"utf8"}).trim()==="1")return"x86_64"}catch{}}const r=t.arch();if(r==="arm64")return"arm64";if(r==="x64")return"x86_64";throw new Error(`Unsupported architecture: ${r}`)};var s=c;export{s as default};
+//# sourceMappingURL=get_architecture.js.map

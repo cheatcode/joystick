@@ -6,16 +6,11 @@ import path from "path";
 import get_platform_safe_path from "../../../get_platform_safe_path.js";
 import get_process_id_from_port from "../../../get_process_id_from_port.js";
 import path_exists from "../../../path_exists.js";
+import get_architecture from "../../../get_architecture.js";
 
 const exec = util.promisify(child_process.exec);
 const { rename } = fs.promises;
 
-const get_architecture = () => {
-  const arch = os.arch();
-  if (arch === 'arm64') return 'arm64';
-  if (arch === 'x64') return 'x86_64';
-  throw new Error(`Unsupported architecture: ${arch}`);
-};
 
 const setup_data_directory = async (postgresql_port = 2610) => {
   const legacy_data_directory_exists = await path_exists(".joystick/data/postgresql");

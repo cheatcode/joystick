@@ -1,10 +1,12 @@
 import child_process from "child_process";
 import fs from "fs";
 import os from "os";
+import path from "path";
 import get_platform_safe_path from '../../../get_platform_safe_path.js';
 import get_process_id_from_port from "../../../get_process_id_from_port.js";
 import kill_port_process from "../../../kill_port_process.js";
 import path_exists from "../../../path_exists.js";
+import get_architecture from "../../../get_architecture.js";
 
 const { mkdir } = fs.promises;
 
@@ -15,7 +17,9 @@ const get_redis_server_command = () => {
 const start_redis_process = (redis_port = 2610) => {
   return new Promise((resolve, reject) => {
     const redis_server_command = get_redis_server_command();
-    const joystick_redis_path = `${os.homedir()}/.joystick/databases/redis/${redis_server_command}`;
+    const architecture = get_architecture();
+    const joystick_redis_base_path = path.join(os.homedir(), '.joystick', 'databases', 'redis', architecture);
+    const joystick_redis_path = path.join(joystick_redis_base_path, redis_server_command);
     const database_process_flags = [
       '--port',
       redis_port,

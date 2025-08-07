@@ -1,10 +1,12 @@
 import child_process from "child_process";
 import fs from "fs";
 import os from "os";
+import path from "path";
 import get_platform_safe_path from '../../../get_platform_safe_path.js';
 import get_process_id_from_port from "../../../get_process_id_from_port.js";
 import kill_port_process from "../../../kill_port_process.js";
 import path_exists from "../../../path_exists.js";
+import get_architecture from "../../../get_architecture.js";
 
 const { rename, mkdir } = fs.promises;
 
@@ -27,7 +29,9 @@ const get_mongo_server_command = () => {
 const start_mongodb_process = (mongodb_port = 2610) => {
   return new Promise((resolve) => {
     const mongo_server_command = get_mongo_server_command();
-    const joystick_mongod_path = `${os.homedir()}/.joystick/databases/mongodb/${mongo_server_command}`;
+    const architecture = get_architecture();
+    const joystick_mongodb_base_path = path.join(os.homedir(), '.joystick', 'databases', 'mongodb', architecture);
+    const joystick_mongod_path = path.join(joystick_mongodb_base_path, mongo_server_command);
     const database_process_flags = [
       '--port',
       mongodb_port,
@@ -48,7 +52,7 @@ const start_mongodb_process = (mongodb_port = 2610) => {
 
       if (stdout.includes('Waiting for connections')) {
         const mongo_shell_command = get_mongo_shell_command();
-        const joystick_mongo_shell_path = `${os.homedir()}/.joystick/databases/mongodb/${mongo_shell_command}`;
+        const joystick_mongo_shell_path = path.join(joystick_mongodb_base_path, mongo_shell_command);
         child_process.exec(`${joystick_mongo_shell_path} --eval "rs.initiate()" --verbose --port ${mongodb_port}`, async (error, _stdout, _stderr) => {
           if (error && !error?.message?.includes('already initialized')) {
             console.log(error);
