@@ -121,8 +121,9 @@ const install_database = async (database_name) => {
       const source_path = path.join(base_directory, file);
       const dest_path = path.join(architecture_directory, file);
       
-      // Skip if it's already the architecture directory we just created
-      if (file === architecture) continue;
+      // Skip directories (existing architecture folders) and the one we just created
+      const stats = await fs.promises.stat(source_path);
+      if (stats.isDirectory()) continue;
       
       await fs.promises.rename(source_path, dest_path);
     }
