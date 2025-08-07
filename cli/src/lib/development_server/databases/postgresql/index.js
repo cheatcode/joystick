@@ -22,6 +22,9 @@ const get_postgresql_env = (pg_dir) => {
   const lib_path = path.join(pg_dir, 'lib');
   
   if (process.platform === 'darwin') {
+    // DYLD_FALLBACK_LIBRARY_PATH is used when hardcoded paths fail
+    env.DYLD_FALLBACK_LIBRARY_PATH = lib_path;
+    // Keep DYLD_LIBRARY_PATH as well for good measure
     env.DYLD_LIBRARY_PATH = lib_path;
   } else if (process.platform === 'linux') {
     env.LD_LIBRARY_PATH = lib_path;
