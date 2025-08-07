@@ -14,6 +14,12 @@ const database_versions = {
   redis: '7',
 };
 
+const database_display_names = {
+  mongodb: 'MongoDB',
+  postgresql: 'PostgreSQL',
+  redis: 'Redis',
+};
+
 const get_platform = () => {
   const platform = os.platform();
   if (platform === 'darwin') return 'macos';
@@ -79,19 +85,20 @@ const install_database = async (database_name) => {
   const download_url = build_download_url(database_name, version, platform, architecture);
   const archive_filename = `${database_name}.tar.gz`;
   const archive_path = path.join(base_directory, archive_filename);
+  const display_name = database_display_names[database_name] || database_name;
 
-  process.loader.print(`${database_name} not found. Downloading... (this may take a few minutes)`);
+  process.loader.print(`${display_name} not found. Downloading... (this may take a few minutes)`);
 
   await fs.promises.mkdir(base_directory, { recursive: true });
   await download_file(download_url, archive_path);
 
-  process.loader.print(`Installing ${database_name}...`);
+  process.loader.print(`Installing ${display_name}...`);
 
   await exec_file_async('tar', ['-xzf', archive_path, '-C', base_directory]);
   await fs.promises.unlink(archive_path);
   await make_files_executable(base_directory);
 
-  process.loader.print(`${database_name} installed!`);
+  process.loader.print(`${display_name} installed!`);
 };
 
 export default install_database;
