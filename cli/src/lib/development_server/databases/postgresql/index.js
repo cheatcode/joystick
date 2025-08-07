@@ -10,6 +10,13 @@ import path_exists from "../../../path_exists.js";
 const exec = util.promisify(child_process.exec);
 const { rename } = fs.promises;
 
+const get_architecture = () => {
+  const arch = os.arch();
+  if (arch === 'arm64') return 'arm64';
+  if (arch === 'x64') return 'x86_64';
+  throw new Error(`Unsupported architecture: ${arch}`);
+};
+
 const get_postgresql_env = (pg_dir) => {
   const env = { ...process.env };
   
@@ -67,17 +74,18 @@ const get_pg_ctl_command = () => {
 const start_postgresql = async (port = 2610) => {
   try {
     const postgresql_port = port;
-    const joystick_postgresql_bin_path = `${os.homedir()}/.joystick/databases/postgresql`;
+    const architecture = get_architecture();
+    const joystick_postgresql_bin_path = path.join(os.homedir(), '.joystick', 'databases', 'postgresql', architecture);
 
     const joystick_pg_ctl_command = get_pg_ctl_command();
     const joystick_initdb_command = get_initdb_command();
     const joystick_postgres_command = get_postgres_command();
     const joystick_createdb_command = get_createdb_command();
     
-    const joystick_pg_ctl_path = `${joystick_postgresql_bin_path}/bin/${joystick_pg_ctl_command}`;
-    const joystick_initdb_path = `${joystick_postgresql_bin_path}/bin/${joystick_initdb_command}`;
-    const joystick_postgres_path = `${joystick_postgresql_bin_path}/bin/${joystick_postgres_command}`;
-    const joystick_createdb_path = `${joystick_postgresql_bin_path}/bin/${joystick_createdb_command}`;
+    const joystick_pg_ctl_path = path.join(joystick_postgresql_bin_path, 'bin', joystick_pg_ctl_command);
+    const joystick_initdb_path = path.join(joystick_postgresql_bin_path, 'bin', joystick_initdb_command);
+    const joystick_postgres_path = path.join(joystick_postgresql_bin_path, 'bin', joystick_postgres_command);
+    const joystick_createdb_path = path.join(joystick_postgresql_bin_path, 'bin', joystick_createdb_command);
 
     const data_directory_exists = await setup_data_directory(port);
 
