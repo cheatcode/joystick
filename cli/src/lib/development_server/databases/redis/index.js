@@ -13,7 +13,7 @@ const get_redis_server_command = () => {
 };
 
 const start_redis_process = (redis_port = 2610) => {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     const redis_server_command = get_redis_server_command();
     const joystick_redis_path = `${os.homedir()}/.joystick/databases/redis/${redis_server_command}`;
     const database_process_flags = [
@@ -33,18 +33,41 @@ const start_redis_process = (redis_port = 2610) => {
       database_process_flags.filter((command) => !!command),
     );
 
-    database_process.stdout.on('data', async (data) => {
-      const stdout = data?.toString();
+    // Set a timeout to prevent hanging
+    const timeout = setTimeout(() => {
+      reject(new Error('Redis startup timed out after 30 seconds'));
+    }, 30000);
 
-      if (stdout.includes('Ready to accept connections')) {
+    const check_ready = async (output) => {
+      if (output.includes('Ready to accept connections') || output.includes('The server is now ready to accept connections')) {
+        clearTimeout(timeout);
         const process_id = await get_process_id_from_port(redis_port);
         return resolve(parseInt(process_id, 10));
       }
+    };
+
+    database_process.stdout.on('data', async (data) => {
+      const stdout = data?.toString();
+      console.log('Redis stdout:', stdout);
+      await check_ready(stdout);
     });
 
     database_process.stderr.on('data', async (data) => {
       const stderr = data.toString();
-      console.log(stderr);
+      console.log('Redis stderr:', stderr);
+      await check_ready(stderr);
+    });
+
+    database_process.on('error', (error) => {
+      clearTimeout(timeout);
+      reject(error);
+    });
+
+    database_process.on('exit', (code) => {
+      if (code !== 0) {
+        clearTimeout(timeout);
+        reject(new Error(`Redis process exited with code ${code}`));
+      }
     });
   });
 };
