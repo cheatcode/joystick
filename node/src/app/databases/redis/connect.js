@@ -33,9 +33,7 @@ const connect_redis = async (database_settings = {}, database_port = 2610) => {
     });
 
     client.on('connect', () => {
-      if (process.env.NODE_ENV !== 'test') {
-        console.log(chalk.greenBright('Connected to Redis'));
-      }
+      // Silently handle Redis connection
     });
 
     await client.connect();
