@@ -65,11 +65,12 @@ const make_files_executable = async (directory) => {
 const install_database = async (database_name) => {
   const platform = get_platform();
   const architecture = get_architecture();
-  const architecture_directory = path.join(os.homedir(), '.joystick', 'databases', database_name, architecture);
+  const base_directory = path.join(os.homedir(), '.joystick', 'databases', database_name);
+  const architecture_directory = path.join(base_directory, architecture);
 
-  // NOTE: Check if the architecture-specific directory exists.
+  // Check if the architecture-specific directory exists
   if (await check_if_file_exists(architecture_directory)) {
-    return; // NOTE: Already installed for this architecture, skip to startup.
+    return; // Already installed for this architecture
   }
 
   const version = database_versions[database_name];
@@ -80,18 +81,19 @@ const install_database = async (database_name) => {
 
   const download_url = build_download_url(database_name, version, platform, architecture);
   const archive_filename = `${database_name}.tar.gz`;
-  const archive_path = path.join(architecture_directory, archive_filename);
+  const archive_path = path.join(base_directory, archive_filename);
   const display_name = database_display_names[database_name] || database_name;
 
   process.loader.print(`${display_name} (${architecture}) not found. Downloading... (this may take a few minutes)`);
 
-  // Create the architecture-specific directory
-  await fs.promises.mkdir(architecture_directory, { recursive: true });
+  // Create the base directory
+  await fs.promises.mkdir(base_directory, { recursive: true });
   await download_file(download_url, archive_path);
 
   process.loader.print(`Installing ${display_name} (${architecture})...`);
 
-  await exec_file_async('tar', ['-xzf', archive_path, '-C', architecture_directory]);
+  // Extract to base directory (tar file contains architecture folder)
+  await exec_file_async('tar', ['-xzf', archive_path, '-C', base_directory]);
   await fs.promises.unlink(archive_path);
   await make_files_executable(architecture_directory);
 
