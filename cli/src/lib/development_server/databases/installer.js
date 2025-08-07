@@ -10,7 +10,7 @@ const exec_file_async = promisify(execFile);
 
 const database_versions = {
   mongodb: '8',
-  postgresql: '16',
+  postgresql: '17',
   redis: '7',
 };
 
