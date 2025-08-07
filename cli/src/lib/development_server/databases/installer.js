@@ -103,8 +103,9 @@ const install_database = async (database_name) => {
 
   process.loader.print(`Installing ${display_name} (${architecture})...`);
 
-  // Extract to base directory (tar file contains architecture folder)
-  await exec_file_async('tar', ['-xzf', archive_path, '-C', base_directory]);
+  // Create architecture directory and extract there
+  await fs.promises.mkdir(architecture_directory, { recursive: true });
+  await exec_file_async('tar', ['-xzf', archive_path, '-C', architecture_directory]);
   await fs.promises.unlink(archive_path);
   await make_files_executable(architecture_directory);
 
