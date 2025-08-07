@@ -21,7 +21,20 @@ const check_connection = async (connection = {}, options = {}) => {
       connection_config.password = connection.password;
     }
 
-    const client = redis.createClient(connection_config);
+    const client = redis.createClient({
+      ...connection_config,
+      // Suppress Redis client logging
+      lazyConnect: true,
+    });
+
+    // Suppress any connection success messages
+    client.on('connect', () => {
+      // Silently handle connection
+    });
+
+    client.on('ready', () => {
+      // Silently handle ready state
+    });
 
     await client.connect();
     await client.ping();
