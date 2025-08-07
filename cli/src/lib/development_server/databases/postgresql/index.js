@@ -19,9 +19,12 @@ const get_architecture = () => {
 
 const get_postgresql_env = (pg_dir) => {
   const env = { ...process.env };
+  const lib_path = path.join(pg_dir, 'lib');
   
   if (process.platform === 'darwin') {
-    env.DYLD_LIBRARY_PATH = path.join(pg_dir, 'lib');
+    env.DYLD_LIBRARY_PATH = lib_path;
+  } else if (process.platform === 'linux') {
+    env.LD_LIBRARY_PATH = lib_path;
   }
   
   return env;
