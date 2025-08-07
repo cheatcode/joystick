@@ -25,7 +25,7 @@ const start_redis_process = (redis_port = 2610) => {
       '60',
       '1',
       '--loglevel',
-      'nothing',
+      'notice',
     ];
 
     const database_process = child_process.spawn(
@@ -58,6 +58,12 @@ const start_redis_process = (redis_port = 2610) => {
     database_process.stdout.on('data', async (data) => {
       const stdout = data?.toString();
       
+      // Don't log warnings, but still use output for startup detection
+      if (!stdout.includes('WARNING') && !stdout.includes('# WARNING')) {
+        // Only log non-warning messages if needed for debugging
+        // console.log('Redis stdout:', stdout);
+      }
+      
       // If we see any Redis output and haven't started checking yet, start checking
       if (!startup_detected && stdout.trim()) {
         startup_detected = true;
@@ -73,6 +79,12 @@ const start_redis_process = (redis_port = 2610) => {
         clearTimeout(timeout);
         reject(new Error(`Redis startup failed: ${stderr.trim()}`));
         return;
+      }
+      
+      // Don't log warnings, but still use output for startup detection
+      if (!stderr.includes('WARNING') && !stderr.includes('# WARNING')) {
+        // Only log non-warning messages if needed for debugging
+        // console.log('Redis stderr:', stderr);
       }
       
       // If we see any Redis output and haven't started checking yet, start checking
