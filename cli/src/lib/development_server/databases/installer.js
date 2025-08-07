@@ -103,11 +103,32 @@ const install_database = async (database_name) => {
 
   process.loader.print(`Installing ${display_name} (${architecture})...`);
 
-  // Create architecture directory and extract there
-  await fs.promises.mkdir(architecture_directory, { recursive: true });
-  await exec_file_async('tar', ['-xzf', archive_path, '-C', architecture_directory]);
+  // Extract to base directory first to check structure
+  await exec_file_async('tar', ['-xzf', archive_path, '-C', base_directory]);
   await fs.promises.unlink(archive_path);
-  await make_files_executable(architecture_directory);
+
+  // Check if tar file already created architecture directory
+  const extracted_arch_dir = path.join(base_directory, architecture);
+  if (await check_if_file_exists(extracted_arch_dir)) {
+    // Tar file already contains architecture directory, we're done
+    await make_files_executable(extracted_arch_dir);
+  } else {
+    // Tar file contains flat binaries, move them to architecture directory
+    await fs.promises.mkdir(architecture_directory, { recursive: true });
+    const files = await fs.promises.readdir(base_directory);
+    
+    for (const file of files) {
+      const source_path = path.join(base_directory, file);
+      const dest_path = path.join(architecture_directory, file);
+      
+      // Skip if it's already the architecture directory we just created
+      if (file === architecture) continue;
+      
+      await fs.promises.rename(source_path, dest_path);
+    }
+    
+    await make_files_executable(architecture_directory);
+  }
 
   process.loader.print(`${display_name} (${architecture}) installed!`);
 };
