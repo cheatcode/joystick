@@ -38,24 +38,43 @@ const start_redis_process = (redis_port = 2610) => {
       reject(new Error('Redis startup timed out after 30 seconds'));
     }, 30000);
 
-    const check_ready = async (output) => {
-      if (output.includes('Ready to accept connections') || output.includes('The server is now ready to accept connections')) {
-        clearTimeout(timeout);
+    let startup_detected = false;
+
+    const check_if_ready = async () => {
+      // Wait a moment for Redis to fully start
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      try {
         const process_id = await get_process_id_from_port(redis_port);
-        return resolve(parseInt(process_id, 10));
+        if (process_id) {
+          clearTimeout(timeout);
+          return resolve(parseInt(process_id, 10));
+        }
+      } catch (error) {
+        // Port not ready yet, will retry
       }
     };
 
     database_process.stdout.on('data', async (data) => {
       const stdout = data?.toString();
       console.log('Redis stdout:', stdout);
-      await check_ready(stdout);
+      
+      // If we see any Redis output and haven't started checking yet, start checking
+      if (!startup_detected && stdout.trim()) {
+        startup_detected = true;
+        await check_if_ready();
+      }
     });
 
     database_process.stderr.on('data', async (data) => {
       const stderr = data.toString();
       console.log('Redis stderr:', stderr);
-      await check_ready(stderr);
+      
+      // If we see any Redis output and haven't started checking yet, start checking
+      if (!startup_detected && stderr.trim()) {
+        startup_detected = true;
+        await check_if_ready();
+      }
     });
 
     database_process.on('error', (error) => {
