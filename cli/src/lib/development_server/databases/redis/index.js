@@ -25,7 +25,7 @@ const start_redis_process = (redis_port = 2610) => {
       '60',
       '1',
       '--loglevel',
-      'warning',
+      'nothing',
     ];
 
     const database_process = child_process.spawn(
@@ -57,7 +57,6 @@ const start_redis_process = (redis_port = 2610) => {
 
     database_process.stdout.on('data', async (data) => {
       const stdout = data?.toString();
-      console.log('Redis stdout:', stdout);
       
       // If we see any Redis output and haven't started checking yet, start checking
       if (!startup_detected && stdout.trim()) {
@@ -68,7 +67,13 @@ const start_redis_process = (redis_port = 2610) => {
 
     database_process.stderr.on('data', async (data) => {
       const stderr = data.toString();
-      console.log('Redis stderr:', stderr);
+      
+      // Check for critical Redis errors that users should know about
+      if (stderr.includes('FATAL') || stderr.includes('Can\'t open') || stderr.includes('Permission denied')) {
+        clearTimeout(timeout);
+        reject(new Error(`Redis startup failed: ${stderr.trim()}`));
+        return;
+      }
       
       // If we see any Redis output and haven't started checking yet, start checking
       if (!startup_detected && stderr.trim()) {
