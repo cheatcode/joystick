@@ -52,13 +52,24 @@ const download_file = async (url, file_path) => {
 };
 
 const make_files_executable = async (directory) => {
-  const files = await fs.promises.readdir(directory);
-  for (const file of files) {
-    const file_path = path.join(directory, file);
-    const stats = await fs.promises.stat(file_path);
-    if (stats.isFile()) {
-      await fs.promises.chmod(file_path, '755');
+  try {
+    if (!(await check_if_file_exists(directory))) {
+      return; // Directory doesn't exist, skip
     }
+
+    const files = await fs.promises.readdir(directory);
+    for (const file of files) {
+      const file_path = path.join(directory, file);
+      const stats = await fs.promises.stat(file_path);
+      if (stats.isFile()) {
+        await fs.promises.chmod(file_path, '755');
+      } else if (stats.isDirectory()) {
+        // Recursively make files executable in subdirectories
+        await make_files_executable(file_path);
+      }
+    }
+  } catch (error) {
+    // Skip errors, but don't warn as this is expected during installation
   }
 };
 
