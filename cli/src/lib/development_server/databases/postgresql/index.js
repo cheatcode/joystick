@@ -167,13 +167,34 @@ const start_postgresql = async (port = 2610) => {
 
     // First, let's try to run postgres directly to see what error we get
     if (postgres_user_command) {
-      const test_command = `${postgres_user_command} "cd ${joystick_postgresql_bin_path} && ./${joystick_postgres_command} --version"`;
+      // Test basic su functionality
+      const basic_test = `${postgres_user_command} "whoami"`;
       try {
-        const { stdout, stderr } = await exec(test_command, { cwd: process.cwd() });
+        const { stdout, stderr } = await exec(basic_test, { cwd: process.cwd() });
+        console.log('Basic su test stdout:', stdout);
+        console.log('Basic su test stderr:', stderr);
+      } catch (error) {
+        console.log('Basic su test error:', error);
+      }
+
+      // Test PostgreSQL binary access
+      const version_test = `${postgres_user_command} "cd ${joystick_postgresql_bin_path} && ./${joystick_postgres_command} --version"`;
+      try {
+        const { stdout, stderr } = await exec(version_test, { cwd: process.cwd() });
         console.log('PostgreSQL version test stdout:', stdout);
         console.log('PostgreSQL version test stderr:', stderr);
       } catch (error) {
         console.log('PostgreSQL version test error:', error);
+      }
+
+      // Test data directory access
+      const data_test = `${postgres_user_command} "ls -la ${process.cwd()}/.joystick/data/postgresql_${port}"`;
+      try {
+        const { stdout, stderr } = await exec(data_test, { cwd: process.cwd() });
+        console.log('Data directory test stdout:', stdout);
+        console.log('Data directory test stderr:', stderr);
+      } catch (error) {
+        console.log('Data directory test error:', error);
       }
     }
 
