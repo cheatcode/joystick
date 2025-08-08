@@ -56,6 +56,14 @@ const get_pg_ctl_command = () => {
   return 'pgctl';
 };
 
+const get_postgres_user_command = () => {
+  // Only handle root user on Linux systems
+  if (process.platform === 'linux' && process.getuid && process.getuid() === 0) {
+    return 'su postgres -c';
+  }
+  return '';
+};
+
 const start_postgresql = async (port = 2610) => {
   try {
     const postgresql_port = port;
@@ -67,34 +75,77 @@ const start_postgresql = async (port = 2610) => {
     const joystick_initdb_command = get_initdb_command();
     const joystick_postgres_command = get_postgres_command();
     const joystick_createdb_command = get_createdb_command();
+    const postgres_user_command = get_postgres_user_command();
 
     const data_directory_exists = await setup_data_directory(port);
 
     if (!data_directory_exists) {
-      await exec(`./${joystick_initdb_command} -D ${process.cwd()}/.joystick/data/postgresql_${port} --no-locale`, {
-        cwd: joystick_postgresql_bin_path
-      });
+      // Handle root user on Linux systems only
+      if (postgres_user_command) {
+        try {
+          await exec('id postgres');
+        } catch (error) {
+          // User doesn't exist, create it
+          await exec('useradd -r -s /bin/false postgres');
+        }
+        
+        // Change ownership of data directory to postgres user
+        await exec(`chown -R postgres:postgres ${process.cwd()}/.joystick/data/postgresql_${port}`, {
+          cwd: process.cwd()
+        });
+        
+        // Change ownership of postgresql installation to postgres user
+        await exec(`chown -R postgres:postgres ${joystick_postgresql_base_path}`, {
+          cwd: process.cwd()
+        });
+
+        const initdb_command = `${postgres_user_command} "cd ${joystick_postgresql_bin_path} && ./${joystick_initdb_command} -D ${process.cwd()}/.joystick/data/postgresql_${port} --no-locale"`;
+        
+        await exec(initdb_command, {
+          cwd: process.cwd()
+        });
+      } else {
+        // Original behavior for non-Linux or non-root systems
+        await exec(`./${joystick_initdb_command} -D ${process.cwd()}/.joystick/data/postgresql_${port} --no-locale`, {
+          cwd: joystick_postgresql_bin_path
+        });
+      }
     }
 
     const existing_process_id = parseInt(await get_process_id_from_port(postgresql_port), 10);
 
     if (existing_process_id) {
-      await exec(`./${joystick_pg_ctl_command} kill KILL ${existing_process_id}`, {
-        cwd: joystick_postgresql_bin_path
-      });
+      if (postgres_user_command) {
+        const kill_command = `${postgres_user_command} "cd ${joystick_postgresql_bin_path} && ./${joystick_pg_ctl_command} kill KILL ${existing_process_id}"`;
+        await exec(kill_command, {
+          cwd: process.cwd()
+        });
+      } else {
+        await exec(`./${joystick_pg_ctl_command} kill KILL ${existing_process_id}`, {
+          cwd: joystick_postgresql_bin_path
+        });
+      }
     }
 
-    const database_process = child_process.spawn(
-      `./${joystick_postgres_command}`,
-      [
-        `-p ${postgresql_port}`,
-        '-D',
-        get_platform_safe_path(`${process.cwd()}/.joystick/data/postgresql_${port}`),
-      ],
-      {
-        cwd: joystick_postgresql_bin_path
-      }
-    );
+    const postgres_args = [
+      `-p ${postgresql_port}`,
+      '-D',
+      get_platform_safe_path(`${process.cwd()}/.joystick/data/postgresql_${port}`),
+    ];
+
+    const database_process = postgres_user_command
+      ? child_process.spawn('su', [
+          'postgres',
+          '-c',
+          `cd ${joystick_postgresql_bin_path} && ./${joystick_postgres_command} ${postgres_args.join(' ')}`
+        ])
+      : child_process.spawn(
+          `./${joystick_postgres_command}`,
+          postgres_args,
+          {
+            cwd: joystick_postgresql_bin_path
+          }
+        );
 
     return new Promise((resolve) => {
       database_process.stderr.on('data', async (data) => {
@@ -102,10 +153,12 @@ const start_postgresql = async (port = 2610) => {
 
         if (stderr.includes('database system is ready to accept connections')) {
           const process_id = (await get_process_id_from_port(postgresql_port))?.replace('\n', '');
-          const createdb_command = `./${joystick_createdb_command} -h 127.0.0.1 -p ${postgresql_port} app`;
+          const createdb_command = postgres_user_command
+            ? `${postgres_user_command} "cd ${joystick_postgresql_bin_path} && ./${joystick_createdb_command} -h 127.0.0.1 -p ${postgresql_port} app"`
+            : `./${joystick_createdb_command} -h 127.0.0.1 -p ${postgresql_port} app`;
 
           exec(createdb_command, {
-            cwd: joystick_postgresql_bin_path
+            cwd: postgres_user_command ? process.cwd() : joystick_postgresql_bin_path
           }).then(() => {
             resolve(parseInt(process_id, 10));
           }).catch(({ stderr: error }) => {
