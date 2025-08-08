@@ -84,6 +84,8 @@ const start_postgresql = async (port = 2610) => {
       if (postgres_user_command) {
         try {
           await exec('id postgres');
+          // User exists, make sure it has a proper shell
+          await exec('usermod -s /bin/bash postgres');
         } catch (error) {
           // User doesn't exist, create it with a proper shell
           await exec('useradd -r -s /bin/bash postgres');
