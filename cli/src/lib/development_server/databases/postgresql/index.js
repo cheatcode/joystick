@@ -61,10 +61,10 @@ const start_postgresql = async (port = 2610) => {
       if (is_root_on_linux) {
         // Create data directory and set ownership
         await exec(`mkdir -p ${process.cwd()}/.joystick/data/postgresql_${port}`);
-        await exec(`chown -R postgres:postgres ${process.cwd()}/.joystick/data/postgresql_${port}`);
+        await exec(`chown -R postgres:postgres ${process.cwd()}/.joystick/data`);
         
-        // Run initdb as postgres user
-        await exec(`sudo -u postgres ${joystick_postgresql_bin_path}/${joystick_initdb_command} -D ${process.cwd()}/.joystick/data/postgresql_${port}`);
+        // Run initdb as postgres user with proper environment
+        await exec(`sudo -u postgres ${joystick_postgresql_bin_path}/${joystick_initdb_command} -D ${process.cwd()}/.joystick/data/postgresql_${port} --auth-local=trust --auth-host=trust`);
       } else {
         await exec(`./${joystick_initdb_command} -D ${process.cwd()}/.joystick/data/postgresql_${port}`, {
           cwd: joystick_postgresql_bin_path
