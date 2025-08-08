@@ -53,36 +53,58 @@ const start_postgresql = async (port = 2610) => {
     const joystick_postgres_command = get_postgres_command();
     const joystick_createdb_command = get_createdb_command();
 
+    const is_root_on_linux = process.platform === 'linux' && process.getuid && process.getuid() === 0;
+
     const data_directory_exists = await setup_data_directory(port);
 
     if (!data_directory_exists) {
-      await exec(`./${joystick_pg_ctl_command} init -D ${process.cwd()}/.joystick/data/postgresql_${port}`, {
-        cwd: joystick_postgresql_bin_path
-      });
+      if (is_root_on_linux) {
+        // Create data directory and set ownership
+        await exec(`mkdir -p ${process.cwd()}/.joystick/data/postgresql_${port}`);
+        await exec(`chown -R postgres:postgres ${process.cwd()}/.joystick/data/postgresql_${port}`);
+        
+        // Run pg_ctl init as postgres user
+        await exec(`sudo -u postgres ${joystick_postgresql_bin_path}/${joystick_pg_ctl_command} init -D ${process.cwd()}/.joystick/data/postgresql_${port}`);
+      } else {
+        await exec(`./${joystick_pg_ctl_command} init -D ${process.cwd()}/.joystick/data/postgresql_${port}`, {
+          cwd: joystick_postgresql_bin_path
+        });
+      }
     }
 
     const existing_process_id = parseInt(await get_process_id_from_port(postgresql_port), 10);
 
     if (existing_process_id) {
-      await exec(`./${joystick_pg_ctl_command} kill KILL ${existing_process_id}`, {
-        cwd: joystick_postgresql_bin_path
-      });
+      if (is_root_on_linux) {
+        await exec(`sudo -u postgres ${joystick_postgresql_bin_path}/${joystick_pg_ctl_command} kill KILL ${existing_process_id}`);
+      } else {
+        await exec(`./${joystick_pg_ctl_command} kill KILL ${existing_process_id}`, {
+          cwd: joystick_postgresql_bin_path
+        });
+      }
     }
 
-
-    const database_process = child_process.spawn(
-      `./${joystick_pg_ctl_command}`,
-      [
-        '-o',
-        `"-p ${postgresql_port}"`,
-        '-D',
-        get_platform_safe_path(`${process.cwd()}/.joystick/data/postgresql_${port}`),
-        'start',
-      ],
-      {
-        cwd: joystick_postgresql_bin_path
-      }
-    );
+    const database_process = is_root_on_linux
+      ? child_process.spawn('sudo', [
+          '-u', 'postgres',
+          `${joystick_postgresql_bin_path}/${joystick_pg_ctl_command}`,
+          '-o', `"-p ${postgresql_port}"`,
+          '-D', get_platform_safe_path(`${process.cwd()}/.joystick/data/postgresql_${port}`),
+          'start'
+        ])
+      : child_process.spawn(
+          `./${joystick_pg_ctl_command}`,
+          [
+            '-o',
+            `"-p ${postgresql_port}"`,
+            '-D',
+            get_platform_safe_path(`${process.cwd()}/.joystick/data/postgresql_${port}`),
+            'start',
+          ],
+          {
+            cwd: joystick_postgresql_bin_path
+          }
+        );
 
     return new Promise((resolve, reject) => {
       database_process.stderr.on('data', async (data) => {
@@ -99,8 +121,12 @@ const start_postgresql = async (port = 2610) => {
         if (stdout.includes('database system is ready to accept connections')) {
           const process_id = (await get_process_id_from_port(postgresql_port))?.replace('\n', '');
 
-          exec(`./${joystick_createdb_command} -h 127.0.0.1 -p ${postgresql_port} app`, {
-            cwd: joystick_postgresql_bin_path
+          const createdb_command = is_root_on_linux
+            ? `sudo -u postgres ${joystick_postgresql_bin_path}/${joystick_createdb_command} -h 127.0.0.1 -p ${postgresql_port} app`
+            : `./${joystick_createdb_command} -h 127.0.0.1 -p ${postgresql_port} app`;
+
+          exec(createdb_command, {
+            cwd: is_root_on_linux ? process.cwd() : joystick_postgresql_bin_path
           }).then(() => {
             resolve(parseInt(process_id, 10));
           }).catch(({ stderr: error }) => {

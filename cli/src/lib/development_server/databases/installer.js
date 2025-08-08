@@ -51,7 +51,7 @@ const download_file = async (url, file_path) => {
   await stream_pipeline(response.body, fs.createWriteStream(file_path));
 };
 
-const make_files_executable = async (directory) => {
+const make_files_executable = async (directory, database_name = null) => {
   try {
     if (!(await check_if_file_exists(directory))) {
       return; // Directory doesn't exist, skip
@@ -65,7 +65,30 @@ const make_files_executable = async (directory) => {
         await fs.promises.chmod(file_path, '755');
       } else if (stats.isDirectory()) {
         // Recursively make files executable in subdirectories
-        await make_files_executable(file_path);
+        await make_files_executable(file_path, database_name);
+      }
+    }
+
+    // Handle PostgreSQL specific permissions when running as root on Linux
+    if (database_name === 'postgresql' && process.platform === 'linux' && process.getuid && process.getuid() === 0) {
+      const { exec } = await import('child_process');
+      const { promisify } = await import('util');
+      const exec_async = promisify(exec);
+
+      try {
+        // Check if postgres user exists, create if not
+        try {
+          await exec_async('id postgres');
+        } catch (error) {
+          // User doesn't exist, create it with a proper shell
+          await exec_async('useradd -r -s /bin/bash postgres');
+        }
+
+        // Change ownership of the entire PostgreSQL installation to postgres user
+        await exec_async(`chown -R postgres:postgres ${directory}`);
+      } catch (error) {
+        // If we can't set up postgres user, continue anyway
+        console.warn('Warning: Could not set up postgres user ownership. PostgreSQL may not start as root.');
       }
     }
   } catch (error) {
@@ -111,7 +134,7 @@ const install_database = async (database_name) => {
   const extracted_arch_dir = path.join(base_directory, architecture);
   if (await check_if_file_exists(extracted_arch_dir)) {
     // Tar file already contains architecture directory, we're done
-    await make_files_executable(extracted_arch_dir);
+    await make_files_executable(extracted_arch_dir, database_name);
   } else {
     // Tar file contains flat binaries, move them to architecture directory
     await fs.promises.mkdir(architecture_directory, { recursive: true });
@@ -128,7 +151,7 @@ const install_database = async (database_name) => {
       await fs.promises.rename(source_path, dest_path);
     }
     
-    await make_files_executable(architecture_directory);
+    await make_files_executable(architecture_directory, database_name);
   }
 
   process.loader.print(`${display_name} (${architecture}) installed!`);
