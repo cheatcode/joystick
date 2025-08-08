@@ -179,9 +179,10 @@ const start_postgresql = async (port = 2610) => {
           }
         );
 
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       database_process.stderr.on('data', async (data) => {
         const stderr = data?.toString();
+        console.log('PostgreSQL stderr:', stderr);
 
         if (stderr.includes('database system is ready to accept connections')) {
           const process_id = (await get_process_id_from_port(postgresql_port))?.replace('\n', '');
@@ -207,7 +208,19 @@ const start_postgresql = async (port = 2610) => {
         // NOTE: PostgreSQL (16) appears to route all output to stderr(?!). Have this for posterity
         // sake and to avoid trapping useful information.
         const stdout = data?.toString();
-        console.log(stdout);
+        console.log('PostgreSQL stdout:', stdout);
+      });
+
+      database_process.on('error', (error) => {
+        console.log('PostgreSQL process error:', error);
+        reject(error);
+      });
+
+      database_process.on('exit', (code, signal) => {
+        console.log(`PostgreSQL process exited with code ${code} and signal ${signal}`);
+        if (code !== 0) {
+          reject(new Error(`PostgreSQL process exited with code ${code}`));
+        }
       });
     });
   } catch (exception) {
