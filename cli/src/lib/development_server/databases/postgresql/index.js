@@ -64,7 +64,18 @@ const start_postgresql = async (port = 2610) => {
         await exec(`chown -R postgres:postgres ${process.cwd()}/.joystick/data`);
         
         // Run initdb as postgres user with proper environment
-        await exec(`sudo -u postgres ${joystick_postgresql_bin_path}/${joystick_initdb_command} -D ${process.cwd()}/.joystick/data/postgresql_${port} --auth-local=trust --auth-host=trust`);
+        console.log('PostgreSQL: Running initdb to initialize database cluster...');
+        try {
+          const initdb_result = await exec(`sudo -u postgres ${joystick_postgresql_bin_path}/${joystick_initdb_command} -D ${process.cwd()}/.joystick/data/postgresql_${port} --auth-local=trust --auth-host=trust`);
+          console.log('PostgreSQL: initdb completed successfully');
+          if (initdb_result.stdout) console.log('initdb stdout:', initdb_result.stdout);
+          if (initdb_result.stderr) console.log('initdb stderr:', initdb_result.stderr);
+        } catch (error) {
+          console.error('PostgreSQL: initdb failed:', error.message);
+          if (error.stdout) console.log('initdb stdout:', error.stdout);
+          if (error.stderr) console.log('initdb stderr:', error.stderr);
+          throw error;
+        }
       } else {
         await exec(`./${joystick_initdb_command} -D ${process.cwd()}/.joystick/data/postgresql_${port}`, {
           cwd: joystick_postgresql_bin_path
