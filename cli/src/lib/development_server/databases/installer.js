@@ -84,8 +84,18 @@ const make_files_executable = async (directory, database_name = null) => {
           await exec_async('useradd -r -s /bin/bash postgres');
         }
 
+        // Set up directory permissions for postgres user access
+        const homedir = require('os').homedir();
+        await exec_async(`chmod 755 ${homedir}`);
+        await exec_async(`chmod 755 ${path.join(homedir, '.joystick')}`);
+        await exec_async(`chmod 755 ${path.join(homedir, '.joystick', 'databases')}`);
+        await exec_async(`chmod 755 ${path.join(homedir, '.joystick', 'databases', 'postgresql')}`);
+
         // Change ownership of the entire PostgreSQL installation to postgres user
         await exec_async(`chown -R postgres:postgres ${directory}`);
+        
+        // Ensure postgres user can execute the binaries
+        await exec_async(`chmod -R 755 ${directory}`);
       } catch (error) {
         // If we can't set up postgres user, continue anyway
         console.warn('Warning: Could not set up postgres user ownership. PostgreSQL may not start as root.');
