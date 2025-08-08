@@ -16,12 +16,7 @@ const setup_data_directory = async (postgresql_port = 2610) => {
   const legacy_data_directory_exists = await path_exists(".joystick/data/postgresql");
   let data_directory_exists = await path_exists(`.joystick/data/postgresql_${postgresql_port}`);
 
-  console.log(`PostgreSQL: legacy_data_directory_exists = ${legacy_data_directory_exists}`);
-  console.log(`PostgreSQL: data_directory_exists = ${data_directory_exists}`);
-  console.log(`PostgreSQL: checking paths: .joystick/data/postgresql and .joystick/data/postgresql_${postgresql_port}`);
-
   if (legacy_data_directory_exists && !data_directory_exists) {
-    console.log('PostgreSQL: Renaming legacy directory to port-specific directory');
     await rename ('.joystick/data/postgresql', `.joystick/data/postgresql_${postgresql_port}`);
     data_directory_exists = true;
   }
@@ -29,9 +24,7 @@ const setup_data_directory = async (postgresql_port = 2610) => {
   // Check if directory exists but is not properly initialized (missing PG_VERSION file)
   if (data_directory_exists) {
     const pg_version_exists = await path_exists(`.joystick/data/postgresql_${postgresql_port}/PG_VERSION`);
-    console.log(`PostgreSQL: PG_VERSION file exists = ${pg_version_exists}`);
     if (!pg_version_exists) {
-      console.log('PostgreSQL: Directory exists but is not initialized, will run initdb');
       data_directory_exists = false;
     }
   }
@@ -71,8 +64,6 @@ const start_postgresql = async (port = 2610) => {
     const is_root_on_linux = process.platform === 'linux' && process.getuid && process.getuid() === 0;
 
     const data_directory_exists = await setup_data_directory(port);
-    console.log(`PostgreSQL: data_directory_exists = ${data_directory_exists}`);
-    console.log(`PostgreSQL: checking directory ${process.cwd()}/.joystick/data/postgresql_${port}`);
 
     if (!data_directory_exists) {
       if (is_root_on_linux) {
@@ -81,18 +72,7 @@ const start_postgresql = async (port = 2610) => {
         await exec(`chown -R postgres:postgres ${process.cwd()}/.joystick/data`);
         
         // Run initdb as postgres user with proper environment
-        console.log('PostgreSQL: Running initdb to initialize database cluster...');
-        try {
-          const initdb_result = await exec(`sudo -u postgres ${joystick_postgresql_bin_path}/${joystick_initdb_command} -D ${process.cwd()}/.joystick/data/postgresql_${port} --auth-local=trust --auth-host=trust`);
-          console.log('PostgreSQL: initdb completed successfully');
-          if (initdb_result.stdout) console.log('initdb stdout:', initdb_result.stdout);
-          if (initdb_result.stderr) console.log('initdb stderr:', initdb_result.stderr);
-        } catch (error) {
-          console.error('PostgreSQL: initdb failed:', error.message);
-          if (error.stdout) console.log('initdb stdout:', error.stdout);
-          if (error.stderr) console.log('initdb stderr:', error.stderr);
-          throw error;
-        }
+        await exec(`sudo -u postgres ${joystick_postgresql_bin_path}/${joystick_initdb_command} -D ${process.cwd()}/.joystick/data/postgresql_${port} --auth-local=trust --auth-host=trust`);
       } else {
         await exec(`./${joystick_initdb_command} -D ${process.cwd()}/.joystick/data/postgresql_${port}`, {
           cwd: joystick_postgresql_bin_path
