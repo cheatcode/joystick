@@ -16,7 +16,12 @@ const setup_data_directory = async (postgresql_port = 2610) => {
   const legacy_data_directory_exists = await path_exists(".joystick/data/postgresql");
   let data_directory_exists = await path_exists(`.joystick/data/postgresql_${postgresql_port}`);
 
+  console.log(`PostgreSQL: legacy_data_directory_exists = ${legacy_data_directory_exists}`);
+  console.log(`PostgreSQL: data_directory_exists = ${data_directory_exists}`);
+  console.log(`PostgreSQL: checking paths: .joystick/data/postgresql and .joystick/data/postgresql_${postgresql_port}`);
+
   if (legacy_data_directory_exists && !data_directory_exists) {
+    console.log('PostgreSQL: Renaming legacy directory to port-specific directory');
     await rename ('.joystick/data/postgresql', `.joystick/data/postgresql_${postgresql_port}`);
     data_directory_exists = true;
   }
@@ -56,6 +61,8 @@ const start_postgresql = async (port = 2610) => {
     const is_root_on_linux = process.platform === 'linux' && process.getuid && process.getuid() === 0;
 
     const data_directory_exists = await setup_data_directory(port);
+    console.log(`PostgreSQL: data_directory_exists = ${data_directory_exists}`);
+    console.log(`PostgreSQL: checking directory ${process.cwd()}/.joystick/data/postgresql_${port}`);
 
     if (!data_directory_exists) {
       if (is_root_on_linux) {
