@@ -56,13 +56,6 @@ const get_pg_ctl_command = () => {
   return 'pgctl';
 };
 
-const get_postgres_user_command = () => {
-  // Only handle root user on Linux systems
-  if (process.platform === 'linux' && process.getuid && process.getuid() === 0) {
-    return 'su postgres -c';
-  }
-  return '';
-};
 
 const start_postgresql = async (port = 2610) => {
   try {
@@ -75,160 +68,55 @@ const start_postgresql = async (port = 2610) => {
     const joystick_initdb_command = get_initdb_command();
     const joystick_postgres_command = get_postgres_command();
     const joystick_createdb_command = get_createdb_command();
-    const postgres_user_command = get_postgres_user_command();
 
     const data_directory_exists = await setup_data_directory(port);
 
     if (!data_directory_exists) {
-      // Handle root user on Linux systems only
-      if (postgres_user_command) {
-        try {
-          await exec('id postgres');
-          // User exists, make sure it has a proper shell
-          await exec('usermod -s /bin/bash postgres');
-        } catch (error) {
-          // User doesn't exist, create it with a proper shell
-          await exec('useradd -r -s /bin/bash postgres');
-        }
-        
-        // Create data directory first
-        await exec(`mkdir -p ${process.cwd()}/.joystick/data/postgresql_${port}`, {
-          cwd: process.cwd()
-        });
-        
-        // Create .joystick directory structure and set permissions
-        await exec(`mkdir -p ${process.cwd()}/.joystick/data`, {
-          cwd: process.cwd()
-        });
-        
-        // Give postgres user access to the entire path leading to the data directory
-        await exec(`chmod 755 ${process.cwd()}`, {
-          cwd: process.cwd()
-        });
-        
-        await exec(`chmod 755 ${process.cwd()}/.joystick`, {
-          cwd: process.cwd()
-        });
-        
-        await exec(`chmod 755 ${process.cwd()}/.joystick/data`, {
-          cwd: process.cwd()
-        });
-        
-        // Change ownership of data directory to postgres user
-        await exec(`chown -R postgres:postgres ${process.cwd()}/.joystick/data/postgresql_${port}`, {
-          cwd: process.cwd()
-        });
-        
-        // Give postgres user access to the home directory path for PostgreSQL installation
-        await exec(`chmod 755 ${os.homedir()}`, {
-          cwd: process.cwd()
-        });
-        
-        await exec(`chmod -R 755 ${path.dirname(joystick_postgresql_base_path)}`, {
-          cwd: process.cwd()
-        });
-        
-        // Change ownership of postgresql installation to postgres user
-        await exec(`chown -R postgres:postgres ${joystick_postgresql_base_path}`, {
-          cwd: process.cwd()
-        });
-
-        const initdb_command = `${postgres_user_command} "cd ${joystick_postgresql_bin_path} && ./${joystick_initdb_command} -D ${process.cwd()}/.joystick/data/postgresql_${port} --no-locale"`;
-        
-        await exec(initdb_command, {
-          cwd: process.cwd()
-        });
-      } else {
-        // Original behavior for non-Linux or non-root systems
-        await exec(`./${joystick_initdb_command} -D ${process.cwd()}/.joystick/data/postgresql_${port} --no-locale`, {
-          cwd: joystick_postgresql_bin_path
-        });
-      }
+      await exec(`./${joystick_pg_ctl_command} init -D ${process.cwd()}/.joystick/data/postgresql_${port}`, {
+        cwd: joystick_postgresql_bin_path
+      });
     }
 
     const existing_process_id = parseInt(await get_process_id_from_port(postgresql_port), 10);
 
     if (existing_process_id) {
-      if (postgres_user_command) {
-        const kill_command = `${postgres_user_command} "cd ${joystick_postgresql_bin_path} && ./${joystick_pg_ctl_command} kill KILL ${existing_process_id}"`;
-        await exec(kill_command, {
-          cwd: process.cwd()
-        });
-      } else {
-        await exec(`./${joystick_pg_ctl_command} kill KILL ${existing_process_id}`, {
-          cwd: joystick_postgresql_bin_path
-        });
-      }
+      await exec(`./${joystick_pg_ctl_command} kill KILL ${existing_process_id}`, {
+        cwd: joystick_postgresql_bin_path
+      });
     }
 
-    const postgres_args = [
-      `-p ${postgresql_port}`,
-      '-D',
-      get_platform_safe_path(`${process.cwd()}/.joystick/data/postgresql_${port}`),
-    ];
 
-    // First, let's try to run postgres directly to see what error we get
-    if (postgres_user_command) {
-      // Test basic su functionality
-      const basic_test = `${postgres_user_command} "whoami"`;
-      try {
-        const { stdout, stderr } = await exec(basic_test, { cwd: process.cwd() });
-        console.log('Basic su test stdout:', stdout);
-        console.log('Basic su test stderr:', stderr);
-      } catch (error) {
-        console.log('Basic su test error:', error);
+    const database_process = child_process.spawn(
+      `./${joystick_pg_ctl_command}`,
+      [
+        '-o',
+        `"-p ${postgresql_port}"`,
+        '-D',
+        get_platform_safe_path(`${process.cwd()}/.joystick/data/postgresql_${port}`),
+        'start',
+      ],
+      {
+        cwd: joystick_postgresql_bin_path
       }
-
-      // Test PostgreSQL binary access
-      const version_test = `${postgres_user_command} "cd ${joystick_postgresql_bin_path} && ./${joystick_postgres_command} --version"`;
-      try {
-        const { stdout, stderr } = await exec(version_test, { cwd: process.cwd() });
-        console.log('PostgreSQL version test stdout:', stdout);
-        console.log('PostgreSQL version test stderr:', stderr);
-      } catch (error) {
-        console.log('PostgreSQL version test error:', error);
-      }
-
-      // Test data directory access
-      const data_test = `${postgres_user_command} "ls -la ${process.cwd()}/.joystick/data/postgresql_${port}"`;
-      try {
-        const { stdout, stderr } = await exec(data_test, { cwd: process.cwd() });
-        console.log('Data directory test stdout:', stdout);
-        console.log('Data directory test stderr:', stderr);
-      } catch (error) {
-        console.log('Data directory test error:', error);
-      }
-    }
-
-    const database_process = postgres_user_command
-      ? child_process.spawn('su', [
-          'postgres',
-          '-c',
-          `cd ${joystick_postgresql_bin_path} && ./${joystick_postgres_command} ${postgres_args.join(' ')}`
-        ], {
-          stdio: ['pipe', 'pipe', 'pipe']
-        })
-      : child_process.spawn(
-          `./${joystick_postgres_command}`,
-          postgres_args,
-          {
-            cwd: joystick_postgresql_bin_path
-          }
-        );
+    );
 
     return new Promise((resolve, reject) => {
       database_process.stderr.on('data', async (data) => {
         const stderr = data?.toString();
-        console.log('PostgreSQL stderr:', stderr);
 
-        if (stderr.includes('database system is ready to accept connections')) {
+        if (!stderr?.includes('another server might be running')) {
+          console.warn(stderr);
+        }
+      });
+
+      database_process.stdout.on('data', async (data) => {
+        const stdout = data?.toString();
+
+        if (stdout.includes('database system is ready to accept connections')) {
           const process_id = (await get_process_id_from_port(postgresql_port))?.replace('\n', '');
-          const createdb_command = postgres_user_command
-            ? `${postgres_user_command} "cd ${joystick_postgresql_bin_path} && ./${joystick_createdb_command} -h 127.0.0.1 -p ${postgresql_port} app"`
-            : `./${joystick_createdb_command} -h 127.0.0.1 -p ${postgresql_port} app`;
 
-          exec(createdb_command, {
-            cwd: postgres_user_command ? process.cwd() : joystick_postgresql_bin_path
+          exec(`./${joystick_createdb_command} -h 127.0.0.1 -p ${postgresql_port} app`, {
+            cwd: joystick_postgresql_bin_path
           }).then(() => {
             resolve(parseInt(process_id, 10));
           }).catch(({ stderr: error }) => {
@@ -239,13 +127,6 @@ const start_postgresql = async (port = 2610) => {
             }
           });
         }
-      });
-
-      database_process.stdout.on('data', async (data) => {
-        // NOTE: PostgreSQL (16) appears to route all output to stderr(?!). Have this for posterity
-        // sake and to avoid trapping useful information.
-        const stdout = data?.toString();
-        console.log('PostgreSQL stdout:', stdout);
       });
 
       database_process.on('error', (error) => {
