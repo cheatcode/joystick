@@ -26,6 +26,16 @@ const setup_data_directory = async (postgresql_port = 2610) => {
     data_directory_exists = true;
   }
 
+  // Check if directory exists but is not properly initialized (missing PG_VERSION file)
+  if (data_directory_exists) {
+    const pg_version_exists = await path_exists(`.joystick/data/postgresql_${postgresql_port}/PG_VERSION`);
+    console.log(`PostgreSQL: PG_VERSION file exists = ${pg_version_exists}`);
+    if (!pg_version_exists) {
+      console.log('PostgreSQL: Directory exists but is not initialized, will run initdb');
+      data_directory_exists = false;
+    }
+  }
+
   return data_directory_exists;
 };
 
