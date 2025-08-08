@@ -165,12 +165,26 @@ const start_postgresql = async (port = 2610) => {
       get_platform_safe_path(`${process.cwd()}/.joystick/data/postgresql_${port}`),
     ];
 
+    // First, let's try to run postgres directly to see what error we get
+    if (postgres_user_command) {
+      const test_command = `${postgres_user_command} "cd ${joystick_postgresql_bin_path} && ./${joystick_postgres_command} --version"`;
+      try {
+        const { stdout, stderr } = await exec(test_command, { cwd: process.cwd() });
+        console.log('PostgreSQL version test stdout:', stdout);
+        console.log('PostgreSQL version test stderr:', stderr);
+      } catch (error) {
+        console.log('PostgreSQL version test error:', error);
+      }
+    }
+
     const database_process = postgres_user_command
       ? child_process.spawn('su', [
           'postgres',
           '-c',
           `cd ${joystick_postgresql_bin_path} && ./${joystick_postgres_command} ${postgres_args.join(' ')}`
-        ])
+        ], {
+          stdio: ['pipe', 'pipe', 'pipe']
+        })
       : child_process.spawn(
           `./${joystick_postgres_command}`,
           postgres_args,
