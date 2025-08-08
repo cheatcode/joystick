@@ -63,10 +63,10 @@ const start_postgresql = async (port = 2610) => {
         await exec(`mkdir -p ${process.cwd()}/.joystick/data/postgresql_${port}`);
         await exec(`chown -R postgres:postgres ${process.cwd()}/.joystick/data/postgresql_${port}`);
         
-        // Run pg_ctl init as postgres user
-        await exec(`sudo -u postgres ${joystick_postgresql_bin_path}/${joystick_pg_ctl_command} init -D ${process.cwd()}/.joystick/data/postgresql_${port}`);
+        // Run initdb as postgres user
+        await exec(`sudo -u postgres ${joystick_postgresql_bin_path}/${joystick_initdb_command} -D ${process.cwd()}/.joystick/data/postgresql_${port}`);
       } else {
-        await exec(`./${joystick_pg_ctl_command} init -D ${process.cwd()}/.joystick/data/postgresql_${port}`, {
+        await exec(`./${joystick_initdb_command} -D ${process.cwd()}/.joystick/data/postgresql_${port}`, {
           cwd: joystick_postgresql_bin_path
         });
       }

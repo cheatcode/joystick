@@ -94,16 +94,26 @@ const setup_postgresql_permissions = async (directory) => {
     }
 
     // Set up directory permissions for postgres user access
-    const homedir = require('os').homedir();
+    const homedir = os.homedir();
     console.log('PostgreSQL setup: setting directory permissions');
+    
+    // Ensure all parent directories have execute permissions for postgres user
     await exec_async(`chmod 755 ${homedir}`);
     await exec_async(`chmod 755 ${path.join(homedir, '.joystick')}`);
     await exec_async(`chmod 755 ${path.join(homedir, '.joystick', 'databases')}`);
     await exec_async(`chmod 755 ${path.join(homedir, '.joystick', 'databases', 'postgresql')}`);
+    await exec_async(`chmod 755 ${directory}`);
 
     // Change ownership of the entire PostgreSQL installation to postgres user
     console.log('PostgreSQL setup: changing ownership to postgres user');
     await exec_async(`chown -R postgres:postgres ${directory}`);
+    
+    // Ensure all binaries are executable
+    const bin_directory = path.join(directory, 'bin');
+    if (await check_if_file_exists(bin_directory)) {
+      await exec_async(`chmod -R 755 ${bin_directory}`);
+      console.log('PostgreSQL setup: made all binaries executable');
+    }
     
     console.log('PostgreSQL setup: completed successfully');
   } catch (error) {
