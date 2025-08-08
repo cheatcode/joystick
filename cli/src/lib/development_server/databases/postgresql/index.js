@@ -92,73 +92,41 @@ const start_postgresql = async (port = 2610) => {
       }
     }
 
-    const database_process = is_root_on_linux
-      ? child_process.spawn('sudo', [
-          '-u', 'postgres',
-          `${joystick_postgresql_bin_path}/${joystick_pg_ctl_command}`,
-          '-o', `"-p ${postgresql_port}"`,
-          '-D', get_platform_safe_path(`${process.cwd()}/.joystick/data/postgresql_${port}`),
-          'start'
-        ])
-      : child_process.spawn(
-          `./${joystick_pg_ctl_command}`,
-          [
-            '-o',
-            `"-p ${postgresql_port}"`,
-            '-D',
-            get_platform_safe_path(`${process.cwd()}/.joystick/data/postgresql_${port}`),
-            'start',
-          ],
-          {
-            cwd: joystick_postgresql_bin_path
-          }
-        );
+    // Use pg_ctl to start PostgreSQL server
+    const pg_ctl_command = is_root_on_linux
+      ? `sudo -u postgres ${joystick_postgresql_bin_path}/${joystick_pg_ctl_command} -o "-p ${postgresql_port}" -D ${process.cwd()}/.joystick/data/postgresql_${port} start`
+      : `./${joystick_pg_ctl_command} -o "-p ${postgresql_port}" -D ${process.cwd()}/.joystick/data/postgresql_${port} start`;
 
-    return new Promise((resolve, reject) => {
-      database_process.stderr.on('data', async (data) => {
-        const stderr = data?.toString();
+    const pg_ctl_options = is_root_on_linux ? {} : { cwd: joystick_postgresql_bin_path };
 
-        if (!stderr?.includes('another server might be running')) {
-          console.warn(stderr);
-        }
+    await exec(pg_ctl_command, pg_ctl_options);
+
+    // Wait a moment for the server to start
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    // Get the PostgreSQL server process ID
+    const process_id = (await get_process_id_from_port(postgresql_port))?.replace('\n', '');
+
+    if (!process_id) {
+      throw new Error('PostgreSQL server failed to start');
+    }
+
+    // Create the app database
+    const createdb_command = is_root_on_linux
+      ? `sudo -u postgres ${joystick_postgresql_bin_path}/${joystick_createdb_command} -h 127.0.0.1 -p ${postgresql_port} app`
+      : `./${joystick_createdb_command} -h 127.0.0.1 -p ${postgresql_port} app`;
+
+    try {
+      await exec(createdb_command, {
+        cwd: is_root_on_linux ? process.cwd() : joystick_postgresql_bin_path
       });
+    } catch ({ stderr: error }) {
+      if (!error || !error.includes('database "app" already exists')) {
+        console.log(error);
+      }
+    }
 
-      database_process.stdout.on('data', async (data) => {
-        const stdout = data?.toString();
-
-        if (stdout.includes('database system is ready to accept connections')) {
-          const process_id = (await get_process_id_from_port(postgresql_port))?.replace('\n', '');
-
-          const createdb_command = is_root_on_linux
-            ? `sudo -u postgres ${joystick_postgresql_bin_path}/${joystick_createdb_command} -h 127.0.0.1 -p ${postgresql_port} app`
-            : `./${joystick_createdb_command} -h 127.0.0.1 -p ${postgresql_port} app`;
-
-          exec(createdb_command, {
-            cwd: is_root_on_linux ? process.cwd() : joystick_postgresql_bin_path
-          }).then(() => {
-            resolve(parseInt(process_id, 10));
-          }).catch(({ stderr: error }) => {
-            if (error && error.includes('database "app" already exists')) {
-              resolve(parseInt(process_id, 10));
-            } else {
-              console.log(error);
-            }
-          });
-        }
-      });
-
-      database_process.on('error', (error) => {
-        console.log('PostgreSQL process error:', error);
-        reject(error);
-      });
-
-      database_process.on('exit', (code, signal) => {
-        console.log(`PostgreSQL process exited with code ${code} and signal ${signal}`);
-        if (code !== 0) {
-          reject(new Error(`PostgreSQL process exited with code ${code}`));
-        }
-      });
-    });
+    return parseInt(process_id, 10);
   } catch (exception) {
     console.warn(exception);
     process.exit(1);

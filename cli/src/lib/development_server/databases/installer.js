@@ -86,16 +86,13 @@ const setup_postgresql_permissions = async (directory) => {
     // Check if postgres user exists, create if not
     try {
       await exec_async('id postgres');
-      console.log('PostgreSQL setup: postgres user already exists');
     } catch (error) {
       // User doesn't exist, create it with a proper shell
-      console.log('PostgreSQL setup: creating postgres user');
       await exec_async('useradd -r -s /bin/bash postgres');
     }
 
     // Set up directory permissions for postgres user access
     const homedir = os.homedir();
-    console.log('PostgreSQL setup: setting directory permissions');
     
     // Ensure all parent directories have execute permissions for postgres user
     await exec_async(`chmod 755 ${homedir}`);
@@ -105,17 +102,13 @@ const setup_postgresql_permissions = async (directory) => {
     await exec_async(`chmod 755 ${directory}`);
 
     // Change ownership of the entire PostgreSQL installation to postgres user
-    console.log('PostgreSQL setup: changing ownership to postgres user');
     await exec_async(`chown -R postgres:postgres ${directory}`);
     
     // Ensure all binaries are executable
     const bin_directory = path.join(directory, 'bin');
     if (await check_if_file_exists(bin_directory)) {
       await exec_async(`chmod -R 755 ${bin_directory}`);
-      console.log('PostgreSQL setup: made all binaries executable');
     }
-    
-    console.log('PostgreSQL setup: completed successfully');
   } catch (error) {
     // If we can't set up postgres user, continue anyway
     console.warn(`Warning: Could not set up postgres user ownership: ${error.message}`);
