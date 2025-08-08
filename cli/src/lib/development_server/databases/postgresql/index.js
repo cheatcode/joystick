@@ -89,6 +89,11 @@ const start_postgresql = async (port = 2610) => {
           await exec('useradd -r -s /bin/false postgres');
         }
         
+        // Create data directory first
+        await exec(`mkdir -p ${process.cwd()}/.joystick/data/postgresql_${port}`, {
+          cwd: process.cwd()
+        });
+        
         // Change ownership of data directory to postgres user
         await exec(`chown -R postgres:postgres ${process.cwd()}/.joystick/data/postgresql_${port}`, {
           cwd: process.cwd()
