@@ -92,41 +92,67 @@ const start_postgresql = async (port = 2610) => {
       }
     }
 
-    // Use pg_ctl to start PostgreSQL server
-    const pg_ctl_command = is_root_on_linux
-      ? `sudo -u postgres ${joystick_postgresql_bin_path}/${joystick_pg_ctl_command} -o "-p ${postgresql_port}" -D ${process.cwd()}/.joystick/data/postgresql_${port} start`
-      : `./${joystick_pg_ctl_command} -o "-p ${postgresql_port}" -D ${process.cwd()}/.joystick/data/postgresql_${port} start`;
+    // Start PostgreSQL server and monitor for readiness
+    const database_process = is_root_on_linux
+      ? child_process.spawn('sudo', [
+          '-u', 'postgres',
+          `${joystick_postgresql_bin_path}/${joystick_pg_ctl_command}`,
+          '-o', `"-p ${postgresql_port}"`,
+          '-D', get_platform_safe_path(`${process.cwd()}/.joystick/data/postgresql_${port}`),
+          '-l', get_platform_safe_path(`${process.cwd()}/.joystick/data/postgresql_${port}/logfile`),
+          'start',
+          '-w'
+        ])
+      : child_process.spawn(
+          `./${joystick_pg_ctl_command}`,
+          [
+            '-o', `"-p ${postgresql_port}"`,
+            '-D', get_platform_safe_path(`${process.cwd()}/.joystick/data/postgresql_${port}`),
+            '-l', get_platform_safe_path(`${process.cwd()}/.joystick/data/postgresql_${port}/logfile`),
+            'start',
+            '-w'
+          ],
+          {
+            cwd: joystick_postgresql_bin_path
+          }
+        );
 
-    const pg_ctl_options = is_root_on_linux ? {} : { cwd: joystick_postgresql_bin_path };
+    return new Promise((resolve, reject) => {
+      database_process.on('exit', async (code, signal) => {
+        if (code === 0) {
+          // pg_ctl exited successfully, server should be running
+          const process_id = (await get_process_id_from_port(postgresql_port))?.replace('\n', '');
 
-    await exec(pg_ctl_command, pg_ctl_options);
+          if (!process_id) {
+            reject(new Error('PostgreSQL server failed to start'));
+            return;
+          }
 
-    // Wait a moment for the server to start
-    await new Promise(resolve => setTimeout(resolve, 1000));
+          // Create the app database
+          const createdb_command = is_root_on_linux
+            ? `sudo -u postgres ${joystick_postgresql_bin_path}/${joystick_createdb_command} -h 127.0.0.1 -p ${postgresql_port} app`
+            : `./${joystick_createdb_command} -h 127.0.0.1 -p ${postgresql_port} app`;
 
-    // Get the PostgreSQL server process ID
-    const process_id = (await get_process_id_from_port(postgresql_port))?.replace('\n', '');
+          try {
+            await exec(createdb_command, {
+              cwd: is_root_on_linux ? process.cwd() : joystick_postgresql_bin_path
+            });
+          } catch ({ stderr: error }) {
+            if (!error || !error.includes('database "app" already exists')) {
+              console.log(error);
+            }
+          }
 
-    if (!process_id) {
-      throw new Error('PostgreSQL server failed to start');
-    }
-
-    // Create the app database
-    const createdb_command = is_root_on_linux
-      ? `sudo -u postgres ${joystick_postgresql_bin_path}/${joystick_createdb_command} -h 127.0.0.1 -p ${postgresql_port} app`
-      : `./${joystick_createdb_command} -h 127.0.0.1 -p ${postgresql_port} app`;
-
-    try {
-      await exec(createdb_command, {
-        cwd: is_root_on_linux ? process.cwd() : joystick_postgresql_bin_path
+          resolve(parseInt(process_id, 10));
+        } else {
+          reject(new Error(`PostgreSQL failed to start (exit code: ${code})`));
+        }
       });
-    } catch ({ stderr: error }) {
-      if (!error || !error.includes('database "app" already exists')) {
-        console.log(error);
-      }
-    }
 
-    return parseInt(process_id, 10);
+      database_process.on('error', (error) => {
+        reject(error);
+      });
+    });
   } catch (exception) {
     console.warn(exception);
     process.exit(1);
