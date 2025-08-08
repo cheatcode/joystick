@@ -25,35 +25,19 @@ const setup_data_directory = async (postgresql_port = 2610) => {
 };
 
 const get_createdb_command = () => {
-  if (process.platform === 'win32') {
-    return 'createdb.exe';
-  }
-
   return 'createdb';
 };
 
 const get_postgres_command = () => {
-  if (process.platform === 'win32') {
-    return 'postgres.exe';
-  }
-
   return 'postgres';
 };
 
 const get_initdb_command = () => {
-  if (process.platform === 'win32') {
-    return 'initdb.exe';
-  }
-
   return 'initdb';
 };
 
 const get_pg_ctl_command = () => {
-  if (process.platform === 'win32') {
-    return 'pgctl.exe';
-  }
-
-  return 'pgctl';
+  return 'pg_ctl';
 };
 
 
