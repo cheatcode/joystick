@@ -94,8 +94,35 @@ const start_postgresql = async (port = 2610) => {
           cwd: process.cwd()
         });
         
+        // Create .joystick directory structure and set permissions
+        await exec(`mkdir -p ${process.cwd()}/.joystick/data`, {
+          cwd: process.cwd()
+        });
+        
+        // Give postgres user access to the entire path leading to the data directory
+        await exec(`chmod 755 ${process.cwd()}`, {
+          cwd: process.cwd()
+        });
+        
+        await exec(`chmod 755 ${process.cwd()}/.joystick`, {
+          cwd: process.cwd()
+        });
+        
+        await exec(`chmod 755 ${process.cwd()}/.joystick/data`, {
+          cwd: process.cwd()
+        });
+        
         // Change ownership of data directory to postgres user
         await exec(`chown -R postgres:postgres ${process.cwd()}/.joystick/data/postgresql_${port}`, {
+          cwd: process.cwd()
+        });
+        
+        // Give postgres user access to the home directory path for PostgreSQL installation
+        await exec(`chmod 755 ${os.homedir()}`, {
+          cwd: process.cwd()
+        });
+        
+        await exec(`chmod -R 755 ${path.dirname(joystick_postgresql_base_path)}`, {
           cwd: process.cwd()
         });
         
