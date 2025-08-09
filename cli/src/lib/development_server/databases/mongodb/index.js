@@ -32,6 +32,16 @@ const start_mongodb_process = (mongodb_port = 2610) => {
     const architecture = get_architecture();
     const joystick_mongodb_base_path = path.join(os.homedir(), '.joystick', 'databases', 'mongodb', architecture);
     const joystick_mongod_path = path.join(joystick_mongodb_base_path, 'bin', mongo_server_command);
+    
+    // Check if we have the old flat structure and prompt user to remove it
+    const old_mongod_path = path.join(joystick_mongodb_base_path, mongo_server_command);
+    if (!fs.existsSync(joystick_mongod_path) && fs.existsSync(old_mongod_path)) {
+      console.log('\n🔄 MongoDB binary structure has been updated to include required shared libraries.');
+      console.log('Please remove the old database binaries and restart your app:');
+      console.log('\n  rm -rf ~/.joystick/databases\n');
+      console.log('The new binaries will be automatically downloaded on next startup.');
+      process.exit(1);
+    }
     const database_process_flags = [
       '--port',
       mongodb_port,
@@ -52,7 +62,12 @@ const start_mongodb_process = (mongodb_port = 2610) => {
 
       if (stdout.includes('Waiting for connections')) {
         const mongo_shell_command = get_mongo_shell_command();
-        const joystick_mongo_shell_path = path.join(joystick_mongodb_base_path, 'bin', mongo_shell_command);
+        let joystick_mongo_shell_path = path.join(joystick_mongodb_base_path, 'bin', mongo_shell_command);
+        
+        // Check if we have the old flat structure for mongosh as well
+        if (!fs.existsSync(joystick_mongo_shell_path)) {
+          joystick_mongo_shell_path = path.join(joystick_mongodb_base_path, mongo_shell_command);
+        }
         child_process.exec(`${joystick_mongo_shell_path} --eval "rs.initiate()" --verbose --port ${mongodb_port}`, async (error, _stdout, _stderr) => {
           if (error && !error?.message?.includes('already initialized')) {
             console.log(error);
