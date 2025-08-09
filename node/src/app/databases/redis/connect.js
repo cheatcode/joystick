@@ -41,39 +41,39 @@ const connect_redis = async (database_settings = {}, database_port = 2610) => {
     return {
       client,
       // Queue-specific operations
-      lpush: (...args) => client.lPush(...args),
-      rpop: (...args) => client.rPop(...args),
-      brpop: (...args) => client.brPop(...args),
-      llen: (...args) => client.lLen(...args),
-      lrange: (...args) => client.lRange(...args),
-      lrem: (...args) => client.lRem(...args),
+      lpush: (...args) => client.LPUSH(...args),
+      rpop: (...args) => client.RPOP(...args),
+      brpop: (...args) => client.BRPOP(...args),
+      llen: (...args) => client.LLEN(...args),
+      lrange: (...args) => client.LRANGE(...args),
+      lrem: (...args) => client.LREM(...args),
       
       // Hash operations for job data
-      hset: (...args) => client.hSet(...args),
-      hget: (...args) => client.hGet(...args),
-      hgetall: (...args) => client.hGetAll(...args),
-      hdel: (...args) => client.hDel(...args),
-      hexists: (...args) => client.hExists(...args),
+      hset: (...args) => client.HSET(...args),
+      hget: (...args) => client.HGET(...args),
+      hgetall: (...args) => client.HGETALL(...args),
+      hdel: (...args) => client.HDEL(...args),
+      hexists: (...args) => client.HEXISTS(...args),
       
       // Set operations for job tracking
-      sadd: (...args) => client.sAdd(...args),
-      srem: (...args) => client.sRem(...args),
-      smembers: (...args) => client.sMembers(...args),
-      sismember: (...args) => client.sIsMember(...args),
+      sadd: (...args) => client.SADD(...args),
+      srem: (...args) => client.SREM(...args),
+      smembers: (...args) => client.SMEMBERS(...args),
+      sismember: (...args) => client.SISMEMBER(...args),
       
       // Sorted set operations for scheduled jobs
-      zadd: (...args) => client.zAdd(...args),
-      zrem: (...args) => client.zRem(...args),
-      zrange: (...args) => client.zRange(...args),
-      zrangebyscore: (...args) => client.zRangeByScore(...args),
-      zremrangebyscore: (...args) => client.zRemRangeByScore(...args),
+      zadd: (...args) => client.ZADD(...args),
+      zrem: (...args) => client.ZREM(...args),
+      zrange: (...args) => client.ZRANGE(...args),
+      zrangebyscore: (...args) => client.ZRANGEBYSCORE(...args),
+      zremrangebyscore: (...args) => client.ZREMRANGEBYSCORE(...args),
       
       // Key operations
-      set: (...args) => client.set(...args),
-      get: (...args) => client.get(...args),
-      del: (...args) => client.del(...args),
-      exists: (...args) => client.exists(...args),
-      expire: (...args) => client.expire(...args),
+      set: (...args) => client.SET(...args),
+      get: (...args) => client.GET(...args),
+      del: (...args) => client.DEL(...args),
+      exists: (...args) => client.EXISTS(...args),
+      expire: (...args) => client.EXPIRE(...args),
       
       // Transaction support
       multi: () => client.multi(),
