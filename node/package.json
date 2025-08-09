@@ -15,7 +15,7 @@
   "license": "SAUCR",
   "dependencies": {
     "@aws-sdk/client-s3": "^3.478.0",
-    "@aws-sdk/lib-storage": "^3.478.0",
+    "@aws-sdk/lib-storage": "^3.859.0",
     "bcrypt": "^5.1.1",
     "chalk": "^5.3.0",
     "compression": "^1.7.4",
