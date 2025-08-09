@@ -115,7 +115,28 @@ const setup_postgresql_permissions = async (directory) => {
   }
 };
 
+const handle_legacy_database_migration = async () => {
+  const databases_directory = path.join(os.homedir(), '.joystick', 'databases');
+  const migration_marker = path.join(os.homedir(), '.joystick', 'removed_old_databases');
+  
+  // If migration already happened, skip
+  if (await check_if_file_exists(migration_marker)) {
+    return;
+  }
+  
+  // If databases directory exists, remove it and mark migration
+  if (await check_if_file_exists(databases_directory)) {
+    console.log('\n🔄 Upgrading database binaries to include required shared libraries...');
+    await fs.promises.rm(databases_directory, { recursive: true, force: true });
+    await fs.promises.writeFile(migration_marker, new Date().toISOString());
+    console.log('✅ Old database binaries removed. New binaries will be downloaded automatically.\n');
+  }
+};
+
 const install_database = async (database_name) => {
+  // Handle legacy database migration first
+  await handle_legacy_database_migration();
+  
   const platform = get_platform();
   const architecture = get_architecture();
   const base_directory = path.join(os.homedir(), '.joystick', 'databases', database_name);
