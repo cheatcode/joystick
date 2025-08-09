@@ -16,13 +16,21 @@ const queues = {
         : job_to_add.next_run_at,
     };
     
-    await this.db.hset(job_key, job_data);
+    // Convert all values to strings for Redis hash storage
+    const redis_job_data = {};
+    for (const [key, value] of Object.entries(job_data)) {
+      if (typeof value === 'object' && value !== null) {
+        redis_job_data[key] = JSON.stringify(value);
+      } else {
+        redis_job_data[key] = String(value);
+      }
+    }
+    
+    await this.db.hset(job_key, redis_job_data);
     
     // Add to scheduled jobs sorted set with timestamp as score
     const next_run_timestamp = new Date(job_data.next_run_at).getTime();
-    await this.db.zadd(scheduled_jobs_key, [
-      { score: next_run_timestamp, value: job_to_add._id }
-    ]);
+    await this.db.zadd(scheduled_jobs_key, { score: next_run_timestamp, value: job_to_add._id });
     
     return { insertedId: job_to_add._id };
   },
@@ -118,9 +126,21 @@ const queues = {
       if (Object.keys(job_data).length > 0) {
         // Filter by environment
         if (job_data.environment === process.env.NODE_ENV) {
+          // Parse JSON strings back to objects where needed
+          const parsed_job_data = { ...job_data };
+          for (const [key, value] of Object.entries(parsed_job_data)) {
+            if (typeof value === 'string' && (value.startsWith('{') || value.startsWith('['))) {
+              try {
+                parsed_job_data[key] = JSON.parse(value);
+              } catch (e) {
+                // Keep as string if not valid JSON
+              }
+            }
+          }
+          
           jobs.push({
-            ...job_data,
-            attempts: parseInt(job_data.attempts, 10),
+            ...parsed_job_data,
+            attempts: parseInt(parsed_job_data.attempts, 10),
           });
         }
       }
@@ -171,19 +191,31 @@ const queues = {
     multi.hset(job_key, {
       status: 'running',
       started_at: timestamps.get_current_time({ format: 'redis' }),
-      locked_by: this.machine_id,
+      locked_by: String(this.machine_id),
     });
     
     const results = await multi.exec();
     
+    // Parse JSON strings back to objects where needed
+    const parsed_job_data = { ...job_data };
+    for (const [key, value] of Object.entries(parsed_job_data)) {
+      if (typeof value === 'string' && (value.startsWith('{') || value.startsWith('['))) {
+        try {
+          parsed_job_data[key] = JSON.parse(value);
+        } catch (e) {
+          // Keep as string if not valid JSON
+        }
+      }
+    }
+    
     // Return the updated job data
     return {
-      ...job_data,
+      ...parsed_job_data,
       _id: job_id,
       status: 'running',
       started_at: timestamps.get_current_time({ format: 'redis' }),
       locked_by: this.machine_id,
-      attempts: parseInt(job_data.attempts, 10),
+      attempts: parseInt(parsed_job_data.attempts, 10),
     };
   },
 
@@ -224,7 +256,7 @@ const queues = {
     const multi = this.db.multi();
     multi.srem(running_key, job_id);
     multi.srem(locked_key, job_id);
-    multi.zadd(scheduled_jobs_key, [{ score: next_run_timestamp, value: job_id }]);
+    multi.zadd(scheduled_jobs_key, { score: next_run_timestamp, value: job_id });
     multi.hset(job_key, {
       status: 'pending',
       next_run_at: next_run_at ? new Date(next_run_at).toISOString() : new Date().toISOString(),
@@ -292,7 +324,7 @@ const queues = {
         const next_run_timestamp = next_run_at ? new Date(next_run_at).getTime() : Date.now();
         
         multi.srem(running_key, job_id);
-        multi.zadd(scheduled_jobs_key, [{ score: next_run_timestamp, value: job_id }]);
+        multi.zadd(scheduled_jobs_key, { score: next_run_timestamp, value: job_id });
         multi.hset(job_key, { status: 'pending' });
         multi.hdel(job_key, 'locked_by');
       }
