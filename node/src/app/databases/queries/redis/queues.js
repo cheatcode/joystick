@@ -288,9 +288,6 @@ const queues = {
               }
             }
             
-            if (cleaned_count > 0) {
-              console.log(`Cleaned up ${cleaned_count} expired jobs from queue ${queue_name}`);
-            }
           } catch (error) {
             console.warn(`Error during queue cleanup for ${queue_name}:`, error);
           }
