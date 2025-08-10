@@ -180,7 +180,7 @@ const queues = {
     }
     
     // Move job to running state atomically
-    const results = await this.db.client.multi()
+    await this.db.client.multi()
       .zRem(scheduled_jobs_key, job_id)
       .sRem(pending_key, job_id)
       .sAdd(running_key, job_id)
