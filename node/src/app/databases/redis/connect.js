@@ -26,19 +26,14 @@ const connect_redis = async (database_settings = {}, database_port = 2610) => {
       connection_config.socket.tls = true;
     }
 
-    const client = createClient(connection_config);
-
-    client.on('error', (error) => {
-      console.warn(chalk.redBright(`Redis connection error: ${error.message}`));
-    });
-
-    client.on('connect', () => {
-      // Silently handle Redis connection
-    });
-
-    await client.connect();
-
-    console.log(Object.keys(client));
+    const client = await createClient(connection_config)
+      .on('error', (error) => {
+        console.warn(chalk.redBright(`Redis connection error: ${error.message}`));
+      })
+      .on('connect', () => {
+        // Silently handle Redis connection
+      })
+      .connect();
 
     return {
       client,
