@@ -38,6 +38,8 @@ const connect_redis = async (database_settings = {}, database_port = 2610) => {
 
     await client.connect();
 
+    console.log(Object.keys(client));
+
     return {
       client,
       // Queue-specific operations (List commands)
