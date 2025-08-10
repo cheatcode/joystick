@@ -166,6 +166,12 @@ const redis_cache_adapter = (cache_name, redis_connection, options = {}) => {
       for (const [field, value] of Object.entries(item)) {
         if (field !== '_cache_id') {
           await redis_connection.srem(`${cache_key}:field:${field}:${value}`, item_id);
+          
+          // Clean up empty field index sets
+          const remaining_items = await redis_connection.scard(`${cache_key}:field:${field}:${value}`);
+          if (remaining_items === 0) {
+            await redis_connection.del(`${cache_key}:field:${field}:${value}`);
+          }
         }
       }
     }
@@ -185,13 +191,8 @@ const redis_cache_adapter = (cache_name, redis_connection, options = {}) => {
       
       const item_key = `${cache_key}:${cache_item._cache_id}`;
       
-      // Set TTL if specified
-      if (ttl) {
-        await redis_connection.hset(item_key, 'data', JSON.stringify(cache_item));
-        await redis_connection.expire(item_key, ttl);
-      } else {
-        await redis_connection.hset(item_key, 'data', JSON.stringify(cache_item));
-      }
+      // Set item data
+      await redis_connection.hset(item_key, 'data', JSON.stringify(cache_item));
       
       // Add to cache index for efficient querying
       await redis_connection.sadd(`${cache_key}:index`, cache_item._cache_id);
@@ -203,6 +204,28 @@ const redis_cache_adapter = (cache_name, redis_connection, options = {}) => {
       for (const [field, value] of Object.entries(cache_item)) {
         if (field !== '_cache_id') {
           await redis_connection.sadd(`${cache_key}:field:${field}:${value}`, cache_item._cache_id);
+        }
+      }
+      
+      // Set TTL on all related keys if specified
+      if (ttl) {
+        const keys_to_expire = [item_key, `${cache_key}:index`];
+        
+        // Add field index keys to expiration list
+        for (const [field, value] of Object.entries(cache_item)) {
+          if (field !== '_cache_id') {
+            keys_to_expire.push(`${cache_key}:field:${field}:${value}`);
+          }
+        }
+        
+        // Add LRU key if using max_items
+        if (max_items) {
+          keys_to_expire.push(lru_key);
+        }
+        
+        // Set TTL on all keys
+        for (const key of keys_to_expire) {
+          await redis_connection.expire(key, ttl);
         }
       }
       
@@ -337,10 +360,23 @@ const redis_cache_adapter = (cache_name, redis_connection, options = {}) => {
           // Update LRU tracking
           await update_lru_score(item_id);
           
-          // Add new field indexes
+          // Add new field indexes with TTL
           for (const [field, value] of Object.entries(updated_item)) {
             if (field !== '_cache_id') {
               await redis_connection.sadd(`${cache_key}:field:${field}:${value}`, item_id);
+              
+              // Apply TTL to field index if specified
+              if (ttl) {
+                await redis_connection.expire(`${cache_key}:field:${field}:${value}`, ttl);
+              }
+            }
+          }
+          
+          // Apply TTL to other keys if specified
+          if (ttl) {
+            await redis_connection.expire(`${cache_key}:index`, ttl);
+            if (max_items) {
+              await redis_connection.expire(lru_key, ttl);
             }
           }
         }
