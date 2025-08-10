@@ -150,6 +150,8 @@ const queues = {
   },
 
   get_next_job_to_run: async function () {
+    console.log('GNJTR', this.db);
+    
     const queue_name = `queue_${this.queue.name}`;
     const scheduled_jobs_key = `${queue_name}:scheduled`;
     const pending_key = `${queue_name}:pending`;
