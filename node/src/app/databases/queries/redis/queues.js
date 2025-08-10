@@ -231,9 +231,10 @@ const queues = {
       
       if (completed_after_seconds || failed_after_seconds) {
         // Set up periodic cleanup every 5 minutes
+        const cleanup_function = this.cleanup_expired_jobs.bind(this);
         setInterval(async () => {
           try {
-            await this.cleanup_expired_jobs();
+            await cleanup_function();
           } catch (error) {
             console.warn(`Error during queue cleanup for ${queue_name}:`, error);
           }
