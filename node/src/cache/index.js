@@ -203,6 +203,24 @@ const redis_cache_adapter = (cache_name, redis_connection, options = {}) => {
           }
         }
       }
+    } else {
+      // Item data is gone (expired), need to find and clean up field indexes manually
+      const field_pattern = `${cache_key}:field:*`;
+      const field_keys = await redis_connection.client.keys(field_pattern);
+      
+      for (const field_key of field_keys) {
+        // Check if this field index contains the expired item
+        const is_member = await redis_connection.sismember(field_key, item_id);
+        if (is_member) {
+          await redis_connection.srem(field_key, item_id);
+          
+          // Clean up empty field index sets
+          const remaining_items = await redis_connection.scard(field_key);
+          if (remaining_items === 0) {
+            await redis_connection.del(field_key);
+          }
+        }
+      }
     }
     
     // Remove item, from main index, and from LRU tracking
