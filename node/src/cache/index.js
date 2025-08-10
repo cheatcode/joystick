@@ -207,26 +207,9 @@ const redis_cache_adapter = (cache_name, redis_connection, options = {}) => {
         }
       }
       
-      // Set TTL on all related keys if specified
+      // Set TTL only on the item itself - indexes will be cleaned up by cleanup process
       if (ttl) {
-        const keys_to_expire = [item_key, `${cache_key}:index`];
-        
-        // Add field index keys to expiration list
-        for (const [field, value] of Object.entries(cache_item)) {
-          if (field !== '_cache_id') {
-            keys_to_expire.push(`${cache_key}:field:${field}:${value}`);
-          }
-        }
-        
-        // Add LRU key if using max_items
-        if (max_items) {
-          keys_to_expire.push(lru_key);
-        }
-        
-        // Set TTL on all keys
-        for (const key of keys_to_expire) {
-          await redis_connection.expire(key, ttl);
-        }
+        await redis_connection.expire(item_key, ttl);
       }
       
       // Enforce max items limit
@@ -360,23 +343,10 @@ const redis_cache_adapter = (cache_name, redis_connection, options = {}) => {
           // Update LRU tracking
           await update_lru_score(item_id);
           
-          // Add new field indexes with TTL
+          // Add new field indexes
           for (const [field, value] of Object.entries(updated_item)) {
             if (field !== '_cache_id') {
               await redis_connection.sadd(`${cache_key}:field:${field}:${value}`, item_id);
-              
-              // Apply TTL to field index if specified
-              if (ttl) {
-                await redis_connection.expire(`${cache_key}:field:${field}:${value}`, ttl);
-              }
-            }
-          }
-          
-          // Apply TTL to other keys if specified
-          if (ttl) {
-            await redis_connection.expire(`${cache_key}:index`, ttl);
-            if (max_items) {
-              await redis_connection.expire(lru_key, ttl);
             }
           }
         }
