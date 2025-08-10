@@ -34,7 +34,7 @@ const queues = {
     await this.db.zadd(scheduled_jobs_key, { score: next_run_timestamp, value: job_to_add._id });
     
     // Notify queue processors that a new job is available
-    await this.db.publish(queue_channel, job_to_add._id);
+    await this.db.client.publish(queue_channel, job_to_add._id);
     
     return { insertedId: job_to_add._id };
   },
