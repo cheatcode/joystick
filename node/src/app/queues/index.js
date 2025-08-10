@@ -30,6 +30,8 @@ class Queue {
     const queue_queries_for_database_provider = query_map[queues_database]?.queues;
     const db = this._get_database_connection();
 
+    console.log('DB from GDBC', db);
+    
     if (types.is_object(db) && types.is_object(queue_queries_for_database_provider)) {
       this.db = Object.entries(queue_queries_for_database_provider || {})?.reduce(
         (bound_queries = {}, [query_function_name, query_function]) => {
