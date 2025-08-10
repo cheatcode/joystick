@@ -291,7 +291,7 @@ const redis_cache_adapter = (cache_name, redis_connection, options = {}) => {
         }
         
         // Clear all field indexes
-        const field_keys = await redis_connection.keys(`${cache_key}:field:*`);
+        const field_keys = await redis_connection.client.keys(`${cache_key}:field:*`);
         for (const field_key of field_keys) {
           multi.del(field_key);
         }
