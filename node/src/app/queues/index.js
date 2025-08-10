@@ -163,17 +163,137 @@ class Queue {
     }
 
     this._handle_requeue_jobs_running_before_restart().then(() => {
-      setInterval(async () => {
-        // NOTE: We want to respect concurrent_jobs limit here. If we've maxed out the concurrent
-        // jobs limit for this queue, don't run anything until the number running is < than the
-        // specified concurrent_jobs threshold.
-        const okay_to_run_jobs = await this._check_if_okay_to_run_jobs();
-        if (okay_to_run_jobs && !process.env.HALT_QUEUES) {
-          const next_job = await this.db.get_next_job_to_run();
-          this.handle_next_job(next_job);
-        }
-      }, 300);
+      this._start_queue_processor();
     });
+  }
+
+  _start_queue_processor() {
+    const database_provider = this.db._connection?.constructor?.name?.toLowerCase() || 
+                             this.db._connection?.client?.constructor?.name?.toLowerCase() ||
+                             'unknown';
+
+    if (database_provider.includes('redis')) {
+      this._start_redis_event_driven_processor();
+    } else if (database_provider.includes('mongo')) {
+      this._start_mongodb_change_stream_processor();
+    } else {
+      // PostgreSQL and other databases fall back to adaptive polling
+      this._start_adaptive_polling_processor();
+    }
+  }
+
+  _start_redis_event_driven_processor() {
+    const queue_channel = `queue_${this.name}_jobs`;
+    
+    // Subscribe to job notifications
+    const subscriber = this.db._connection.duplicate();
+    subscriber.subscribe(queue_channel);
+    
+    subscriber.on('message', async (channel, message) => {
+      if (channel === queue_channel) {
+        await this._process_available_jobs();
+      }
+    });
+
+    // Also check for existing jobs on startup and periodically for scheduled jobs
+    this._process_available_jobs();
+    
+    // Check for scheduled jobs every 5 seconds (much less frequent than before)
+    this._scheduled_job_interval = setInterval(() => {
+      this._process_available_jobs();
+    }, 5000);
+  }
+
+  _start_mongodb_change_stream_processor() {
+    const collection = this.db._connection.collection(`queue_${this.name}`);
+    
+    // Watch for insert and update operations on pending jobs
+    const pipeline = [
+      {
+        $match: {
+          $or: [
+            // New jobs being inserted
+            {
+              'operationType': 'insert',
+              'fullDocument.status': 'pending',
+              'fullDocument.environment': process.env.NODE_ENV
+            },
+            // Jobs being updated to pending (requeued)
+            {
+              'operationType': 'update',
+              'updateDescription.updatedFields.status': 'pending',
+              'fullDocument.environment': process.env.NODE_ENV
+            }
+          ]
+        }
+      }
+    ];
+
+    this._change_stream = collection.watch(pipeline, { fullDocument: 'updateLookup' });
+    
+    this._change_stream.on('change', async (change) => {
+      // Process jobs when new ones are added or requeued
+      await this._process_available_jobs();
+    });
+
+    this._change_stream.on('error', (error) => {
+      console.warn(`MongoDB change stream error for queue ${this.name}:`, error);
+      // Fallback to polling if change stream fails
+      this._start_adaptive_polling_processor();
+    });
+
+    // Process existing jobs on startup
+    this._process_available_jobs();
+    
+    // Check for scheduled jobs every 5 seconds (for jobs with future next_run_at)
+    this._scheduled_job_interval = setInterval(() => {
+      this._process_available_jobs();
+    }, 5000);
+  }
+
+  _start_adaptive_polling_processor() {
+    let poll_interval = 100; // Start with 100ms
+    const min_interval = 100;
+    const max_interval = 2000;
+    const backoff_multiplier = 1.5;
+    const reset_multiplier = 0.8;
+
+    const poll = async () => {
+      const okay_to_run_jobs = await this._check_if_okay_to_run_jobs();
+      
+      if (okay_to_run_jobs && !process.env.HALT_QUEUES) {
+        const next_job = await this.db.get_next_job_to_run();
+        
+        if (next_job) {
+          // Job found - reset to faster polling
+          poll_interval = Math.max(min_interval, poll_interval * reset_multiplier);
+          this.handle_next_job(next_job);
+        } else {
+          // No job found - back off
+          poll_interval = Math.min(max_interval, poll_interval * backoff_multiplier);
+        }
+      } else {
+        // Can't run jobs - back off
+        poll_interval = Math.min(max_interval, poll_interval * backoff_multiplier);
+      }
+
+      this._poll_timeout = setTimeout(poll, poll_interval);
+    };
+
+    poll();
+  }
+
+  async _process_available_jobs() {
+    const okay_to_run_jobs = await this._check_if_okay_to_run_jobs();
+    
+    if (okay_to_run_jobs && !process.env.HALT_QUEUES) {
+      const next_job = await this.db.get_next_job_to_run();
+      if (next_job) {
+        this.handle_next_job(next_job);
+        // Check for more jobs immediately
+        setImmediate(() => this._process_available_jobs());
+      }
+    }
   }
 
   async handle_next_job(next_job = {}) {
@@ -278,6 +398,23 @@ class Queue {
     // Use the new get_database_format method
     const date_format = timestamps.get_database_format(this?.db?._connection);
     return timestamps.normalize_date(date_input, { format: date_format });
+  }
+
+  stop() {
+    if (this._scheduled_job_interval) {
+      clearInterval(this._scheduled_job_interval);
+      this._scheduled_job_interval = null;
+    }
+    
+    if (this._poll_timeout) {
+      clearTimeout(this._poll_timeout);
+      this._poll_timeout = null;
+    }
+    
+    if (this._change_stream) {
+      this._change_stream.close();
+      this._change_stream = null;
+    }
   }
 
   list(status = "") {

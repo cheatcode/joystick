@@ -6,6 +6,7 @@ const queues = {
     const queue_name = `queue_${this.queue.name}`;
     const job_key = `job:${job_to_add._id}`;
     const scheduled_jobs_key = `${queue_name}:scheduled`;
+    const queue_channel = `${queue_name}_jobs`;
     
     // Store job data in a hash
     const job_data = {
@@ -31,6 +32,9 @@ const queues = {
     // Add to scheduled jobs sorted set with timestamp as score
     const next_run_timestamp = new Date(job_data.next_run_at).getTime();
     await this.db.zadd(scheduled_jobs_key, { score: next_run_timestamp, value: job_to_add._id });
+    
+    // Notify queue processors that a new job is available
+    await this.db.publish(queue_channel, job_to_add._id);
     
     return { insertedId: job_to_add._id };
   },
