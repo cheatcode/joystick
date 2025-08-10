@@ -82,7 +82,7 @@ const handle_build_for_node = (node_paths = [], options = {}) => {
 const handle_build_for_browser = (browser_paths = [], options = {}) => {
   return esbuild.build({
     allowOverwrite: true,
-    target: "es2024",
+    target: "es2022",
     platform: "browser",
     format: "esm",
     bundle: true,
