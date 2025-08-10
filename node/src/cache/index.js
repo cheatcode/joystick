@@ -163,12 +163,12 @@ const redis_cache_adapter = (cache_name, redis_connection, options = {}) => {
   const enforce_max_items = async () => {
     if (!max_items) return;
     
-    const current_count = await redis_connection.scard(`${cache_key}:index`);
+    const current_count = await redis_connection.client.sCard(`${cache_key}:index`);
     
     if (current_count > max_items) {
       // Get least recently used items
       const items_to_remove = current_count - max_items;
-      const lru_items = await redis_connection.zrange(lru_key, 0, items_to_remove - 1);
+      const lru_items = await redis_connection.client.zRange(lru_key, 0, items_to_remove - 1);
       
       // Remove LRU items
       for (const item_id of lru_items) {
@@ -197,7 +197,7 @@ const redis_cache_adapter = (cache_name, redis_connection, options = {}) => {
           await redis_connection.srem(`${cache_key}:field:${field}:${value}`, item_id);
           
           // Clean up empty field index sets
-          const remaining_items = await redis_connection.scard(`${cache_key}:field:${field}:${value}`);
+          const remaining_items = await redis_connection.client.sCard(`${cache_key}:field:${field}:${value}`);
           if (remaining_items === 0) {
             await redis_connection.del(`${cache_key}:field:${field}:${value}`);
           }
@@ -210,12 +210,12 @@ const redis_cache_adapter = (cache_name, redis_connection, options = {}) => {
       
       for (const field_key of field_keys) {
         // Check if this field index contains the expired item
-        const is_member = await redis_connection.sismember(field_key, item_id);
+        const is_member = await redis_connection.client.sIsMember(field_key, item_id);
         if (is_member) {
           await redis_connection.srem(field_key, item_id);
           
           // Clean up empty field index sets
-          const remaining_items = await redis_connection.scard(field_key);
+          const remaining_items = await redis_connection.client.sCard(field_key);
           if (remaining_items === 0) {
             await redis_connection.del(field_key);
           }
