@@ -61,8 +61,9 @@ class Queue {
 
   _get_database_connection() {
     // NOTE: This applies to both external and internal databases being specified. If this is passed,
-    // we assume that the database exists on the process.
+    // we assume that the database with the specified name exists on the process.
     if (this?.options?.database) {
+      console.log('GETTING TO HERE BAD CONFIG');
       const { provider, name } = this?.options?.database;
       const existing_connection = process.databases && process.databases[provider] && process.databases[provider][name];
 
@@ -72,6 +73,8 @@ class Queue {
 
       return existing_connection || null;
     }
+
+    console.log('GETTING TO HERE GOOD CONFIG');
 
     // NOTE: Fallback to a default which assumes a single database flagged as queues: true in the
     // app's settings.<env>.json file.
