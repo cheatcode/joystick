@@ -30,8 +30,6 @@ class Queue {
     const queue_queries_for_database_provider = query_map[queues_database]?.queues;
     const db = this._get_database_connection();
 
-    console.log('DB from GDBC', db);
-    
     if (types.is_object(db) && types.is_object(queue_queries_for_database_provider)) {
       this.db = Object.entries(queue_queries_for_database_provider || {})?.reduce(
         (bound_queries = {}, [query_function_name, query_function]) => {
@@ -46,7 +44,7 @@ class Queue {
 
           return bound_queries;
         },
-        { _connection: db },
+        { connection: db },
       );
 
       // NOTE: Let an external queue manage its own configuration and operation. We only want
@@ -65,7 +63,6 @@ class Queue {
     // NOTE: This applies to both external and internal databases being specified. If this is passed,
     // we assume that the database with the specified name exists on the process.
     if (this?.options?.database) {
-      console.log('GETTING TO HERE BAD CONFIG');
       const { provider, name } = this?.options?.database;
       const existing_connection = process.databases && process.databases[provider] && process.databases[provider][name];
 
@@ -75,8 +72,6 @@ class Queue {
 
       return existing_connection || null;
     }
-
-    console.log('GETTING TO HERE GOOD CONFIG');
 
     // NOTE: Fallback to a default which assumes a single database flagged as queues: true in the
     // app's settings.<env>.json file.
