@@ -5,6 +5,7 @@ esbuild.build({
   bundle: true,
   outfile: `./dist/index.js`,
   platform: "browser",
+  target: "es2024",
   format: "esm",
   minify: true,
   plugins: [],

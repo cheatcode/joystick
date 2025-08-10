@@ -58,6 +58,7 @@ const handle_build_failure = async (exception = {}) => {
 const handle_build_for_node = (node_paths = [], options = {}) => {
   return esbuild.build({
     allowOverwrite: true,
+    target: "node20",
     platform: "node",
     format: "esm",
     bundle: false,
@@ -82,7 +83,7 @@ const handle_build_for_node = (node_paths = [], options = {}) => {
 const handle_build_for_browser = (browser_paths = [], options = {}) => {
   return esbuild.build({
     allowOverwrite: true,
-    target: "es2021",
+    target: "es2024",
     platform: "browser",
     format: "esm",
     bundle: true,
