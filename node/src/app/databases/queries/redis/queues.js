@@ -151,7 +151,7 @@ const queues = {
 
   get_next_job_to_run: async function () {
     console.log('GNJTR', this.db);
-    
+
     const queue_name = `queue_${this.queue.name}`;
     const scheduled_jobs_key = `${queue_name}:scheduled`;
     const pending_key = `${queue_name}:pending`;
@@ -186,6 +186,9 @@ const queues = {
     
     // Move job to running state atomically
     const multi = this.db.multi();
+
+    console.log('MULTI HAS NO ZREM', multi);
+    
     multi.zrem(scheduled_jobs_key, job_id);
     multi.srem(pending_key, job_id);
     multi.sadd(running_key, job_id);
