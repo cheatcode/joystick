@@ -131,6 +131,35 @@ const redis_cache_adapter = (cache_name, redis_connection, options = {}) => {
   const cache_key = `cache:${cache_name}`;
   const lru_key = `${cache_key}:lru`;
   
+  // Start cleanup process if TTL is enabled
+  if (ttl) {
+    const cleanup_interval = Math.min(ttl * 1000, 30000); // Cleanup every TTL seconds or 30s max
+    setInterval(async () => {
+      await cleanup_expired_items();
+    }, cleanup_interval);
+  }
+  
+  const cleanup_expired_items = async () => {
+    if (!ttl) return;
+    
+    try {
+      // Get all item IDs from main index
+      const all_item_ids = await redis_connection.smembers(`${cache_key}:index`);
+      
+      for (const item_id of all_item_ids) {
+        const item_key = `${cache_key}:${item_id}`;
+        const exists = await redis_connection.exists(item_key);
+        
+        if (!exists) {
+          // Item has expired, clean up all references
+          await remove_item_completely(item_id);
+        }
+      }
+    } catch (error) {
+      console.warn(`Cache cleanup error for ${cache_name}:`, error);
+    }
+  };
+  
   const enforce_max_items = async () => {
     if (!max_items) return;
     
