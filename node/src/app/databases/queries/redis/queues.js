@@ -230,15 +230,71 @@ const queues = {
                                    this.queue.options?.cleanup?.failed_after_seconds;
       
       if (completed_after_seconds || failed_after_seconds) {
-        // Set up periodic cleanup every 5 minutes
-        const cleanup_function = this.cleanup_expired_jobs.bind(this);
+        // Set up periodic cleanup every 30 seconds
         setInterval(async () => {
           try {
-            await cleanup_function();
+            const current_time = Date.now();
+            let cleaned_count = 0;
+            
+            // Clean up completed jobs
+            if (completed_after_seconds) {
+              const completed_key = `${queue_name}:completed`;
+              const completed_jobs = await this.db.smembers(completed_key);
+              const cutoff_time = current_time - (completed_after_seconds * 1000);
+              
+              for (const job_id of completed_jobs) {
+                const job_key = `job:${job_id}`;
+                const job_data = await this.db.hgetall(job_key);
+                
+                if (job_data.completed_at) {
+                  const completed_time = new Date(job_data.completed_at).getTime();
+                  
+                  if (completed_time < cutoff_time) {
+                    // Remove job from completed set and delete job data
+                    await this.db.client.multi()
+                      .sRem(completed_key, job_id)
+                      .del(job_key)
+                      .exec();
+                    
+                    cleaned_count++;
+                  }
+                }
+              }
+            }
+            
+            // Clean up failed jobs
+            if (failed_after_seconds) {
+              const failed_key = `${queue_name}:failed`;
+              const failed_jobs = await this.db.smembers(failed_key);
+              const cutoff_time = current_time - (failed_after_seconds * 1000);
+              
+              for (const job_id of failed_jobs) {
+                const job_key = `job:${job_id}`;
+                const job_data = await this.db.hgetall(job_key);
+                
+                if (job_data.failed_at) {
+                  const failed_time = new Date(job_data.failed_at).getTime();
+                  
+                  if (failed_time < cutoff_time) {
+                    // Remove job from failed set and delete job data
+                    await this.db.client.multi()
+                      .sRem(failed_key, job_id)
+                      .del(job_key)
+                      .exec();
+                    
+                    cleaned_count++;
+                  }
+                }
+              }
+            }
+            
+            if (cleaned_count > 0) {
+              console.log(`Cleaned up ${cleaned_count} expired jobs from queue ${queue_name}`);
+            }
           } catch (error) {
             console.warn(`Error during queue cleanup for ${queue_name}:`, error);
           }
-        }, 5 * 60 * 1000); // 5 minutes
+        }, 30 * 1000); // 30 seconds
       }
     }
   },
@@ -338,76 +394,6 @@ const queues = {
     return [];
   },
 
-  cleanup_expired_jobs: async function () {
-    const queue_name = `queue_${this.queue.name}`;
-    const current_time = Date.now();
-    
-    const completed_after_seconds = this.queue.options?.cleanup?.completedAfterSeconds || 
-                                   this.queue.options?.cleanup?.completed_after_seconds;
-    
-    const failed_after_seconds = this.queue.options?.cleanup?.failedAfterSeconds || 
-                                 this.queue.options?.cleanup?.failed_after_seconds;
-    
-    let cleaned_count = 0;
-    
-    // Clean up completed jobs
-    if (completed_after_seconds) {
-      const completed_key = `${queue_name}:completed`;
-      const completed_jobs = await this.db.smembers(completed_key);
-      const cutoff_time = current_time - (completed_after_seconds * 1000);
-      
-      for (const job_id of completed_jobs) {
-        const job_key = `job:${job_id}`;
-        const job_data = await this.db.hgetall(job_key);
-        
-        if (job_data.completed_at) {
-          const completed_time = new Date(job_data.completed_at).getTime();
-          
-          if (completed_time < cutoff_time) {
-            // Remove job from completed set and delete job data
-            await this.db.client.multi()
-              .sRem(completed_key, job_id)
-              .del(job_key)
-              .exec();
-            
-            cleaned_count++;
-          }
-        }
-      }
-    }
-    
-    // Clean up failed jobs
-    if (failed_after_seconds) {
-      const failed_key = `${queue_name}:failed`;
-      const failed_jobs = await this.db.smembers(failed_key);
-      const cutoff_time = current_time - (failed_after_seconds * 1000);
-      
-      for (const job_id of failed_jobs) {
-        const job_key = `job:${job_id}`;
-        const job_data = await this.db.hgetall(job_key);
-        
-        if (job_data.failed_at) {
-          const failed_time = new Date(job_data.failed_at).getTime();
-          
-          if (failed_time < cutoff_time) {
-            // Remove job from failed set and delete job data
-            await this.db.client.multi()
-              .sRem(failed_key, job_id)
-              .del(job_key)
-              .exec();
-            
-            cleaned_count++;
-          }
-        }
-      }
-    }
-    
-    if (cleaned_count > 0) {
-      console.log(`Cleaned up ${cleaned_count} expired jobs from queue ${queue_name}`);
-    }
-    
-    return cleaned_count;
-  },
 };
 
 export default queues;
