@@ -60,16 +60,15 @@ const queues = {
     const job_key = `job:${job_id}`;
     
     // Remove from all possible sets and sorted sets
-    const multi = this.db.multi();
-    multi.del(job_key);
-    multi.zrem(`${queue_name}:scheduled`, job_id);
-    multi.srem(`${queue_name}:pending`, job_id);
-    multi.srem(`${queue_name}:running`, job_id);
-    multi.srem(`${queue_name}:completed`, job_id);
-    multi.srem(`${queue_name}:failed`, job_id);
-    multi.srem(`${queue_name}:locked:${this.machine_id}`, job_id);
-    
-    return await multi.exec();
+    return await this.db.client.multi()
+      .del(job_key)
+      .zRem(`${queue_name}:scheduled`, job_id)
+      .sRem(`${queue_name}:pending`, job_id)
+      .sRem(`${queue_name}:running`, job_id)
+      .sRem(`${queue_name}:completed`, job_id)
+      .sRem(`${queue_name}:failed`, job_id)
+      .sRem(`${queue_name}:locked:${this.machine_id}`, job_id)
+      .exec();
   },
 
   delete_incomplete_jobs_for_machine: async function () {
@@ -79,15 +78,13 @@ const queues = {
     const locked_jobs = await this.db.smembers(locked_key);
     
     if (locked_jobs.length > 0) {
-      const multi = this.db.multi();
+      let multi = this.db.client.multi();
       
       for (const job_id of locked_jobs) {
-        multi.del(`job:${job_id}`);
-        multi.srem(`${queue_name}:running`, job_id);
+        multi = multi.del(`job:${job_id}`).sRem(`${queue_name}:running`, job_id);
       }
       
-      multi.del(locked_key);
-      return await multi.exec();
+      return await multi.del(locked_key).exec();
     }
     
     return [];
@@ -150,8 +147,6 @@ const queues = {
   },
 
   get_next_job_to_run: async function () {
-    console.log('GNJTR', this.db);
-
     const queue_name = `queue_${this.queue.name}`;
     const scheduled_jobs_key = `${queue_name}:scheduled`;
     const pending_key = `${queue_name}:pending`;
@@ -185,21 +180,17 @@ const queues = {
     }
     
     // Move job to running state atomically
-    const multi = this.db.multi();
-
-    console.log('MULTI HAS NO ZREM', multi);
-    
-    multi.zrem(scheduled_jobs_key, job_id);
-    multi.srem(pending_key, job_id);
-    multi.sadd(running_key, job_id);
-    multi.sadd(locked_key, job_id);
-    multi.hset(job_key, {
-      status: 'running',
-      started_at: timestamps.get_current_time({ format: 'redis' }),
-      locked_by: String(this.machine_id),
-    });
-    
-    const results = await multi.exec();
+    const results = await this.db.client.multi()
+      .zRem(scheduled_jobs_key, job_id)
+      .sRem(pending_key, job_id)
+      .sAdd(running_key, job_id)
+      .sAdd(locked_key, job_id)
+      .hSet(job_key, {
+        status: 'running',
+        started_at: timestamps.get_current_time({ format: 'redis' }),
+        locked_by: String(this.machine_id),
+      })
+      .exec();
     
     // Parse JSON strings back to objects where needed
     const parsed_job_data = { ...job_data };
@@ -258,17 +249,16 @@ const queues = {
     
     const next_run_timestamp = next_run_at ? new Date(next_run_at).getTime() : Date.now();
     
-    const multi = this.db.multi();
-    multi.srem(running_key, job_id);
-    multi.srem(locked_key, job_id);
-    multi.zadd(scheduled_jobs_key, { score: next_run_timestamp, value: job_id });
-    multi.hset(job_key, {
-      status: 'pending',
-      next_run_at: next_run_at ? new Date(next_run_at).toISOString() : new Date().toISOString(),
-    });
-    multi.hdel(job_key, 'locked_by');
-    
-    return await multi.exec();
+    return await this.db.client.multi()
+      .sRem(running_key, job_id)
+      .sRem(locked_key, job_id)
+      .zAdd(scheduled_jobs_key, { score: next_run_timestamp, value: job_id })
+      .hSet(job_key, {
+        status: 'pending',
+        next_run_at: next_run_at ? new Date(next_run_at).toISOString() : new Date().toISOString(),
+      })
+      .hDel(job_key, 'locked_by')
+      .exec();
   },
 
   set_job_completed: async function (job_id = '') {
@@ -278,16 +268,15 @@ const queues = {
     const completed_key = `${queue_name}:completed`;
     const locked_key = `${queue_name}:locked:${this.machine_id}`;
     
-    const multi = this.db.multi();
-    multi.srem(running_key, job_id);
-    multi.srem(locked_key, job_id);
-    multi.sadd(completed_key, job_id);
-    multi.hset(job_key, {
-      status: 'completed',
-      completed_at: timestamps.get_current_time({ format: 'redis' }),
-    });
-    
-    return await multi.exec();
+    return await this.db.client.multi()
+      .sRem(running_key, job_id)
+      .sRem(locked_key, job_id)
+      .sAdd(completed_key, job_id)
+      .hSet(job_key, {
+        status: 'completed',
+        completed_at: timestamps.get_current_time({ format: 'redis' }),
+      })
+      .exec();
   },
 
   set_job_failed: async function (job_id = '', error = '') {
@@ -297,17 +286,16 @@ const queues = {
     const failed_key = `${queue_name}:failed`;
     const locked_key = `${queue_name}:locked:${this.machine_id}`;
     
-    const multi = this.db.multi();
-    multi.srem(running_key, job_id);
-    multi.srem(locked_key, job_id);
-    multi.sadd(failed_key, job_id);
-    multi.hset(job_key, {
-      status: 'failed',
-      failed_at: timestamps.get_current_time({ format: 'redis' }),
-      error: error.toString(),
-    });
-    
-    return await multi.exec();
+    return await this.db.client.multi()
+      .sRem(running_key, job_id)
+      .sRem(locked_key, job_id)
+      .sAdd(failed_key, job_id)
+      .hSet(job_key, {
+        status: 'failed',
+        failed_at: timestamps.get_current_time({ format: 'redis' }),
+        error: error.toString(),
+      })
+      .exec();
   },
 
   set_jobs_for_machine_pending: async function () {
@@ -319,7 +307,7 @@ const queues = {
     const locked_jobs = await this.db.smembers(locked_key);
     
     if (locked_jobs.length > 0) {
-      const multi = this.db.multi();
+      let multi = this.db.client.multi();
       
       for (const job_id of locked_jobs) {
         const job_key = `job:${job_id}`;
@@ -328,14 +316,14 @@ const queues = {
         const next_run_at = await this.db.hget(job_key, 'next_run_at');
         const next_run_timestamp = next_run_at ? new Date(next_run_at).getTime() : Date.now();
         
-        multi.srem(running_key, job_id);
-        multi.zadd(scheduled_jobs_key, { score: next_run_timestamp, value: job_id });
-        multi.hset(job_key, { status: 'pending' });
-        multi.hdel(job_key, 'locked_by');
+        multi = multi
+          .sRem(running_key, job_id)
+          .zAdd(scheduled_jobs_key, { score: next_run_timestamp, value: job_id })
+          .hSet(job_key, { status: 'pending' })
+          .hDel(job_key, 'locked_by');
       }
       
-      multi.del(locked_key);
-      return await multi.exec();
+      return await multi.del(locked_key).exec();
     }
     
     return [];
