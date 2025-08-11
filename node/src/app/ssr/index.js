@@ -8,6 +8,7 @@ import set_base_attributes_in_html from "./set_base_attributes_in_html.js";
 import set_head_tags_in_html from "./set_head_tags_in_html.js";
 import path_exists from "../../lib/path_exists.js";
 import get_browser_safe_user from '../accounts/get_browser_safe_user.js';
+import get_language_preference from '../../lib/get_language_preference.js';
 import escape_html from '../../lib/escape_html.js';
 import escape_ssr_data from './escape_ssr_data.js';
 
@@ -67,6 +68,7 @@ const build_html_response_for_browser = (options = {}) => {
         window.__joystick_ssr_props__ = ${JSON.stringify(escape_ssr_data(options?.props))};
         window.__joystick_url__ = ${JSON.stringify(options?.url)};
         window.__joystick_user__ = ${JSON.stringify(escape_ssr_data(get_browser_safe_user(options?.req?.context?.user)))};
+        window.__joystick_language__ = ${JSON.stringify(options?.language)};
 			</script>
 			${options?.mod_in_use && !options?.mod_tree_shaking ? `<script src="/_joystick/mod/mod.js"></script>` : ''}
 			<script type="module" src="/_joystick/utils/process.js"></script>
@@ -171,6 +173,8 @@ const ssr = async (ssr_options = {}) => {
 		}
 	}
 
+	const determined_language = get_language_preference(ssr_options?.req);
+
 	const html = build_html_response({
 		is_email: ssr_options?.is_email,
 		attributes: ssr_options?.attributes,
@@ -190,10 +194,12 @@ const ssr = async (ssr_options = {}) => {
 		email_options: ssr_options?.email_options,
 		head: ssr_options?.head,
 		html: ssr_render?.html,
+		language: determined_language,
 		props: {
 			// NOTE: Pass a theme prop to ensure this is always accessible in components even if
 			// the dev doesn't pass it manually.
 			theme: ssr_options?.mod?.theme,
+			language: determined_language,
 			...(ssr_options?.component_options?.props || {})
 		},
 		render_component_path: ssr_options?.render_component_path,
