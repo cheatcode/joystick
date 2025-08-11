@@ -13,12 +13,20 @@ const bootstrap_window = async (path_to_component = '', render_options = {}) => 
     cache: 'no-store',
   };
 
+  const cookie_data = {};
+  
+  if (render_options?.options?.user) {
+    cookie_data.joystick_login_token = render_options?.options?.user?.joystick_login_token;
+    cookie_data.joystick_login_token_expires_at = render_options?.options?.user?.joystick_login_token_expires_at;
+  }
+  
+  if (render_options?.options?.language_cookie) {
+    cookie_data.language = render_options?.options?.language_cookie;
+  }
+
   bootstrap_request_options.headers = {
     'Accept-Language': render_options?.options?.language ||  '',
-    Cookie: render_options?.options?.user ? generate_cookie_header({
-      joystick_login_token: render_options?.options?.user?.joystick_login_token,
-      joystick_login_token_expires_at: render_options?.options?.user?.joystick_login_token_expires_at,
-    }) : '',
+    Cookie: Object.keys(cookie_data).length > 0 ? generate_cookie_header(cookie_data) : '',
   };
 
   const bootstrap = await fetch(url, bootstrap_request_options).then(async (response) => response.json());

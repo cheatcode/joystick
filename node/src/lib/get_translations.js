@@ -38,11 +38,15 @@ const get_translations_file = async (language_file_path = '', language_files_pat
   return {};
 };
 
-const get_language_preference_regexes = (user_language = '', browser_languages = [], email_template_name = '') => {
+const get_language_preference_regexes = (user_language = '', cookie_language = '', browser_languages = [], email_template_name = '') => {
   let language_preferences = [];
 
   if (user_language) {
     language_preferences.push(user_language);
+  }
+
+  if (cookie_language) {
+    language_preferences.push(cookie_language);
   }
 
   const filtered_browser_languages = browser_languages?.filter((language) => {
@@ -98,8 +102,10 @@ const get_translations = async (get_translations_options = {}) => {
     get_translations_options?.language_files;
 
   const browser_languages = get_translations_options?.is_email ? [] : parse_browser_languages(get_translations_options?.req?.headers['accept-language']);
+  const cookie_language = get_translations_options?.req?.cookies?.language;
   const language_preferences = get_language_preference_regexes(
     get_translations_options?.req?.context?.user?.language,
+    cookie_language,
     browser_languages,
     get_translations_options?.email_template_name
   );
