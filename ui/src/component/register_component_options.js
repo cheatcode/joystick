@@ -1,3 +1,4 @@
+import Cookies from 'js-cookie';
 import compile_default_props from './props/compile_default.js';
 import compile_methods from './methods/compile.js';
 import compile_props from './props/compile.js';
@@ -53,6 +54,9 @@ const register_component_options = (component_instance = {}, component_options =
   if (typeof window !== 'undefined' && component_options?.websockets && types.is_function(component_options?.websockets)) {
   	register_websockets_on_component(component_options, component_instance);
   }
+
+	// NOTE: Load last to ensure component render is prioritized.
+	component_instance.cookies = Cookies;
 };
 
 export default register_component_options;
