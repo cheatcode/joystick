@@ -1,7 +1,7 @@
 {
   "version": 3,
   "sources": ["../../../src/lib/development_server/ava_config.js"],
-  "sourcesContent": ["const ava_config = {\n  files: [\n    `tests/**/*.test.js`,\n  ],\n  ignoredByWatcher: ['.joystick', './uploads'],\n  // NOTE: Intentionally limit to 1 test at a time to avoid concurrency creating\n  // race conditions in tests that have users or other global data that needs\n  // to be cleaned up. The extra time needed is worth it to guarantee that tests\n  // don't step on each other's toes and our code is properly verified.\n  concurrency: 1,\n  cache: false,\n};\n\nexport default ava_config;"],
-  "mappings": "AAAA,MAAMA,EAAa,CACjB,MAAO,CACL,oBACF,EACA,iBAAkB,CAAC,YAAa,WAAW,EAK3C,YAAa,EACb,MAAO,EACT,EAEA,IAAOC,EAAQD",
+  "sourcesContent": ["const ava_config = {\n  files: [\n    `tests/**/*.test.js`,\n  ],\n  watchMode: {\n    ignoreChanges: ['.joystick', './uploads'],\n  },\n  // NOTE: Intentionally limit to 1 test at a time to avoid concurrency creating\n  // race conditions in tests that have users or other global data that needs\n  // to be cleaned up. The extra time needed is worth it to guarantee that tests\n  // don't step on each other's toes and our code is properly verified.\n  concurrency: 1,\n  cache: false,\n};\n\nexport default ava_config;\n"],
+  "mappings": "AAAA,MAAMA,EAAa,CACjB,MAAO,CACL,oBACF,EACA,UAAW,CACT,cAAe,CAAC,YAAa,WAAW,CAC1C,EAKA,YAAa,EACb,MAAO,EACT,EAEA,IAAOC,EAAQD",
   "names": ["ava_config", "ava_config_default"]
 }
