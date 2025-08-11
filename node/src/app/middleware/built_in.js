@@ -117,6 +117,14 @@ const get_middleware_groups = (options = {}) => {
     { path: '/css', middleware: express.static('css') },
 
     cookieParser(),
+    (req = {}, res = {}, next) => {
+      if (!req?.cookies?.theme) {
+        // NOTE: Set a default theme for the visitor if they don't have one set.
+        res.cookie('theme', 'light');        
+      }
+
+      next();
+    },
     body_parser(options?.middleware_config?.bodyParser),
     cors(options?.middleware_config?.cors, options?.port),
     request_methods_middleware,
