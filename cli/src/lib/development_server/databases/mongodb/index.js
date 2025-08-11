@@ -49,11 +49,17 @@ const start_mongodb_process = (mongodb_port = 2610) => {
 
     console.log(`Starting MongoDB with command: ${joystick_mongod_path}`);
     console.log(`MongoDB arguments:`, database_process_flags);
+    console.log(`Architecture: ${architecture}`);
+    console.log(`Base path: ${joystick_mongodb_base_path}`);
+    console.log(`Command: ${mongo_server_command}`);
+    console.log(`Full path exists: ${fs.existsSync(joystick_mongod_path)}`);
 
     const database_process = child_process.spawn(
       joystick_mongod_path,
       database_process_flags.filter((command) => !!command),
     );
+
+    console.log(`Spawned process with PID: ${database_process.pid}`);
 
     // Add error handler for spawn failures
     database_process.on('error', (error) => {
