@@ -229,7 +229,7 @@ class App {
 						if (await path_exists(index_file_path)) {
 							try {
 								const component = await dynamic_import(index_file_path);
-								const relative_path = index_file_path.replace(`${joystick_build_path}/`, '');
+								const relative_path = index_file_path.replace(`${joystick_build_path}`, '');
 								
 								process._joystick_components[relative_path] = component;
 							} catch (error) {
@@ -244,9 +244,9 @@ class App {
 		};
 
 		const component_directories = [
-			`${joystick_build_path}/ui/components`,
-			`${joystick_build_path}/ui/layouts`,
-			`${joystick_build_path}/ui/pages`
+			`${joystick_build_path}ui/components`,
+			`${joystick_build_path}ui/layouts`,
+			`${joystick_build_path}ui/pages`
 		];
 
 		for (const directory_path of component_directories) {
