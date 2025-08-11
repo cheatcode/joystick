@@ -27,7 +27,7 @@ const get_mongo_server_command = () => {
 };
 
 const start_mongodb_process = (mongodb_port = 2610) => {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     const mongo_server_command = get_mongo_server_command();
     const architecture = get_architecture();
     const joystick_mongodb_base_path = path.join(os.homedir(), '.joystick', 'databases', 'mongodb', architecture);
@@ -42,10 +42,26 @@ const start_mongodb_process = (mongodb_port = 2610) => {
       `joystick_${mongodb_port}`,
     ];
 
+    // Check if the MongoDB binary exists before trying to spawn it
+    if (!fs.existsSync(joystick_mongod_path)) {
+      return reject(new Error(`MongoDB binary not found at ${joystick_mongod_path}. Please ensure MongoDB is properly installed.`));
+    }
+
+    console.log(`Starting MongoDB with command: ${joystick_mongod_path}`);
+    console.log(`MongoDB arguments:`, database_process_flags);
+
     const database_process = child_process.spawn(
       joystick_mongod_path,
       database_process_flags.filter((command) => !!command),
     );
+
+    // Add error handler for spawn failures
+    database_process.on('error', (error) => {
+      console.error(`Failed to start MongoDB process: ${error.message}`);
+      console.error(`Binary path: ${joystick_mongod_path}`);
+      console.error(`Error code: ${error.code}`);
+      reject(error);
+    });
 
     database_process.stdout.on('data', async (data) => {
       const stdout = data?.toString();
