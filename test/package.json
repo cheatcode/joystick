@@ -1,7 +1,7 @@
 {
-  "name": "@joystick.js/test",
+  "name": "@joystick.js/test-canary",
   "type": "module",
-  "version": "1.0.0-rc.1",
+  "version": "0.0.0-canary.2116",
   "canary_version": "0.0.0-canary.2116",
   "description": "The testing framework for Joystick.",
   "main": "./dist/index.js",
