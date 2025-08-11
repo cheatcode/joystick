@@ -98,6 +98,7 @@ const render = async (path_to_component = '', render_options = {}) => {
   const component = global.joystick.mount(layout_to_render || component_to_render, props, dom?.document.querySelector('#app'));
 
   const render_to_html = () => {
+    console.log('rth component', component);
     const html = component?.render_to_html();
     const when_regex = new RegExp('<when>|</when>', 'g');
     return html?.replace(when_regex, '')?.replace(/\n|\t/g, ' ')?.replace(/> *</g, '><');
