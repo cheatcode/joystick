@@ -87,6 +87,7 @@ const render = async (path_to_component = '', render_options = {}) => {
   // Joystick component files.
   const component_to_render = await load(path_to_component, { default: true });
   const layout_to_render = render_options?.layout ? await load(render_options?.layout, { default: true }) : null;
+
   const props = {
     ...(render_options?.props || {}),
   };
@@ -96,6 +97,10 @@ const render = async (path_to_component = '', render_options = {}) => {
   }
   
   const component = global.joystick.mount(layout_to_render || component_to_render, props, dom?.document.querySelector('#app'));
+
+  if (render_options?.state) {
+    component.state = render_options?.state;
+  }
 
   const render_to_html = () => {
     const html = component?.render_to_html();
