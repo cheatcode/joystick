@@ -53,7 +53,6 @@ const load_dom = () => {
       <head></head>
       <body>
         <div id="app"></div>
-        <meta name="csrf" content="joystick_test" />
       </body>
     </html>
   `);
