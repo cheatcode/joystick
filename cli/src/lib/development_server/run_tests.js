@@ -46,174 +46,39 @@ const handle_ava_stdio = (ava = {}, run_tests_options = {}) => {
 
 const run_tests_integrated = (run_tests_options = {}) => {
   const ava_path = `${process.cwd()}/node_modules/.bin/ava`;
+  const tap_reporter_path = `${run_tests_options?.__dirname}/tap_reporter.js`;
   
   return new Promise((resolve, reject) => {
-    // NOTE: Store original process.exit to restore later
-    const original_exit = process.exit;
-    const original_listeners = process.listeners('exit');
+    console.log('\nRunning tests...\n');
     
-    // NOTE: Override process.exit to prevent ava from exiting the parent process
-    process.exit = (code) => {
-      // NOTE: Don't actually exit, just return
-      return;
-    };
-
-    // NOTE: Remove any existing exit listeners that might cause issues
-    process.removeAllListeners('exit');
-
-    // NOTE: Run ava directly and handle TAP output inline to avoid process exit issues
-    const ava = child_process.spawn(ava_path, [
-      '--config', `${run_tests_options?.__dirname}/ava_config.js`,
-      '--tap'
-    ], {
+    // NOTE: Run without watch mode and use TAP reporter for integrated output
+    const command = `${ava_path} --config ${run_tests_options?.__dirname}/ava_config.js --tap | node ${tap_reporter_path}`;
+    
+    const ava = child_process.exec(command, {
       env: {
         ...(process.env),
         databases: process.databases,
         FORCE_COLOR: "1"
       }
-    });
-
-    // NOTE: Import and use the tap reporter functionality directly
-    let buffer = '';
-    let passed = 0;
-    let failed = 0;
-    let pending_fail = null;
-    let in_diag = false;
-    let diag_lines = [];
-    const start_ns = process.hrtime.bigint();
-
-    const green = (s) => `\x1b[32m${s}\x1b[0m`;
-    const red = (s) => `\x1b[31m${s}\x1b[0m`;
-    const gray = (s) => `\x1b[90m${s}\x1b[0m`;
-
-    const parse_title = (line) => {
-      const ok_match = line.match(/^ok\s+\d+\s+(.*)$/);
-      if (ok_match)
-        return { status: 'ok', title: ok_match[1].trim().replace(/^- /, '') };
-      const not_ok_match = line.match(/^not ok\s+\d+\s+(.*)$/);
-      if (not_ok_match)
-        return {
-          status: 'not_ok',
-          title: not_ok_match[1].trim().replace(/^- /, ''),
-        };
-      return null;
-    };
-
-    const print_pass = (title) => {
-      process.stdout.write(`${green('✔')} ${title}\n`);
-    };
-
-    const print_fail = (title, detail) => {
-      process.stdout.write(`\n${red('-!-')}\n`);
-      process.stdout.write(`\n${red('✖')} ${title}\n\n`);
-      process.stdout.write(`${red('Error:')}\n\n`);
-      if (detail && detail.trim()) {
-        process.stdout.write(`  ${detail.trim()}\n\n`);
+    }, (error, stdout, stderr) => {
+      if (error) {
+        // NOTE: Don't reject on test failures, just resolve
+        resolve();
       } else {
-        process.stdout.write(`  (no stack trace)\n\n`);
+        resolve();
       }
-      process.stdout.write(`${red('-!-')}\n\n`);
-    };
-
-    const handle_line = (raw_line) => {
-      const line = raw_line.replace(/\r$/, '');
-      if (!line) return;
-
-      if (in_diag) {
-        if (line.trim() === '...') {
-          print_fail(pending_fail?.title || '(unknown)', diag_lines.join('\n'));
-          failed += 1;
-          pending_fail = null;
-          in_diag = false;
-          diag_lines = [];
-          return;
-        }
-        diag_lines.push(line);
-        return;
-      }
-
-      if (/^\s*---\s*$/.test(line) && pending_fail) {
-        in_diag = true;
-        diag_lines = [];
-        return;
-      }
-
-      const parsed = parse_title(line);
-      if (parsed) {
-        if (parsed.status === 'ok') {
-          passed += 1;
-          print_pass(parsed.title);
-        } else if (parsed.status === 'not_ok') {
-          pending_fail = { title: parsed.title };
-        }
-        return;
-      }
-    };
-
-    // NOTE: Process ava stdout (TAP output)
-    ava.stdout.on('data', (chunk) => {
-      buffer += chunk.toString();
-      const parts = buffer.split('\n');
-      buffer = parts.pop() || '';
-      for (const part of parts) handle_line(part);
     });
 
-    // NOTE: Handle ava stderr directly
+    // NOTE: Stream output directly to console for integrated experience
+    ava.stdout.on('data', (data) => {
+      process.stdout.write(data);
+    });
+
     ava.stderr.on('data', (data) => {
       const stderr_string = data.toString();
       if (!stderr_string.includes('Using configuration')) {
         process.stderr.write(data);
       }
-    });
-
-    // NOTE: Handle process exit without propagating to parent
-    ava.on('exit', (code, signal) => {
-      // NOTE: Restore original process.exit and listeners
-      process.exit = original_exit;
-      original_listeners.forEach(listener => process.on('exit', listener));
-
-      // NOTE: Process any remaining buffer
-      if (buffer.trim()) {
-        handle_line(buffer);
-      }
-
-      // NOTE: Handle any pending failures
-      if (pending_fail) {
-        print_fail(pending_fail.title, diag_lines.join('\n'));
-        failed += 1;
-      }
-
-      // NOTE: Print summary
-      const end_ns = process.hrtime.bigint();
-      const duration_ms = Number(end_ns - start_ns) / 1e6;
-      const duration_str =
-        duration_ms < 1000
-          ? `${duration_ms.toFixed(0)} ms`
-          : duration_ms < 60000
-          ? `${(duration_ms / 1000).toFixed(2)} s`
-          : `${Math.floor(duration_ms / 60000)}m ${(
-              (duration_ms % 60000) /
-              1000
-            ).toFixed(2)}s`;
-
-      process.stdout.write(
-        `\n${gray('===')}\n\n${green('Passed:')} ${passed}\n${red(
-          'Failed:'
-        )} ${failed}\n${gray('Duration:')} ${duration_str}\n\n`
-      );
-
-      // NOTE: Always resolve, never reject - we want to keep servers running
-      resolve();
-    });
-
-    // NOTE: Handle any errors without crashing parent process
-    ava.on('error', (error) => {
-      // NOTE: Restore original process.exit and listeners on error
-      process.exit = original_exit;
-      original_listeners.forEach(listener => process.on('exit', listener));
-      
-      console.error('Test runner error:', error.message);
-      resolve();
     });
   });
 };

@@ -437,17 +437,58 @@ const development_server = async (development_server_options = {}) => {
       await kill_port_process(1977);
     }
 
-    // NOTE: Start test server in parallel using the same development_server function
-    // but with different options to avoid recursion and environment conflicts
+    // NOTE: Start test server directly without recursive development_server call
     setTimeout(async () => {
       try {
-        await development_server({
+        // NOTE: Set up test environment variables
+        const original_env = process.env.NODE_ENV;
+        const original_port = process.env.PORT;
+        
+        process.env.NODE_ENV = 'test';
+        process.env.PORT = 1977;
+        
+        // NOTE: Start test databases
+        const test_settings = await load_settings('test');
+        await start_databases({
           environment: 'test',
           port: 1977,
-          watch: false, // No file watching for test server
-          imports: development_server_options?.imports || [],
-          _is_test_server: true, // Internal flag to prevent infinite recursion
+          settings: test_settings
         });
+        
+        // NOTE: Start test app server directly
+        const test_app_server = start_app_server(node_major_version, false, development_server_options?.imports || []);
+        process_ids.push(test_app_server?.pid);
+        
+        // NOTE: Handle test server stdio without integrated tests to avoid recursion
+        test_app_server.external_process_ids = [];
+        
+        test_app_server.on('message', (message_from_child) => {
+          if (message_from_child?.external_process_id) {
+            test_app_server.external_process_ids = [
+              ...(test_app_server.external_process_ids || []),
+              message_from_child?.external_process_id,
+            ];
+            // NOTE: Also track external process IDs for cleanup
+            process_ids.push(message_from_child?.external_process_id);
+          }
+        });
+        
+        test_app_server.on('error', (error) => {
+          // NOTE: Suppress test server errors to avoid noise
+        });
+        
+        test_app_server.stdout.on("data", async (data) => {
+          // NOTE: Suppress test server output to avoid noise
+        });
+        
+        test_app_server.stderr.on("data", (data) => {
+          // NOTE: Suppress test server errors to avoid noise
+        });
+        
+        // NOTE: Restore original environment
+        process.env.NODE_ENV = original_env;
+        process.env.PORT = original_port;
+        
       } catch (error) {
         console.error('Error starting test server:', error);
       }
