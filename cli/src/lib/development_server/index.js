@@ -44,6 +44,12 @@ let test_server_ready = false;
 
 const check_and_run_tests = async () => {
   if (main_server_ready && test_server_ready) {
+    // NOTE: Only run tests once per readiness cycle
+    if (check_and_run_tests.running) {
+      return;
+    }
+    check_and_run_tests.running = true;
+    
     // NOTE: Add 2s delay to ensure both servers are fully ready
     setTimeout(async () => {
       console.log('Running tests...');
@@ -53,6 +59,8 @@ const check_and_run_tests = async () => {
         });
       } catch (error) {
         console.error('Error running integrated tests:', error);
+      } finally {
+        check_and_run_tests.running = false;
       }
     }, 2000);
   }
@@ -92,6 +100,7 @@ const stop_test_server = () => {
 const reset_server_readiness = () => {
   main_server_ready = false;
   test_server_ready = false;
+  check_and_run_tests.running = false;
 };
 
 const handle_run_tests = async (watch = false) => {
@@ -305,18 +314,13 @@ const handle_app_server_process_stdio = (watch = false, run_integrated_tests = f
       console.log(stdout);
     }
 
-    // NOTE: For test server, don't run the standalone test runner - just mark as ready
-    if (stdout && is_startup_notification && process.env.NODE_ENV === 'test') {
-      // NOTE: Test server is ready, but don't run tests here - they'll be run by the integrated runner
-    }
-
     // NOTE: Mark main server as ready when --tests flag is used
     if (stdout && is_startup_notification && run_integrated_tests && process.env.NODE_ENV !== 'test') {
       main_server_ready = true;
       check_and_run_tests();
     }
 
-    // NOTE: Mark test server as ready when it starts up
+    // NOTE: Mark test server as ready when it starts up (but don't run standalone tests)
     if (stdout && is_startup_notification && process.env.NODE_ENV === 'test') {
       test_server_ready = true;
       check_and_run_tests();
@@ -355,11 +359,6 @@ const set_process_variables = (development_server_options = {}, port = 2600) => 
   process.title = development_server_options?.environment === 'test' ? "joystick_test" : 'joystick';
   process.project_folder = path.basename(process.cwd());
   process.loader = new Loader();
-
-  if (development_server_options?.environment === 'test') {
-    console.log(''); // NOTE: Silly, but gives us better styling.
-    process.loader.print("Initializing test environment...\n");
-  }
 
   process.env.LOGS_PATH = development_server_options?.logs || null;
   process.env.NODE_ENV = development_server_options?.environment || "development";
