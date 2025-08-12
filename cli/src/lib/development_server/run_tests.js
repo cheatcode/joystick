@@ -49,30 +49,64 @@ const run_tests_integrated = (run_tests_options = {}) => {
   const tap_reporter_path = `${run_tests_options?.__dirname}/tap_reporter.js`;
   
   return new Promise((resolve, reject) => {
-    // NOTE: Run without watch mode and use TAP reporter for integrated output
-    const command = `${ava_path} --config ${run_tests_options?.__dirname}/ava_config.js --tap | node ${tap_reporter_path}`;
-    
-    const ava = child_process.exec(command, {
+    // NOTE: Run ava directly and spawn tap reporter separately to avoid shell exit propagation
+    const ava = child_process.spawn(ava_path, [
+      '--config', `${run_tests_options?.__dirname}/ava_config.js`,
+      '--tap'
+    ], {
       env: {
         ...(process.env),
         databases: process.databases,
         FORCE_COLOR: "1"
       }
-    }, (error, stdout, stderr) => {
-      // NOTE: Always resolve, never reject - we want to keep servers running
-      resolve();
     });
 
-    // NOTE: Stream output directly to console for integrated experience
-    ava.stdout.on('data', (data) => {
+    const tap_reporter = child_process.spawn('node', [tap_reporter_path], {
+      env: {
+        ...(process.env),
+        FORCE_COLOR: "1"
+      }
+    });
+
+    // NOTE: Pipe ava output to tap reporter
+    ava.stdout.pipe(tap_reporter.stdin);
+    
+    // NOTE: Stream tap reporter output to console
+    tap_reporter.stdout.on('data', (data) => {
       process.stdout.write(data);
     });
 
+    tap_reporter.stderr.on('data', (data) => {
+      process.stderr.write(data);
+    });
+
+    // NOTE: Handle ava stderr directly (before piping to tap reporter)
     ava.stderr.on('data', (data) => {
       const stderr_string = data.toString();
       if (!stderr_string.includes('Using configuration')) {
         process.stderr.write(data);
       }
+    });
+
+    // NOTE: Handle process exits without propagating to parent
+    ava.on('exit', (code, signal) => {
+      tap_reporter.stdin.end();
+    });
+
+    tap_reporter.on('exit', (code, signal) => {
+      // NOTE: Always resolve, never reject - we want to keep servers running
+      resolve();
+    });
+
+    // NOTE: Handle any errors without crashing parent process
+    ava.on('error', (error) => {
+      console.error('Test runner error:', error.message);
+      resolve();
+    });
+
+    tap_reporter.on('error', (error) => {
+      console.error('TAP reporter error:', error.message);
+      resolve();
     });
   });
 };

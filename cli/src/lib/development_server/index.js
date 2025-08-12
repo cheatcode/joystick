@@ -490,7 +490,7 @@ const development_server = async (development_server_options = {}) => {
           } catch (error) {
             console.error('Error running tests after file change:', error);
           }
-        }, 1000);
+        }, 2000);
       } : null,
     }, {
       excluded_paths: settings?.config?.build?.excluded_paths,
