@@ -420,6 +420,23 @@ const development_server = async (development_server_options = {}) => {
     settings
   });
 
+  // NOTE: If tests flag is enabled, start a separate test server on port 1977
+  if (development_server_options?.tests) {
+    const test_port_occupied = await check_if_port_occupied(1977);
+    if (test_port_occupied) {
+      await kill_port_process(1977);
+    }
+
+    // NOTE: Start test server in parallel
+    development_server({
+      environment: 'test',
+      port: 1977,
+      watch: false, // Don't watch for the test server
+    }).catch((error) => {
+      console.error('Error starting test server:', error);
+    });
+  }
+
   watch_for_changes({
     hot_module_reload: (jobs = []) => handle_signal_hmr_update(jobs),
     restart_app_server: () => handle_restart_app_server(
