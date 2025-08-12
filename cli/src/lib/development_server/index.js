@@ -195,7 +195,7 @@ const handle_restart_app_server = async (node_major_version = 0, watch = false, 
   }, 300);
 };
 
-const handle_app_server_process_stdio = (watch = false, run_integrated_tests = false) => {
+const handle_app_server_process_stdio = (watch = false, run_integrated_tests = false, is_test_server = false) => {
   // NOTE: Default this in case we never get any external process IDs.
   process.app_server_process.external_process_ids = [];
 
@@ -209,16 +209,24 @@ const handle_app_server_process_stdio = (watch = false, run_integrated_tests = f
   });
 
   process.app_server_process.on('error', (error) => {
-    cli_log(error.toString(), {
-      level: "danger",
-      docs: "https://github.com/cheatcode/joystick",
-    });
+    if (!is_test_server) {
+      cli_log(error.toString(), {
+        level: "danger",
+        docs: "https://github.com/cheatcode/joystick",
+      });
+    }
   });
 
   process.app_server_process.stdout.on("data", async (data) => {
   	const stdout = data.toString();
     const is_startup_notification = stdout.includes("App running at:");
 
+    // NOTE: Suppress all test server output
+    if (is_test_server) {
+      return;
+    }
+
+    // NOTE: Main server output handling
   	if (stdout && is_startup_notification && process.env.NODE_ENV !== 'test') {
   		process.loader.print(stdout);
   	}
@@ -249,17 +257,19 @@ const handle_app_server_process_stdio = (watch = false, run_integrated_tests = f
   });
 
   process.app_server_process.stderr.on("data", (data) => {
-    cli_log(data.toString(), {
-      level: "danger",
-      docs: "https://cheatcode.co/docs/joystick",
-    });
+    if (!is_test_server) {
+      cli_log(data.toString(), {
+        level: "danger",
+        docs: "https://cheatcode.co/docs/joystick",
+      });
+    }
   });
 };
 
-const handle_start_app_server = (node_major_version = 0, watch = false, imports = [], run_integrated_tests = false) => {
+const handle_start_app_server = (node_major_version = 0, watch = false, imports = [], run_integrated_tests = false, is_test_server = false) => {
 	process.app_server_process = start_app_server(node_major_version, watch, imports);
   process_ids.push(process.app_server_process?.pid);
-  handle_app_server_process_stdio(watch, run_integrated_tests);
+  handle_app_server_process_stdio(watch, run_integrated_tests, is_test_server);
   process.app_server_restarting = false;
 };
 
@@ -421,63 +431,83 @@ const development_server = async (development_server_options = {}) => {
   });
 
   // NOTE: If tests flag is enabled, start a separate test server on port 1977
-  if (development_server_options?.tests) {
+  if (development_server_options?.tests && development_server_options?.environment !== 'test') {
     const test_port_occupied = await check_if_port_occupied(1977);
     if (test_port_occupied) {
       await kill_port_process(1977);
     }
 
-    // NOTE: Start test server in parallel
-    development_server({
-      environment: 'test',
-      port: 1977,
-      watch: false, // Don't watch for the test server
-    }).catch((error) => {
-      console.error('Error starting test server:', error);
-    });
+    // NOTE: Start test server in parallel using the same development_server function
+    // but with different options to avoid recursion and environment conflicts
+    setTimeout(async () => {
+      try {
+        await development_server({
+          environment: 'test',
+          port: 1977,
+          watch: false, // No file watching for test server
+          imports: development_server_options?.imports || [],
+          _is_test_server: true, // Internal flag to prevent infinite recursion
+        });
+      } catch (error) {
+        console.error('Error starting test server:', error);
+      }
+    }, 100); // Small delay to let main server start first
   }
 
-  watch_for_changes({
-    hot_module_reload: (jobs = []) => handle_signal_hmr_update(jobs),
-    restart_app_server: () => handle_restart_app_server(
+  // NOTE: Only set up file watching for non-test servers
+  if (!development_server_options?._is_test_server) {
+    watch_for_changes({
+      hot_module_reload: (jobs = []) => handle_signal_hmr_update(jobs),
+      restart_app_server: () => handle_restart_app_server(
+        node_major_version,
+        development_server_options?.watch,
+        settings,
+        development_server_options?.imports,
+        development_server_options?.tests,
+      ),
+      start_app_server: () => handle_start_app_server(
+        node_major_version,
+        development_server_options?.watch,
+        development_server_options?.imports,
+        development_server_options?.tests,
+        development_server_options?._is_test_server,
+      ),
+      start_hmr_server: development_server_options?.environment !== 'test' ? () => handle_start_hmr_server(
+        node_major_version,
+        __dirname,
+        development_server_options?.watch,
+        settings,
+        development_server_options?.imports,
+        development_server_options?.tests,
+      ) : null,
+      run_tests: development_server_options?.tests ? async () => {
+        // NOTE: Add delay to avoid jarring UX when test files change
+        setTimeout(async () => {
+          try {
+            await run_tests_integrated({
+              __dirname,
+            });
+          } catch (error) {
+            console.error('Error running tests after file change:', error);
+          }
+        }, 1000);
+      } : null,
+    }, {
+      excluded_paths: settings?.config?.build?.excluded_paths,
+      custom_copy_paths: settings?.config?.build?.copy_paths?.map((path) => {
+        return { path };
+      }) || [],
+    });
+  } else {
+    // NOTE: For test server, just start the app server without file watching
+    handle_start_app_server(
       node_major_version,
-      development_server_options?.watch,
-      settings,
-      development_server_options?.imports,
-      development_server_options?.tests,
-    ),
-    start_app_server: () => handle_start_app_server(
-      node_major_version,
-      development_server_options?.watch,
-      development_server_options?.imports,
-      development_server_options?.tests,
-    ),
-    start_hmr_server: development_server_options?.environment !== 'test' ? () => handle_start_hmr_server(
-      node_major_version,
-      __dirname,
-      development_server_options?.watch,
-      settings,
-      development_server_options?.imports,
-      development_server_options?.tests,
-    ) : null,
-    run_tests: development_server_options?.tests ? async () => {
-      // NOTE: Add delay to avoid jarring UX when test files change
-      setTimeout(async () => {
-        try {
-          await run_tests_integrated({
-            __dirname,
-          });
-        } catch (error) {
-          console.error('Error running tests after file change:', error);
-        }
-      }, 1000);
-    } : null,
-  }, {
-    excluded_paths: settings?.config?.build?.excluded_paths,
-    custom_copy_paths: settings?.config?.build?.copy_paths?.map((path) => {
-      return { path };
-    }) || [],
-  });
+      false, // No file watching for test server
+      development_server_options?.imports || [],
+      false, // No integrated tests for test server
+      true, // This is a test server
+    );
+  }
 
   handle_signal_events(process_ids, node_major_version, __dirname);
 };
