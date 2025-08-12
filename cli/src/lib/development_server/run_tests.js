@@ -51,11 +51,13 @@ const run_tests = (run_tests_options = {}) => {
   // exist for the CLI here because a developer has to install @joystick.js/test which will
   // add Ava as a dependency to their app in order to write tests.
   const ava_path = `${process.cwd()}/node_modules/.bin/ava`;
+  const tap_reporter_path = `${run_tests_options?.__dirname}/tap_reporter.js`;
   
   return new Promise((resolve) => {
     // NOTE: Despite using the app's node_modules path to reference Ava, we still want to reference
     // the internal path here for the default test config in /lib/dev/tests.config.js.
-    const ava = child_process.exec(`DEBUG=ava:watcher && ${ava_path} --config ${run_tests_options?.__dirname}/ava_config.js ${run_tests_options?.watch ? '--watch' : ''}`, {
+    // Use TAP output and pipe to custom reporter
+    const ava = child_process.exec(`DEBUG=ava:watcher && ${ava_path} --config ${run_tests_options?.__dirname}/ava_config.js --tap ${run_tests_options?.watch ? '--watch' : ''} | node ${tap_reporter_path}`, {
       stdio: 'inherit',
       env: {
         ...(process.env),
@@ -81,4 +83,3 @@ const run_tests = (run_tests_options = {}) => {
 };
 
 export default run_tests;
-
