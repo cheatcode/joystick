@@ -37,72 +37,6 @@ const __dirname = dirname(__filename);
 
 const process_ids = [];
 
-// NOTE: Global test server process tracking and server readiness state
-let test_server_process = null;
-let main_server_ready = false;
-let test_server_ready = false;
-
-const check_and_run_tests = async () => {
-  if (main_server_ready && test_server_ready) {
-    // NOTE: Only run tests once per readiness cycle
-    if (check_and_run_tests.running) {
-      return;
-    }
-    check_and_run_tests.running = true;
-    
-    // NOTE: Add 2s delay to ensure both servers are fully ready
-    setTimeout(async () => {
-      console.log('Running tests...');
-      try {
-        await run_tests_integrated({
-          __dirname,
-        });
-      } catch (error) {
-        console.error('Error running integrated tests:', error);
-      } finally {
-        check_and_run_tests.running = false;
-      }
-    }, 2000);
-  }
-};
-
-const start_test_server = async (development_server_options = {}) => {
-  const test_port_occupied = await check_if_port_occupied(1977);
-  if (test_port_occupied) {
-    await kill_port_process(1977);
-  }
-
-  // NOTE: Start test server using the same development_server function
-  // but with different options to avoid recursion and environment conflicts
-  setTimeout(async () => {
-    try {
-      await development_server({
-        environment: 'test',
-        port: 1977,
-        watch: false, // No file watching for test server
-        imports: development_server_options?.imports || [],
-        _is_test_server: true, // Internal flag to prevent infinite recursion
-      });
-    } catch (error) {
-      console.error('Error starting test server:', error);
-    }
-  }, 100); // Small delay to let main server start first
-};
-
-const stop_test_server = () => {
-  if (test_server_process) {
-    test_server_process.kill();
-    test_server_process = null;
-  }
-  test_server_ready = false;
-};
-
-const reset_server_readiness = () => {
-  main_server_ready = false;
-  test_server_ready = false;
-  check_and_run_tests.running = false;
-};
-
 const handle_run_tests = async (watch = false) => {
   const database_process_ids = get_database_process_ids();
   await run_tests({
@@ -251,25 +185,12 @@ const handle_restart_app_server = async (node_major_version = 0, watch = false, 
 
       process.exit(0);
     } else {
-      // NOTE: Reset server readiness states when restarting
-      if (run_integrated_tests) {
-        reset_server_readiness();
-        stop_test_server();
-      }
-
       kill_process_ids([
         ...(process.app_server_process.external_process_ids || []),
       ]);
 
       await kill_port_process(process.env.PORT);
       handle_start_app_server(node_major_version, watch, imports, run_integrated_tests);
-
-      // NOTE: Restart test server if tests are enabled
-      if (run_integrated_tests) {
-        await start_test_server({
-          imports: imports || [],
-        });
-      }
     }
   }, 300);
 };
@@ -314,16 +235,24 @@ const handle_app_server_process_stdio = (watch = false, run_integrated_tests = f
       console.log(stdout);
     }
 
-    // NOTE: Mark main server as ready when --tests flag is used
-    if (stdout && is_startup_notification && run_integrated_tests && process.env.NODE_ENV !== 'test') {
-      main_server_ready = true;
-      check_and_run_tests();
+    // NOTE: Run tests here so we can guarantee app server is running. Do a slight delay
+    // to ensure that test routes are registered.
+    if (stdout && is_startup_notification && process.env.NODE_ENV === 'test') {
+      handle_run_tests(watch);
     }
 
-    // NOTE: Mark test server as ready when it starts up (but don't run standalone tests)
-    if (stdout && is_startup_notification && process.env.NODE_ENV === 'test') {
-      test_server_ready = true;
-      check_and_run_tests();
+    // NOTE: Run integrated tests when --tests flag is used and server has started
+    if (stdout && is_startup_notification && run_integrated_tests && process.env.NODE_ENV !== 'test') {
+      // NOTE: Add delay to avoid jarring UX and ensure server is fully ready
+      setTimeout(async () => {
+        try {
+          await run_tests_integrated({
+            __dirname,
+          });
+        } catch (error) {
+          console.error('Error running integrated tests:', error);
+        }
+      }, 2000);
     }
   });
 
@@ -359,6 +288,11 @@ const set_process_variables = (development_server_options = {}, port = 2600) => 
   process.title = development_server_options?.environment === 'test' ? "joystick_test" : 'joystick';
   process.project_folder = path.basename(process.cwd());
   process.loader = new Loader();
+
+  if (development_server_options?.environment === 'test') {
+    console.log(''); // NOTE: Silly, but gives us better styling.
+    process.loader.print("Initializing test environment...\n");
+  }
 
   process.env.LOGS_PATH = development_server_options?.logs || null;
   process.env.NODE_ENV = development_server_options?.environment || "development";
@@ -496,13 +430,29 @@ const development_server = async (development_server_options = {}) => {
     settings
   });
 
-  // NOTE: Start test server if tests flag is enabled and this is not already a test server
-  if (development_server_options?.tests && development_server_options?.environment !== 'test' && !development_server_options?._is_test_server) {
-    await start_test_server({
-      imports: development_server_options?.imports || [],
-    });
-  }
+  // NOTE: If tests flag is enabled, start a separate test server on port 1977
+  if (development_server_options?.tests && development_server_options?.environment !== 'test') {
+    const test_port_occupied = await check_if_port_occupied(1977);
+    if (test_port_occupied) {
+      await kill_port_process(1977);
+    }
 
+    // NOTE: Start test server in parallel using the same development_server function
+    // but with different options to avoid recursion and environment conflicts
+    setTimeout(async () => {
+      try {
+        await development_server({
+          environment: 'test',
+          port: 1977,
+          watch: false, // No file watching for test server
+          imports: development_server_options?.imports || [],
+          _is_test_server: true, // Internal flag to prevent infinite recursion
+        });
+      } catch (error) {
+        console.error('Error starting test server:', error);
+      }
+    }, 100); // Small delay to let main server start first
+  }
 
   // NOTE: Only set up file watching for non-test servers
   if (!development_server_options?._is_test_server) {
