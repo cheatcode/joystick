@@ -6,6 +6,7 @@ const start = async (args = {}, options = {}) => {
     port: options?.port || 2600,
     debug: !!options?.debug,
     imports: options?.imports || [],
+    tests: !!options?.tests,
   });
 };
 

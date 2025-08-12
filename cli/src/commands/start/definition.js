@@ -75,6 +75,21 @@ const definition = {
         },
       },
       description: 'Run the specified imports before starting your Joystick app\'s Node.js process (e.g., for APM usage).',
+    },
+    tests: {
+      flags: {
+        '-t': {
+          set: !!raw_args.includes('-t'),
+          value: !!raw_args.includes('-t'),
+          parent: 'start'
+        },
+        '--tests': {
+          set: !!raw_args.includes('--tests'),
+          value: !!raw_args.includes('--tests'),
+          parent: 'start'
+        },
+      },
+      description: 'Run tests alongside the development server using the existing file watcher.',
     }
   },
   command: start,

@@ -1,7 +1,7 @@
 {
   "version": 3,
   "sources": ["../../../src/commands/start/index.js"],
-  "sourcesContent": ["import development_server from \"../../lib/development_server/index.js\";\n\nconst start = async (args = {}, options = {}) => {\n  await development_server({\n    environment: options?.environment || 'development',\n    port: options?.port || 2600,\n    debug: !!options?.debug,\n    imports: options?.imports || [],\n  });\n};\n\nexport default start;\n"],
-  "mappings": "AAAA,OAAOA,MAAwB,wCAE/B,MAAMC,EAAQ,MAAOC,EAAO,CAAC,EAAGC,EAAU,CAAC,IAAM,CAC/C,MAAMH,EAAmB,CACvB,YAAaG,GAAS,aAAe,cACrC,KAAMA,GAAS,MAAQ,KACvB,MAAO,CAAC,CAACA,GAAS,MAClB,QAASA,GAAS,SAAW,CAAC,CAChC,CAAC,CACH,EAEA,IAAOC,EAAQH",
+  "sourcesContent": ["import development_server from \"../../lib/development_server/index.js\";\n\nconst start = async (args = {}, options = {}) => {\n  await development_server({\n    environment: options?.environment || 'development',\n    port: options?.port || 2600,\n    debug: !!options?.debug,\n    imports: options?.imports || [],\n    tests: !!options?.tests,\n  });\n};\n\nexport default start;\n"],
+  "mappings": "AAAA,OAAOA,MAAwB,wCAE/B,MAAMC,EAAQ,MAAOC,EAAO,CAAC,EAAGC,EAAU,CAAC,IAAM,CAC/C,MAAMH,EAAmB,CACvB,YAAaG,GAAS,aAAe,cACrC,KAAMA,GAAS,MAAQ,KACvB,MAAO,CAAC,CAACA,GAAS,MAClB,QAASA,GAAS,SAAW,CAAC,EAC9B,MAAO,CAAC,CAACA,GAAS,KACpB,CAAC,CACH,EAEA,IAAOC,EAAQH",
   "names": ["development_server", "start", "args", "options", "index_default"]
 }

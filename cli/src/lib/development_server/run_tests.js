@@ -1,5 +1,6 @@
 import child_process from "child_process";
 import cli_log from "../cli_log.js";
+import chalk from 'chalk';
 
 const handle_ava_stderr = (stderr = '') => {
   // NOTE: Squash output about using a configuration file (we always do in the framework).
@@ -40,6 +41,45 @@ const handle_ava_stdio = (ava = {}, run_tests_options = {}) => {
   ava.stderr.on('data', function (data) {
     const string = data.toString();
     handle_ava_stderr(string, run_tests_options);
+  });
+};
+
+const run_tests_integrated = (run_tests_options = {}) => {
+  const ava_path = `${process.cwd()}/node_modules/.bin/ava`;
+  const tap_reporter_path = `${run_tests_options?.__dirname}/tap_reporter.js`;
+  
+  return new Promise((resolve, reject) => {
+    console.log(chalk.cyan('\n🧪 Running tests...\n'));
+    
+    // NOTE: Run without watch mode and use TAP reporter for integrated output
+    const command = `${ava_path} --config ${run_tests_options?.__dirname}/ava_config.js --tap | node ${tap_reporter_path}`;
+    
+    const ava = child_process.exec(command, {
+      env: {
+        ...(process.env),
+        databases: process.databases,
+        FORCE_COLOR: "1"
+      }
+    }, (error, stdout, stderr) => {
+      if (error) {
+        // NOTE: Don't reject on test failures, just resolve
+        resolve();
+      } else {
+        resolve();
+      }
+    });
+
+    // NOTE: Stream output directly to console for integrated experience
+    ava.stdout.on('data', (data) => {
+      process.stdout.write(data);
+    });
+
+    ava.stderr.on('data', (data) => {
+      const stderr_string = data.toString();
+      if (!stderr_string.includes('Using configuration')) {
+        process.stderr.write(data);
+      }
+    });
   });
 };
 
@@ -87,4 +127,5 @@ const run_tests = (run_tests_options = {}) => {
   });
 };
 
+export { run_tests_integrated };
 export default run_tests;

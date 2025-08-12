@@ -20,7 +20,7 @@ import start_hmr_server from './start_hmr_server.js';
 import watch_for_changes from './watch_for_changes/index.js';
 import constants from '../constants.js';
 import kill_process_ids from './kill_process_ids.js';
-import run_tests from './run_tests.js';
+import run_tests, { run_tests_integrated } from './run_tests.js';
 import debounce from '../debounce.js';
 import download_database_binary from './databases/download_database_binary.js';
 
@@ -102,7 +102,7 @@ const handle_signal_hmr_update = async (jobs = []) => {
   }));
 };
 
-const handle_hmr_server_process_messages = (node_major_version = 0, watch = false, old_settings = {}, imports = []) => {
+const handle_hmr_server_process_messages = (node_major_version = 0, watch = false, old_settings = {}, imports = [], run_integrated_tests = false) => {
   process.hmr_server_process.on("message", async (message) => {
     const process_messages = [
       "HAS_HMR_CONNECTIONS",
@@ -125,7 +125,7 @@ const handle_hmr_server_process_messages = (node_major_version = 0, watch = fals
     if (message?.type === "HMR_UPDATE_COMPLETE") {
       if (process.app_server_process && !process.app_server_restarting) {
         process.app_server_restarting = true;
-        handle_restart_app_server(node_major_version, watch, old_settings, imports);
+        handle_restart_app_server(node_major_version, watch, old_settings, imports, run_integrated_tests);
       }
     }
   });
@@ -151,11 +151,11 @@ const handle_hmr_server_process_stdio = () => {
   });
 };
 
-const handle_start_hmr_server = (node_major_version = 0, __dirname = '', watch = false, old_settings = {}, imports = []) => {
+const handle_start_hmr_server = (node_major_version = 0, __dirname = '', watch = false, old_settings = {}, imports = [], run_integrated_tests = false) => {
 	process.hmr_server_process = start_hmr_server(node_major_version, __dirname);
   process_ids.push(process.hmr_server_process?.pid);
   handle_hmr_server_process_stdio();
-  handle_hmr_server_process_messages(node_major_version, watch, old_settings, imports);
+  handle_hmr_server_process_messages(node_major_version, watch, old_settings, imports, run_integrated_tests);
 };
 
 const check_if_database_changes = async (old_settings = {}) => {
@@ -165,7 +165,7 @@ const check_if_database_changes = async (old_settings = {}) => {
   return new_databse_settings !== old_database_settings;
 };
 
-const handle_restart_app_server = async (node_major_version = 0, watch = false, old_settings = null, imports = []) => {
+const handle_restart_app_server = async (node_major_version = 0, watch = false, old_settings = null, imports = [], run_integrated_tests = false) => {
   debounce(async () => {
     const has_database_changes = await check_if_database_changes(old_settings);
 
@@ -190,12 +190,12 @@ const handle_restart_app_server = async (node_major_version = 0, watch = false, 
       ]);
 
       await kill_port_process(process.env.PORT);
-      handle_start_app_server(node_major_version, watch, imports);
+      handle_start_app_server(node_major_version, watch, imports, run_integrated_tests);
     }
   }, 300);
 };
 
-const handle_app_server_process_stdio = (watch = false) => {
+const handle_app_server_process_stdio = (watch = false, run_integrated_tests = false) => {
   // NOTE: Default this in case we never get any external process IDs.
   process.app_server_process.external_process_ids = [];
 
@@ -215,7 +215,7 @@ const handle_app_server_process_stdio = (watch = false) => {
     });
   });
 
-  process.app_server_process.stdout.on("data", (data) => {
+  process.app_server_process.stdout.on("data", async (data) => {
   	const stdout = data.toString();
     const is_startup_notification = stdout.includes("App running at:");
 
@@ -232,6 +232,20 @@ const handle_app_server_process_stdio = (watch = false) => {
     if (stdout && is_startup_notification && process.env.NODE_ENV === 'test') {
       handle_run_tests(watch);
     }
+
+    // NOTE: Run integrated tests when --tests flag is used and server has started
+    if (stdout && is_startup_notification && run_integrated_tests && process.env.NODE_ENV !== 'test') {
+      // NOTE: Add delay to avoid jarring UX and ensure server is fully ready
+      setTimeout(async () => {
+        try {
+          await run_tests_integrated({
+            __dirname,
+          });
+        } catch (error) {
+          console.error('Error running integrated tests:', error);
+        }
+      }, 2000);
+    }
   });
 
   process.app_server_process.stderr.on("data", (data) => {
@@ -242,10 +256,10 @@ const handle_app_server_process_stdio = (watch = false) => {
   });
 };
 
-const handle_start_app_server = (node_major_version = 0, watch = false, imports = []) => {
+const handle_start_app_server = (node_major_version = 0, watch = false, imports = [], run_integrated_tests = false) => {
 	process.app_server_process = start_app_server(node_major_version, watch, imports);
   process_ids.push(process.app_server_process?.pid);
-  handle_app_server_process_stdio(watch);
+  handle_app_server_process_stdio(watch, run_integrated_tests);
   process.app_server_restarting = false;
 };
 
@@ -413,11 +427,13 @@ const development_server = async (development_server_options = {}) => {
       development_server_options?.watch,
       settings,
       development_server_options?.imports,
+      development_server_options?.tests,
     ),
     start_app_server: () => handle_start_app_server(
       node_major_version,
       development_server_options?.watch,
       development_server_options?.imports,
+      development_server_options?.tests,
     ),
     start_hmr_server: development_server_options?.environment !== 'test' ? () => handle_start_hmr_server(
       node_major_version,
@@ -425,6 +441,7 @@ const development_server = async (development_server_options = {}) => {
       development_server_options?.watch,
       settings,
       development_server_options?.imports,
+      development_server_options?.tests,
     ) : null,
   }, {
     excluded_paths: settings?.config?.build?.excluded_paths,
