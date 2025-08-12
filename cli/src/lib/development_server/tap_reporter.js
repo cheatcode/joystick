@@ -23,7 +23,7 @@ const print_pass = (title) => {
 };
 
 const print_fail = (title, detail) => {
-  process.stdout.write(`\n${red('---')}\n`);
+  process.stdout.write(`\n${red('-!-')}\n`);
   process.stdout.write(`\n${red('✖')} ${title}\n\n`);
   process.stdout.write(`${red('Error:')}\n\n`);
   if (detail && detail.trim()) {
@@ -31,7 +31,7 @@ const print_fail = (title, detail) => {
   } else {
     process.stdout.write(`  (no stack trace)\n\n`);
   }
-  process.stdout.write(`${red('---')}\n\n`);
+  process.stdout.write(`${red('-!-')}\n\n`);
 };
 
 const get_indent = (s) => s.match(/^ */)?.[0].length ?? 0;
@@ -194,7 +194,7 @@ const run_tap_reporter = async () => {
           ).toFixed(2)}s`;
 
     process.stdout.write(
-      `${gray('===')}\n\n${green('Passed:')} ${passed}\n${red(
+      `\n${gray('===')}\n\n${green('Passed:')} ${passed}\n${red(
         'Failed:'
       )} ${failed}\n${gray('Duration:')} ${duration_str}\n`
     );
