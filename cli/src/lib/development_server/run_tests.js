@@ -48,6 +48,19 @@ const run_tests_integrated = (run_tests_options = {}) => {
   const ava_path = `${process.cwd()}/node_modules/.bin/ava`;
   
   return new Promise((resolve, reject) => {
+    // NOTE: Store original process.exit to restore later
+    const original_exit = process.exit;
+    const original_listeners = process.listeners('exit');
+    
+    // NOTE: Override process.exit to prevent ava from exiting the parent process
+    process.exit = (code) => {
+      // NOTE: Don't actually exit, just return
+      return;
+    };
+
+    // NOTE: Remove any existing exit listeners that might cause issues
+    process.removeAllListeners('exit');
+
     // NOTE: Run ava directly and handle TAP output inline to avoid process exit issues
     const ava = child_process.spawn(ava_path, [
       '--config', `${run_tests_options?.__dirname}/ava_config.js`,
@@ -155,6 +168,10 @@ const run_tests_integrated = (run_tests_options = {}) => {
 
     // NOTE: Handle process exit without propagating to parent
     ava.on('exit', (code, signal) => {
+      // NOTE: Restore original process.exit and listeners
+      process.exit = original_exit;
+      original_listeners.forEach(listener => process.on('exit', listener));
+
       // NOTE: Process any remaining buffer
       if (buffer.trim()) {
         handle_line(buffer);
@@ -191,6 +208,10 @@ const run_tests_integrated = (run_tests_options = {}) => {
 
     // NOTE: Handle any errors without crashing parent process
     ava.on('error', (error) => {
+      // NOTE: Restore original process.exit and listeners on error
+      process.exit = original_exit;
+      original_listeners.forEach(listener => process.on('exit', listener));
+      
       console.error('Test runner error:', error.message);
       resolve();
     });
