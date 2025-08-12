@@ -266,7 +266,7 @@ const set_process_variables = (development_server_options = {}, port = 2600) => 
   process.loader = new Loader();
 
   if (development_server_options?.environment === 'test') {
-    process.loader.print("Initializing test environment...");
+    process.loader.print("\nInitializing test environment...\n");
   }
 
   process.env.LOGS_PATH = development_server_options?.logs || null;
