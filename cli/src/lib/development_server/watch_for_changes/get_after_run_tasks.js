@@ -12,6 +12,7 @@ const get_after_run_tasks = (path = '') => {
   const is_css_path = path.includes('css/');
   const is_i18n_path = path.includes('i18n');
   const is_settings_path = (path.match(constants.SETTINGS_FILE_NAME_REGEX))?.length > 0;
+  const is_tests_path = path.includes(get_platform_safe_path('tests/'));
   const is_ui_path = path.includes(
     get_platform_safe_path("ui/")
   ) || path === 'index.css' || is_html_update || is_client_index_update || is_client_lib_update;
@@ -21,6 +22,10 @@ const get_after_run_tasks = (path = '') => {
 
   if (is_css_path) {
     return ['hot_module_reload'];
+  }
+
+  if (is_tests_path) {
+    return ['run_tests'];
   }
 
   if (is_ui_update) {

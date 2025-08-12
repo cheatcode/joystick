@@ -11,6 +11,7 @@ const watch_paths = [
   { path: "lib" },
   { path: "queues" },
   { path: "routes" },
+  { path: "tests" },
   { path: "ui" },
   { path: "uploaders" },
   { path: "websockets" },

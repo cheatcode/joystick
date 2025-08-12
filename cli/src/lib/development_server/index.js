@@ -443,6 +443,18 @@ const development_server = async (development_server_options = {}) => {
       development_server_options?.imports,
       development_server_options?.tests,
     ) : null,
+    run_tests: development_server_options?.tests ? async () => {
+      // NOTE: Add delay to avoid jarring UX when test files change
+      setTimeout(async () => {
+        try {
+          await run_tests_integrated({
+            __dirname,
+          });
+        } catch (error) {
+          console.error('Error running tests after file change:', error);
+        }
+      }, 1000);
+    } : null,
   }, {
     excluded_paths: settings?.config?.build?.excluded_paths,
     custom_copy_paths: settings?.config?.build?.copy_paths?.map((path) => {
