@@ -64,8 +64,6 @@ const start_test_server = async (development_server_options = {}) => {
     await kill_port_process(1977);
   }
 
-  console.log('Starting test server...');
-  
   // NOTE: Start test server using the same development_server function
   // but with different options to avoid recursion and environment conflicts
   setTimeout(async () => {
@@ -307,10 +305,9 @@ const handle_app_server_process_stdio = (watch = false, run_integrated_tests = f
       console.log(stdout);
     }
 
-    // NOTE: Run tests here so we can guarantee app server is running. Do a slight delay
-    // to ensure that test routes are registered.
+    // NOTE: For test server, don't run the standalone test runner - just mark as ready
     if (stdout && is_startup_notification && process.env.NODE_ENV === 'test') {
-      handle_run_tests(watch);
+      // NOTE: Test server is ready, but don't run tests here - they'll be run by the integrated runner
     }
 
     // NOTE: Mark main server as ready when --tests flag is used
