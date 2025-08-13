@@ -277,8 +277,14 @@ const handle_app_server_process_stdio = (watch = false, run_integrated_tests = f
   });
 };
 
-const handle_start_app_server = (node_major_version = 0, watch = false, imports = [], run_integrated_tests = false, is_test_server = false) => {
-	process.app_server_process = start_app_server(node_major_version, watch, imports);
+const handle_start_app_server = (node_major_version = 0, watch = false, imports = [], run_integrated_tests = false, is_test_server = false, settings = {}) => {
+	process.app_server_process = start_app_server(node_major_version, watch, imports, {
+    NODE_ENV: process.env.NODE_ENV,
+    PORT: process.env.PORT,
+    LOGS_PATH: process.env.LOGS_PATH,
+    ROOT_URL: process.env.ROOT_URL,
+    JOYSTICK_SETTINGS: JSON.stringify(settings),
+  });
   process_ids.push(process.app_server_process?.pid);
   handle_app_server_process_stdio(watch, run_integrated_tests, is_test_server);
   process.app_server_restarting = false;
@@ -441,6 +447,16 @@ const development_server = async (development_server_options = {}) => {
     settings
   });
 
+  // NOTE: Start the main app server first
+  handle_start_app_server(
+    node_major_version,
+    development_server_options?.watch,
+    development_server_options?.imports || [],
+    development_server_options?.tests, // Pass tests flag for integrated test running
+    false, // This is not a test server
+    settings, // Pass the loaded settings
+  );
+
   // NOTE: If tests flag is enabled, start a separate test server on port 1977.
   if (development_server_options?.tests && development_server_options?.environment !== 'test') {
     const test_port_occupied = await check_if_port_occupied(1977);
@@ -550,15 +566,6 @@ const development_server = async (development_server_options = {}) => {
         return { path };
       }) || [],
     });
-  } else {
-    // NOTE: For test server, just start the app server without file watching
-    handle_start_app_server(
-      node_major_version,
-      false, // No file watching for test server
-      development_server_options?.imports || [],
-      false, // No integrated tests for test server
-      true, // This is a test server
-    );
   }
 
   handle_signal_events(process_ids, node_major_version, __dirname);
