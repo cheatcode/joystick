@@ -10,8 +10,11 @@ const install_missing_databases = async (settings = {}) => {
   });
 
   if (required_databases?.length > 0) {
-    const loader = new Loader();
-    loader.print("Checking database installations...");
+    // NOTE: Set up process.loader for database installation
+    if (!process.loader) {
+      process.loader = new Loader();
+    }
+    process.loader.print("Checking database installations...");
     
     for (let i = 0; i < required_databases?.length; i += 1) {
       const provider_name = required_databases[i];

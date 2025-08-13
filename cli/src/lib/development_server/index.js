@@ -537,7 +537,7 @@ const development_server = async (development_server_options = {}) => {
               test_app_server.stderr.on("data", (data) => {
                 // NOTE: Suppress test server errors to avoid noise
               });
-            }, 2000); // Wait 3 seconds for databases to fully start
+            }, 2000); // Wait 2 seconds for databases to fully start
           } catch (error) {
             console.error('Error starting test server after database installation:', error);
           }
