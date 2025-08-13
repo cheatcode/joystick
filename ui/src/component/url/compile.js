@@ -1,11 +1,6 @@
 import types from "../../lib/types.js";
 
-const is_active = (path = "", url = {}) => {
-  console.log({
-    path,
-    url,
-  });
-  
+const is_active = (path = "", url = {}) => {  
   if (types.is_string(path) && url?.route !== "*") {
     return (
       path ===
