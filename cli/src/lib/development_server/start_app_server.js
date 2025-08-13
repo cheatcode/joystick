@@ -9,6 +9,7 @@ const start_app_server_process = (exec_argv = [], watch = false, env_options = {
   }
 
   const env = {
+    ...process.env,
     FORCE_COLOR: "1",
     LOGS_PATH: env_options.LOGS_PATH || process.env.LOGS_PATH,
     NODE_ENV: node_env,
