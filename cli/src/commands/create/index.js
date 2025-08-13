@@ -22,16 +22,28 @@ const create = async (args = {}, options = {}) => {
   }
 
   try {
-    // Clone the template repository
-    await exec(`git clone https://github.com/cheatcode/joystick-default-template.git ${args.name}`);
+    // Clone the template repository with verbose output
+    const cloneResult = await exec(`git clone --verbose https://github.com/cheatcode/joystick-default-template.git ${args.name}`);
+    console.log('Git clone stdout:', cloneResult.stdout);
+    console.log('Git clone stderr:', cloneResult.stderr);
+    
+    // Check git version and config
+    const gitVersion = await exec('git --version');
+    console.log('Git version:', gitVersion.stdout);
     
     // Debug: Check what was actually cloned
     try {
-      const { stdout } = await exec(`find ./${args.name} -type f | head -20`);
-      console.log('Cloned files:', stdout);
+      const { stdout } = await exec(`find ./${args.name} -type f | wc -l`);
+      console.log('Total files cloned:', stdout.trim());
+      
+      const allFiles = await exec(`find ./${args.name} -type f`);
+      console.log('All cloned files:', allFiles.stdout);
       
       const testsCheck = await exec(`ls -la ./${args.name}/tests || echo "tests directory not found"`);
       console.log('Tests directory contents:', testsCheck.stdout);
+      
+      const uiCheck = await exec(`find ./${args.name}/ui -type d`);
+      console.log('UI directory structure:', uiCheck.stdout);
     } catch (debugError) {
       console.log('Debug check failed:', debugError.message);
     }
