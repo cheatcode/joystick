@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["../../../src/commands/create/build_package_json.js"],
-  "sourcesContent": ["const build_package_json = (project_name = \"\") => {\n  const package_json = {\n    type: \"module\",\n    name: project_name,\n    version: \"0.0.1\",\n    description: \"\",\n    main: \"index.js\",\n    scripts: {\n      start: \"joystick start\",\n      test: \"joystick test\",\n    },\n    keywords: [],\n    author: \"\",\n    license: \"ISC\",\n  };\n\n  return JSON.stringify(package_json, null, 2);\n};\n\nexport default build_package_json;\n"],
-  "mappings": "AAAA,MAAMA,EAAqB,CAACC,EAAe,KAgBlC,KAAK,UAfS,CACnB,KAAM,SACN,KAAMA,EACN,QAAS,QACT,YAAa,GACb,KAAM,WACN,QAAS,CACP,MAAO,iBACP,KAAM,eACR,EACA,SAAU,CAAC,EACX,OAAQ,GACR,QAAS,KACX,EAEoC,KAAM,CAAC,EAG7C,IAAOC,EAAQF",
-  "names": ["build_package_json", "project_name", "build_package_json_default"]
-}
