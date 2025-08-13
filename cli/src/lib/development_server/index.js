@@ -223,6 +223,7 @@ const handle_app_server_process_stdio = (watch = false, run_integrated_tests = f
 
     // NOTE: Suppress all test server output
     if (is_test_server) {
+      process.loader.print(stdout); // temp to debug
       return;
     }
 
@@ -257,12 +258,12 @@ const handle_app_server_process_stdio = (watch = false, run_integrated_tests = f
   });
 
   process.app_server_process.stderr.on("data", (data) => {
-    if (!is_test_server) {
+    // if (!is_test_server) {
       cli_log(data.toString(), {
         level: "danger",
         docs: "https://cheatcode.co/docs/joystick",
       });
-    }
+    // }
   });
 };
 
