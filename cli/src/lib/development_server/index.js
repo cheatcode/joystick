@@ -274,7 +274,7 @@ const handle_start_app_server = (node_major_version = 0, watch = false, imports 
   process.app_server_restarting = false;
 };
 
-const install_missing_databases = async (settings = {}) => {
+const install_missing_databases = async (settings = {}, callback = null) => {
   const required_databases = settings?.config?.databases?.map((database = {}) => {
     return database?.provider;
   });
@@ -282,6 +282,12 @@ const install_missing_databases = async (settings = {}) => {
   for (let i = 0; i < required_databases?.length; i += 1) {
     const provider_name = required_databases[i];
     await download_database_binary(provider_name);
+  }
+
+  if (callback) {
+    // NOTE: Wait additional time for database setup after all installations complete
+    const wait_time = required_databases?.length > 0 ? 3000 : 0;
+    setTimeout(callback, wait_time);
   }
 };
 
@@ -463,53 +469,57 @@ const development_server = async (development_server_options = {}) => {
         const test_settings = test_settings_result.settings;
         const test_raw_settings = test_settings_result.raw_settings;
 
-        // NOTE: Install missing databases for test environment
-        await install_missing_databases(test_settings);
+        // NOTE: Install missing databases for test environment with callback
+        await install_missing_databases(test_settings, async () => {
+          try {
+            await start_databases({
+              environment: 'test',
+              port: 1977,
+              settings: test_settings,
+            });
+            
+            const test_app_server = start_app_server(node_major_version, false, development_server_options?.imports || [], {
+              NODE_ENV: 'test',
+              PORT: 1977,
+              LOGS_PATH: process.env.LOGS_PATH,
+              ROOT_URL: process.env.ROOT_URL,
+              JOYSTICK_SETTINGS: test_raw_settings,
+            });
 
-        await start_databases({
-          environment: 'test',
-          port: 1977,
-          settings: test_settings,
-        });
-        
-        const test_app_server = start_app_server(node_major_version, false, development_server_options?.imports || [], {
-          NODE_ENV: 'test',
-          PORT: 1977,
-          LOGS_PATH: process.env.LOGS_PATH,
-          ROOT_URL: process.env.ROOT_URL,
-          JOYSTICK_SETTINGS: test_raw_settings,
-        });
-
-        process_ids.push(test_app_server?.pid);
-        
-        // NOTE: Store test server separately to avoid interfering with main server
-        process.test_app_server_process = test_app_server;
-        
-        // NOTE: Handle test server stdio without integrated tests to avoid recursion
-        test_app_server.external_process_ids = [];
-        
-        test_app_server.on('message', (message_from_child) => {
-          if (message_from_child?.external_process_id) {
-            test_app_server.external_process_ids = [
-              ...(test_app_server.external_process_ids || []),
-              message_from_child?.external_process_id,
-            ];
-            // NOTE: Also track external process IDs for cleanup
-            process_ids.push(message_from_child?.external_process_id);
+            process_ids.push(test_app_server?.pid);
+            
+            // NOTE: Store test server separately to avoid interfering with main server
+            process.test_app_server_process = test_app_server;
+            
+            // NOTE: Handle test server stdio without integrated tests to avoid recursion
+            test_app_server.external_process_ids = [];
+            
+            test_app_server.on('message', (message_from_child) => {
+              if (message_from_child?.external_process_id) {
+                test_app_server.external_process_ids = [
+                  ...(test_app_server.external_process_ids || []),
+                  message_from_child?.external_process_id,
+                ];
+                // NOTE: Also track external process IDs for cleanup
+                process_ids.push(message_from_child?.external_process_id);
+              }
+            });
+            
+            test_app_server.on('error', (error) => {
+              // NOTE: Suppress test server errors to avoid noise
+            });
+            
+            test_app_server.stdout.on("data", async (data) => {
+              // NOTE: Suppress test server output to avoid noise
+            });
+            
+            test_app_server.stderr.on("data", (data) => {
+              // NOTE: Suppress test server errors to avoid noise
+            });
+          } catch (error) {
+            console.error('Error starting test server after database installation:', error);
           }
         });
-        
-        test_app_server.on('error', (error) => {
-          // NOTE: Suppress test server errors to avoid noise
-        });
-        
-        test_app_server.stdout.on("data", async (data) => {
-          // NOTE: Suppress test server output to avoid noise
-        });
-        
-        test_app_server.stderr.on("data", (data) => {
-          // NOTE: Suppress test server errors to avoid noise
-        });  
       } catch (error) {
         console.error('Error starting test server:', error);
       }
