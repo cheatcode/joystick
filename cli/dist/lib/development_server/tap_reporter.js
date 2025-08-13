@@ -21,5 +21,6 @@ ${$("===")}
 ${k("Passed:")} ${n}
 ${f("Failed:")} ${o}
 ${$("Duration:")} ${r}
+
 `)})};var E=x;import.meta.url===`file://${process.argv[1]}`&&x();export{E as default};
 //# sourceMappingURL=tap_reporter.js.map

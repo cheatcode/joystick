@@ -196,7 +196,7 @@ const run_tap_reporter = async () => {
     process.stdout.write(
       `\n${gray('===')}\n\n${green('Passed:')} ${passed}\n${red(
         'Failed:'
-      )} ${failed}\n${gray('Duration:')} ${duration_str}\n`
+      )} ${failed}\n${gray('Duration:')} ${duration_str}\n\n`
     );
   });
 };
