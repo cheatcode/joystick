@@ -2,7 +2,7 @@
   "name": "@joystick.js/node",
   "type": "module",
   "version": "1.0.0-rc.1",
-  "canary_version": "0.0.0-canary.2160",
+  "canary_version": "0.0.0-canary.2168",
   "description": "The Node.js framework for Joystick.",
   "main": "./dist/index.js",
   "scripts": {
