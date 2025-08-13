@@ -49,7 +49,7 @@ const run_tests_integrated = (run_tests_options = {}) => {
   const tap_reporter_path = `${run_tests_options?.__dirname}/tap_reporter.js`;
   
   return new Promise((resolve, reject) => {
-    process.loader.print('\nRunning tests...\n');
+    process.loader.print('Running tests...\n');
     
     // NOTE: Run without watch mode and use TAP reporter for integrated output
     const command = `${ava_path} --config ${run_tests_options?.__dirname}/ava_config.js --tap | node ${tap_reporter_path}`;
