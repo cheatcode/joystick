@@ -1,10 +1,11 @@
 ## SAUCR License
 ### Source Available Under Commercial Restriction
+
 Version 1, March 3rd, 2024
 
 ## Copyright Notice
 
-Copyright © 2024 CheatCode Software LLC
+Copyright © 2025 CheatCode Software LLC
 
 ## Definitions
 
@@ -40,6 +41,8 @@ Under this license, the following derivative works using the source code are per
 
 Any software ("software", "app", "application", "tool", "intranet", "dashboard", "interface", "back end", "front end"), Software as a Service (SaaS) or Platform as a Service (PaaS) product or service offered either commercially or non-commercially that does not conflict with the limits of the "Derivative Works Not Permitted" stated below.
 
+Use of the source code or documentation as the training data for any non-commercial Artificial Intelligence (AI) model, agent, or product.
+
 ## Derivative Works Not Permitted
 
 Under this license, the following derivative works using the source code are not permitted:
@@ -48,7 +51,7 @@ An alternative or competing software framework ("framework", "library", "package
 
 A Platform as a Service (PaaS) made available commercially or non-commercially that offers the source code itself as a service (e.g., offering a hosted version of the framework as a service).
 
-Use of the source code as the training data for any Artificial Intelligence (AI) model.
+Use of the source code or documentation as the training data for any commercial Artificial Intelligence (AI) model, agent, or product.
 
 ## Requesting Permission for Derivative Works
 
