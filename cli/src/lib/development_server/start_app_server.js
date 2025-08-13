@@ -8,10 +8,6 @@ const start_app_server_process = (exec_argv = [], watch = false, env_options = {
     process.loader.print('Starting app...');
   }
 
-  if (node_env === 'test') {
-    console.log(env_options);
-  }
-
   const env = {
     FORCE_COLOR: "1",
     LOGS_PATH: env_options.LOGS_PATH || process.env.LOGS_PATH,
