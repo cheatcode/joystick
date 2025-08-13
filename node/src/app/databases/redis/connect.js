@@ -2,10 +2,6 @@ import chalk from "chalk";
 import { createClient } from "redis";
 
 const connect_redis = async (database_settings = {}, database_port = 2610) => {
-  // DEBUG: Log Redis connection attempt
-  console.log(`[DEBUG] connect_redis: attempting connection to port ${database_port}, NODE_ENV=${process.env.NODE_ENV}, PORT=${process.env.PORT}`);
-  console.log(`[DEBUG] connect_redis: stack trace:`, new Error().stack);
-  
   try {
     const connection = database_settings?.connection || {
       hosts: [

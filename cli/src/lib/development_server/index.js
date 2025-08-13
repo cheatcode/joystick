@@ -455,7 +455,7 @@ const development_server = async (development_server_options = {}) => {
           PORT: 1977,
           LOGS_PATH: process.env.LOGS_PATH,
           ROOT_URL: process.env.ROOT_URL,
-          JOYSTICK_SETTINGS: process.env.JOYSTICK_SETTINGS,
+          JOYSTICK_SETTINGS: JSON.stringify(test_settings),
         });
 
         process_ids.push(test_app_server?.pid);

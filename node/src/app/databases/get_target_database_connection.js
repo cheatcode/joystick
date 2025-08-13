@@ -13,9 +13,6 @@ const get_target_database_connection = (database_type = 'users') => {
   const has_multiple_of_provider = (databases?.filter((database) => database?.provider === target_database_in_settings?.provider))?.length > 1;
   const database_port = (parseInt(process.env.PORT, 10) + 10) + target_database_index;
   
-  // DEBUG: Log port calculation for debugging
-  console.log(`[DEBUG] get_target_database_connection: database_type=${database_type}, NODE_ENV=${process.env.NODE_ENV}, PORT=${process.env.PORT}, calculated_port=${database_port}, provider=${target_database_in_settings?.provider}`);
-  
   return {
     database_type,
     provider: target_database_in_settings?.provider,
