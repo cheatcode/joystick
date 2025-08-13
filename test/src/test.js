@@ -49,6 +49,19 @@ test_instance.after(async () => {
   if (process?.databases?.postgresql?.pool) {
     await process.databases.postgresql.pool.end();
   }
+
+  if (process?.databases?.redis) {
+    if (process.databases.redis.destroy) {
+      process.databases.redis.destroy();
+    } else {
+      // Handle multiple Redis instances
+      for (const [key, redis_instance] of Object.entries(process.databases.redis)) {
+        if (redis_instance?.destroy) {
+          redis_instance.destroy();
+        }
+      }
+    }
+  }
 });
 
 export default test_instance;
