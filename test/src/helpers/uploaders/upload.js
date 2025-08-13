@@ -1,5 +1,6 @@
 import fetch, { FormData } from 'node-fetch';
 import generate_cookie_header from '../../lib/generate_cookie_header.js';
+import get_test_port from '../../lib/get_test_port.js';
 
 const upload = (uploader_name = '', uploader_options = {}) => {
   return new Promise(async (resolve, reject) => {
@@ -26,7 +27,7 @@ const upload = (uploader_name = '', uploader_options = {}) => {
         }); 
       }
 
-      fetch(`http://localhost:${process.env.PORT}/api/_uploaders/${uploader_name}`, {
+      fetch(`http://localhost:${get_test_port()}/api/_uploaders/${uploader_name}`, {
         method: 'POST',
         headers,
         body: form_data,

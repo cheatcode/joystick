@@ -5,6 +5,7 @@ import event from './event.js';
 import load from "../load/index.js";
 import generate_cookie_header from "../../lib/generate_cookie_header.js";
 import create_location_polyfill from "../../lib/location_polyfill.js";
+import get_test_port from "../../lib/get_test_port.js";
 
 const bootstrap_window = async (path_to_component = '', render_options = {}) => {
   const url = new URL(`${window?.location?.origin}/api/_test/bootstrap`);
@@ -78,7 +79,7 @@ const render = async (path_to_component = '', render_options = {}) => {
   const dom = load_dom();
 
   window.fetch = fetch;
-  window.location = create_location_polyfill(`http://localhost:${process.env.PORT}`);
+  window.location = create_location_polyfill(`http://localhost:${get_test_port()}`);
 
   await bootstrap_window(path_to_component, render_options);
 

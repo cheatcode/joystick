@@ -1,8 +1,9 @@
 import fetch from 'node-fetch';
+import get_test_port from '../../lib/get_test_port.js';
 
 const get_function_calls = async (path = '') => {
   const server = await fetch(
-    `http://localhost:${process.env.PORT}/api/_test/process`
+    `http://localhost:${get_test_port()}/api/_test/process`
   ).then(async (response) => response.json());
   
   let calls = {

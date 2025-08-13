@@ -1,6 +1,7 @@
 import { URL, URLSearchParams } from "url";
 import fetch from 'node-fetch';
 import generate_cookie_header from "../../lib/generate_cookie_header.js";
+import get_test_port from "../../lib/get_test_port.js";
 
 const run_route = (route = '', method = '', options = {}) => {
   const method_name = method?.toLocaleLowerCase();
@@ -44,7 +45,7 @@ const run_route = (route = '', method = '', options = {}) => {
     fetch_options.body = JSON.stringify(options?.body);
   }
 
-  const url = new URL(`http://localhost:${process.env.PORT}${route}`);
+  const url = new URL(`http://localhost:${get_test_port()}${route}`);
 
   if (options?.query) {
     url.search = new URLSearchParams(options?.query || {});

@@ -1,7 +1,8 @@
 import fetch from 'node-fetch';
+import get_test_port from '../../lib/get_test_port.js';
 
 const accounts_signup = (user_to_signup = {}) => {
-  return fetch(`http://localhost:${process.env.PORT}/api/_test/accounts/signup`, {
+  return fetch(`http://localhost:${get_test_port()}/api/_test/accounts/signup`, {
     method: 'POST',
     mode: "cors",
     headers: {

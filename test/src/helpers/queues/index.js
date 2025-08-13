@@ -1,8 +1,9 @@
 import fetch from 'node-fetch';
+import get_test_port from '../../lib/get_test_port.js';
 
 const queues = {
   job: (job_name = '', options = {}) => {
-    return fetch(`http://localhost:${process.env.PORT}/api/_test/queues`, {
+    return fetch(`http://localhost:${get_test_port()}/api/_test/queues`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
