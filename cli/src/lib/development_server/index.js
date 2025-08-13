@@ -243,17 +243,9 @@ const handle_app_server_process_stdio = (watch = false, run_integrated_tests = f
     }
 
     // NOTE: Run integrated tests when --tests flag is used and server has started
+    // NOTE: Don't run tests immediately - wait for test server to be ready
     if (stdout && is_startup_notification && run_integrated_tests && process.env.NODE_ENV !== 'test') {
-      // NOTE: Add delay to avoid jarring UX and ensure server is fully ready
-      setTimeout(async () => {
-        try {
-          await run_tests_integrated({
-            __dirname,
-          });
-        } catch (error) {
-          console.error('Error running integrated tests:', error);
-        }
-      }, 3000);
+      // NOTE: Tests will be triggered by test server startup instead
     }
   });
 
@@ -478,44 +470,61 @@ const development_server = async (development_server_options = {}) => {
               settings: test_settings,
             });
             
-            const test_app_server = start_app_server(node_major_version, false, development_server_options?.imports || [], {
-              NODE_ENV: 'test',
-              PORT: 1977,
-              LOGS_PATH: process.env.LOGS_PATH,
-              ROOT_URL: process.env.ROOT_URL,
-              JOYSTICK_SETTINGS: test_raw_settings,
-            });
+            // NOTE: Wait for databases to fully start up before starting test app server
+            setTimeout(() => {
+              const test_app_server = start_app_server(node_major_version, false, development_server_options?.imports || [], {
+                NODE_ENV: 'test',
+                PORT: 1977,
+                LOGS_PATH: process.env.LOGS_PATH,
+                ROOT_URL: process.env.ROOT_URL,
+                JOYSTICK_SETTINGS: test_raw_settings,
+              });
 
-            process_ids.push(test_app_server?.pid);
-            
-            // NOTE: Store test server separately to avoid interfering with main server
-            process.test_app_server_process = test_app_server;
-            
-            // NOTE: Handle test server stdio without integrated tests to avoid recursion
-            test_app_server.external_process_ids = [];
-            
-            test_app_server.on('message', (message_from_child) => {
-              if (message_from_child?.external_process_id) {
-                test_app_server.external_process_ids = [
-                  ...(test_app_server.external_process_ids || []),
-                  message_from_child?.external_process_id,
-                ];
-                // NOTE: Also track external process IDs for cleanup
-                process_ids.push(message_from_child?.external_process_id);
-              }
-            });
-            
-            test_app_server.on('error', (error) => {
-              // NOTE: Suppress test server errors to avoid noise
-            });
-            
-            test_app_server.stdout.on("data", async (data) => {
-              // NOTE: Suppress test server output to avoid noise
-            });
-            
-            test_app_server.stderr.on("data", (data) => {
-              // NOTE: Suppress test server errors to avoid noise
-            });
+              process_ids.push(test_app_server?.pid);
+              
+              // NOTE: Store test server separately to avoid interfering with main server
+              process.test_app_server_process = test_app_server;
+              
+              // NOTE: Handle test server stdio without integrated tests to avoid recursion
+              test_app_server.external_process_ids = [];
+              
+              test_app_server.on('message', (message_from_child) => {
+                if (message_from_child?.external_process_id) {
+                  test_app_server.external_process_ids = [
+                    ...(test_app_server.external_process_ids || []),
+                    message_from_child?.external_process_id,
+                  ];
+                  // NOTE: Also track external process IDs for cleanup
+                  process_ids.push(message_from_child?.external_process_id);
+                }
+              });
+              
+              test_app_server.on('error', (error) => {
+                // NOTE: Suppress test server errors to avoid noise
+              });
+              
+              test_app_server.stdout.on("data", async (data) => {
+                const stdout = data.toString();
+                const is_startup_notification = stdout.includes("App running at:");
+                
+                // NOTE: Run integrated tests when test server has started
+                if (stdout && is_startup_notification) {
+                  setTimeout(async () => {
+                    try {
+                      await run_tests_integrated({
+                        __dirname,
+                      });
+                    } catch (error) {
+                      console.error('Error running integrated tests:', error);
+                    }
+                  }, 1000); // Small delay to ensure test server is fully ready
+                }
+              });
+              
+              test_app_server.stderr.on("data", (data) => {
+                // NOTE: Suppress test server errors to avoid noise
+              });
+            }, 3000); // Wait 3 seconds for databases to fully start
           } catch (error) {
             console.error('Error starting test server after database installation:', error);
           }
