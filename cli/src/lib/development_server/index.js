@@ -247,6 +247,7 @@ const handle_app_server_process_stdio = (watch = false, run_integrated_tests = f
       // NOTE: Add delay to avoid jarring UX and ensure server is fully ready
       setTimeout(async () => {
         try {
+          process.loader.print("Running tests in watch mode...\n");
           await run_tests_integrated({
             __dirname,
           });
