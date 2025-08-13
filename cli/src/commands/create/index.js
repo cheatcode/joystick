@@ -22,34 +22,12 @@ const create = async (args = {}, options = {}) => {
   }
 
   try {
-    // Clone the template repository with verbose output
-    const cloneResult = await exec(`git clone --verbose https://github.com/cheatcode/joystick-default-template.git ${args.name}`);
-    console.log('Git clone stdout:', cloneResult.stdout);
-    console.log('Git clone stderr:', cloneResult.stderr);
-    
-    // Check git version and config
-    const gitVersion = await exec('git --version');
-    console.log('Git version:', gitVersion.stdout);
-    
-    // Debug: Check what was actually cloned
-    try {
-      const { stdout } = await exec(`find ./${args.name} -type f | wc -l`);
-      console.log('Total files cloned:', stdout.trim());
-      
-      const allFiles = await exec(`find ./${args.name} -type f`);
-      console.log('All cloned files:', allFiles.stdout);
-      
-      const testsCheck = await exec(`ls -la ./${args.name}/tests || echo "tests directory not found"`);
-      console.log('Tests directory contents:', testsCheck.stdout);
-      
-      const uiCheck = await exec(`find ./${args.name}/ui -type d`);
-      console.log('UI directory structure:', uiCheck.stdout);
-    } catch (debugError) {
-      console.log('Debug check failed:', debugError.message);
-    }
-    
-    // Remove the .git directory to disconnect from the template repo
-    await rm(`./${args.name}/.git`, { recursive: true, force: true });
+    // Clone the template repository and wait for completion
+    await exec(`git clone https://github.com/cheatcode/joystick-default-template.git ${args.name}`)
+      .then(async () => {
+        // Remove the .git directory to disconnect from the template repo
+        await rm(`./${args.name}/.git`, { recursive: true, force: true });
+      });
 
     if (options?.release === 'canary') {
       await replace_in_files(`${process.cwd()}/${args?.name}`, {
