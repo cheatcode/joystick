@@ -22,10 +22,9 @@ const create = async (args = {}, options = {}) => {
   }
 
   try {
-    // Clone the template repository and wait for completion
     await exec(`git clone https://github.com/cheatcode/joystick-default-template.git ${args.name}`)
       .then(async () => {
-        // Remove the .git directory to disconnect from the template repo
+        // NOTE: Remove the .git directory to disconnect from the template repo.
         await rm(`./${args.name}/.git`, { recursive: true, force: true });
       });
 
