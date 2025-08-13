@@ -48,7 +48,7 @@ const use = async (args = {}, options = {}) => {
     await replace_in_files(process.cwd(), {
       match: [/\.js$/],
       exclude: [/node_modules/],
-      replace_regex: /(@joystick.js\/ui-canary)/g,
+      replace_regex: /(@joystick\.js\/ui-canary)/g,
       replace_with: '@joystick.js/ui',
     });
 
