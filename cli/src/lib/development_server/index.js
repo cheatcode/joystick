@@ -463,6 +463,9 @@ const development_server = async (development_server_options = {}) => {
         const test_settings = test_settings_result.settings;
         const test_raw_settings = test_settings_result.raw_settings;
 
+        // NOTE: Install missing databases for test environment
+        await install_missing_databases(test_settings);
+
         await start_databases({
           environment: 'test',
           port: 1977,
