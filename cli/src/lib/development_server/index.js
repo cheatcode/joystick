@@ -430,7 +430,7 @@ const development_server = async (development_server_options = {}) => {
     settings
   });
 
-  // NOTE: If tests flag is enabled, start a separate test server on port 1977
+  // NOTE: If tests flag is enabled, start a separate test server on port 1977.
   if (development_server_options?.tests && development_server_options?.environment !== 'test') {
     const test_port_occupied = await check_if_port_occupied(1977);
     if (test_port_occupied) {
@@ -440,23 +440,22 @@ const development_server = async (development_server_options = {}) => {
     // NOTE: Start test server directly without recursive development_server call
     setTimeout(async () => {
       try {
-        // NOTE: Set up test environment variables
-        const original_env = process.env.NODE_ENV;
-        const original_port = process.env.PORT;
-        
-        process.env.NODE_ENV = 'test';
-        process.env.PORT = 1977;
-        
         // NOTE: Start test databases
         const test_settings = await load_settings('test');
+
         await start_databases({
           environment: 'test',
           port: 1977,
           settings: test_settings
         });
         
-        // NOTE: Start test app server directly
-        const test_app_server = start_app_server(node_major_version, false, development_server_options?.imports || []);
+        const test_app_server = start_app_server(node_major_version, false, development_server_options?.imports || [], {
+          NODE_ENV: 'test',
+          PORT: '1977',
+          LOGS_PATH: process.env.LOGS_PATH,
+          ROOT_URL: process.env.ROOT_URL,
+          JOYSTICK_SETTINGS: process.env.JOYSTICK_SETTINGS,
+        });
         process_ids.push(test_app_server?.pid);
         
         // NOTE: Store test server separately to avoid interfering with main server
@@ -486,12 +485,7 @@ const development_server = async (development_server_options = {}) => {
         
         test_app_server.stderr.on("data", (data) => {
           // NOTE: Suppress test server errors to avoid noise
-        });
-        
-        // NOTE: Don't restore environment variables yet - keep test environment active
-        // so websocket tests connect to the correct port (1977)
-        // The environment will be restored when the main process exits
-        
+        });  
       } catch (error) {
         console.error('Error starting test server:', error);
       }
