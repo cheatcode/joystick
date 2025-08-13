@@ -22,11 +22,19 @@ const use = async (args = {}, options = {}) => {
       replace_regex: /(@joystick\.js\/ui)(?!-)/g,
       replace_with: '@joystick.js/ui-canary',
     });
+
+    await replace_in_files(process.cwd(), {
+      match: [/\.js$/],
+      exclude: [/node_modules/],
+      replace_regex: /(@joystick\.js\/test)(?!-)/g,
+      replace_with: '@joystick.js/test-canary',
+    });
     
     loader.print('Swapping production packages for canary versions...');
     
     await exec('npm uninstall @joystick.js/node && npm i @joystick.js/node-canary');
     await exec('npm uninstall @joystick.js/ui && npm i @joystick.js/ui-canary');
+    await exec('npm uninstall @joystick.js/test && npm i @joystick.js/test-canary');
   }
   
   if (args?.release === 'production') {
@@ -43,11 +51,19 @@ const use = async (args = {}, options = {}) => {
       replace_regex: /(@joystick.js\/ui-canary)/g,
       replace_with: '@joystick.js/ui',
     });
+
+    await replace_in_files(process.cwd(), {
+      match: [/\.js$/],
+      exclude: [/node_modules/],
+      replace_regex: /(@joystick\.js\/test-canary)/g,
+      replace_with: '@joystick.js/test',
+    });
     
     loader.print('Swapping canary packages for production versions...');
     
     await exec('npm uninstall @joystick.js/node-canary && npm i @joystick.js/node');
     await exec('npm uninstall @joystick.js/ui-canary && npm i @joystick.js/ui');
+    await exec('npm uninstall @joystick.js/test-canary && npm i @joystick.js/test');
   }
 };
 

@@ -1,10 +1,8 @@
 import fs from 'fs';
-import dynamic_import from '../../../lib/dynamic_import.js';
 import generate_joystick_error_page from '../generate_joystick_error_page.js';
 import get_joystick_build_path from '../../../lib/get_joystick_build_path.js';
 import get_translations from '../../../lib/get_translations.js';
 import get_url from './get_url.js';
-import path_exists from '../../../lib/path_exists.js';
 import ssr from '../../ssr/index.js';
 import strip_preceeding_slash from '../../../lib/strip_preceeding_slash.js';
 
