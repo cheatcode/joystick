@@ -3,8 +3,6 @@ import connect_postgresql from "./postgresql/connect.js";
 import connect_redis from "./redis/connect.js";
 
 const register_database = async (database_from_settings = {}, database_port = 2610, has_multiple_of_provider = false) => {
-  console.log('register database', database_port);
-
 	if (database_from_settings?.provider === 'mongodb') {
 		const mongodb_connection = await connect_mongodb(database_from_settings, database_port);
     process.databases = {
@@ -28,7 +26,6 @@ const register_database = async (database_from_settings = {}, database_port = 26
 	}
 
 	if (database_from_settings?.provider === 'redis') {
-    console.log('register database > redis', database_port);
 		const redis_connection = await connect_redis(database_from_settings, database_port);
 		process.databases = {
       ...(process.databases || {}),
