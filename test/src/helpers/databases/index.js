@@ -7,6 +7,8 @@ const settings = (load_settings())?.parsed;
 const databases = async () => {
   const databases_from_settings = settings?.config?.databases;
 
+  console.log({ databases_from_settings });
+
   for (let i = 0; i < databases_from_settings?.length; i += 1) {
     const database_from_settings = databases_from_settings[i];
     const database_port = parseInt(get_test_port(), 10) + 10 + i;
