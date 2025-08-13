@@ -77,6 +77,7 @@ const render_middleware = (req, res, next, app_instance = {}) => {
       // NOTE: If we have a layout, we want to render that as it will have the page embedded
       // via props. If not, fall back to the Component (either a page or an email template).
       component_to_render: Layout || Component,
+      escaping: render_options?.escaping,
       head: render_options?.head,
       render_component_path: sanitized_render_component_path,
       render_layout_path: sanitized_render_layout_path,

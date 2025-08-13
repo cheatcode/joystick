@@ -11,6 +11,7 @@ import get_browser_safe_user from '../accounts/get_browser_safe_user.js';
 import get_language_preference from '../../lib/get_language_preference.js';
 import escape_html from '../../lib/escape_html.js';
 import escape_ssr_data from './escape_ssr_data.js';
+import unescape_ssr_data from './unescape_ssr_data.js';
 
 const { readFile } = fs.promises;
 const app_settings = load_settings();
@@ -58,14 +59,14 @@ const build_html_response_for_browser = (options = {}) => {
         ${is_development ? `window.__joystick_hmr_port__ = ${parseInt(process.env.PORT, 10) + 1}` : ''}
         window.__joystick_layout_url__ = ${options?.render_layout_path ? `"/_joystick/${options?.render_layout_path}"` : null};
         window.__joystick_page_url__ = ${options?.render_component_path ? `"/_joystick/${options?.render_component_path}"` : null};
-       	window.__joystick_request__ = ${JSON.stringify(escape_ssr_data(get_browser_safe_request(options?.req)))};
+        window.__joystick_request__ = ${JSON.stringify(escape_ssr_data(get_browser_safe_request(options?.req)))};
         window.__joystick_settings__ = ${JSON.stringify({
           global: app_settings?.global,
           public: app_settings?.public,
         })};
 
         window.__joystick_should_auto_mount__ = true;
-        window.__joystick_ssr_props__ = ${JSON.stringify(escape_ssr_data(options?.props))};
+        window.__joystick_ssr_props__ = ${JSON.stringify(options?.escaping?.props !== false ? escape_ssr_data(options?.props) : options?.props)};
         window.__joystick_url__ = ${JSON.stringify(options?.url)};
         window.__joystick_user__ = ${JSON.stringify(escape_ssr_data(get_browser_safe_user(options?.req?.context?.user)))};
         window.__joystick_language__ = ${JSON.stringify(options?.language)};
@@ -190,8 +191,9 @@ const ssr = async (ssr_options = {}) => {
 		mod_css,
 		mod_js,
 		mod_theme: ssr_options?.mod?.theme,
-		data: ssr_render?.data, // NOTE: Assume this data was escaped by the component instance.
+		data: ssr_options?.escaping?.data === false ? unescape_ssr_data(ssr_render?.data) : ssr_render?.data,
 		email_options: ssr_options?.email_options,
+		escaping: ssr_options?.escaping,
 		head: ssr_options?.head,
 		html: ssr_render?.html,
 		language: determined_language,
