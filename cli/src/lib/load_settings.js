@@ -34,9 +34,6 @@ const load_settings = async (environment = null) => {
 
   const settings_file = is_valid_json ? raw_settings_file : "{}";
 
-  // NOTE: Child process will inherit this env var from this parent process.
-  process.env.JOYSTICK_SETTINGS = settings_file;
-
   return JSON.parse(settings_file);
 };
 

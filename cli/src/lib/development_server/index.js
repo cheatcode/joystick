@@ -190,7 +190,17 @@ const handle_restart_app_server = async (node_major_version = 0, watch = false, 
       ]);
 
       await kill_port_process(process.env.PORT);
-      handle_start_app_server(node_major_version, watch, imports, run_integrated_tests);
+      const current_settings = await load_settings(process.env.NODE_ENV);
+      process.app_server_process = start_app_server(node_major_version, watch, imports, {
+        NODE_ENV: process.env.NODE_ENV,
+        PORT: process.env.PORT,
+        LOGS_PATH: process.env.LOGS_PATH,
+        ROOT_URL: process.env.ROOT_URL,
+        JOYSTICK_SETTINGS: JSON.stringify(current_settings),
+      });
+      process_ids.push(process.app_server_process?.pid);
+      handle_app_server_process_stdio(watch, run_integrated_tests, false);
+      process.app_server_restarting = false;
     }
   }, 300);
 };
@@ -441,8 +451,10 @@ const development_server = async (development_server_options = {}) => {
     // NOTE: Start test server directly without recursive development_server call
     setTimeout(async () => {
       try {
-        // NOTE: Start test databases
-        const test_settings = await load_settings('test');
+        // NOTE: Load test settings without contaminating global process.env.JOYSTICK_SETTINGS
+        const test_settings_file_path = `${process.cwd()}/settings.test.json`;
+        const test_settings_raw = await fs.readFile(test_settings_file_path, 'utf-8');
+        const test_settings = JSON.parse(test_settings_raw);
 
         await start_databases({
           environment: 'test',
@@ -505,13 +517,13 @@ const development_server = async (development_server_options = {}) => {
         development_server_options?.imports,
         development_server_options?.tests,
       ),
-      start_app_server: () => handle_start_app_server(
-        node_major_version,
-        development_server_options?.watch,
-        development_server_options?.imports,
-        development_server_options?.tests,
-        development_server_options?._is_test_server,
-      ),
+      start_app_server: () => start_app_server(node_major_version, development_server_options?.watch, development_server_options?.imports || [], {
+        NODE_ENV: process.env.NODE_ENV,
+        PORT: process.env.PORT,
+        LOGS_PATH: process.env.LOGS_PATH,
+        ROOT_URL: process.env.ROOT_URL,
+        JOYSTICK_SETTINGS: JSON.stringify(settings),
+      }),
       start_hmr_server: development_server_options?.environment !== 'test' ? () => handle_start_hmr_server(
         node_major_version,
         __dirname,
