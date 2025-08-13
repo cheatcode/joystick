@@ -26,7 +26,7 @@ const replace_in_files = (root_path = '', options = {}) => {
       const file_path = `${root_path}/${file}`;
       const file_contents = await readFile(file_path, 'utf-8');
       const updated_file_contents = file_contents?.replace(
-        new RegExp(options.replace_regex),
+        options.replace_regex,
         options.replace_with
       );
 
