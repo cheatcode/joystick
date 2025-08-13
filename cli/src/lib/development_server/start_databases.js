@@ -13,7 +13,7 @@ const start_database_provider = async (
   const provider = provider_map[database?.provider];
 
   if (provider) {
-    if (process.env.NODE_ENV !== 'test') {
+    if (environment !== 'test') {
       process.loader.print(`Starting ${provider?.name}${database?.name ? ` (${database?.name})`: ''}...`);
     }
 

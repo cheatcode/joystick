@@ -446,16 +446,17 @@ const development_server = async (development_server_options = {}) => {
         await start_databases({
           environment: 'test',
           port: 1977,
-          settings: test_settings
+          settings: test_settings,
         });
         
         const test_app_server = start_app_server(node_major_version, false, development_server_options?.imports || [], {
           NODE_ENV: 'test',
-          PORT: '1977',
+          PORT: 1977,
           LOGS_PATH: process.env.LOGS_PATH,
           ROOT_URL: process.env.ROOT_URL,
           JOYSTICK_SETTINGS: process.env.JOYSTICK_SETTINGS,
         });
+
         process_ids.push(test_app_server?.pid);
         
         // NOTE: Store test server separately to avoid interfering with main server
