@@ -453,7 +453,7 @@ const development_server = async (development_server_options = {}) => {
       try {
         // NOTE: Load test settings without contaminating global process.env.JOYSTICK_SETTINGS
         const test_settings_file_path = `${process.cwd()}/settings.test.json`;
-        const test_settings_raw = await fs.readFile(test_settings_file_path, 'utf-8');
+        const test_settings_raw = await fs.promises.readFile(test_settings_file_path, 'utf-8');
         const test_settings = JSON.parse(test_settings_raw);
 
         await start_databases({
