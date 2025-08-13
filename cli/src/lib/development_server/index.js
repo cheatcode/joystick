@@ -221,18 +221,16 @@ const handle_app_server_process_stdio = (watch = false, run_integrated_tests = f
   	const stdout = data.toString();
     const is_startup_notification = stdout.includes("App running at:");
 
-    // NOTE: Suppress all test server output
-    if (is_test_server) {
-      return;
-    }
+    // NOTE: Show main server output, suppress test server output
+    if (!is_test_server) {
+      // NOTE: Main server output handling
+      if (stdout && is_startup_notification && process.env.NODE_ENV !== 'test') {
+        process.loader.print(stdout);
+      }
 
-    // NOTE: Main server output handling
-  	if (stdout && is_startup_notification && process.env.NODE_ENV !== 'test') {
-  		process.loader.print(stdout);
-  	}
-
-    if (stdout && !is_startup_notification && !stdout.includes("BUILD_ERROR")) {
-      console.log(stdout);
+      if (stdout && !is_startup_notification && !stdout.includes("BUILD_ERROR")) {
+        console.log(stdout);
+      }
     }
 
     // NOTE: Run tests here so we can guarantee app server is running. Do a slight delay
@@ -485,9 +483,9 @@ const development_server = async (development_server_options = {}) => {
           // NOTE: Suppress test server errors to avoid noise
         });
         
-        // NOTE: Restore original environment
-        process.env.NODE_ENV = original_env;
-        process.env.PORT = original_port;
+        // NOTE: Don't restore environment variables yet - keep test environment active
+        // so websocket tests connect to the correct port (1977)
+        // The environment will be restored when the main process exits
         
       } catch (error) {
         console.error('Error starting test server:', error);
