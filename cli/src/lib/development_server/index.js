@@ -221,16 +221,13 @@ const handle_app_server_process_stdio = (watch = false, run_integrated_tests = f
   	const stdout = data.toString();
     const is_startup_notification = stdout.includes("App running at:");
 
-    // NOTE: Show main server output, suppress test server output
-    if (!is_test_server) {
-      // NOTE: Main server output handling
-      if (stdout && is_startup_notification && process.env.NODE_ENV !== 'test') {
-        process.loader.print(stdout);
-      }
+    // NOTE: Main server output handling - only suppress if this is explicitly a test server
+    if (stdout && is_startup_notification && process.env.NODE_ENV !== 'test' && !is_test_server) {
+      process.loader.print(stdout);
+    }
 
-      if (stdout && !is_startup_notification && !stdout.includes("BUILD_ERROR")) {
-        console.log(stdout);
-      }
+    if (stdout && !is_startup_notification && !stdout.includes("BUILD_ERROR") && !is_test_server) {
+      console.log(stdout);
     }
 
     // NOTE: Run tests here so we can guarantee app server is running. Do a slight delay
