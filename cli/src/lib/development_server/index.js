@@ -243,9 +243,17 @@ const handle_app_server_process_stdio = (watch = false, run_integrated_tests = f
     }
 
     // NOTE: Run integrated tests when --tests flag is used and server has started
-    // NOTE: Don't run tests immediately - wait for test server to be ready
     if (stdout && is_startup_notification && run_integrated_tests && process.env.NODE_ENV !== 'test') {
-      // NOTE: Tests will be triggered by test server startup instead
+      // NOTE: Add delay to avoid jarring UX and ensure server is fully ready
+      setTimeout(async () => {
+        try {
+          await run_tests_integrated({
+            __dirname,
+          });
+        } catch (error) {
+          console.error('Error running integrated tests:', error);
+        }
+      }, 1000);
     }
   });
 
@@ -509,15 +517,13 @@ const development_server = async (development_server_options = {}) => {
                 
                 // NOTE: Run integrated tests when test server has started
                 if (stdout && is_startup_notification) {
-                  setTimeout(async () => {
-                    try {
-                      await run_tests_integrated({
-                        __dirname,
-                      });
-                    } catch (error) {
-                      console.error('Error running integrated tests:', error);
-                    }
-                  }, 1000); // Small delay to ensure test server is fully ready
+                  try {
+                    await run_tests_integrated({
+                      __dirname,
+                    });
+                  } catch (error) {
+                    console.error('Error running integrated tests:', error);
+                  }
                 }
               });
               
