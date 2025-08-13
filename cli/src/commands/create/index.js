@@ -25,6 +25,17 @@ const create = async (args = {}, options = {}) => {
     // Clone the template repository
     await exec(`git clone https://github.com/cheatcode/joystick-default-template.git ${args.name}`);
     
+    // Debug: Check what was actually cloned
+    try {
+      const { stdout } = await exec(`find ./${args.name} -type f | head -20`);
+      console.log('Cloned files:', stdout);
+      
+      const testsCheck = await exec(`ls -la ./${args.name}/tests || echo "tests directory not found"`);
+      console.log('Tests directory contents:', testsCheck.stdout);
+    } catch (debugError) {
+      console.log('Debug check failed:', debugError.message);
+    }
+    
     // Remove the .git directory to disconnect from the template repo
     await rm(`./${args.name}/.git`, { recursive: true, force: true });
 
