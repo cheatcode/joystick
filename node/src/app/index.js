@@ -78,6 +78,12 @@ class App {
 	async connect_databases() {
 		const databases_from_settings = app_settings?.config?.databases;
 
+		console.log({
+			databases_from_settings,
+			env: process.env.NODE_ENV,
+			port: process.env.PORT,
+		});
+
 		for (let i = 0; i < databases_from_settings?.length; i += 1) {
 			const database_from_settings = databases_from_settings[i];
       const database_port = parseInt(process.env.PORT, 10) + 10 + i;
