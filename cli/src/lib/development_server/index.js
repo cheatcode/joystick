@@ -94,7 +94,7 @@ const handle_signal_hmr_update = async (jobs = []) => {
 
   process.hmr_server_process.send(JSON.stringify({
     type: 'FILE_CHANGE',
-    settings: has_settings_change ? await load_settings(process.env.NODE_ENV) : null,
+    settings: has_settings_change ? (await load_settings(process.env.NODE_ENV)).settings : null,
     i18n_change: !!has_i18n_change,
     index_html_change: !!has_index_html_change,
     index_css_change: !!has_index_css_change,
@@ -159,7 +159,7 @@ const handle_start_hmr_server = (node_major_version = 0, __dirname = '', watch =
 };
 
 const check_if_database_changes = async (old_settings = {}) => {
-  const new_settings = await load_settings(process.env.NODE_ENV);
+  const { settings: new_settings } = await load_settings(process.env.NODE_ENV);
   const new_databse_settings = new_settings?.config?.databases ? JSON.stringify(new_settings?.config?.databases) : '';
   const old_database_settings = old_settings?.config?.databases ? JSON.stringify(old_settings?.config?.databases) : '';
   return new_databse_settings !== old_database_settings;
@@ -267,8 +267,8 @@ const handle_app_server_process_stdio = (watch = false, run_integrated_tests = f
   });
 };
 
-const handle_start_app_server = (node_major_version = 0, watch = false, imports = [], run_integrated_tests = false, is_test_server = false) => {
-	process.app_server_process = start_app_server(node_major_version, watch, imports);
+const handle_start_app_server = (node_major_version = 0, watch = false, imports = [], run_integrated_tests = false, is_test_server = false, env_options = {}) => {
+	process.app_server_process = start_app_server(node_major_version, watch, imports, env_options);
   process_ids.push(process.app_server_process?.pid);
   handle_app_server_process_stdio(watch, run_integrated_tests, is_test_server);
   process.app_server_restarting = false;
@@ -421,15 +421,32 @@ const development_server = async (development_server_options = {}) => {
 
   set_process_variables(development_server_options, port);
 
-  const settings = await load_settings(process.env.NODE_ENV);
+  // NOTE: Load settings with different approaches based on whether --tests is enabled
+  let main_settings, main_raw_settings;
+  if (development_server_options?.tests && development_server_options?.environment !== 'test') {
+    // NOTE: When --tests is enabled, load main settings without setting global env
+    const main_settings_result = await load_settings(process.env.NODE_ENV, { skip_global_env: true });
+    main_settings = main_settings_result.settings;
+    main_raw_settings = main_settings_result.raw_settings;
+  } else {
+    // NOTE: Normal operation, set global env as before
+    const settings_result = await load_settings(process.env.NODE_ENV);
+    main_settings = settings_result.settings;
+    main_raw_settings = settings_result.raw_settings;
+  }
 
-  await install_missing_databases(settings);
+  await install_missing_databases(main_settings);
 
   await start_databases({
     environment: process.env.NODE_ENV,
     port,
-    settings
+    settings: main_settings
   });
+
+  // NOTE: Start main app server with appropriate settings
+  const main_app_env_options = development_server_options?.tests && development_server_options?.environment !== 'test' 
+    ? { JOYSTICK_SETTINGS: main_raw_settings }
+    : {};
 
   // NOTE: If tests flag is enabled, start a separate test server on port 1977.
   if (development_server_options?.tests && development_server_options?.environment !== 'test') {
@@ -441,8 +458,10 @@ const development_server = async (development_server_options = {}) => {
     // NOTE: Start test server directly without recursive development_server call
     setTimeout(async () => {
       try {
-        // NOTE: Start test databases
-        const test_settings = await load_settings('test');
+        // NOTE: Load test settings without setting global env
+        const test_settings_result = await load_settings('test', { skip_global_env: true });
+        const test_settings = test_settings_result.settings;
+        const test_raw_settings = test_settings_result.raw_settings;
 
         await start_databases({
           environment: 'test',
@@ -455,7 +474,7 @@ const development_server = async (development_server_options = {}) => {
           PORT: 1977,
           LOGS_PATH: process.env.LOGS_PATH,
           ROOT_URL: process.env.ROOT_URL,
-          JOYSTICK_SETTINGS: process.env.JOYSTICK_SETTINGS,
+          JOYSTICK_SETTINGS: test_raw_settings,
         });
 
         process_ids.push(test_app_server?.pid);
@@ -501,7 +520,7 @@ const development_server = async (development_server_options = {}) => {
       restart_app_server: () => handle_restart_app_server(
         node_major_version,
         development_server_options?.watch,
-        settings,
+        main_settings,
         development_server_options?.imports,
         development_server_options?.tests,
       ),
@@ -511,12 +530,13 @@ const development_server = async (development_server_options = {}) => {
         development_server_options?.imports,
         development_server_options?.tests,
         development_server_options?._is_test_server,
+        main_app_env_options,
       ),
       start_hmr_server: development_server_options?.environment !== 'test' ? () => handle_start_hmr_server(
         node_major_version,
         __dirname,
         development_server_options?.watch,
-        settings,
+        main_settings,
         development_server_options?.imports,
         development_server_options?.tests,
       ) : null,
@@ -533,8 +553,8 @@ const development_server = async (development_server_options = {}) => {
         }, 2000);
       } : null,
     }, {
-      excluded_paths: settings?.config?.build?.excluded_paths,
-      custom_copy_paths: settings?.config?.build?.copy_paths?.map((path) => {
+      excluded_paths: main_settings?.config?.build?.excluded_paths,
+      custom_copy_paths: main_settings?.config?.build?.copy_paths?.map((path) => {
         return { path };
       }) || [],
     });

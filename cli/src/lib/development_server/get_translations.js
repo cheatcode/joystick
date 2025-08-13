@@ -3,7 +3,7 @@ import load_settings from "../load_settings.js";
 import types from '../types.js';
 import dynamic_import from '../dynamic_import.js';
 
-const settings = await load_settings(process.env.NODE_ENV);
+const { settings } = await load_settings(process.env.NODE_ENV);
 
 const get_translations_file = async (language_file_path = '', joystick_build_path = '', render_component_path = '') => {
   const language_file = await dynamic_import(`${process.cwd()}/${joystick_build_path}/i18n/${language_file_path}?v=${new Date().getTime()}`);

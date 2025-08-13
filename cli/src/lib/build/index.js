@@ -59,7 +59,7 @@ const build = async (options = {}) => {
 
   loader.print(`Building app to ${build_type} for ${environment}...`);
 
-  const settings = await load_settings(environment);
+  const { settings } = await load_settings(environment);
   const excluded_paths = settings?.config?.build?.excluded_paths || settings?.config?.build?.excludedPaths;
   const custom_copy_paths = await get_custom_copy_paths(settings?.config?.build?.copy_paths);
 

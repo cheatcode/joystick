@@ -5,7 +5,7 @@ import path_exists from './path_exists.js';
 
 const { readFile } = fs.promises;
 
-const load_settings = async (environment = null) => {
+const load_settings = async (environment = null, options = {}) => {
   const settings_file_path = `${process.cwd()}/settings.${environment}.json`;
   const has_settings_file = await path_exists(settings_file_path);
 
@@ -34,10 +34,16 @@ const load_settings = async (environment = null) => {
 
   const settings_file = is_valid_json ? raw_settings_file : "{}";
 
-  // NOTE: Child process will inherit this env var from this parent process.
-  process.env.JOYSTICK_SETTINGS = settings_file;
+  // NOTE: Only set global process.env if not explicitly disabled
+  if (!options.skip_global_env) {
+    // NOTE: Child process will inherit this env var from this parent process.
+    process.env.JOYSTICK_SETTINGS = settings_file;
+  }
 
-  return JSON.parse(settings_file);
+  return {
+    settings: JSON.parse(settings_file),
+    raw_settings: settings_file
+  };
 };
 
 export default load_settings;
