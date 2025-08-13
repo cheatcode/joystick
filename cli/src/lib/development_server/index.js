@@ -36,6 +36,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 const process_ids = [];
+let initial_startup = true;
 
 const handle_run_tests = async (watch = false) => {
   const database_process_ids = get_database_process_ids();
@@ -244,6 +245,12 @@ const handle_app_server_process_stdio = (watch = false, run_integrated_tests = f
 
     // NOTE: Run integrated tests when --tests flag is used and server has started
     if (stdout && is_startup_notification && run_integrated_tests && process.env.NODE_ENV !== 'test') {
+      // NOTE: Skip test run on initial startup, let test server handle it
+      if (initial_startup) {
+        initial_startup = false;
+        return;
+      }
+      
       // NOTE: Add delay to avoid jarring UX and ensure server is fully ready
       setTimeout(async () => {
         try {
