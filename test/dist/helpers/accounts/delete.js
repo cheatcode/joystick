@@ -1,1 +1,1 @@
-import e from"node-fetch";const o=(t="")=>e(`http://localhost:${process.env.PORT}/api/_test/accounts`,{method:"DELETE",mode:"cors",headers:{"Content-Type":"application/json"},body:JSON.stringify({user_id:t}),cache:"no-store"});var s=o;export{s as default};
+import o from"node-fetch";import e from"../../lib/get_test_port.js";const r=(t="")=>o(`http://localhost:${e()}/api/_test/accounts`,{method:"DELETE",mode:"cors",headers:{"Content-Type":"application/json"},body:JSON.stringify({user_id:t}),cache:"no-store"});var n=r;export{n as default};
