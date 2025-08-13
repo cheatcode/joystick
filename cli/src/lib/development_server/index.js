@@ -253,7 +253,7 @@ const handle_app_server_process_stdio = (watch = false, run_integrated_tests = f
         } catch (error) {
           console.error('Error running integrated tests:', error);
         }
-      }, 2000);
+      }, 3000);
     }
   });
 
