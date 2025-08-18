@@ -44,8 +44,6 @@ const load_dynamic_page = async (component_instance = {}, dynamic_page_options =
     props: dynamic_page_options?.props,
   });
 
-  console.log(data_for_window);
-
   if (data_for_window?.data) {
     window.__joystick_data__ = {
       ...(window.__joystick_data__ || {}),
@@ -62,6 +60,14 @@ const load_dynamic_page = async (component_instance = {}, dynamic_page_options =
       ...(data_for_window?.url || {}),
     };
   }
+
+  console.log({
+    dynamic_page_options,
+    data_for_window,
+    data: window.__joystick_data__,
+    req: window.__joystick_request__,
+    url: window.__joystick_url__,
+  })
 
   if (dynamic_page_options?.path) {
     history.pushState(
