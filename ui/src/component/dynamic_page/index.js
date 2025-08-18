@@ -24,6 +24,24 @@ const fetch_dynamic_data = (body = {}) => {
 };
 
 const load_dynamic_page = async (component_instance = {}, dynamic_page_options = {}) => {
+  // NOTE: Clean up existing websocket connections before dynamic page transition
+  // This prevents old page websockets from interfering with new page rendering
+  if (window.joystick && window.joystick._internal && window.joystick._internal.websockets) {
+    Object.keys(window.joystick._internal.websockets).forEach((component_id) => {
+      const component_websockets = window.joystick._internal.websockets[component_id];
+      if (component_websockets) {
+        Object.keys(component_websockets).forEach((websocket_name) => {
+          const websocket = component_websockets[websocket_name];
+          if (websocket && websocket.close) {
+            websocket.close();
+          }
+        });
+      }
+    });
+    // NOTE: Clear the websockets tracking object after cleanup
+    window.joystick._internal.websockets = {};
+  }
+
   const path_name = (dynamic_page_options?.path || '/')?.replace(location.origin, '');
 
   if (!dynamic_page_options?.page) {
@@ -91,28 +109,15 @@ const load_dynamic_page = async (component_instance = {}, dynamic_page_options =
     );
   }
 
-  // NOTE: Clean up existing websocket connections before dynamic page transition
-  // This prevents old page websockets from interfering with new page rendering
-  if (window.joystick && window.joystick._internal && window.joystick._internal.websockets) {
-    Object.keys(window.joystick._internal.websockets).forEach((component_id) => {
-      const component_websockets = window.joystick._internal.websockets[component_id];
-      if (component_websockets) {
-        Object.keys(component_websockets).forEach((websocket_name) => {
-          const websocket = component_websockets[websocket_name];
-          if (websocket && websocket.close) {
-            websocket.close();
-          }
-        });
-      }
-    });
-    // NOTE: Clear the websockets tracking object after cleanup
-    window.joystick._internal.websockets = {};
-  }
-
   // Update the component's props and dynamic_page_props
   component_instance.props.page = new_page;
   component_instance.dynamic_page_props = new_dynamic_page_props;
 
+  // NOTE: Dump the window tree state to avoid mis-renders during transition.
+  if (window?.joystick?._internal?.tree?.length > 0) {
+    window.joystick._internal.tree = [];
+  }
+  
   // Use queue_rerender() to test if order of operations fixes the websocket issue
   // while keeping websocket cleanup to prevent interference
   component_instance.queue_rerender();
