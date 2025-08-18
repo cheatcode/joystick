@@ -24,16 +24,31 @@ const fetch_dynamic_data = (body = {}) => {
 };
 
 const load_dynamic_page = async (component_instance = {}, dynamic_page_options = {}) => {
+  // NOTE: Dump the window tree state to avoid mis-renders during transition.
+  if (window?.joystick?._internal?.tree?.length > 0) {
+    window.joystick._internal.tree = [];
+  }
+
   // NOTE: Clean up existing websocket connections before dynamic page transition
   // This prevents old page websockets from interfering with new page rendering
   if (window.joystick && window.joystick._internal && window.joystick._internal.websockets) {
     Object.keys(window.joystick._internal.websockets).forEach((component_id) => {
       const component_websockets = window.joystick._internal.websockets[component_id];
+
       if (component_websockets) {
         Object.keys(component_websockets).forEach((websocket_name) => {
-          const websocket = component_websockets[websocket_name];
-          if (websocket && websocket.close) {
-            websocket.close();
+          const websocket_connection = component_websockets[websocket_name];
+          if (websocket_connection) {
+            // NOTE: Use the cleanup method to properly remove event listeners
+            // This prevents memory leaks from lingering event handlers
+            if (websocket_connection.cleanup) {
+              websocket_connection.cleanup();
+            }
+            
+            // NOTE: Close the websocket connection with intentional close code.
+            if (websocket_connection.client && websocket_connection.client.close) {
+              websocket_connection.client.close(1000);
+            }
           }
         });
       }
@@ -51,7 +66,7 @@ const load_dynamic_page = async (component_instance = {}, dynamic_page_options =
 
   const page_component_file = (await import(`/_joystick/${dynamic_page_options?.page}?v=${new Date().getTime()}`))?.default;
 
-  // Store the new page and props that will be used during re-render
+  // NOTE: Store the new page and props that will be used during re-render.
   const new_page = page_component_file;
   const new_dynamic_page_props = dynamic_page_options?.props || {};
 
@@ -79,8 +94,8 @@ const load_dynamic_page = async (component_instance = {}, dynamic_page_options =
       ...(data_for_window?.url || {}),
     };
 
-    // NOTE: Update i18n context for dynamic page transitions
-    // This ensures translations work properly when navigating between pages
+    // NOTE: Update i18n context for dynamic page transitions.
+    // This ensures translations work properly when navigating between pages.
     if (data_for_window?.i18n) {
       window.__joystick_i18n__ = {
         ...(window.__joystick_i18n__ || {}),
@@ -88,14 +103,6 @@ const load_dynamic_page = async (component_instance = {}, dynamic_page_options =
       };
     }
   }
-
-  console.log({
-    dynamic_page_options,
-    data_for_window,
-    data: window.__joystick_data__,
-    req: window.__joystick_request__,
-    url: window.__joystick_url__,
-  })
 
   if (dynamic_page_options?.path) {
     history.pushState(
@@ -109,17 +116,10 @@ const load_dynamic_page = async (component_instance = {}, dynamic_page_options =
     );
   }
 
-  // Update the component's props and dynamic_page_props
+  // NOTE: Update the component's props and dynamic_page_props.
   component_instance.props.page = new_page;
   component_instance.dynamic_page_props = new_dynamic_page_props;
-
-  // NOTE: Dump the window tree state to avoid mis-renders during transition.
-  if (window?.joystick?._internal?.tree?.length > 0) {
-    window.joystick._internal.tree = [];
-  }
   
-  // Use queue_rerender() to test if order of operations fixes the websocket issue
-  // while keeping websocket cleanup to prevent interference
   component_instance.queue_rerender();
 };
 

@@ -23,19 +23,7 @@ const websocket_client = (options = {}, on_connect = null) => {
     reconnect_interval = null;
   }
 
-  const connection = {
-    _id: generate_id(8),
-    client,
-    send: (message = {}) => {
-      track_function_call(`ui.${options?.test?.name || generate_id(16)}.websockets.send`, [
-        message
-      ]);
-
-      return client.send(JSON.stringify(message));
-    },
-  };
-
-  client.addEventListener("open", () => {
+  const on_open_handler = () => {
     if (options?.options?.logging) {
       console.log(`[joystick.websockets] Connected to ${options?.url}`);
     }
@@ -48,9 +36,9 @@ const websocket_client = (options = {}, on_connect = null) => {
     }
 
     reconnect_attempts = 0;
-  });
+  };
 
-  client.addEventListener("message", (event) => {
+  const on_message_handler = (event) => {
     if (event?.data && (options?.events?.onMessage || options?.events?.on_message)) {
       (options.events.onMessage || options.events.on_message)(JSON.parse(event.data || {}), connection);
       track_function_call(`ui.websockets.${options?.test?.name || generate_id()}.on_message`, [
@@ -58,9 +46,9 @@ const websocket_client = (options = {}, on_connect = null) => {
         connection
       ]);
     }
-  });
+  };
 
-  client.addEventListener("close", (event) => {
+  const on_close_handler = (event) => {
     if (options?.options?.logging) {
       console.log(`[joystick.websockets] Disconnected from ${options?.url}`);
     }
@@ -75,9 +63,6 @@ const websocket_client = (options = {}, on_connect = null) => {
 
     client = null;
 
-    // NOTE: An intentional close refers to a close that was initiated by the user (refresh),
-    // or, a close that was terminated purposefully by the server. An unintentional close
-    // would be a server going down/restarting or not responding properly.
     const was_intentional_close = [1000, 1001]?.includes(event?.code);
 
     if (window.joystick._internal.websockets) {
@@ -86,7 +71,6 @@ const websocket_client = (options = {}, on_connect = null) => {
           if (socket?._id === connection?._id) {
             delete window.joystick._internal.websockets[component_id][websocket_name];
     
-            // NOTE: If no more sockets under this component, clean that up too.
             if (Object.keys(window.joystick._internal.websockets[component_id]).length === 0) {
               delete window.joystick._internal.websockets[component_id];
             }
@@ -99,7 +83,6 @@ const websocket_client = (options = {}, on_connect = null) => {
       reconnect_interval = setInterval(() => {
         client = null;
 
-        // NOTE: 12 attempts === try to reconnect for up to 1 minute (12 * 5 seconds between each attempt).
         if (reconnect_attempts < (options?.options?.reconnectAttempts || options?.options?.reconnect_attempts || 12)) {
           websocket_client(options, on_connect);
 
@@ -117,7 +100,35 @@ const websocket_client = (options = {}, on_connect = null) => {
         }
       }, (((options?.options?.reconnectDelayInSeconds || options?.options?.reconnect_delay_in_seconds) * 1000) || 5000));
     }
-  });
+  };
+
+  const connection = {
+    _id: generate_id(8),
+    client,
+    _event_handlers: {
+      on_open: on_open_handler,
+      on_message: on_message_handler,
+      on_close: on_close_handler,
+    },
+    send: (message = {}) => {
+      track_function_call(`ui.${options?.test?.name || generate_id(16)}.websockets.send`, [
+        message
+      ]);
+
+      return client.send(JSON.stringify(message));
+    },
+    cleanup: () => {
+      if (client) {
+        client.removeEventListener("open", on_open_handler);
+        client.removeEventListener("message", on_message_handler);
+        client.removeEventListener("close", on_close_handler);
+      }
+    },
+  };
+
+  client.addEventListener("open", on_open_handler);
+  client.addEventListener("message", on_message_handler);
+  client.addEventListener("close", on_close_handler);
 
   if (on_connect) on_connect(connection);
 
