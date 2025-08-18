@@ -113,9 +113,9 @@ const load_dynamic_page = async (component_instance = {}, dynamic_page_options =
   component_instance.props.page = new_page;
   component_instance.dynamic_page_props = new_dynamic_page_props;
 
-  // Skip queue_rerender() and call rerender() directly for dynamic pages
-  // This ensures immediate re-render without render queue interference
-  component_instance.rerender();
+  // Use queue_rerender() to test if order of operations fixes the websocket issue
+  // while keeping websocket cleanup to prevent interference
+  component_instance.queue_rerender();
 };
 
 const dynamic_page = {
