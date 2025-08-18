@@ -82,25 +82,13 @@ const load_dynamic_page = async (component_instance = {}, dynamic_page_options =
     );
   }
 
-  // Instead of directly mutating the component instance, we need to update the props
-  // and dynamic_page_props in a way that triggers a proper re-render with lifecycle methods
+  // Update the component's props and dynamic_page_props
   component_instance.props.page = new_page;
   component_instance.dynamic_page_props = new_dynamic_page_props;
 
-  // Force a proper re-render by using the component's state management system
-  // This ensures lifecycle methods are called and the DOM is properly cleaned up
-  component_instance.set_state({ 
-    _dynamic_page_transition: Date.now() 
-  }, () => {
-    // After the state-triggered re-render completes, we can clean up the temporary state
-    // Use setTimeout to ensure this runs after the render cycle
-    setTimeout(() => {
-      if (component_instance.state && component_instance.state._dynamic_page_transition) {
-        const { _dynamic_page_transition, ...rest } = component_instance.state;
-        component_instance.state = rest;
-      }
-    }, 0);
-  });
+  // Skip queue_rerender() and call rerender() directly for dynamic pages
+  // This ensures immediate re-render without render queue interference
+  component_instance.rerender();
 };
 
 const dynamic_page = {
