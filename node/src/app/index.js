@@ -22,6 +22,7 @@ import generate_process_id from "./generate_process_id.js";
 import get_browser_safe_request from '../lib/get_browser_safe_request.js';
 import get_joystick_build_path from '../lib/get_joystick_build_path.js';
 import get_target_database_connection from "./databases/get_target_database_connection.js";
+import get_translations from '../lib/get_translations.js';
 import handle_process_errors from "./handle_process_errors.js";
 import load_settings from "./settings/load.js";
 import parse_route_pattern from '../lib/parse_route_pattern.js';
@@ -347,6 +348,25 @@ class App {
 					req: browser_safe_request,
 				});
 
+				// NOTE: Load translations for the dynamic page
+				let i18n = {};
+				try {
+					const joystick_build_path = get_joystick_build_path();
+					const language_files_path = `${joystick_build_path}i18n`;
+					const language_files = process._joystick_translations?.normal?.files || [];
+
+					if (language_files.length > 0) {
+						i18n = await get_translations({
+							req: browser_safe_request,
+							language_files_path,
+							language_files,
+							render_component_path: sanitized_component_path,
+						});
+					}
+				} catch (error) {
+					console.warn('Failed to load translations for dynamic page:', error.message);
+				}
+
 				return res.status(200).send({
 					data,
 					req: browser_safe_request,
@@ -356,6 +376,7 @@ class App {
 						path: req?.body?.path,
 						route: req?.body?.route_pattern || req?.body?.path,
 					},
+					i18n,
 				});
 			}
 

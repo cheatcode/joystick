@@ -60,6 +60,15 @@ const load_dynamic_page = async (component_instance = {}, dynamic_page_options =
       ...(window.__joystick_url__ || {}),
       ...(data_for_window?.url || {}),
     };
+
+    // NOTE: Update i18n context for dynamic page transitions
+    // This ensures translations work properly when navigating between pages
+    if (data_for_window?.i18n) {
+      window.__joystick_i18n__ = {
+        ...(window.__joystick_i18n__ || {}),
+        ...(data_for_window?.i18n || {}),
+      };
+    }
   }
 
   console.log({
@@ -80,6 +89,24 @@ const load_dynamic_page = async (component_instance = {}, dynamic_page_options =
           ''
         }`,
     );
+  }
+
+  // NOTE: Clean up existing websocket connections before dynamic page transition
+  // This prevents old page websockets from interfering with new page rendering
+  if (window.joystick && window.joystick._internal && window.joystick._internal.websockets) {
+    Object.keys(window.joystick._internal.websockets).forEach((component_id) => {
+      const component_websockets = window.joystick._internal.websockets[component_id];
+      if (component_websockets) {
+        Object.keys(component_websockets).forEach((websocket_name) => {
+          const websocket = component_websockets[websocket_name];
+          if (websocket && websocket.close) {
+            websocket.close();
+          }
+        });
+      }
+    });
+    // NOTE: Clear the websockets tracking object after cleanup
+    window.joystick._internal.websockets = {};
   }
 
   // Update the component's props and dynamic_page_props
