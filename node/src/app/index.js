@@ -142,7 +142,9 @@ class App {
 
 			try {
 				const files = await readdir(translation_config.path);
-				translation_config.files = files.filter(file => file.endsWith('.js'));
+				translation_config.files = files.filter(file => 
+					file.endsWith('.js') && !file.startsWith('._')
+				);
 
 				for (const file of translation_config.files) {
 					const file_path = `${translation_config.path}/${file}`;
@@ -178,7 +180,9 @@ class App {
 			const files = await readdir(email_templates_path);
 			
 			// Load email template components (.js files)
-			const template_files = files.filter(file => file.endsWith('.js'));
+			const template_files = files.filter(file => 
+				file.endsWith('.js') && !file.startsWith('._')
+			);
 			for (const file of template_files) {
 				const file_path = `${email_templates_path}/${file}`;
 				const template_name = file.replace('.js', '');
