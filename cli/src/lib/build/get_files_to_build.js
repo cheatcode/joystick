@@ -2,12 +2,8 @@ import fs from "fs";
 import get_files_in_path from "../get_files_in_path.js";
 import master_ignore_list from "./master_ignore_list.js";
 
-const { stat } = fs.promises;
-
 const get_files_to_build = async (excluded_paths = [], custom_copy_paths = []) => {
   const files = await get_files_in_path("./", []);
-
-  const master_ignore_list_filtered_for_context = master_ignore_list;
 
   const filtered_files = files
     .filter((path) => {
@@ -25,7 +21,7 @@ const get_files_to_build = async (excluded_paths = [], custom_copy_paths = []) =
       return !is_excluded;
     })
     .filter((path) => {
-      const is_excluded = master_ignore_list_filtered_for_context.some((excluded_path) => {
+      const is_excluded = master_ignore_list.some((excluded_path) => {
         return path.includes(excluded_path);
       });
 

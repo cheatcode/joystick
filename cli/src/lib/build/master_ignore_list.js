@@ -1,4 +1,5 @@
 const master_ignore_list = [
+  '._', // NOTE: Hidden MacOS metadata files.
   '.build',
   '.DS_Store',
   '.git',

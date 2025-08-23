@@ -1,2 +1,2 @@
-import s from"fs";import l from"../get_files_in_path.js";import c from"./master_ignore_list.js";const{stat:p}=s.promises,u=async(i=[],o=[])=>{const n=await l("./",[]),_=c;return n.filter(e=>!o.some(t=>e.includes(t))).filter(e=>!i.some(t=>e.includes(t))).filter(e=>!_.some(t=>e.includes(t))).filter(e=>!s.lstatSync(e).isDirectory())};var x=u;export{x as default};
+import l from"fs";import o from"../get_files_in_path.js";import n from"./master_ignore_list.js";const c=async(s=[],i=[])=>(await o("./",[])).filter(e=>!i.some(t=>e.includes(t))).filter(e=>!s.some(t=>e.includes(t))).filter(e=>!n.some(t=>e.includes(t))).filter(e=>!l.lstatSync(e).isDirectory());var a=c;export{a as default};
 //# sourceMappingURL=get_files_to_build.js.map
