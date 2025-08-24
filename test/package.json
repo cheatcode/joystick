@@ -19,7 +19,7 @@
     "esbuild": "^0.25.2",
     "linkedom": "^0.16.6",
     "mongo-uri-tool": "^1.0.1",
-    "mongodb": "^6.3.0",
+    "mongodb": "^6.18.0",
     "node-fetch": "^3.3.2",
     "pg": "^8.11.3",
     "ws": "^8.18.1"
