@@ -1,7 +1,7 @@
 {
   "version": 3,
   "sources": ["../../../src/lib/build/master_ignore_list.js"],
-  "sourcesContent": ["const master_ignore_list = [\n  '._', // NOTE: Hidden MacOS metadata files.\n  '.build',\n  '.DS_Store',\n  '.git',\n  '.joystick/build',\n  '.joystick/data',\n  '.push',\n  'node_modules',\n  'settings.development.json',\n  'settings.staging.json',\n  'settings.production.json',\n];\n\nexport default master_ignore_list;\n"],
-  "mappings": "AAAA,MAAMA,EAAqB,CACzB,KACA,SACA,YACA,OACA,kBACA,iBACA,QACA,eACA,4BACA,wBACA,0BACF,EAEA,IAAOC,EAAQD",
+  "sourcesContent": ["const master_ignore_list = [\n  '.build',\n  '.DS_Store',\n  '.git',\n  '.joystick/build',\n  '.joystick/data',\n  '.push',\n  'node_modules',\n  'settings.development.json',\n  'settings.staging.json',\n  'settings.production.json',\n];\n\nexport default master_ignore_list;\n"],
+  "mappings": "AAAA,MAAMA,EAAqB,CACzB,SACA,YACA,OACA,kBACA,iBACA,QACA,eACA,4BACA,wBACA,0BACF,EAEA,IAAOC,EAAQD",
   "names": ["master_ignore_list", "master_ignore_list_default"]
 }
