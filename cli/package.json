@@ -17,7 +17,7 @@
   "author": "",
   "license": "SAUCR",
   "dependencies": {
-    "@babel/code-frame": "^7.23.5",
+    "@babel/code-frame": "^7.27.1",
     "acorn": "^8.11.2",
     "ascii-table": "^0.0.9",
     "ava": "^6.4.1",
